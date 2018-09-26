@@ -1,0 +1,53 @@
+{
+  "name": "MultimediaAnnotations",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "type": {
+      "type": "string",
+      "required": true,
+      "default": "StillImage"
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "url_md5": {
+      "type": "string",
+      "required": true
+    },
+    "multimedia_error_flag": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "related_upload_session": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "multimediaTokens": {
+      "type": "embedsMany",
+      "model": "Tokens",
+      "property": "tokens",
+      "options": {
+        "validate": true,
+        "forceId": true,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

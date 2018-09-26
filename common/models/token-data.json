@@ -1,0 +1,41 @@
+{
+  "name": "TokenData",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "key": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "default": ""
+    },
+    "label": {
+      "type": "string",
+      "default": ""
+    },
+    "value": {
+      "type": "string",
+      "default": ""
+    },
+    "unit": {
+      "type": "string",
+      "default": ""
+    },
+    "data_error_flag": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "last_validated_timestamp": {
+      "type": "number",
+      "default": 1537857332
+    },
+    "context": {
+      "type": "string",
+      "default": "camera-trap"
+    }
+  }
+}

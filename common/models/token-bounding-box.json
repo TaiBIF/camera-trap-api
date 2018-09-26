@@ -1,0 +1,22 @@
+{
+  "name": "TokenBoundingBox",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "defaultFn": "uuid"
+    },
+    "full_scope": {
+      "type": "boolean",
+      "default": true
+    },
+    "original_point": {
+      "type": "string",
+      "default": "topleft"
+    }
+  }
+}
