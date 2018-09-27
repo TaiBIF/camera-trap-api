@@ -50,5 +50,13 @@
   "TokenData": {
     "dataSource": "transient",
     "public": false
+  },
+  "TokenMeta": {
+    "dataSource": "transient",
+    "public": false
+  },
+  "CameraTrapBase": {
+    "dataSource": null,
+    "public": false
   }
 }

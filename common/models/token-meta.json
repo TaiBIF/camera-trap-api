@@ -1,18 +1,18 @@
 {
-  "name": "TokenBoundingBox",
+  "name": "TokenMeta",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "full_scope": {
-      "type": "boolean",
-      "default": true
-    },
-    "original_point": {
+    "virtual_individual_id": {
       "type": "string",
-      "default": "topleft",
+      "defaultFn": "uuid"
+    },
+    "virtual_part_id": {
+      "type": "string",
+      "defaultDn": "uuid",
       "id": true
     }
   },

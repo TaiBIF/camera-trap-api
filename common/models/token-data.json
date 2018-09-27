@@ -37,5 +37,9 @@
       "type": "string",
       "default": "camera-trap"
     }
-  }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
 }

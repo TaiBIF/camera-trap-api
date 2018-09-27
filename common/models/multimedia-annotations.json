@@ -1,19 +1,13 @@
 {
   "name": "MultimediaAnnotations",
-  "base": "PersistedModel",
-  "idInjection": false,
+  "base": "CameraTrapBase",
+  "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "id": {
-      "type": "string",
-      "required": true,
-      "id": true
-    },
     "type": {
       "type": "string",
-      "required": true,
       "default": "StillImage"
     },
     "url": {
@@ -26,13 +20,18 @@
     },
     "multimedia_error_flag": {
       "type": "boolean",
-      "required": true,
       "default": false
     },
     "related_upload_session": {
       "type": [
         "string"
       ]
+    },
+    "tokens": {
+      "type": [
+        "object"
+      ],
+      "required": true
     }
   },
   "validations": [],
@@ -43,7 +42,7 @@
       "property": "tokens",
       "options": {
         "validate": true,
-        "forceId": true,
+        "forceId": false,
         "persistent": true
       }
     }
