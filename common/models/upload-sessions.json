@@ -1,0 +1,45 @@
+{
+  "name": "UploadSessions",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "id": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "upload_session_id": {
+      "type": "string",
+      "required": true
+    },
+    "full_location_md5": {
+      "type": "string",
+      "required": true
+    },
+    "by": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "files": {
+      "type": [
+        "string"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -8,12 +8,13 @@
   "properties": {
     "virtual_individual_id": {
       "type": "string",
+      "id": 1,
       "defaultFn": "uuid"
     },
     "virtual_part_id": {
       "type": "string",
-      "defaultDn": "uuid",
-      "id": true
+      "id": 2,
+      "defaultFn": "uuid"
     }
   },
   "validations": [],

@@ -1,16 +1,18 @@
 'use strict';
 
-module.exports = function(CameraTrapBase) {
+// served as an example
+module.exports = function(MultimediaQueryShared) {
 
-  var originalSetup = CameraTrapBase.setup;
+  /* 這段搬走了，沒在用喔
+  var originalSetup = MultimediaQueryShared.setup;
 
-  CameraTrapBase.setup = function() {
+  MultimediaQueryShared.setup = function() {
     // this will be called everytime a 
     // model is extended from this model.
   
     originalSetup.apply(this, arguments);
     // This is necessary if your 
-    // CameraTrapBase is based of another model, like PersistedModel.
+    // MultimediaQueryShared is based of another model, like PersistedModel.
 
 
     var ExtendedModel = this;
@@ -56,6 +58,6 @@ module.exports = function(CameraTrapBase) {
     }
 
   };
-
+  //*/
 
 };

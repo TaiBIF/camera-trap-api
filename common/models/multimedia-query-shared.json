@@ -1,0 +1,76 @@
+{
+  "name": "MultimediaQueryShared",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "project": {
+      "type": "string",
+      "required": true,
+      "description": "// 以下資料都要在資料匯入時填入，不給寫註解只好先塞在描述"
+    },
+    "site": {
+      "type": "string",
+      "required": true
+    },
+    "sub_site": {
+      "type": "string",
+      "default": ""
+    },
+    "location": {
+      "type": "string",
+      "required": true
+    },
+    "full_location_md5": {
+      "type": "string",
+      "required": true
+    },
+    "timezone": {
+      "type": "string",
+      "required": true
+    },
+    "date_time_original": {
+      "type": "string",
+      "description": "// 來自 exif 中的 raw 值，一個例子是 2017:02:09 06:11:09"
+    },
+    "date_time_original_timestamp": {
+      "type": "number",
+      "required": true,
+      "description": "// 從上面轉的 timestamp，資料若來自CSV，則以拍照時間暫為代理(未在任一環節出錯的情況下，拍照時間與 date_time_original 是相同的)"
+    },
+    "year_original": {
+      "type": "string",
+      "description": "// 注意以下年月日都是字串，前面才會補 0, '2017'"
+    },
+    "month_original": {
+      "type": "string",
+      "description": "// '02'"
+    },
+    "day_original": {
+      "type": "string",
+      "description": "// '09'"
+    },
+    "hour_original": {
+      "type": "string",
+      "description": "// '06'，沒有分秒，搜尋需求問題"
+    },
+    "create_date": {
+      "type": "string",
+      "description": "// 2017:02:09 06:11:09，exif 中的檔案建立時間，raw 值"
+    },
+    "wgs84dec_x": {
+      "type": "number",
+      "description": "// 121.561837 wgs84 十進位，存個副本以免計畫樣點資料被誤改"
+    },
+    "wgs84dec_y": {
+      "type": "number",
+      "description": "// 23.556678"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

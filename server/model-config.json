@@ -35,6 +35,10 @@
     "dataSource": "db",
     "public": false
   },
+  "MultimediaQueryShared": {
+    "dataSource": null,
+    "public": false
+  },
   "MultimediaAnnotations": {
     "dataSource": "mongodb34",
     "public": true
@@ -55,8 +59,16 @@
     "dataSource": "transient",
     "public": false
   },
-  "CameraTrapBase": {
-    "dataSource": null,
+  "MultimediaMetadata": {
+    "dataSource": "mongodb34",
+    "public": true
+  },
+  "MultimediaMetadataExif": {
+    "dataSource": "transient",
     "public": false
+  },
+  "UploadSessions": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

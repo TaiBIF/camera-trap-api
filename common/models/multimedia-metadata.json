@@ -1,0 +1,67 @@
+{
+  "name": "MultimediaMetadata",
+  "base": "MultimediaQueryShared",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkNormalize": true,
+    "BulkWrite": true,
+    "CustomQuery": true
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "default": "StillImage"
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "url_md5": {
+      "type": "string",
+      "id": true,
+      "required": true
+    },
+    "device_metadata": {
+      "type": "object",
+      "required": true,
+      "description": "// 把完整 metadata 存起來，不知啥時會用到"
+    },
+    "make": {
+      "type": "string",
+      "description": "// 製造商",
+      "default": ""
+    },
+    "model": {
+      "type": "string",
+      "description": "// 器材型號",
+      "default": ""
+    },
+    "modify_date": {
+      "type": "string",
+      "required": true,
+      "description": "// from exif, e.g. 2017:02:09 06:11:09"
+    },
+    "exif": {
+      "type": "object",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "multimediaMetadataExif": {
+      "type": "embedsOne",
+      "model": "MultimediaMetadataExif",
+      "property": "exif",
+      "options": {
+        "validate": true,
+        "forceId": false,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

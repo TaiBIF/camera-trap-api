@@ -1,9 +1,14 @@
 {
   "name": "MultimediaAnnotations",
-  "base": "CameraTrapBase",
-  "idInjection": true,
+  "base": "MultimediaQueryShared",
+  "idInjection": false,
   "options": {
     "validateUpsert": true
+  },
+  "mixins": {
+    "BulkNormalize": true,
+    "BulkWrite": true,
+    "CustomQuery": true
   },
   "properties": {
     "type": {
@@ -16,6 +21,7 @@
     },
     "url_md5": {
       "type": "string",
+      "id": true,
       "required": true
     },
     "multimedia_error_flag": {
@@ -25,7 +31,8 @@
     "related_upload_session": {
       "type": [
         "string"
-      ]
+      ],
+      "default": []
     },
     "tokens": {
       "type": [

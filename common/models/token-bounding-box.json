@@ -12,8 +12,8 @@
     },
     "original_point": {
       "type": "string",
-      "default": "topleft",
-      "id": true
+      "id": true,
+      "default": "topleft"
     }
   },
   "validations": [],

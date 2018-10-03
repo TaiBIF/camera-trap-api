@@ -1,0 +1,31 @@
+{
+  "name": "MultimediaMetadataExif",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "exif_version": {
+      "type": "string",
+      "id": true,
+      "default": ""
+    },
+    "exposure_time": {
+      "type": "string",
+      "default": ""
+    },
+    "iso": {
+      "type": "string",
+      "default": ""
+    },
+    "flash": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
