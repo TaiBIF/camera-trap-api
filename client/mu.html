@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+    <script src="./fe_get_credentials.js"></script>
+
+  <script>
+
+    function s3ErrorHandle (err, data) {
+      console.log(err, data);
+    }
+
+  </script>
+
+
+  </head>
+  <body>
+    <h1>S3 Managed Upload</h1>
+
+    <div id="dropzone" style="width:500px;height:200px;background:lightgrey">Drag folder here</div>
+    <div id="file_list" style="width:500px;height:100px;background:grey"></div>
+
+    <script>    
+      var dropzone = document.getElementById('dropzone');
+
+      // to make drop event work on div, disable dragenter and dragover
+      dropzone.ondragenter = function (event) {event.preventDefault();}
+      dropzone.ondragover = function (event) {event.preventDefault();}
+
+      // drag and drop dir, then get all files inside
+      // 列舉檔案
+      dropzone.ondrop = function (evt) {
+        evt.preventDefault();
+        const data = evt.dataTransfer.items;
+        for (let i = 0; i < data.length; i += 1) {
+          const item = data[i];
+          const entry = item.webkitGetAsEntry();
+          traverseDirectory(entry).then(
+            // 檔案列表
+            result => makeUploadList(result)
+          );
+        }
+      }
+
+      // get all files inside dir
+      // Reference:
+      // https://stackoverflow.com/questions/18815197/javascript-file-dropping-and-reading-directories-asynchronous-recursion
+      function traverseDirectory(entry) {
+        const reader = entry.createReader();
+        // Resolved when the entire directory is traversed
+        return new Promise((resolve, reject) => {
+          const iterationAttempts = [];
+          function readEntries() {
+            // According to the FileSystem API spec, readEntries() must be called until
+            // it calls the callback with an empty array.  Seriously??
+            reader.readEntries((entries) => {
+              if (!entries.length) {
+                // Done iterating this particular directory
+                resolve(Promise.all(iterationAttempts));
+              } else {
+                // Add a list of promises for each directory entry.  If the entry is itself
+                // a directory, then that promise won't resolve until it is fully traversed.
+                iterationAttempts.push(Promise.all(entries.map((ientry) => {
+                  if (ientry.isFile) {
+                    // DO SOMETHING WITH FILES
+                    return ientry;
+                  }
+                  // DO SOMETHING WITH DIRECTORIES
+                  return traverseDirectory(ientry);
+                })));
+                // Try calling readEntries() again for the same dir, according to spec
+                readEntries();
+              }
+            }, error => reject(error));
+          }
+          readEntries();
+        });
+      }
+
+      // an example for s3 managed upload 
+      function makeUploadList (result) {
+        window.files_to_upload = result;
+
+        let output = "";
+
+        for (let i = 0; i < result.length; i++) {
+          for (let j = 0; j < result[i].length; j++) {
+            let path = result[i][j].fullPath;
+            // 載入檔案
+            result[i][j].file(file => {
+              console.log(path);
+              console.log(file);
+              let file_list = document.getElementById('file_list');
+              file_list.innerHTML += "<div>";
+              file_list.innerHTML += "<span style='cursor:pointer;' onclick='files_to_upload["+i+"]["+j+"].s3mu_uploader.send(s3ErrorHandle)'>點我上傳</span>";
+              file_list.innerHTML += "<span>" + path + "</span></div>";
+
+              // 還有 s3mu_uploader.abort() 可搭配做為上傳、取消(暫停)、續傳用(頁面重新整理或關閉後無效)
+
+
+              result[i][j].s3mu_uploader = new AWS.S3.ManagedUpload({
+                params: {Bucket: 'tagphoto', Key: "multi/" + file.name, Body: file},
+                leavePartsOnError: true // 
+              });
+        
+              result[i][j].s3mu_uploader.on('httpUploadProgress', function(progress) {
+                // console.log((100 * progress.loaded / progress.total) + '%');
+                console.log(progress);
+              });
+    
+            });
+          }
+        }
+
+        let ffss = 5566;
+
+      }
+
+
+    </script>        
+    
+  </body>
+
+
+</html>
