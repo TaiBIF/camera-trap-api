@@ -1,7 +1,7 @@
 let md5 = require('md5');
 let strFunc = {};
 strFunc['uuid'] = require('uuid'); // 看起來 default 就是 v4
-let lb = require('loopback');
+// let lb = require('loopback');
 
 module.exports = function(Model, options) {
   'use strict';
