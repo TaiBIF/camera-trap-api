@@ -70,5 +70,9 @@
   "UploadSessions": {
     "dataSource": "mongodb34",
     "public": true
+  },
+  "UserCognito": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

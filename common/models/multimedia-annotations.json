@@ -8,7 +8,8 @@
   "mixins": {
     "BulkNormalize": true,
     "BulkWrite": true,
-    "CustomQuery": true
+    "CustomQuery": true,
+    "AccessControl": true
   },
   "properties": {
     "type": {

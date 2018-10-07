@@ -90,7 +90,7 @@
 	</div>
 	<script>
 
-        var loginUri = "https://ctp.twebi.net/dummy.html";
+        var loginUri = "http://localhost:8888/tagphoto/dummy.html";
 	var userPoolId ='ap-northeast-1_JACElFd4C';
 
 	// Operations when the web page is loaded.
@@ -194,7 +194,7 @@
 	// Initialize a cognito auth object.
 	function initCognitoSDK() {
 		var authData = {
-			ClientId : '3f7s3vicrehjmc8isiomafcn3q', // Your client id here
+			ClientId : '78qgpc61jqls42v18mp8tfqo09', // Your client id here
 			AppWebDomain : 'tagphoto.auth.ap-northeast-1.amazoncognito.com', // Exclude the "https://" part. 
 			TokenScopesArray : ['openid', 'email', 'profile', 'aws.cognito.signin.user.admin'], // like ['openid','email','phone']...
 			RedirectUriSignIn : loginUri,
@@ -231,7 +231,7 @@
 				console.log("Sign in success");
 				showSignedIn(result);
 
-				window.open("https://ctp.twebi.net/mu.html", 'camera_trap_photo_upload');
+				window.open("http://localhost:8888/tagphoto/mu.html", 'camera_trap_photo_upload');
 
 			},
 			onFailure: function(err) {
