@@ -1,5 +1,5 @@
 {
-  "name": "UserCognito",
+  "name": "LocationDataLock",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {
@@ -9,17 +9,26 @@
     "BulkWrite": true,
     "BulkNormalize": true,
     "CustomQuery": true,
+    "AccessControl": true,
     "TimeStamp": true
   },
   "properties": {
-    "user_id": {
+    "full_location_md5": {
       "type": "string",
       "required": true,
       "id": true
     },
-    "id_token": {
+    "locked": {
+      "type": "boolean",
+      "default": false
+    },
+    "locked_by": {
       "type": "string",
-      "default": ""
+      "required": true
+    },
+    "locked_on": {
+      "type": "number",
+      "required": true
     }
   },
   "validations": [],

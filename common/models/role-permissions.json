@@ -1,0 +1,47 @@
+{
+  "name": "RolePermissions",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "role": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "permissions": {
+      "type": [
+        "object"
+      ],
+      "required": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "rolePermissions": {
+      "type": "embedsMany",
+      "model": "Permissions",
+      "property": "permissions",
+      "options": {
+        "validate": true,
+        "forceId": false,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

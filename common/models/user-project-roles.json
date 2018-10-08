@@ -1,0 +1,27 @@
+{
+  "name": "UserProjectRoles",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "project": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "roles": {
+      "type": [
+        "string"
+      ],
+      "default": [
+        "normal_user"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

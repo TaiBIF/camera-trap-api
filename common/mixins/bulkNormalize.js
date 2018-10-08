@@ -140,11 +140,12 @@ module.exports = function(Model, options) {
     let current_id = null;
 
     let BreakException= {};
+    let defProps = Model.definition.rawProperties;
+    let modelName = Model.definition.name;
+    let dataSourceName = Model.config.dataSource.name;
 
     try {
       context.args.data.forEach(function(update, idx, arr){
-  
-        let defProps = Model.definition.rawProperties;
 
         if (!update._id || (!update['$set'] && !update['$addToSet'])) {
           err_messages.push("Missing _id or any of update operations from ($set, $addToSet) for update target.");
@@ -170,7 +171,7 @@ module.exports = function(Model, options) {
           updateOnly = false;
         }
 
-        instance = simpleValidate(instance, defProps, Model.definition.name,  updateOnly);
+        instance = simpleValidate(instance, defProps, modelName, dataSourceName, updateOnly);
         instance.created = instance.modified;
 
 
@@ -230,16 +231,18 @@ module.exports = function(Model, options) {
 
   }
 
-  let simpleValidate = function (instance, defProps, instanceFrom, updateOnly = false) {
+  let simpleValidate = function (instance, defProps, instanceFrom, dataSourceName, updateOnly = false) {
 
     if (!instance) instance = {};
 
     console.log("--------------------This instance is from: `" + instanceFrom + "`");
+    console.log(dataSourceName);
     // console.log(defProps);
+
+
 
     for (let propName in defProps) {
       if (defProps.hasOwnProperty(propName)) {
-
 
         if (!updateOnly) {
           let defaultFn = strFunc[defProps[propName].defaultFn];
@@ -282,14 +285,17 @@ module.exports = function(Model, options) {
 
           // Is Transient
           if (!!realType.definition && !!realType.definition.rawProperties) {
+            let realTypeDataSourceName = realType.config.dataSource.name;
             // recursive here
             if (Array.isArray(instance[propName])) {
+              // console.log(realType);
               instance[propName].forEach(function(sub_instance, sub_idx, sub_arr) {
-                sub_arr[sub_idx] = simpleValidate(sub_instance, realType.definition.rawProperties, propName, updateOnly);
+                sub_arr[sub_idx] = simpleValidate(sub_instance, realType.definition.rawProperties, propName, realTypeDataSourceName, updateOnly);
               });
             }
             else {
-              instance[propName] = simpleValidate(instance[propName], realType.definition.rawProperties, propName, updateOnly);
+              // console.log(realType);
+              instance[propName] = simpleValidate(instance[propName], realType.definition.rawProperties, propName, realTypeDataSourceName, updateOnly);
             }
           }
         }
@@ -300,6 +306,13 @@ module.exports = function(Model, options) {
           // console.log(defProps[propName]);
           console.log("Missing value for property `" + propName + "`");
           err_messages.push("Missing value for property `" + propName + "`");
+        }
+
+        // auto set _id field
+        if (dataSourceName != 'transient') {
+          if (!!defProps[propName].id) {
+            instance._id = instance[propName];
+          }
         }
 
         // Type Check, 先放棄 array 跟 object, 太複雜了
@@ -346,7 +359,7 @@ module.exports = function(Model, options) {
   }
 
   let bulkInsertReplaceCallback = function(context, user, next) {
-    // console.log(Model.definition);
+    // console.log(Model);
 
     err_messages = [];
 
@@ -354,24 +367,33 @@ module.exports = function(Model, options) {
     let current_id = null;
 
     let BreakException= {};
+    let defProps = Model.definition.rawProperties;
+    let modelIdProp;
+
+    let modelName = Model.definition.name;
+    let dataSourceName = Model.config.dataSource.name;
 
     try {
       context.args.data.forEach(function(instance, idx, arr){
-  
-        let defProps = Model.definition.rawProperties;
-  
+    
         // url_md5 as id 的情境
-        if (!instance.url) instance.url = strFunc['uuid']();
-        instance.url_md5 = md5(instance.url);
-        instance._id = instance.url_md5;
-        current_id = instance._id;
+        if (modelName.match(/^Multimedia/)) {
+          if (!instance.url) instance.url = strFunc['uuid']();
+          instance.url_md5 = md5(instance.url);
+          // instance._id = instance.url_md5;
+        }
+        else {
+
+        }
   
         // set timestamp
         let now = Date.now() / 1000;
         instance.created = now;
         instance.modified = now;
   
-        instance = simpleValidate(instance, defProps, Model.definition.name);
+        instance = simpleValidate(instance, defProps, modelName, dataSourceName);
+
+        current_id = instance._id;
 
         console.log(JSON.stringify(instance, null, 2));
         if (err_messages.length >= 1) throw BreakException;

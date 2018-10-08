@@ -52,10 +52,6 @@ module.exports = function(app) {
 
 
     let UploadSessions = db.collection('UploadSessions');
-    let unique_index_upload_session = [
-      {"upload_session_id": 1},
-      {"unique": true}
-    ];
 
     let index_upload_user = [
       {"by": 1}
@@ -65,7 +61,7 @@ module.exports = function(app) {
       {"full_location_md5": 1}
     ]
 
-    indexes = [unique_index_upload_session, index_upload_user, index_upload_location];
+    indexes = [index_upload_user, index_upload_location];
     createIndex(UploadSessions, indexes);
 
 

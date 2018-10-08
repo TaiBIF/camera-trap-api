@@ -1,0 +1,21 @@
+[{
+  "role": "DataManager",
+  "permissions": [
+    {
+      "remoteMethod": "ANY",
+      "collection": "LocationDataLock",
+      "project": "OWN"
+    }
+  ],
+  "enabled": true
+},{
+  "role": "SysAdmin",
+  "permissions": [
+    {
+      "remoteMethod": "ANY",
+      "collection": "ANY",
+      "project": "ANY"
+    }
+  ],
+  "enabled": true
+}]

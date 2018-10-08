@@ -10,14 +10,10 @@
     "TimeStamp": true
   },
   "properties": {
-    "id": {
+    "upload_session_id": {
       "type": "string",
       "required": true,
       "id": true
-    },
-    "upload_session_id": {
-      "type": "string",
-      "required": true
     },
     "full_location_md5": {
       "type": "string",

@@ -44,9 +44,10 @@ module.exports = function(Model, options) {
         // 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
         let idToken = AWS.config.credentials.params.Logins[idProvider];
         let payload = idToken.split('.')[1];
-		    let tokenobj = JSON.parse(atob(payload));
-		    let formatted = JSON.stringify(tokenobj, undefined, 2);
-        console.log(formatted);
+        let tokenobj = JSON.parse(atob(payload));
+        let user_id = tokenobj['cognito:username'];
+		    //let formatted = JSON.stringify(tokenobj, undefined, 2);
+        //console.log(formatted);
 
         let identity_id = AWS.config.credentials.identityId;
         console.log("Cognito Identity Id", AWS.config.credentials.identityId);
@@ -76,10 +77,14 @@ module.exports = function(Model, options) {
       }
       else {
         // 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
-        //let payload = idToken.split('.')[1];
-		    //let tokenobj = JSON.parse(atob(payload));
-		    //let formatted = JSON.stringify(tokenobj, undefined, 2);
-        console.log(AWS.config.credentials);
+        // console.log(AWS.config.credentials);
+        let idToken = AWS.config.credentials.params.Logins[idProvider];
+        let payload = idToken.split('.')[1];
+        let tokenobj = JSON.parse(atob(payload));
+
+        let user_id = tokenobj['cognito:username'];
+		    // let formatted = JSON.stringify(tokenobj, undefined, 2);
+        // console.log(formatted);
 
         let identity_id = AWS.config.credentials.identityId;
         console.log("Cognito Identity Id", AWS.config.credentials.identityId);
@@ -93,9 +98,83 @@ module.exports = function(Model, options) {
           }
 
           let targetModelName = Model.definition.name;
-          let AccessPermissions = db.collection("AccessPermissions");
+          let remoteMethodName = context.methodString.split(".").pop();
+          let RolePermissions = db.collection("RolePermissions");
+          let CtpUsers = db.collection("CtpUsers");
+
           // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
-          // AccessPermissions.findOne....
+          CtpUsers.aggregate(
+            [
+              {
+                '$match': {
+                  user_id: user_id
+                }
+              },
+              {'$unwind': '$project_roles'},
+              {'$unwind': '$project_roles.roles'},
+              {
+                '$lookup': {
+                  from: "RolePermissions",
+                  localField: "project_roles.roles",
+                  foreignField: "role",
+                  as: "role_details"
+                }
+              },
+              {'$unwind': {
+                path: '$role_details',
+                preserveNullAndEmptyArrays: true
+              }},
+              {'$unwind': {
+                path: '$role_details.permissions',
+                preserveNullAndEmptyArrays: true
+              }},
+              {
+                '$project': {
+                  user_id: '$user_id',
+                  name: '$name',
+                  project: '$project_roles.project',
+                  role: '$role_details.role',
+                  permissions: '$role_details.permissions',
+                  enabled: '$role_details.enabled'
+                }
+              },
+              {
+                '$match': {
+                  '$and': [
+                    {
+                      '$or': [
+                        {'permissions.remoteMethod': "ANY"},
+                        {'permissions.remoteMethod': remoteMethodName}
+                      ]
+                    },
+                    {
+                      '$or': [
+                        {'permissions.collection': "ANY"},
+                        {'permissions.collection': targetModelName}
+                      ]
+                    },
+                    {'permissions.project': {"$ne" : "NA"}},
+                    {'permissions.enabled': true}
+                  ]
+                }
+              }
+              //*/
+            ], {}, function(err, results){
+              if (err) {
+                next(err);
+              }
+              else {
+                results.toArray(function(err, data) {
+                  if (err) {
+                    next(err);
+                  }
+                  else {
+                    console.log(JSON.stringify(data, null, 2));
+                    next();
+                  }
+                })
+              }
+            });
           /* 
           寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
           TODO: location 應該已上鎖 by user
@@ -103,7 +182,7 @@ module.exports = function(Model, options) {
           2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
           
           //*/
-          next();
+          // next();
         });
 
       }
@@ -111,7 +190,7 @@ module.exports = function(Model, options) {
   }
 
   // Model.beforeRemote("bulk*", checkPermissions);
-  Model.beforeRemote("bulkUpdate", checkPermissions);
-
+  Model.beforeRemote("bulkReplace", checkPermissions);
+  
 }
 

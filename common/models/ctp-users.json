@@ -1,0 +1,52 @@
+{
+  "name": "CtpUsers",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "id_token": {
+      "type": "string",
+      "default": ""
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "string"
+    },
+    "project_roles": {
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "userProjectRoles": {
+      "type": "embedsMany",
+      "model": "UserProjectRoles",
+      "property": "project_roles",
+      "options": {
+        "validate": true,
+        "forceId": false,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -13,25 +13,7 @@
       "./mixins"
     ]
   },
-  "User": {
-    "dataSource": "db"
-  },
-  "AccessToken": {
-    "dataSource": "db",
-    "public": false
-  },
   "ACL": {
-    "dataSource": "db",
-    "public": false
-  },
-  "RoleMapping": {
-    "dataSource": "db",
-    "public": false,
-    "options": {
-      "strictObjectIDCoercion": true
-    }
-  },
-  "Role": {
     "dataSource": "db",
     "public": false
   },
@@ -71,8 +53,24 @@
     "dataSource": "mongodb34",
     "public": true
   },
-  "UserCognito": {
+  "CtpUsers": {
     "dataSource": "mongodb34",
     "public": true
+  },
+  "UserProjectRoles": {
+    "dataSource": "transient",
+    "public": false
+  },
+  "LocationDataLock": {
+    "dataSource": "mongodb34",
+    "public": true
+  },
+  "RolePermissions": {
+    "dataSource": "mongodb34",
+    "public": true
+  },
+  "Permissions": {
+    "dataSource": "transient",
+    "public": false
   }
 }

@@ -11,6 +11,8 @@
     "posttest": "npm run lint"
   },
   "dependencies": {
+    "atob": "^2.1.2",
+    "aws-sdk": "^2.329.0",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
     "helmet": "^3.10.0",

@@ -1,6 +1,6 @@
 'use strict';
 
 let uuid = require('uuid');
-module.exports = function(UserCognito) {
+module.exports = function(CtpUsers) {
 
 };

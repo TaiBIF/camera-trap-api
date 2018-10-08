@@ -1,0 +1,34 @@
+{
+  "name": "Permissions",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "project": {
+      "type": "string",
+      "required": true,
+      "default": "OWN",
+      "id": 1
+    },
+    "collection": {
+      "type": "string",
+      "required": true,
+      "default": "NA",
+      "id": 2
+    },
+    "remoteMethod": {
+      "type": "string",
+      "required": true,
+      "default": "NA",
+      "id": 3
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
+
+
