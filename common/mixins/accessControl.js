@@ -61,6 +61,9 @@ module.exports = function(Model, options) {
     // get user id and check login status, api needed
     // console.log(context);
     let AWS = Model.app.aws;
+    let PermissionDeniedErr = new Error();
+    PermissionDeniedErr.message = "Permission denied.";
+
     AWS.config.credentials.get(function (err) {
       if (err) {
         // console.log("Error", err);
@@ -76,8 +79,6 @@ module.exports = function(Model, options) {
         let user_id = tokenobj['cognito:username'];
 		    // let formatted = JSON.stringify(tokenobj, undefined, 2);
         // console.log(formatted);
-        let PermissionDeniedErr = new Error();
-        PermissionDeniedErr.message = "Permission denied.";
 
         // console.log("Cognito Identity Id", AWS.config.credentials.identityId);
         console.log("Cognito Identity Id", user_id);
@@ -156,18 +157,19 @@ module.exports = function(Model, options) {
 
                     let projectValidated;
                     if (Model.definition.rawProperties.hasOwnProperty('project')) {
-                      projectValidated = false;
+                      projectValidated = true;
                       // 先檢查使用者有無權限鎖資料
                       context.args.data.forEach(function(q){ // q for query
+                        let permission_granted = false;
                         userPermissions.forEach(function(p){ // p for permission
                           if (q.project === p.project || p.permissions.project === 'ANY') {
-                            projectValidated = true;
+                            permission_granted = true;
                           }
-                        }); 
+                        });
+                        projectValidated = projectValidated && permission_granted; 
                       });
-                      
                     }
-                    else {
+                    else { // no need to validate project
                       projectValidated = true;
                     }
                     console.log(projectValidated);
@@ -179,26 +181,38 @@ module.exports = function(Model, options) {
 
                           // 再檢查資料是否已被他人鎖定
                           let go = true;
+                          let go_counter = context.args.data.length;
                           context.args.data.forEach(function(q){ // q for query
+
                             // 雖然是 toArray 但這個 query 只會回傳單一結果
                             mdl.find({_id: q.full_location_md5}).toArray(function(err, dataLock) {
-                              
-                              if (dataLock.length == 0 || dataLock[0].locked_by == user_id || !dataLock[0].locked) {
+                              console.log([user_id, dataLock]);
+                              go_counter = go_counter - 1;
+                              if (dataLock.length == 0 || (dataLock[0].locked_by == q.locked_by && q.locked_by == user_id) || !dataLock[0].locked) {
                                 // 如果 dataLock 不存在，或是鎖定者與當下使用者是同一個人，或是沒鎖，則有權限
                               }
                               else {
+                                console.log("Don't go!");
                                 go = false;
                               }
 
+                              if (go_counter === 0) {
+                                if (go) {
+                                  next();
+                                }
+                                else {
+                                  if (err) {
+                                    next(err);
+                                  }
+                                  else {
+                                    next(PermissionDeniedErr);
+                                  }
+                                }
+                              }
                             });
                           });
 
-                          if (go) {
-                            next();
-                          }
-                          else {
-                            next(PermissionDeniedErr);
-                          }
+
 
                           break;
                         default:
