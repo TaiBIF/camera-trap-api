@@ -12,4 +12,18 @@
       ]
     }
   ]
+},
+{
+  "user_id": "OrcID_0007-0183-5566-2266",
+  "id_token": "",
+  "name": "Aparently Notreal",
+  "email": "fakeguy@example.org",
+  "project_roles": [
+    {
+      "project": "測試計畫2",
+      "roles": [
+        "DataManager"
+      ]
+    }
+  ]
 }]

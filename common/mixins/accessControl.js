@@ -158,7 +158,7 @@ module.exports = function(Model, options) {
                     let projectValidated;
                     if (Model.definition.rawProperties.hasOwnProperty('project')) {
                       projectValidated = true;
-                      // 先檢查使用者有無權限鎖資料
+                      // 先檢查使用者有無權限鎖計畫範疇資料
                       context.args.data.forEach(function(q){ // q for query
                         let permission_granted = false;
                         userPermissions.forEach(function(p){ // p for permission
@@ -183,13 +183,22 @@ module.exports = function(Model, options) {
                           let go = true;
                           let go_counter = context.args.data.length;
                           context.args.data.forEach(function(q){ // q for query
-
+                            // 強制寫入 locked by
+                            q.locked_by = user_id;
                             // 雖然是 toArray 但這個 query 只會回傳單一結果
                             mdl.find({_id: q.full_location_md5}).toArray(function(err, dataLock) {
                               console.log([user_id, dataLock]);
                               go_counter = go_counter - 1;
-                              if (dataLock.length == 0 || (dataLock[0].locked_by == q.locked_by && q.locked_by == user_id) || !dataLock[0].locked) {
-                                // 如果 dataLock 不存在，或是鎖定者與當下使用者是同一個人，或是沒鎖，則有權限
+
+                              if (
+                                (dataLock.length === 0) ||
+                                (dataLock[0].locked && (q.locked_by === dataLock[0].locked_by) && (q.project === dataLock[0].project)) ||
+                                (!dataLock[0].locked && (q.project === dataLock[0].project))
+                              ) {
+                                // 如果 dataLock 不存在，或
+                                // 資料處於鎖定狀態，鎖定者與使用者是同一個人，且未更動計畫名稱或
+                                // 資料未鎖定，任何人皆可在未更動計畫名稱
+                                // 等前提下，鎖定或解鎖資料
                               }
                               else {
                                 console.log("Don't go!");
