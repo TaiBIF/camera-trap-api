@@ -6,6 +6,8 @@
     "validateUpsert": true
   },
   "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
     "CustomQuery": true,
     "TimeStamp": true
   },

@@ -164,7 +164,7 @@
 				var payload = idToken.split('.')[1];
 				var tokenobj = JSON.parse(atob(payload));
 				var formatted = JSON.stringify(tokenobj, undefined, 2);
-				document.getElementById('idtoken').innerHTML = "\nid token:\n" + formatted;
+				document.getElementById('idtoken').innerHTML = "\nid token:\n" + formatted + "<br/><p>" + idToken + "</p>";
 			}
 			var accToken = session.getAccessToken().getJwtToken();
 			if (accToken) {

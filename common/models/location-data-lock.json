@@ -18,6 +18,10 @@
       "required": true,
       "id": true
     },
+    "project": {
+      "type": "string",
+      "required": true
+    },
     "locked": {
       "type": "boolean",
       "default": false

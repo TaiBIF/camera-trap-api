@@ -1,0 +1,139 @@
+
+'use strict';
+
+// let uuid = require('uuid');
+let idProvider = 'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'; 
+
+module.exports = function(LocationDataLock) {
+
+  let checkUserProject = function( ctx, instance, next) {
+
+    let remoteMethodName = ctx.methodString.split(".").pop();
+    if (remoteMethodName == 'bulkUpdate') {
+      let err = new Error();
+      err.message = "LocationDataLock doesn't allow bulkUpdate method.";
+      err.name = "MethodNotAllowed";
+      err.status = 405;
+      next(err);
+      return;
+    }
+    let AWS = Model.app.aws;
+    AWS.config.credentials.get(function (err) {
+      if (err) {
+        // console.log("Error", err);
+        AWS.config.credentials.refresh(function (err) {
+          if (err) {
+            console.log("Refresh failed.");
+            next(err);
+          }
+          else {
+            next();
+          }
+        })
+      }
+      else {
+        // 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
+        // console.log(AWS.config.credentials);
+        let idToken = AWS.config.credentials.params.Logins[idProvider];
+        let payload = idToken.split('.')[1];
+        let tokenobj = JSON.parse(atob(payload));
+
+        let user_id = tokenobj['cognito:username'];
+  
+        LocationDataLock.getDataSource().connector.connect(function(err, db) {
+
+          if (err) { next(err); return; }
+
+          let targetModelName = Model.definition.name;
+          let remoteMethodName = context.methodString.split(".").pop();
+          let CtpUsers = db.collection("CtpUsers");
+
+          // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
+          CtpUsers.aggregate(
+            [
+              {
+                '$match': {
+                  user_id: user_id
+                }
+              },
+              {'$unwind': '$project_roles'},
+              {'$unwind': '$project_roles.roles'},
+              {
+                '$lookup': {
+                  from: "RolePermissions",
+                  localField: "project_roles.roles",
+                  foreignField: "role",
+                  as: "role_details"
+                }
+              },
+              {'$unwind': {
+                path: '$role_details',
+                preserveNullAndEmptyArrays: true
+              }},
+              {'$unwind': {
+                path: '$role_details.permissions',
+                preserveNullAndEmptyArrays: true
+              }},
+              {
+                '$project': {
+                  user_id: '$user_id',
+                  name: '$name',
+                  project: '$project_roles.project',
+                  role: '$role_details.role',
+                  permissions: '$role_details.permissions',
+                  enabled: '$role_details.enabled'
+                }
+              },
+              {
+                '$match': {
+                  '$and': [
+                    {
+                      '$or': [
+                        {'permissions.remoteMethod': "ANY"},
+                        {'permissions.remoteMethod': remoteMethodName}
+                      ]
+                    },
+                    {
+                      '$or': [
+                        {'permissions.collection': "ANY"},
+                        {'permissions.collection': targetModelName}
+                      ]
+                    },
+                    {'permissions.project': {"$ne" : "NA"}},
+                    {'permissions.enabled': true}
+                  ]
+                }
+              }
+            ], {}, function(err, results){
+              if (err) {
+                next(err);
+              }
+              else {
+                results.toArray(function(err, data) {
+                  if (err) {
+                    next(err);
+                  }
+                  else {
+                    console.log(JSON.stringify(data, null, 2));
+                    next();
+                  }
+                })
+              }
+            });
+
+        });
+      }
+    });
+
+
+    ctx.args.data.upload_session_id = id;
+    next();
+  }
+
+  LocationDataLock.beforeRemote('bulkInsert', checkUserProject);
+  LocationDataLock.beforeRemote('bulkReplace', checkUserProject);
+  LocationDataLock.beforeRemote('bulkUpdate', checkUserProject);
+  // 往後應該直接把 LocationDataLock.bulkUpdate 關掉就好
+
+
+};

@@ -49,14 +49,13 @@ module.exports = function(Model, options) {
 		    //let formatted = JSON.stringify(tokenobj, undefined, 2);
         //console.log(formatted);
 
-        let identity_id = AWS.config.credentials.identityId;
-        console.log("Cognito Identity Id", AWS.config.credentials.identityId);
+        //let identity_id = AWS.config.credentials.identityId;
+        console.log("Cognito Identity Id", user_id);
         
-        callback(null, identity_id);
+        callback(null, user_id);
       }
     });
   }
-
 
   let checkPermissions = function(context, user, next) {
     // get user id and check login status, api needed
@@ -65,15 +64,7 @@ module.exports = function(Model, options) {
     AWS.config.credentials.get(function (err) {
       if (err) {
         // console.log("Error", err);
-        AWS.config.credentials.refresh(function (err) {
-          if (err) {
-            console.log("Refresh failed.");
-            next(err);
-          }
-          else {
-            next();
-          }
-        })
+        next(err);
       }
       else {
         // 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
@@ -85,31 +76,24 @@ module.exports = function(Model, options) {
         let user_id = tokenobj['cognito:username'];
 		    // let formatted = JSON.stringify(tokenobj, undefined, 2);
         // console.log(formatted);
+        let PermissionDeniedErr = new Error();
+        PermissionDeniedErr.message = "Permission denied.";
 
-        let identity_id = AWS.config.credentials.identityId;
-        console.log("Cognito Identity Id", AWS.config.credentials.identityId);
+        // console.log("Cognito Identity Id", AWS.config.credentials.identityId);
+        console.log("Cognito Identity Id", user_id);
 
         Model.getDataSource().connector.connect(function(err, db) {
 
-          if (err) {
-
-            next(err);
-            return;
-          }
+          if (err) { next(err); return; }
 
           let targetModelName = Model.definition.name;
           let remoteMethodName = context.methodString.split(".").pop();
-          let RolePermissions = db.collection("RolePermissions");
           let CtpUsers = db.collection("CtpUsers");
 
           // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
           CtpUsers.aggregate(
             [
-              {
-                '$match': {
-                  user_id: user_id
-                }
-              },
+              { '$match': { _id: user_id } },
               {'$unwind': '$project_roles'},
               {'$unwind': '$project_roles.roles'},
               {
@@ -154,7 +138,7 @@ module.exports = function(Model, options) {
                       ]
                     },
                     {'permissions.project': {"$ne" : "NA"}},
-                    {'permissions.enabled': true}
+                    {'enabled': true}
                   ]
                 }
               }
@@ -164,16 +148,71 @@ module.exports = function(Model, options) {
                 next(err);
               }
               else {
-                results.toArray(function(err, data) {
-                  if (err) {
-                    next(err);
-                  }
+                results.toArray(function(err, userPermissions) {
+                  if (err) { next(err); return;}
                   else {
-                    console.log(JSON.stringify(data, null, 2));
-                    next();
+                    console.log(JSON.stringify(userPermissions, null, 2));
+                    if (!userPermissions.length) { next(PermissionDeniedErr); return; }
+
+                    let projectValidated;
+                    if (Model.definition.rawProperties.hasOwnProperty('project')) {
+                      projectValidated = false;
+                      // 先檢查使用者有無權限鎖資料
+                      context.args.data.forEach(function(q){ // q for query
+                        userPermissions.forEach(function(p){ // p for permission
+                          if (q.project === p.project || p.permissions.project === 'ANY') {
+                            projectValidated = true;
+                          }
+                        }); 
+                      });
+                      
+                    }
+                    else {
+                      projectValidated = true;
+                    }
+                    console.log(projectValidated);
+
+                    if (projectValidated) {
+                      switch (targetModelName) {
+                        case "LocationDataLock":
+                          let mdl = db.collection(targetModelName);
+
+                          // 再檢查資料是否已被他人鎖定
+                          let go = true;
+                          context.args.data.forEach(function(q){ // q for query
+                            // 雖然是 toArray 但這個 query 只會回傳單一結果
+                            mdl.find({_id: q.full_location_md5}).toArray(function(err, dataLock) {
+                              
+                              if (dataLock.length == 0 || dataLock[0].locked_by == user_id || !dataLock[0].locked) {
+                                // 如果 dataLock 不存在，或是鎖定者與當下使用者是同一個人，或是沒鎖，則有權限
+                              }
+                              else {
+                                go = false;
+                              }
+
+                            });
+                          });
+
+                          if (go) {
+                            next();
+                          }
+                          else {
+                            next(PermissionDeniedErr);
+                          }
+
+                          break;
+                        default:
+                          next();
+                          break;
+                      }
+                    }
+                    else { // projectValidated is false
+                      //PermissionDeniedErr.message = "You"
+                      next(PermissionDeniedErr);
+                    }
                   }
-                })
-              }
+                }); // end of results.forEach (function (userPermissions) {})
+              } // collection.aggregate without error
             });
           /* 
           寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
