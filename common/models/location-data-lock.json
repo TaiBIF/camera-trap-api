@@ -15,8 +15,8 @@
   "properties": {
     "full_location_md5": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "project": {
       "type": "string",

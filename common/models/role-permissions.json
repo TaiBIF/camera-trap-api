@@ -14,8 +14,8 @@
   "properties": {
     "role": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "permissions": {
       "type": [

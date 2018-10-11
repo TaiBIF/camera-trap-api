@@ -5,6 +5,11 @@
       "remoteMethod": "ANY",
       "collection": "LocationDataLock",
       "project": "OWN"
+    },
+    {
+      "remoteMethod": "ANY",
+      "collection": "MultimediaAnnotations",
+      "project": "OWN"
     }
   ],
   "enabled": true

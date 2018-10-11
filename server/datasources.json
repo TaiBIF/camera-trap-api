@@ -12,7 +12,7 @@
     "name": "mongodb34",
     "user": "",
     "connector": "mongodb",
-    "useNewUrlParser":"true"
+    "useNewUrlParser": "true"
   },
   "transient": {
     "name": "transient",

@@ -14,8 +14,8 @@
   "properties": {
     "upload_session_id": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "full_location_md5": {
       "type": "string",

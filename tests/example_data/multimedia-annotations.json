@@ -1,0 +1,144 @@
+[{
+    "url": "http://twebi.net/ct_annotation/images/test/HC/HC20A/1060207-1060222/IMG_0115.JPG",
+    "tokens": [
+        {
+            "data": [
+                {
+                    "label": "學名",
+                    "key": "scientific-name",
+                    "value": "Melogale moschata subaurantiaca",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "中名",
+                    "key": "vernacular-name-zhtw",
+                    "value": "鼬獾",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "性別",
+                    "key": "sex",
+                    "value": "",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "年齡",
+                    "key": "life-stage",
+                    "value": "adult",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                }
+            ]
+        }
+    ],
+    "project" : "測試計畫1",
+    "date_time_original_timestamp": 0,
+    "full_location_md5": "somerandommd5string",
+    "location": "HC20A",
+    "site": "苗栗",
+    "sub_site": "南庄鄉田美村",
+    "timezone": "+8"
+},
+{
+    "url": "http://twebi.net/ct_annotation/images/test/HC/HC20A/1060207-1060222/IMG_0018.JPG",
+    "tokens": [
+        {
+            "data": [
+                {
+                    "label": "學名",
+                    "key": "scientific-name",
+                    "value": "Muntiacus reevesi micrurus",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "中名",
+                    "key": "vernacular-name-zhtw",
+                    "value": "山羌",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "性別",
+                    "key": "sex",
+                    "value": "",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "年齡",
+                    "key": "life-stage",
+                    "value": "young",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                }
+            ]
+        },
+        {
+            "data": [
+                {
+                    "label": "學名",
+                    "key": "scientific-name",
+                    "value": "Muntiacus reevesi micrurus",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "中名",
+                    "key": "vernacular-name-zhtw",
+                    "value": "山羌",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "性別",
+                    "key": "sex",
+                    "value": "",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                },
+                {
+                    "label": "年齡",
+                    "key": "life-stage",
+                    "value": "adult",
+                    "unit": "",
+                    "data_error_flag": false,
+                    "last_validated_timestamp": 1537857332,
+                    "context": "camera-trap"
+                }
+            ]
+        }
+    ],
+    "project" : "測試計畫2",
+    "date_time_original_timestamp": 0,
+    "full_location_md5": "somerandommd5string2",
+    "location": "HC20B",
+    "site": "苗栗",
+    "sub_site": "南庄鄉田美村",
+    "timezone": "+8"
+}]

@@ -5,21 +5,6 @@ let atob = require("atob");
 module.exports = function(CtpUsers) {
 
   CtpUsers.remoteMethod (
-    'session',
-    {
-      http: {path: '/session', verb: 'get'},
-      accepts: { arg: 'req', type: 'object', http: { source: 'req' } },
-      returns: { arg: 'session', type: 'string' }
-    }
-  );
-
-  CtpUsers.session = function (req, callback) {
-    console.log(req.session);
-    req.session.user_id = 5566;
-    callback(null, req.session);
-  }
-
-  CtpUsers.remoteMethod (
     'getCredentials',
     {
       http: {path: '/getCredentials', verb: 'post'},

@@ -1,0 +1,38 @@
+{
+  "query": { 
+    "$or": [
+      {     
+        "$and": [
+          {         
+            "tokens.data.key": "vernacular-name-zhtw"
+          },        
+          {         
+            "$or": [    
+              {             
+                "tokens.data.value": "鼬獾"
+              },            
+              {             
+                "tokens.data.value": "鼬貛"
+              }             
+            ]           
+          }
+        ]       
+      },
+      {     
+        "$and": [
+          {         
+            "tokens.data.key": "life-stage"
+          },        
+          {
+            "tokens.data.value": "young"
+          }         
+        ]       
+      }
+    ]   
+  },
+  "projection": {
+      "url": "$url",
+      "project": "$project",
+      "location": "$location"
+  }
+}

@@ -8,21 +8,21 @@
   "properties": {
     "project": {
       "type": "string",
+      "id": 1,
       "required": true,
-      "default": "OWN",
-      "id": 1
+      "default": "OWN"
     },
     "collection": {
       "type": "string",
+      "id": 2,
       "required": true,
-      "default": "NA",
-      "id": 2
+      "default": "NA"
     },
     "remoteMethod": {
       "type": "string",
+      "id": 3,
       "required": true,
-      "default": "NA",
-      "id": 3
+      "default": "NA"
     }
   },
   "validations": [],
@@ -30,5 +30,3 @@
   "acls": [],
   "methods": {}
 }
-
-

@@ -8,8 +8,8 @@
   "properties": {
     "project": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "roles": {
       "type": [

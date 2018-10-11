@@ -14,8 +14,8 @@
   "properties": {
     "user_id": {
       "type": "string",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "id_token": {
       "type": "string",

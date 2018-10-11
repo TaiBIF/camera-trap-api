@@ -5,6 +5,10 @@
 module.exports = function(Model, options) {
   'use strict';
   // console.log(Model.definition.rawProperties);
+  
+  let onlyUnique = function (value, index, self) { 
+    return self.indexOf(value) === index;
+  }
 
   let permissionDenied = function (message) {
     let PermissionDeniedErr = new Error();
@@ -126,7 +130,7 @@ module.exports = function(Model, options) {
 
                   if (projectValidated) {
                     switch (targetModelName) {
-                      case "LocationDataLock":
+                      case "LocationDataLock": {
                         let mdl = db.collection(targetModelName);
 
                         // 再檢查資料是否已被他人鎖定
@@ -173,23 +177,89 @@ module.exports = function(Model, options) {
                           });
                         });
                         break; // end of LocationDataLock logic
+                      }
                       case "MultimediaAnnotations":
+                      case "MultimediaMetadata": {
                         /* 
                         寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
                         TODO: location 應該已上鎖 by user
                         1. 檢查待寫入的資料包括哪些 location, 但如何得知? => TODO: 每筆待更新資料內含 location 資訊
                         2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
                         //*/
+                        let unique_location_md5_projects = {};
+                        context.args.data.forEach(function(d) {
+                          unique_location_md5_projects[d.full_location_md5] = d.project;
+                        });
 
-                        next();
+                        let unique_location_md5s = [];
+                        for (let loc_id in unique_location_md5_projects) {
+                          if (unique_location_md5_projects.hasOwnProperty(loc_id)) {
+                            unique_location_md5s.push({loc_id: loc_id, project: unique_location_md5_projects[loc_id]});
+                          }
+                        }
+                       
+                        // usage example:
+                        console.log(unique_location_md5s);
+
+                        // ldl => LocationDataLock
+                        let ldl = db.collection("LocationDataLock");
+                        let go = true;
+                        let go_counter = unique_location_md5s.length;
+                        
+                        if (go_counter > 0) {
+                          unique_location_md5s.forEach(function(locPrj){ // q for query
+                            // 雖然是 toArray 但這個 query 只會回傳單一結果
+
+                            // 加入 location / project 組合，避免 project 被竄改
+                            ldl.find({
+                              _id: locPrj.loc_id,
+                              // project: locPrj.project,
+                              locked: true,
+                              locked_by: user_id
+                            }).toArray(function(err, dataLock) {
+
+                              if (dataLock.length === 0) {
+                                permission_denied_messages.push("Location data `" + locPrj.loc_id + "` is not locked by you.");
+                                go = false;
+                              }
+                              else if (dataLock[0].project !== locPrj.project) {
+                                permission_denied_messages.push("You have no permission to write data to `" + locPrj.loc_id + "` because it's from `" + dataLock[0].project + "`.");
+                                go = false;
+                              }
+
+                              go_counter = go_counter - 1;
+
+                              if (go_counter === 0) {
+                                if (go) {
+                                  next();
+                                }
+                                else {
+                                  if (err) {
+                                    next(err);
+                                  }
+                                  else {
+                                    next(permissionDenied(permission_denied_messages.join(",")));
+                                  }
+                                }
+                              }
+
+                            });
+    
+                          });
+                        }
+                        else {
+                          next();
+                        }
                         break;
+
+                      }
                       default:
                         next();
                         break;
                     }
                   }
                   else { // projectValidated is false
-                    next(permissionDenied("Invalid project."));
+                    next(permissionDenied("You have no right to write into this project."));
                   }
                 }
               }); // end of results.forEach (function (userPermissions) {})
@@ -200,12 +270,14 @@ module.exports = function(Model, options) {
 
     } // end of if session exists
     else {
-      next(permissionDenied("Session does not work."));
+      next(permissionDenied("Please sing in first."));
     }
   }
 
   // Model.beforeRemote("bulk*", checkPermissions);
+  Model.beforeRemote("bulkInsert", checkPermissions);
   Model.beforeRemote("bulkReplace", checkPermissions);
+  // 不允許使用 bulkUpdate
   
 }
 
