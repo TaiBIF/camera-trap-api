@@ -16,7 +16,7 @@ var client  = redis.createClient();
 app.use(session({
     secret: 'camera trap reveals secrets',
     name: 'ctp_session_id',
-    store: new redisStore({ host: 'localhost', port: 6379, client: client,ttl :  3600}), //1 hour
+    store: new redisStore({ host: 'localhost', port: 6379, client: client,ttl :  36000}), //10 hours, enough through my working hours
     saveUninitialized: false,
     resave: false
 }));

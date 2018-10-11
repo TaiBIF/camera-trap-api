@@ -11,7 +11,8 @@
     "password": "",
     "name": "mongodb34",
     "user": "",
-    "connector": "mongodb"
+    "connector": "mongodb",
+    "useNewUrlParser":"true"
   },
   "transient": {
     "name": "transient",

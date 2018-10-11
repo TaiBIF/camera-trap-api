@@ -6,17 +6,25 @@ module.exports = function(Model, options) {
   'use strict';
   // console.log(Model.definition.rawProperties);
 
-  let PermissionDeniedErr = new Error();
-  PermissionDeniedErr.message = "Permission denied.";
+  let permissionDenied = function (message) {
+    let PermissionDeniedErr = new Error();
+    PermissionDeniedErr.message = "Permission denied.";
 
+    if (!!message) {
+      PermissionDeniedErr.message = PermissionDeniedErr.message + ": " + message;
+    }
+    return PermissionDeniedErr;
+  }
+  
   let checkPermissions = function(context, user, next) {
-    
+
     // Check login status, using
     // express-session + connect-redis combo middleware.
     // Sessions and cookies are handled automatically
     // console.log(context.req.session.user_info);
 
     let user_info = context.req.session.user_info;
+    let permission_denied_messages = [];
 
     if (user_info) {
 
@@ -95,7 +103,7 @@ module.exports = function(Model, options) {
                 if (err) { next(err); return;}
                 else {
                   console.log(JSON.stringify(userPermissions, null, 2));
-                  if (!userPermissions.length) { next(PermissionDeniedErr); return; }
+                  if (!userPermissions.length) { next(permissionDenied("You are a stranger.")); return; }
 
                   let projectValidated;
                   if (Model.definition.rawProperties.hasOwnProperty('project')) {
@@ -124,6 +132,7 @@ module.exports = function(Model, options) {
                         // 再檢查資料是否已被他人鎖定
                         let go = true;
                         let go_counter = context.args.data.length;
+                        
                         context.args.data.forEach(function(q){ // q for query
                           // 強制寫入 locked by
                           q.locked_by = user_id;
@@ -144,6 +153,7 @@ module.exports = function(Model, options) {
                             }
                             else {
                               console.log("Don't go!");
+                              permission_denied_messages.push(q.full_location_md5);
                               go = false;
                             }
 
@@ -156,13 +166,22 @@ module.exports = function(Model, options) {
                                   next(err);
                                 }
                                 else {
-                                  next(PermissionDeniedErr);
+                                  next(permissionDenied(permission_denied_messages.join(",")));
                                 }
                               }
                             }
                           });
                         });
+                        break; // end of LocationDataLock logic
+                      case "MultimediaAnnotations":
+                        /* 
+                        寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
+                        TODO: location 應該已上鎖 by user
+                        1. 檢查待寫入的資料包括哪些 location, 但如何得知? => TODO: 每筆待更新資料內含 location 資訊
+                        2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
+                        //*/
 
+                        next();
                         break;
                       default:
                         next();
@@ -170,26 +189,18 @@ module.exports = function(Model, options) {
                     }
                   }
                   else { // projectValidated is false
-                    //PermissionDeniedErr.message = "You"
-                    next(PermissionDeniedErr);
+                    next(permissionDenied("Invalid project."));
                   }
                 }
               }); // end of results.forEach (function (userPermissions) {})
             } // collection.aggregate without error
           });
-        /* 
-        寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
-        TODO: location 應該已上鎖 by user
-        1. 檢查待寫入的資料包括哪些 location, 但如何得知? => TODO: 每筆待更新資料內含 location 資訊
-        2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
-        
-        //*/
-        // next();
+
       });
 
     } // end of if session exists
     else {
-      next(PermissionDeniedErr);
+      next(permissionDenied("Session does not work."));
     }
   }
 
