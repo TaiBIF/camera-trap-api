@@ -5,6 +5,22 @@ var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
 
+
+// using redis. express-session and connect-redis combo to keep sign-in session
+// redis can be replaced with AWS ElasticCache
+var redis   = require("redis");
+var session = require('express-session');
+var redisStore = require('connect-redis')(session);
+var client  = redis.createClient();
+
+app.use(session({
+    secret: 'camera trap reveals secrets',
+    name: 'ctp_session_id',
+    store: new redisStore({ host: 'localhost', port: 6379, client: client,ttl :  3600}), //1 hour
+    saveUninitialized: false,
+    resave: false
+}));
+
 app.start = function() {
   // start the web server
   return app.listen(function() {
