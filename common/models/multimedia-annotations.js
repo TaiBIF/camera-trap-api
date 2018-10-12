@@ -68,7 +68,8 @@ module.exports = function(MultimediaAnnotations) {
               "revisions": {created: _revision.created, tokens: _revision.tokens}
             },
             "$setOnInsert": {
-              _id: _revision.url_md5
+              _id: _revision.url_md5,
+              url_md5: _revision.url_md5
             }
           },
           "upsert": true
