@@ -1,5 +1,5 @@
 {
-  "name": "CtpUsers",
+  "name": "ctp-users",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {

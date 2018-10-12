@@ -1,5 +1,5 @@
 {
-  "name": "UploadSessions",
+  "name": "upload-sessions",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {

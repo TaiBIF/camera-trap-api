@@ -1,0 +1,99 @@
+{
+  "name": "project-metadata",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "project": {
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "alias": {
+      "type": "string"
+    },
+    "short": {
+      "type": "string"
+    },
+    "contracting_organization": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "pi": {
+      "type": [
+        {
+          "name": "string",
+          "user_id": "string"
+        }
+      ]
+    },
+    "from_year": {
+      "type": "number"
+    },
+    "data_from_ts": {
+      "type": "number"
+    },
+    "admin_area": {
+      "type": [
+        "string"
+      ]
+    },
+    "abstract": {
+      "type": "string"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "cover_image": {
+      "type": "string"
+    },
+    "members": {
+      "type": [
+        "string"
+      ]
+    },
+    "license": {
+      "type": "object"
+    },
+    "data_field_enabled": {
+      "type": [
+        {
+          "field_key": "string",
+          "validator": "string"
+        }
+      ]
+    },
+    "locations": {
+      "type": [
+        "object"
+      ]
+    },
+    "daily_test": {
+      "type": [
+        {
+          "since": "number",
+          "time": "string"
+        }
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "projectLocations": {
+      "type": "embedsMany",
+      "model": "LocationMetadata",
+      "property": "locations",
+      "options": {
+        "validate": true,
+        "forceId": false,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

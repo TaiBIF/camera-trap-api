@@ -6,9 +6,11 @@ module.exports = function(Model, options) {
   'use strict';
   // console.log(Model.definition.rawProperties);
   
+  /*
   let onlyUnique = function (value, index, self) { 
     return self.indexOf(value) === index;
   }
+  //*/
 
   let permissionDenied = function (message) {
     let PermissionDeniedErr = new Error();
@@ -26,6 +28,10 @@ module.exports = function(Model, options) {
     // express-session + connect-redis combo middleware.
     // Sessions and cookies are handled automatically
     // console.log(context.req.session.user_info);
+    let args_data = context.args.data;
+    if (!Array.isArray(args_data)) {
+      args_data = [args_data];
+    }
 
     let user_info = context.req.session.user_info;
     let permission_denied_messages = [];
@@ -113,7 +119,7 @@ module.exports = function(Model, options) {
                   if (Model.definition.rawProperties.hasOwnProperty('project')) {
                     projectValidated = true;
                     // 先檢查使用者有無權限鎖計畫範疇資料
-                    context.args.data.forEach(function(q){ // q for query
+                    args_data.forEach(function(q){ // q for query
                       let permission_granted = false;
                       userPermissions.forEach(function(p){ // p for permission
                         if (q.project === p.project || p.permissions.project === 'ANY') {
@@ -128,6 +134,8 @@ module.exports = function(Model, options) {
                   }
                   console.log(projectValidated);
 
+                  // 基礎
+
                   if (projectValidated) {
                     switch (targetModelName) {
                       case "LocationDataLock": {
@@ -135,9 +143,9 @@ module.exports = function(Model, options) {
 
                         // 再檢查資料是否已被他人鎖定
                         let go = true;
-                        let go_counter = context.args.data.length;
+                        let go_counter = args_data.length;
                         
-                        context.args.data.forEach(function(q){ // q for query
+                        args_data.forEach(function(q){ // q for query
                           // 強制寫入 locked by
                           q.locked_by = user_id;
                           // 雖然是 toArray 但這個 query 只會回傳單一結果
@@ -187,7 +195,7 @@ module.exports = function(Model, options) {
                         2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
                         //*/
                         let unique_location_md5_projects = {};
-                        context.args.data.forEach(function(d) {
+                        args_data.forEach(function(d) {
                           unique_location_md5_projects[d.full_location_md5] = d.project;
                         });
 
@@ -277,7 +285,7 @@ module.exports = function(Model, options) {
   // Model.beforeRemote("bulk*", checkPermissions);
   Model.beforeRemote("bulkInsert", checkPermissions);
   Model.beforeRemote("bulkReplace", checkPermissions);
-  // 不允許使用 bulkUpdate
+  // 不適用在自由度更高的 bulkUpdate
   
 }
 

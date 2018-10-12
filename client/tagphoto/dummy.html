@@ -223,7 +223,7 @@
 					if (err) return console.log("Error", err);
 					// ************************************************ 這樣寫可以嘎？
 					localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
-					jQuery.post("http://localhost:8888/api/CtpUsers/getCredentials", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
+					jQuery.post("http://localhost:8888/api/ctp-users/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
 					// 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
 					var identity_id = AWSCognito.config.credentials.identityId;
 					console.log("Cognito Identity Id", AWSCognito.config.credentials.identityId);

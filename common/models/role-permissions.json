@@ -1,5 +1,5 @@
 {
-  "name": "RolePermissions",
+  "name": "role-permissions",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {

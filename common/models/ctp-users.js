@@ -7,7 +7,7 @@ module.exports = function(CtpUsers) {
   CtpUsers.remoteMethod (
     'getCredentials',
     {
-      http: {path: '/getCredentials', verb: 'post'},
+      http: {path: '/sign-in', verb: 'post'},
       // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
       accepts: [
         { arg: 'data', type: 'object', http: { source: 'body' } },

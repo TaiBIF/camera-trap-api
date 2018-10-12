@@ -4,7 +4,7 @@ module.exports = function(Model, options) {
   Model.remoteMethod (
     'bulkInsert',
     {
-      http: {path: '/bulkInsert', verb: 'post'},
+      http: {path: '/bulk-insert', verb: 'post'},
       accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
       returns: { arg: 'ret', type: 'object' }
     }
@@ -13,7 +13,7 @@ module.exports = function(Model, options) {
   Model.remoteMethod (
     'bulkReplace',
     {
-      http: {path: '/bulkReplace', verb: 'post'},
+      http: {path: '/bulk-replace', verb: 'post'},
       accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
       returns: { arg: 'ret', type: 'object' }
     }
@@ -22,7 +22,7 @@ module.exports = function(Model, options) {
   Model.remoteMethod (
     'bulkUpdate',
     {
-      http: {path: '/bulkUpdate', verb: 'post'},
+      http: {path: '/bulk-update', verb: 'post'},
       accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
       returns: { arg: 'ret', type: 'object' }
     }

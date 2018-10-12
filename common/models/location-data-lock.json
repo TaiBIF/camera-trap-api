@@ -1,5 +1,5 @@
 {
-  "name": "LocationDataLock",
+  "name": "location-data-lock",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {

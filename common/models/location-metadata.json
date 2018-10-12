@@ -1,0 +1,64 @@
+{
+  "name": "LocationMetadata",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "full_location_md5": {
+      "type": "string",
+      "required": "true",
+      "id": true
+    },
+    "project": {
+      "type": "string",
+      "required": "true"
+    },
+    "site": {
+      "type": "string",
+      "required": "true"
+    },
+    "sub_site": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "required": "true"
+    },
+    "original_coordinates": {
+      "type": [
+        {
+          "x": "string",
+          "y": "string",
+          "geodatum": "string"
+        }
+      ]
+    },
+    "elevation": {
+      "type": "number"
+    },
+    "wgs84dec_x": "number",
+    "wgs84dec_y": "number",
+    "twd97tm2_x": {
+      "type": "number",
+      "required": "true"
+    },
+    "twd97tm2_y": {
+      "type": "number",
+      "required": true
+    },
+    "daily_test": {
+      "type": [
+        {
+          "since": "number",
+          "time": "string"
+        }
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -1,5 +1,5 @@
 {
-  "name": "MultimediaAnnotations",
+  "name": "multimedia-annotations",
   "base": "MultimediaQueryShared",
   "idInjection": false,
   "options": {

@@ -21,7 +21,7 @@
     "dataSource": null,
     "public": false
   },
-  "MultimediaAnnotations": {
+  "multimedia-annotations": {
     "dataSource": "mongodb34",
     "public": true
   },
@@ -41,7 +41,7 @@
     "dataSource": "transient",
     "public": false
   },
-  "MultimediaMetadata": {
+  "multimedia-metadata": {
     "dataSource": "mongodb34",
     "public": true
   },
@@ -49,11 +49,11 @@
     "dataSource": "transient",
     "public": false
   },
-  "UploadSessions": {
+  "upload-sessions": {
     "dataSource": "mongodb34",
     "public": true
   },
-  "CtpUsers": {
+  "ctp-users": {
     "dataSource": "mongodb34",
     "public": true
   },
@@ -61,15 +61,23 @@
     "dataSource": "transient",
     "public": false
   },
-  "LocationDataLock": {
+  "location-data-lock": {
     "dataSource": "mongodb34",
     "public": true
   },
-  "RolePermissions": {
+  "role-permissions": {
     "dataSource": "mongodb34",
     "public": true
   },
   "Permissions": {
+    "dataSource": "transient",
+    "public": false
+  },
+  "project-metadata": {
+    "dataSource": "mongodb34",
+    "public": true
+  },
+  "LocationMetadata": {
     "dataSource": "transient",
     "public": false
   }
