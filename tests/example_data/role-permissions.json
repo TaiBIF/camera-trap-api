@@ -3,12 +3,12 @@
   "permissions": [
     {
       "remoteMethod": "ANY",
-      "collection": "LocationDataLock",
+      "collection": "location-data-lock",
       "project": "OWN"
     },
     {
       "remoteMethod": "ANY",
-      "collection": "MultimediaAnnotations",
+      "collection": "multimedia-annotations",
       "project": "OWN"
     }
   ],

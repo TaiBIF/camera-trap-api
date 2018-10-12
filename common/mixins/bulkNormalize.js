@@ -377,7 +377,7 @@ module.exports = function(Model, options) {
       context.args.data.forEach(function(instance, idx, arr){
     
         // url_md5 as id 的情境
-        if (modelName.match(/^Multimedia/)) {
+        if (modelName.match(/^multimedia-/)) {
           if (!instance.url) instance.url = strFunc['uuid']();
           instance.url_md5 = md5(instance.url);
           // instance._id = instance.url_md5;

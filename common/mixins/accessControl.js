@@ -49,7 +49,7 @@ module.exports = function(Model, options) {
 
         let targetModelName = Model.definition.name;
         let remoteMethodName = context.methodString.split(".").pop();
-        let CtpUsers = db.collection("CtpUsers");
+        let CtpUsers = db.collection("ctp-users");
 
         // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
         CtpUsers.aggregate(
@@ -59,7 +59,7 @@ module.exports = function(Model, options) {
             {'$unwind': '$project_roles.roles'},
             {
               '$lookup': {
-                from: "RolePermissions",
+                from: "role-permissions",
                 localField: "project_roles.roles",
                 foreignField: "role",
                 as: "role_details"
@@ -138,7 +138,7 @@ module.exports = function(Model, options) {
 
                   if (projectValidated) {
                     switch (targetModelName) {
-                      case "LocationDataLock": {
+                      case "location-data-lock": {
                         let mdl = db.collection(targetModelName);
 
                         // 再檢查資料是否已被他人鎖定
@@ -186,8 +186,8 @@ module.exports = function(Model, options) {
                         });
                         break; // end of LocationDataLock logic
                       }
-                      case "MultimediaAnnotations":
-                      case "MultimediaMetadata": {
+                      case "multimedia-annotations":
+                      case "multimedia-metadata": {
                         /* 
                         寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
                         TODO: location 應該已上鎖 by user
@@ -210,7 +210,7 @@ module.exports = function(Model, options) {
                         console.log(unique_location_md5s);
 
                         // ldl => LocationDataLock
-                        let ldl = db.collection("LocationDataLock");
+                        let ldl = db.collection("location-data-lock");
                         let go = true;
                         let go_counter = unique_location_md5s.length;
                         

@@ -21,6 +21,10 @@
       "type": "string",
       "required": true
     },
+    "project": {
+      "type": "string",
+      "required": true
+    },
     "by": {
       "type": "string",
       "required": true

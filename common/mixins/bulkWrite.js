@@ -38,6 +38,7 @@ module.exports = function(Model, options) {
         documents.forEach(function(doc, idx, arr) {
           arr[idx] = {insertOne: {document: doc}};
         });
+        console.log("BulkInsert");
         console.log(JSON.stringify(documents));
         break;
       case 'replaceOne':

@@ -31,7 +31,7 @@
     },
     "last_validated_timestamp": {
       "type": "number",
-      "default": 1537857332
+      "default": 0
     },
     "context": {
       "type": "string",
