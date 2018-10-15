@@ -1,6 +1,9 @@
 'use strict';
 
 let atob = require("atob");
+const AWS_REGION = 'ap-northeast-1';
+const AWS_ID_PROVIDER = 'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'; 
+
 
 module.exports = function(CtpUsers) {
 
@@ -21,14 +24,12 @@ module.exports = function(CtpUsers) {
 
     console.log(data);
 
-    let region = 'ap-northeast-1';
-    let idProvider = 'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'; 
     let idToken = data.idToken;
     let AWS = CtpUsers.app.aws;
     let login = {};
-    login[idProvider] = idToken;
+    login[AWS_ID_PROVIDER] = idToken;
 
-    AWS.config.update({region: region});
+    AWS.config.update({region: AWS_REGION});
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
       IdentityPoolId: 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a',
       Logins: login
@@ -40,8 +41,8 @@ module.exports = function(CtpUsers) {
         callback(err);
       }
       else {
-        // 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
-        let idToken = AWS.config.credentials.params.Logins[idProvider];
+        // 成功透過 OAuth 登入 AWS Cognito，取得 identity id
+        let idToken = AWS.config.credentials.params.Logins[AWS_ID_PROVIDER];
         let payload = idToken.split('.')[1];
         let tokenobj = JSON.parse(atob(payload));
         let user_id = tokenobj['cognito:username'];

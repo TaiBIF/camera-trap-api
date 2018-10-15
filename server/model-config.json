@@ -80,5 +80,9 @@
   "LocationMetadata": {
     "dataSource": "transient",
     "public": false
+  },
+  "multimedia-annotation-revisions": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

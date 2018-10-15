@@ -26,27 +26,34 @@
       "type": "string",
       "required": "true"
     },
-    "original_coordinates": {
-      "type": [
-        {
-          "x": "string",
-          "y": "string",
-          "geodatum": "string"
-        }
-      ]
+    "original_x": {
+      "type": "string",
+      "required": true
+    },
+    "original_y": {
+      "type": "string",
+      "required": true
+    },
+    "original_geodatum": {
+      "type": "string",
+      "required": true
     },
     "elevation": {
       "type": "number"
     },
-    "wgs84dec_x": "number",
-    "wgs84dec_y": "number",
-    "twd97tm2_x": {
+    "wgs84dec_x": {
       "type": "number",
       "required": "true"
     },
-    "twd97tm2_y": {
+    "wgs84dec_y": {
       "type": "number",
-      "required": true
+      "required": "true"
+    },
+    "twd97tm2_x": {
+      "type": "number"
+    },
+    "twd97tm2_y": {
+      "type": "number"
     },
     "daily_test": {
       "type": [
@@ -55,6 +62,12 @@
           "time": "string"
         }
       ]
+    },
+    "vegetation": {
+      "type": "string"
+    },
+    "land_cover": {
+      "type": "string"
     }
   },
   "validations": [],

@@ -17,7 +17,7 @@ module.exports = function(app) {
       });
     }
 
-    let MultimediaAnnotations = db.collection('MultimediaAnnotations');
+    let MultimediaAnnotations = db.collection('multimedia-annotations');
 
     let unique_index_token = [
       {
@@ -51,7 +51,7 @@ module.exports = function(app) {
     ////////////////////////////////////////
 
 
-    let UploadSessions = db.collection('UploadSessions');
+    let UploadSessions = db.collection('upload-sessions');
 
     let index_upload_user = [
       {"by": 1}

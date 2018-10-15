@@ -37,6 +37,7 @@ module.exports = function(Model, options) {
   let err_messages = [];
 
   let dot_notation_array_index = {};
+
   let stringToObj = function (path, value, obj) {
     let parts = path.split("."), part;
     // let last = parts.pop();
@@ -164,6 +165,8 @@ module.exports = function(Model, options) {
 
         // 處理 $addToSet
         instance = generateInstanceWithUpdateSet(update['$addToSet'], instance, true);
+        console.log(['$set', instance]);
+
 
         let updateOnly = true;
 
@@ -236,7 +239,8 @@ module.exports = function(Model, options) {
     if (!instance) instance = {};
 
     console.log("--------------------This instance is from: `" + instanceFrom + "`");
-    console.log(dataSourceName);
+    // console.log(instance);
+    // console.log(dataSourceName);
     // console.log(defProps);
 
 
@@ -272,12 +276,16 @@ module.exports = function(Model, options) {
 
 
         let realType = undefined;
+        let realTypeIsArray = false;
         if (Array.isArray(defProps[propName].type)) {
           realType = defProps[propName].type[0];
+          realTypeIsArray = true;
         }
         else {
           realType = defProps[propName].type;
         }
+
+        // console.log([propName, realType]);
 
         // console.log("Property type of `" + propName + "` is `" + typeof realType + "`");
         if (typeof realType === 'function') {
@@ -287,11 +295,15 @@ module.exports = function(Model, options) {
           if (!!realType.definition && !!realType.definition.rawProperties) {
             let realTypeDataSourceName = realType.config.dataSource.name;
             // recursive here
+            console.log(['isArrayTest', instance[propName], instance, propName]);
             if (Array.isArray(instance[propName])) {
               // console.log(realType);
               instance[propName].forEach(function(sub_instance, sub_idx, sub_arr) {
                 sub_arr[sub_idx] = simpleValidate(sub_instance, realType.definition.rawProperties, propName, realTypeDataSourceName, updateOnly);
               });
+            }
+            else if (realTypeIsArray) {
+              instance[propName] = [simpleValidate(instance[propName], realType.definition.rawProperties, propName, realTypeDataSourceName, updateOnly)];
             }
             else {
               // console.log(realType);

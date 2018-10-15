@@ -278,7 +278,7 @@ module.exports = function(Model, options) {
 
     } // end of if session exists
     else {
-      next(permissionDenied("Please sing in first."));
+      next(permissionDenied("使用者未登入, 請先登入再執行此操作."));
     }
   }
 

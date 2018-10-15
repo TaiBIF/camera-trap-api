@@ -61,10 +61,7 @@
     },
     "data_field_enabled": {
       "type": [
-        {
-          "field_key": "string",
-          "validator": "string"
-        }
+        "string"
       ]
     },
     "locations": {
@@ -72,7 +69,7 @@
         "object"
       ]
     },
-    "daily_test": {
+    "daily_test_time": {
       "type": [
         {
           "since": "number",
