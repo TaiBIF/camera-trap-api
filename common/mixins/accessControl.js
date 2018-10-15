@@ -285,6 +285,7 @@ module.exports = function(Model, options) {
   // Model.beforeRemote("bulk*", checkPermissions);
   Model.beforeRemote("bulkInsert", checkPermissions);
   Model.beforeRemote("bulkReplace", checkPermissions);
+  Model.beforeRemote("addUserToProject", checkPermissions);
   // 不適用在自由度更高的 bulkUpdate
   
 }

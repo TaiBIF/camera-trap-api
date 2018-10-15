@@ -5,36 +5,47 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "AccessControl": true,
+    "TimeStamp": true
+  },
   "properties": {
     "project": {
       "type": "string",
       "required": true,
       "id": true
     },
-    "alias": {
-      "type": "string"
-    },
     "short": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "contracting_organization": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "code": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "pi": {
-      "type": [
-        {
-          "name": "string",
-          "user_id": "string"
-        }
-      ]
+      "type": "string",
+      "required": true
     },
-    "from_year": {
-      "type": "number"
+    "from_date": {
+      "type": "string",
+      "required": true
+    },
+    "to_date": {
+      "type": "string",
+      "required": true
     },
     "data_from_ts": {
+      "type": "number"
+    },
+    "data_to_ts": {
       "type": "number"
     },
     "admin_area": {
@@ -50,11 +61,6 @@
     },
     "cover_image": {
       "type": "string"
-    },
-    "members": {
-      "type": [
-        "string"
-      ]
     },
     "license": {
       "type": "object"

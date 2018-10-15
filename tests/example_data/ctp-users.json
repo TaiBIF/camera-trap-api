@@ -7,7 +7,13 @@
     {
       "project": "測試計畫1",
       "roles": [
-        "DataManager"
+        "DataManager", "ProjectManager"
+      ]
+    },
+    {
+      "project": "測試計畫3",
+      "roles": [
+        "ProjectManager"
       ]
     }
   ]

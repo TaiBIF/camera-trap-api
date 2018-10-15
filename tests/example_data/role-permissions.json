@@ -1,4 +1,15 @@
 [{
+  "role": "ProjectManager",
+  "permissions": [
+    {
+      "remoteMethod": "ANY",
+      "collection": "project-metadata",
+      "project": "OWN"
+    }
+  ],
+  "enabled": true
+},
+{
   "role": "DataManager",
   "permissions": [
     {

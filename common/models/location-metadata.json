@@ -55,7 +55,7 @@
     "twd97tm2_y": {
       "type": "number"
     },
-    "daily_test": {
+    "daily_test_time": {
       "type": [
         {
           "since": "number",

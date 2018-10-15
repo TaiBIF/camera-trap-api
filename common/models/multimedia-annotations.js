@@ -20,7 +20,7 @@ module.exports = function(MultimediaAnnotations) {
 
           try {
             console.log("TRYING");
-            let testRequired = d.updateOne.update.$set.tokens[0].data.key;
+            let testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
           }
           catch (e) {
@@ -38,7 +38,7 @@ module.exports = function(MultimediaAnnotations) {
           // console.log(d.insertOne);
           try {
             console.log("TRYING");
-            let testRequired = d.insertOne.document.tokens[0].data.key;
+            let testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
           }
@@ -57,7 +57,7 @@ module.exports = function(MultimediaAnnotations) {
 
           try {
             console.log("TRYING");
-            let testRequired = d.replaceOne.replacement.tokens[0].data.key;
+            let testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
           }
@@ -79,11 +79,12 @@ module.exports = function(MultimediaAnnotations) {
           let key_val_pair = {};
           let keyCounter = 0;
           t.data.forEach(_d => {
-            if (!!d.key) {
+            if (!!_d.key) {
               keyCounter++;
               key_val_pair[_d.key] = _d.value;
             }
           });
+
           if (keyCounter > 0) {
             return {
               token_id: t.token_id,
@@ -95,7 +96,8 @@ module.exports = function(MultimediaAnnotations) {
           }
         });
 
-        _revision.tokens = _revision.tokens.filter(t => !t);
+        
+        _revision.tokens = _revision.tokens.filter(t => (t !== false));
 
         if (_revision.tokens.length) {
           // console.log(_revision);

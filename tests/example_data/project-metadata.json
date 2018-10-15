@@ -1,0 +1,59 @@
+[{
+  "_id": "測試計畫1",
+  "$set": {
+    "project": "測試計畫1",
+    "short": "測1",
+    "contracting_organization": "林務局",
+    "code": "FB-test-cameratrap-01",
+    "pi": "測試pi",
+    "from_date": "2018-10-15",
+    "to_date": "2018-12-10",
+    "admin_area": [
+      "admin_area_01",
+      "admin_area_02"
+    ],
+    "abstract": "這是一個測試資料用的計畫，填好填滿",
+    "remarks": "不曾發生過",
+    "cover_image": "http://example.org/kinda_animal_cover.jpg",
+    "license": {
+      "metadata": "CC BY",
+      "data": "CC BY",
+      "multimedia": "CC BY NC"
+    },
+    "data_field_enabled": [
+      "additional-field-key-01",
+      "additional-field-key-02"
+    ],
+    "locations": [
+      {
+        "full_location_md5": "somerandommd5string",
+        "project": "測試計畫1",
+        "site": "苗栗",
+        "sub_site": "南庄鄉田美村",
+        "location": "HC20A",
+        "original_x": "122",
+        "original_y": "23.5",
+        "original_geodatum": "wgs84",
+        "elevation": 56,
+        "wgs84dec_x": 122,
+        "wgs84dec_y": 23.5,
+        "twd97tm2_x": 223456,
+        "twd97tm2_y": 2345678,
+        "daily_test_time": [
+          {
+            "since": 1539593959,
+            "time": "12:00:00"
+          }
+        ],
+        "vegetation": "榕楠林帶",
+        "land_cover": "森林"
+      }
+    ],
+    "daily_test_time": [
+      {
+        "since": 1539593959,
+        "time": "12:00:00"
+      }
+    ]
+  }
+}]
