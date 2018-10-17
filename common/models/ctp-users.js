@@ -8,7 +8,7 @@ const AWS_ID_PROVIDER = 'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1
 module.exports = function(CtpUsers) {
 
   CtpUsers.remoteMethod (
-    'getCredentials',
+    'signIn',
     {
       http: {path: '/sign-in', verb: 'post'},
       // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
@@ -20,7 +20,7 @@ module.exports = function(CtpUsers) {
     }
   );
 
-  CtpUsers.getCredentials = function (data, req, callback) {
+  CtpUsers.signIn = function (data, req, callback) {
 
     console.log(data);
 

@@ -29,7 +29,7 @@
       "type": "boolean",
       "default": false
     },
-    "related_upload_session": {
+    "related_upload_sessions": {
       "type": [
         "string"
       ],

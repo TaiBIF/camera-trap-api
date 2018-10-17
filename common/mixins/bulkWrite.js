@@ -78,6 +78,9 @@ module.exports = function(Model, options) {
             }
             upsert = true;
           }
+          if (!!doc['$upsert'] == true) {
+            upsert = true;
+          }
 
           arr[idx] = {updateOne: {filter: filter, update: update, upsert: upsert}};
 

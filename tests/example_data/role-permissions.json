@@ -1,4 +1,15 @@
 [{
+  "role": "ProjectInitiator",
+  "permissions": [
+    {
+      "remoteMethod": "projectInit",
+      "collection": "project-metadata",
+      "project": "ANY"
+    }
+  ],
+  "enabled": true
+},
+{
   "role": "ProjectManager",
   "permissions": [
     {

@@ -113,7 +113,7 @@ module.exports = function(Model, options) {
                 if (err) { next(err); return;}
                 else {
                   console.log(JSON.stringify(userPermissions, null, 2));
-                  if (!userPermissions.length) { next(permissionDenied("You are a stranger.")); return; }
+                  if (!userPermissions.length) { next(permissionDenied("You are unauthorized.")); return; }
 
                   let projectValidated;
                   if (Model.definition.rawProperties.hasOwnProperty('project')) {
@@ -195,9 +195,27 @@ module.exports = function(Model, options) {
                         2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
                         //*/
                         let unique_location_md5_projects = {};
-                        args_data.forEach(function(d) {
+
+                        // 列出待鎖的 locations
+                        args_data.forEach(function(d, idx, arr) {
                           unique_location_md5_projects[d.full_location_md5] = d.project;
+
+                          // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
+                          if (remoteMethodName == "bulkUpdate") {
+                            if (d.$upsert || d.$setOnInsert) { // 如果 upsert is true
+                              if (!arr[idx]['$set']) arr[idx]['$set'] = {};
+                            }
+                            arr[idx]['$set']['project'] = d.project;
+                            arr[idx]['$set']['full_location_md5'] = d.full_location_md5;
+                            // 如果 $setOnInsert 裡有重複的 project 與 full_location_md5，bulkNormalize 裡的機制會把它們清掉
+                            // 最差的情況下是吐 error
+                          }
                         });
+
+                        // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
+                        if (remoteMethodName == "bulkUpdate") {
+                          context.args.data = args_data;
+                        }
 
                         let unique_location_md5s = [];
                         for (let loc_id in unique_location_md5_projects) {
@@ -285,8 +303,9 @@ module.exports = function(Model, options) {
   // Model.beforeRemote("bulk*", checkPermissions);
   Model.beforeRemote("bulkInsert", checkPermissions);
   Model.beforeRemote("bulkReplace", checkPermissions);
+  // bulkUpdate 的自由度高，要注意狀況
+  Model.beforeRemote("bulkUpdate", checkPermissions);
   Model.beforeRemote("addUserToProject", checkPermissions);
-  // 不適用在自由度更高的 bulkUpdate
-  
+  Model.beforeRemote("projectInit", checkPermissions);
 }
 

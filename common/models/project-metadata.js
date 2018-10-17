@@ -19,32 +19,41 @@ module.exports = function(ProjectMetadata) {
     ProjectMetadata.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      let pm = db.collection(ProjectMetadata.definition.name);
+      // allowed: project, contracting_organization, from_date, data_from_ts, ...
+      let sort_key = data.sort_key || "from_date";
+      sort_key = "project_metadata." + sort_key;
+
+      // let pm = db.collection(ProjectMetadata.definition.name);
       let cu = db.collection("ctp-users");
       let user_id = req.session.user_info.user_id;
 
-      cu.aggregate(
-        [
-          {'$match': {"user_id": user_id}},
-          {'$unwind': "$project_roles"},
-          {'$group': {_id: "$project_roles.project"}},
-          {
-            '$lookup': {
-              from: "project-metadata",
-              localField: "_id",
-              foreignField: "_id",
-              as: "project_metadata"
-            }
-          },
-          {'$unwind': "$project_metadata"},
-          {
-            '$project': {
-              "project_metadata": "$project_metadata"
-            }
+      let sorts = {};
+      sorts[sort_key] = 1;
+
+      let aggregate_query = [
+        {'$match': {"user_id": user_id}},
+        {'$unwind': "$project_roles"},
+        {'$group': {_id: "$project_roles.project"}},
+        {
+          '$lookup': {
+            from: "project-metadata",
+            localField: "_id",
+            foreignField: "_id",
+            as: "project_metadata"
           }
-        ]
-      )
-      .toArray(function(err, prjs){
+        },
+        {'$unwind': "$project_metadata"},
+        {
+          '$project': {
+            "project_metadata": "$project_metadata"
+          }
+        },
+        {
+          "$sort": sorts
+        }
+      ];
+
+      cu.aggregate(aggregate_query).toArray(function(err, prjs){
         callback(null, prjs);
       });
 
@@ -133,6 +142,54 @@ module.exports = function(ProjectMetadata) {
         }
         else {
           callback(new Error("User doesn't exist."));
+        }
+      });
+    });
+  }
+
+
+  ///////////////////////////////////////////////
+
+  ProjectMetadata.remoteMethod (
+    'projectInit',
+    {
+        http: {path: '/init', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  ProjectMetadata.projectInit = function (data, req, callback) {
+    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+
+      let user_id = req.session.user_info.user_id;
+
+      let mdl = db.collection("project-metadata");
+      let cu = db.collection("ctp-users");
+      mdl.countDocuments({_id: data.project}, function(err, prj_cnt) {
+        if (prj_cnt == 0) {
+          cu.countDocuments({'project_roles.project': data.project}, function(err, mngr_cnt){
+            if (mngr_cnt == 0) {
+              cu.updateOne(
+                {_id: user_id}, 
+                {
+                  '$addToSet': {
+                    'project_roles': {
+                      project: data.project,
+                      roles: [ "ProjectManager" ]
+                    }
+                  }
+                }, null, 
+                function(err, res){
+                  callback(null, res);
+                });
+            }
+          });
         }
       });
     });
