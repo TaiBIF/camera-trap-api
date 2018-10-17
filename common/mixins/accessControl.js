@@ -202,11 +202,15 @@ module.exports = function(Model, options) {
 
                           // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
                           if (remoteMethodName == "bulkUpdate") {
-                            if (d.$upsert || d.$setOnInsert) { // 如果 upsert is true
-                              if (!arr[idx]['$set']) arr[idx]['$set'] = {};
+                            if (!!arr[idx]['$set'] && !!arr[idx]['$set']['project']) {
+                              arr[idx]['$set']['project'] = d.project;
+                              arr[idx]['$set']['full_location_md5'] = d.full_location_md5;
                             }
-                            arr[idx]['$set']['project'] = d.project;
-                            arr[idx]['$set']['full_location_md5'] = d.full_location_md5;
+
+                            if (!!arr[idx]['$setOninsert'] && !!arr[idx]['$setOnInsert']['project']) {
+                              arr[idx]['$setOnInsert']['project'] = d.project;
+                              arr[idx]['$setOnInsert']['full_location_md5'] = d.full_location_md5;
+                            }
                             // 如果 $setOnInsert 裡有重複的 project 與 full_location_md5，bulkNormalize 裡的機制會把它們清掉
                             // 最差的情況下是吐 error
                           }

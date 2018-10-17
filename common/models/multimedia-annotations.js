@@ -37,7 +37,7 @@ module.exports = function(MultimediaAnnotations) {
         case "bulkInsert":
           // console.log(d.insertOne);
           try {
-            console.log("TRYING");
+            console.log("Trying to create a data revision.");
             let testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);

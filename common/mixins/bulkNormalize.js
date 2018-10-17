@@ -158,10 +158,14 @@ module.exports = function(Model, options) {
         // set timestamp
         let now = Date.now() / 1000;
 
+        if (!update['$set']) update['$set'] = {};
         update['$set'].modified = now;
 
-        // 處理 $set 
-        let instance = generateInstanceWithUpdateSet(update['$set']);
+        // 處理 $setOnInsert
+        let instance = generateInstanceWithUpdateSet(update['$setOnInsert']);
+
+        // 處理 $set, $set 優先權較高，所以放後面，可覆蓋前面
+        instance = generateInstanceWithUpdateSet(update['$set'], instance);
 
         // 處理 $addToSet
         instance = generateInstanceWithUpdateSet(update['$addToSet'], instance, true);
@@ -170,19 +174,19 @@ module.exports = function(Model, options) {
 
         let updateOnly = true;
 
-        if (update['$setOnInsert'] === true) {
+        if (!isEmpty(update['$setOnInsert']) || update['$upsert']) {
           updateOnly = false;
         }
 
         instance = simpleValidate(instance, defProps, modelName, dataSourceName, updateOnly);
         instance.created = instance.modified;
 
-
         console.log("批次更新時僅供檢核參考用的資料");
         console.log(JSON.stringify(instance, null, 2));
+
         if (err_messages.length >= 1) throw BreakException;
 
-        if (update['$setOnInsert'] === true) {
+        if (!updateOnly) {
 
           // remove duplicate fields in "setOnInsert"
           for (let uprop in update['$set']) {
