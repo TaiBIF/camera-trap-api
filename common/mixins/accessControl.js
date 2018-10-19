@@ -33,7 +33,11 @@ module.exports = function(Model, options) {
       args_data = [args_data];
     }
 
-    let user_info = context.req.session.user_info;
+    let user_info;
+    if (context.req.session) {
+      user_info = context.req.session.user_info;
+    }
+
     let permission_denied_messages = [];
 
     if (user_info) {

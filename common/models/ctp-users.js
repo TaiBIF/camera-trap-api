@@ -23,6 +23,7 @@ module.exports = function(CtpUsers) {
   CtpUsers.signIn = function (data, req, callback) {
 
     console.log(data);
+    console.log(req.http);
 
     let idToken = data.idToken;
     let AWS = CtpUsers.app.aws;
@@ -35,13 +36,17 @@ module.exports = function(CtpUsers) {
       Logins: login
     });
 
+    //*
     AWS.config.credentials.get(function(err){
       if (err) {
         // console.log("Error", err);
+        
         callback(err);
+        throw(err);
       }
       else {
         // 成功透過 OAuth 登入 AWS Cognito，取得 identity id
+        //*
         let idToken = AWS.config.credentials.params.Logins[AWS_ID_PROVIDER];
         let payload = idToken.split('.')[1];
         let tokenobj = JSON.parse(atob(payload));
@@ -59,10 +64,12 @@ module.exports = function(CtpUsers) {
         req.session.user_info = user_info;
         //let identity_id = AWS.config.credentials.identityId;
         console.log("Cognito Identity Id", user_id);
-
+        //*/
         callback(null, user_id);
       }
     });
+
+    //*/
   }
 
 };

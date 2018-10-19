@@ -146,9 +146,16 @@ module.exports = function(Model, options) {
     let dataSourceName = Model.config.dataSource.name;
 
     try {
+
+      let user_id;
+      if (!!context.req.session && !!context.req.session.user_info) {
+         user_id = context.req.session.user_info.user_id;
+      }
+
       context.args.data.forEach(function(update, idx, arr){
 
         if (!update._id || (!update['$set'] && !update['$addToSet'])) {
+          err_messages.push(JSON.stringify(update));
           err_messages.push("Missing _id or any of update operations from ($set, $addToSet) for update target.");
           throw BreakException;
         }
@@ -160,6 +167,12 @@ module.exports = function(Model, options) {
 
         if (!update['$set']) update['$set'] = {};
         update['$set'].modified = now;
+
+        if (modelName.match(/^multimedia-annotations/)) {
+          if (user_id && (update['$set'].modified_by !== user_id)) {
+            update['$set'].modified_by = user_id;
+          }
+        }
 
         // 處理 $setOnInsert
         let instance = generateInstanceWithUpdateSet(update['$setOnInsert']);
@@ -384,22 +397,29 @@ module.exports = function(Model, options) {
 
     let BreakException= {};
     let defProps = Model.definition.rawProperties;
-    let modelIdProp;
 
     let modelName = Model.definition.name;
     let dataSourceName = Model.config.dataSource.name;
 
     try {
-      context.args.data.forEach(function(instance, idx, arr){
-    
-        // url_md5 as id 的情境
-        if (modelName.match(/^multimedia-/)) {
-          if (!instance.url) instance.url = strFunc['uuid']();
-          instance.url_md5 = md5(instance.url);
-          // instance._id = instance.url_md5;
-        }
-        else {
 
+      let user_id;
+      if (!!context.req.session && !!context.req.session.user_info) {
+         user_id = context.req.session.user_info.user_id;
+      }
+
+      context.args.data.forEach(function(instance, idx, arr){
+
+        // 先這樣，觀察一下日後其他 Model 需求再決定是否搬回 multimedia-annotations
+        if (modelName.match(/^multimedia-annotations/)) {
+          if (user_id && (instance.modified_by !== user_id)) {
+            instance.modified_by = user_id;
+          }
+
+          // TODO: 這段其實應該要 throw error, 
+          // if (!instance.url) instance.url = strFunc['uuid']();
+          // instance.url_md5 = md5(instance.url);
+          // instance._id = instance.url_md5;
         }
   
         // set timestamp

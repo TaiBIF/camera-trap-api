@@ -19,8 +19,9 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="stylesheets/styleSheetStart.css">
 	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="dist/amazon-cognito-auth.min.js"></script>
 	<script src="dist/aws-cognito-sdk.min.js"></script>
+	<script src="dist/amazon-cognito-identity.min.js"></script>
+	<script src="dist/amazon-cognito-auth.min.js"></script>
 	<!-- To enable the advanced security feature -->
 	<!-- <script src="https://amazon-cognito-assets.<region>.amazoncognito.com/amazon-cognito-advanced-security-data.min.js"></script> -->
 	<!-- E.g. -->
@@ -92,6 +93,49 @@
 
         var loginUri = "https://ctp.twebi.net/dummy.html";
 	var userPoolId ='ap-northeast-1_JACElFd4C';
+	var identityPoolId = 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a';
+
+	// var CognitoUserPool = AwsCognitoIdentity.CognitoUserPool;
+        var poolData = {
+          UserPoolId : userPoolId, // Your user pool id here
+          ClientId : '3f7s3vicrehjmc8isiomafcn3q' // Your client id here
+        };
+
+        // 因為 AmazonCognitoIdentity 衝突了所以改個名 AwsCognitoIdentity
+        const userPool = new AwsCognitoIdentity.CognitoUserPool(poolData);
+
+        function refresh_token (cognitoUser, refToken) {
+
+	  if (!AWSCognito.config.credentials) {
+		AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+			IdentityPoolId: identityPoolId,
+			Logins: {
+				'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': localStorage.getItem("awsIdToken")
+			}
+		});
+	  }
+
+          if (AWSCognito.config.credentials.needsRefresh() || true) {
+            cognitoUser.refreshSession(refToken.refreshToken);
+          }
+        }
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
 
 	// Operations when the web page is loaded.
 	function onLoad() {
@@ -104,11 +148,21 @@
 		document.getElementById("statusAuth").style.display = 'none';
 		// Initiatlize CognitoAuth object
 		var auth = initCognitoSDK();
+
 		document.getElementById("signInButton").addEventListener("click", function() {
 			userButton(auth);
 		});
-		var curUrl = window.location.href;
-		auth.parseCognitoWebResponse(curUrl);
+
+		var session = auth.signInUserSession;
+		if (!!session.idToken.jwtToken && session.idToken.payload.exp > (Date.now() / 1000)) {
+			showSignedIn(session);
+			refresh_token(auth, session.getRefreshToken());
+		}
+		else {
+			var curUrl = window.location.href;
+			auth.parseCognitoWebResponse(curUrl);
+		}
+
 	}
 
 	// Operation when tab is closed.
@@ -206,23 +260,31 @@
 		var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 		// You can also set state parameter
 		// 後端隨機產生 state
-		auth.setState('someRandomState');
+		auth.setState(getCookie('AWSELB'));
 		auth.userhandler = {
 			onSuccess: function(result) {
 				AWSCognito.config.update({region: 'ap-northeast-1'});
 
-				// 前端取得登入使用者的 credential 法
-				AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-					IdentityPoolId: 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a',
-					Logins: {
-						'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': result.getIdToken().getJwtToken()
-					}
-				});
+				localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
+				jQuery.post("https://ctp.twebi.net/api/ctp-users/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
+
+				// 前端取得登入使用者的 credentials 法
+
+				if (!AWSCognito.config.credentials) {
+					AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+						IdentityPoolId: identityPoolId,
+						Logins: {
+							'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': result.getIdToken().getJwtToken()
+						}
+					});
+				}
+				else {
+					AWSCognito.config.credentials.params.Logins['cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'] = result.getIdToken().getJwtToken();
+				}
 
 				AWSCognito.config.credentials.get(function(err){
 					if (err) return console.log("Error", err);
 					// ************************************************ 這樣寫可以嘎？
-					localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
 					// 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
 					var identity_id = AWSCognito.config.credentials.identityId;
 					console.log("Cognito Identity Id", AWSCognito.config.credentials.identityId);

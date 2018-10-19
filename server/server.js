@@ -5,20 +5,34 @@ var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
 
-
 // using redis. express-session and connect-redis combo to keep sign-in session
 // redis can be replaced with AWS ElasticCache
-var redis   = require("redis");
-var session = require('express-session');
-var redisStore = require('connect-redis')(session);
-var client  = redis.createClient();
 
+//var redis   = require("redis");
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+
+//var redisStore = require('connect-redis')(session);
+//var client  = redis.createClient();
+
+/*
 app.use(session({
     secret: 'camera trap reveals secrets',
     name: 'ctp_session_id',
-    store: new redisStore({ host: 'camera-trap-sessions.gsupl3.ng.0001.apne1.cache.amazonaws.com', port: 6379, client: client,ttl :  36000}), //10 hours, enough through my working hours
+    store: new redisStore({ host: 'ctp-redis.gsupl3.0001.apne1.cache.amazonaws.com', port: 6379, client: client, ttl:  36000}), //10 hours, enough through my working hours
     saveUninitialized: false,
-    resave: false
+    resave: false,
+    proxy: true
+}));
+//*/
+
+app.use(session({
+  secret: 'camera trap reveals secrets',
+  name: 'ctp_session_id',
+  store: new MongoStore({ url: 'mongodb://jupyter.taibif.tw/ctp' }),
+  saveUninitialized: false,
+  resave: false,
+  proxy: true
 }));
 
 app.start = function() {
