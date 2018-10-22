@@ -2,8 +2,9 @@
 
 let atob = require("atob");
 const AWS_REGION = 'ap-northeast-1';
-const AWS_ID_PROVIDER = 'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'; 
-
+const USER_POOL_ID = 'ap-northeast-1_R2iDn5W3B';
+const AWS_ID_PROVIDER = 'cognito-idp.ap-northeast-1.amazonaws.com/' + USER_POOL_ID; 
+const IDENTITY_POOL_ID = 'ap-northeast-1:3d5edbfb-834c-4284-85f5-a4ec29d38ef0';
 
 module.exports = function(CtpUsers) {
 
@@ -32,7 +33,7 @@ module.exports = function(CtpUsers) {
 
     AWS.config.update({region: AWS_REGION});
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a',
+      IdentityPoolId: IDENTITY_POOL_ID,
       Logins: login
     });
 

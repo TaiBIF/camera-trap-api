@@ -149,6 +149,42 @@ module.exports = function(MultimediaAnnotations) {
   MultimediaAnnotations.afterRemote("bulkInsert", addRevision);   // tested
   MultimediaAnnotations.afterRemote("bulkReplace", addRevision);  // tested
   MultimediaAnnotations.afterRemote("bulkUpdate", addRevision);   // tested
-    
+
+  MultimediaAnnotations.disableRemoteMethodByName("upsert");                               // disables PATCH /MultimediaAnnotationss
+  MultimediaAnnotations.disableRemoteMethodByName("find");                                 // disables GET /MultimediaAnnotationss
+  MultimediaAnnotations.disableRemoteMethodByName("replaceOrCreate");                      // disables PUT /MultimediaAnnotationss
+  MultimediaAnnotations.disableRemoteMethodByName("create");                               // disables POST /MultimediaAnnotationss
+
+  MultimediaAnnotations.disableRemoteMethodByName("prototype.updateAttributes");           // disables PATCH /MultimediaAnnotationss/{id}
+  MultimediaAnnotations.disableRemoteMethodByName("findById");                             // disables GET /MultimediaAnnotationss/{id}
+  MultimediaAnnotations.disableRemoteMethodByName("exists");                               // disables HEAD /MultimediaAnnotationss/{id}
+  MultimediaAnnotations.disableRemoteMethodByName("replaceById");                          // disables PUT /MultimediaAnnotationss/{id}
+  MultimediaAnnotations.disableRemoteMethodByName("deleteById");                           // disables DELETE /MultimediaAnnotationss/{id}
+
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__get__accessTokens');        // disable GET /MultimediaAnnotationss/{id}/accessTokens
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__create__accessTokens');     // disable POST /MultimediaAnnotationss/{id}/accessTokens
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__delete__accessTokens');     // disable DELETE /MultimediaAnnotationss/{id}/accessTokens
+
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__findById__accessTokens');   // disable GET /MultimediaAnnotationss/{id}/accessTokens/{fk}
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__updateById__accessTokens'); // disable PUT /MultimediaAnnotationss/{id}/accessTokens/{fk}
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__destroyById__accessTokens');// disable DELETE /MultimediaAnnotationss/{id}/accessTokens/{fk}
+
+  MultimediaAnnotations.disableRemoteMethodByName('prototype.__count__accessTokens');      // disable  GET /MultimediaAnnotationss/{id}/accessTokens/count
+
+  MultimediaAnnotations.disableRemoteMethodByName("prototype.verify");                     // disable POST /MultimediaAnnotationss/{id}/verify
+  MultimediaAnnotations.disableRemoteMethodByName("changePassword");                       // disable POST /MultimediaAnnotationss/change-password
+  MultimediaAnnotations.disableRemoteMethodByName("createChangeStream");                   // disable GET and POST /MultimediaAnnotationss/change-stream
+
+  MultimediaAnnotations.disableRemoteMethodByName("confirm");                              // disables GET /MultimediaAnnotationss/confirm
+  MultimediaAnnotations.disableRemoteMethodByName("count");                                // disables GET /MultimediaAnnotationss/count
+  MultimediaAnnotations.disableRemoteMethodByName("findOne");                              // disables GET /MultimediaAnnotationss/findOne
+
+  MultimediaAnnotations.disableRemoteMethodByName("login");                                // disables POST /MultimediaAnnotationss/login
+  MultimediaAnnotations.disableRemoteMethodByName("logout");                               // disables POST /MultimediaAnnotationss/logout
+
+  MultimediaAnnotations.disableRemoteMethodByName("resetPassword");                        // disables POST /MultimediaAnnotationss/reset
+  MultimediaAnnotations.disableRemoteMethodByName("setPassword");                          // disables POST /MultimediaAnnotationss/reset-password
+  MultimediaAnnotations.disableRemoteMethodByName("update");                               // disables POST /MultimediaAnnotationss/update
+  MultimediaAnnotations.disableRemoteMethodByName("upsertWithWhere");                      // disables POST /MultimediaAnnotationss/upsertWithWhere
       
 };

@@ -91,31 +91,34 @@
 	</div>
 	<script>
 
-        var loginUri = "https://ctp.twebi.net/dummy.html";
-	var userPoolId ='ap-northeast-1_JACElFd4C';
-	var identityPoolId = 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a';
+        var redirUri = "https://camera-trap.tw/dummy.html";
+        var loginUri = "https://camera-trap.tw/dummy.html";
+	var userPoolId ='ap-northeast-1_R2iDn5W3B';
+	var identityPoolId = 'ap-northeast-1:3d5edbfb-834c-4284-85f5-a4ec29d38ef0';
+        var clientId = '19m0u392bok25pq3bekb5mpks1';
+        var appWebDomain = 'camera-trap.auth.ap-northeast-1.amazoncognito.com';
+        var idpDomain = 'cognito-idp.ap-northeast-1.amazonaws.com/' + userPoolId;
 
 	// var CognitoUserPool = AwsCognitoIdentity.CognitoUserPool;
         var poolData = {
           UserPoolId : userPoolId, // Your user pool id here
-          ClientId : '3f7s3vicrehjmc8isiomafcn3q' // Your client id here
+          ClientId : clientId // Your client id here
         };
 
         // 因為 AmazonCognitoIdentity 衝突了所以改個名 AwsCognitoIdentity
         const userPool = new AwsCognitoIdentity.CognitoUserPool(poolData);
 
         function refresh_token (cognitoUser, refToken) {
-
+          var logins = {};
+          logins[idpDomain] = localStorage.getItem("awsIdToken");
 	  if (!AWSCognito.config.credentials) {
 		AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
 			IdentityPoolId: identityPoolId,
-			Logins: {
-				'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': localStorage.getItem("awsIdToken")
-			}
+			Logins: logins
 		});
 	  }
 
-          if (AWSCognito.config.credentials.needsRefresh() || true) {
+          if (AWSCognito.config.credentials.needsRefresh()) {
             cognitoUser.refreshSession(refToken.refreshToken);
           }
         }
@@ -156,7 +159,7 @@
 		var session = auth.signInUserSession;
 		if (!!session.idToken.jwtToken && session.idToken.payload.exp > (Date.now() / 1000)) {
 			showSignedIn(session);
-			refresh_token(auth, session.getRefreshToken());
+			// refresh_token(auth, session.getRefreshToken());
 		}
 		else {
 			var curUrl = window.location.href;
@@ -248,10 +251,10 @@
 	// Initialize a cognito auth object.
 	function initCognitoSDK() {
 		var authData = {
-			ClientId : '3f7s3vicrehjmc8isiomafcn3q', // Your client id here
-			AppWebDomain : 'tagphoto.auth.ap-northeast-1.amazoncognito.com', // Exclude the "https://" part. 
+			ClientId : clientId, // Your client id here
+			AppWebDomain : appWebDomain, // Exclude the "https://" part. 
 			TokenScopesArray : ['openid', 'email', 'profile', 'aws.cognito.signin.user.admin'], // like ['openid','email','phone']...
-			RedirectUriSignIn : loginUri,
+			RedirectUriSignIn : redirUri,
 			RedirectUriSignOut : loginUri,
 			IdentityProvider : 'OrcID',
 			UserPoolId : userPoolId, 
@@ -266,21 +269,24 @@
 				AWSCognito.config.update({region: 'ap-northeast-1'});
 
 				localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
-				jQuery.post("https://ctp.twebi.net/api/ctp-users/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
+				jQuery.post("https://camera-trap.tw/api/ctp-users/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
 
 				// 前端取得登入使用者的 credentials 法
 
-				if (!AWSCognito.config.credentials) {
+
+				var logins = {};
+				logins[idpDomain] = result.getIdToken().getJwtToken();
+
+
+				//if (!AWSCognito.config.credentials) {
 					AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
 						IdentityPoolId: identityPoolId,
-						Logins: {
-							'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': result.getIdToken().getJwtToken()
-						}
+						Logins: logins
 					});
-				}
-				else {
-					AWSCognito.config.credentials.params.Logins['cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C'] = result.getIdToken().getJwtToken();
-				}
+				//}
+				//else {
+				//	AWSCognito.config.credentials.params.Logins[idpDomain] = result.getIdToken().getJwtToken();
+				//}
 
 				AWSCognito.config.credentials.get(function(err){
 					if (err) return console.log("Error", err);
@@ -293,7 +299,7 @@
 				console.log("Sign in success");
 				showSignedIn(result);
 
-				window.open("https://ctp.twebi.net/mu.html", 'camera_trap_photo_upload');
+				window.open("https://camera-trap.tw/mu.html", 'camera_trap_photo_upload');
 
 			},
 			onFailure: function(err) {
