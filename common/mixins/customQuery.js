@@ -12,8 +12,8 @@ module.exports = function(Model, options) {
 
   Model.query = function (req, callback) {
     Model.getDataSource().connector.connect(function(err, db) {
-      var _callback = callback;
-      var collection = db.collection(Model.definition.name);
+      let _callback = callback;
+      let collection = db.collection(Model.definition.name);
 
       /* 產地直送 mongodb query 語法
       var query = {'$or': []};
@@ -44,5 +44,35 @@ module.exports = function(Model, options) {
 
     });
     
+  }
+
+  Model.remoteMethod (
+    'aggregate',
+    {
+      http: {path: '/aggregate', verb: 'post'},
+      accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
+      returns: { arg: 'results', type: [{type: 'object'}] }
+    }
+  );
+
+  Model.aggregate = function (req, callback) {
+    Model.getDataSource().connector.connect(function(err, db) {
+      let _callback = callback;
+      let collection = db.collection(Model.definition.name);
+
+      collection.aggregate(req.aggregate, {}, function(err, data) {
+        // console.log(req);
+        if (err) {
+          _callback(err)
+        }
+        else {
+          //console.log(data);
+          data.toArray(function(err, result){
+            console.log(result);
+            _callback(null, result);
+          });
+        }
+      });
+    });
   }
 }

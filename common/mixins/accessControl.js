@@ -37,7 +37,7 @@ module.exports = function(Model, options) {
 
     let user_info;
     if (context.req.session && context.req.session.user_info) {
-      console.log(['context.req.session.user_info', user_info]);
+      console.log(['context.req.session.user_info', context.req.session.user_info]);
       user_info = context.req.session.user_info;
     }
     else {

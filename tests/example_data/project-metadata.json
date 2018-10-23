@@ -20,9 +20,13 @@
       "data": "CC BY 4.0",
       "multimedia": "CC BY-NC 4.0"
     },
+    "species_list": [
+      "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
+    ],
     "data_field_enabled": [
-      "additional-field-key-01",
-      "additional-field-key-02"
+      "life-stage",
+      "sex",
+      "antler"
     ],
     "locations": [
       {

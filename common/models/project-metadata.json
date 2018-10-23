@@ -65,6 +65,11 @@
     "license": {
       "type": "object"
     },
+    "species_list": {
+      "type": [
+        "string"
+      ]
+    },
     "data_field_enabled": {
       "type": [
         "string"

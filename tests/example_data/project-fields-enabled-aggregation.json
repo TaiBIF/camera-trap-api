@@ -1,0 +1,33 @@
+{
+    "aggregate": [
+      {"$match": {"_id": "測試計畫1"}},
+      {"$unwind": "$data_field_enabled"},
+      {
+        "$lookup": {
+          "from": "data-fields-available",
+          "localField": "data_field_enabled",
+          "foreignField": "key",
+          "as": "field_details"
+        }
+      },
+      {
+        "$project": {
+          "field_details": "$field_details",
+          "species_list": "$species_list",
+          "daily_test_time": "$daily_test_time"
+        }
+      },
+      {"$unwind": "$field_details"},
+      {
+        "$project": {
+          "_id":  false,
+          "species_list": "$species_list",
+          "key": "$field_details.key",
+          "widget_type": "$field_details.widget_type",
+          "widget_select_options": "$field_details.widget_select_options",
+          "widget_date_format": "$field_details.widget_date_format",
+          "daily_test_time": "$daily_test_time"
+        }
+      }
+    ]
+  }

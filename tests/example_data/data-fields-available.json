@@ -1,0 +1,29 @@
+[
+  {
+    "key": "sex",
+    "label": "性別",
+    "description": "string",
+    "widget_type": "select",
+    "widget_select_options": [
+      "M", "F", "Unknown"
+    ]
+  },
+  {
+    "key": "life-stage",
+    "label": "年齡",
+    "description": "string",
+    "widget_type": "select",
+    "widget_select_options": [
+      "Young", "Adult", "Unknown"
+    ]
+  },
+  {
+    "key": "antler",
+    "label": "角況",
+    "description": "string",
+    "widget_type": "select",
+    "widget_select_options": [
+      "TBD"
+    ]
+  }
+  ]
