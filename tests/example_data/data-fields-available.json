@@ -23,7 +23,7 @@
     "description": "string",
     "widget_type": "select",
     "widget_select_options": [
-      "TBD"
+      "TBD", "Unknown"
     ]
   }
   ]

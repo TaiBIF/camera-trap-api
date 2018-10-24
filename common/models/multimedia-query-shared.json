@@ -40,6 +40,11 @@
       "required": true,
       "description": "// 從上面轉的 timestamp，資料若來自CSV，則以拍照時間暫為代理(未在任一環節出錯的情況下，拍照時間與 date_time_original 是相同的)"
     },
+    "date_time_corrected_timestamp": {
+      "type": "number",
+      "required": true,
+      "description": "預設值與 date_time_original_timestamp 相同，如果相機設定錯誤，可於資料中修正並存於此欄"
+    },
     "year_original": {
       "type": "string",
       "description": "// 注意以下年月日都是字串，前面才會補 0, '2017'"
