@@ -47,30 +47,57 @@ module.exports = function(Model, options) {
   }
 
   Model.remoteMethod (
-    'aggregate',
+    'conditionExists',
     {
-      http: {path: '/aggregate', verb: 'post'},
+      http: {path: '/exists', verb: 'post'},
       accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
       returns: { arg: 'results', type: [{type: 'object'}] }
     }
   );
 
-  Model.aggregate = function (req, callback) {
+  Model.conditionExists = function (req, callback) {
     Model.getDataSource().connector.connect(function(err, db) {
       let _callback = callback;
       let collection = db.collection(Model.definition.name);
 
-      collection.aggregate(req.aggregate, {}, function(err, data) {
+      if (req.query.date_time) {
+        if (req.query.date_time.$gte) {
+          req.query.date_time_original_timestamp = {};
+          req.query.date_time_original_timestamp.$gte = new Date(req.query.date_time.$gte).getTime() / 1000;
+        }
+        if (req.query.date_time.$lte) {
+          req.query.date_time_original_timestamp = {};
+          req.query.date_time_original_timestamp.$lte = new Date(req.query.date_time.$lte).getTime() / 1000;
+        }      
+        delete req.query.date_time;
+      }
+
+      if (req.query.corrected_date_time) {
+        if (req.query.corrected_date_time.$gte) {
+          req.query.date_time_corrected_timestamp = {};
+          req.query.date_time_corrected_timestamp.$gte = new Date(req.query.corrected_date_time.$gte).getTime() / 1000;
+        }
+        if (req.query.corrected_date_time.$lte) {
+          req.query.date_time_corrected_timestamp = {};
+          req.query.date_time_corrected_timestamp.$lte = new Date(req.query.corrected_date_time.$lte).getTime() / 1000;
+        }      
+        delete req.query.corrected_date_time;
+      }
+
+      collection.findOne(req.query, {projection: {_id: 1}}, function(err, data) {
         // console.log(req);
         if (err) {
           _callback(err)
         }
         else {
           //console.log(data);
+          _callback(null, data);
+          /*
           data.toArray(function(err, result){
             console.log(result);
             _callback(null, result);
           });
+          //*/
         }
       });
     });
