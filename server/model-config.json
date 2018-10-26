@@ -88,5 +88,9 @@
   "data-fields-available": {
     "dataSource": "mongodb34",
     "public": true
+  },
+  "announcements": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

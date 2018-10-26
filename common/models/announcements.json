@@ -1,0 +1,44 @@
+{
+  "name": "announcements",
+  "base": "PersistedModel",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "announcement_id": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "defaultFn": "uuid"
+    },
+    "message": {
+      "type": "string",
+      "required": true
+    },
+    "announcement_type": {
+      "type": "string",
+      "required": true,
+      "default": "SYSTEM"
+    },
+    "level": {
+      "type":"string",
+      "required": true,
+      "default": "INFO"
+    },
+    "target_id": {
+      "type": "string",
+      "default": "ANY"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

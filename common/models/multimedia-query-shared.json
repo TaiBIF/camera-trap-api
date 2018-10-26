@@ -27,6 +27,9 @@
       "type": "string",
       "required": true
     },
+    "uploaded_file_name": {
+      "type": "string"
+    },
     "timezone": {
       "type": "string",
       "required": true
