@@ -35,13 +35,16 @@
     },
     "messages": {
       "type": ["string"],
-      "required": true
+      "required": false
     },
     "files": {
       "type": [
         "string"
       ],
-      "required": true
+      "required": false
+    },
+    "problematic_ids": {
+      "type": ["string"]
     }
   },
   "validations": [],
