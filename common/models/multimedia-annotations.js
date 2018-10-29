@@ -156,7 +156,7 @@ module.exports = function(MultimediaAnnotations) {
   MultimediaAnnotations.disableRemoteMethodByName("create");                               // disables POST /MultimediaAnnotationss
 
   MultimediaAnnotations.disableRemoteMethodByName("prototype.updateAttributes");           // disables PATCH /MultimediaAnnotationss/{id}
-  MultimediaAnnotations.disableRemoteMethodByName("findById");                             // disables GET /MultimediaAnnotationss/{id}
+  // MultimediaAnnotations.disableRemoteMethodByName("findById");                             // disables GET /MultimediaAnnotationss/{id}
   MultimediaAnnotations.disableRemoteMethodByName("exists");                               // disables HEAD /MultimediaAnnotationss/{id}
   MultimediaAnnotations.disableRemoteMethodByName("replaceById");                          // disables PUT /MultimediaAnnotationss/{id}
   MultimediaAnnotations.disableRemoteMethodByName("deleteById");                           // disables DELETE /MultimediaAnnotationss/{id}

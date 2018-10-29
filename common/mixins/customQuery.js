@@ -102,4 +102,27 @@ module.exports = function(Model, options) {
       });
     });
   }
+
+  Model.remoteMethod (
+    'aggregate',
+    {
+      http: {path: '/aggregate', verb: 'post'},
+      accepts: { arg: 'data', type: ['object'], http: { source: 'body' } },
+      returns: { arg: 'results', type: ['object'] }
+    }
+  );
+
+  Model.aggregate = function (req, callback) {
+    Model.getDataSource().connector.connect(function(err, db) {
+      let _callback = callback;
+      let collection = db.collection(Model.definition.name);
+
+      collection.aggregate(req).toArray(function(err, result){
+          console.log(result);
+           _callback(null, result);
+      });
+    });
+    
+  }
 }
+

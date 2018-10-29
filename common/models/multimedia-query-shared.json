@@ -48,25 +48,17 @@
       "required": true,
       "description": "預設值與 date_time_original_timestamp 相同，如果相機設定錯誤，可於資料中修正並存於此欄"
     },
-    "year_original": {
-      "type": "string",
-      "description": "// 注意以下年月日都是字串，前面才會補 0, '2017'"
+    "year": {
+      "type": "number"
     },
-    "month_original": {
-      "type": "string",
-      "description": "// '02'"
+    "month": {
+      "type": "number"
     },
-    "day_original": {
-      "type": "string",
-      "description": "// '09'"
+    "day": {
+      "type": "number"
     },
-    "hour_original": {
-      "type": "string",
-      "description": "// '06'，沒有分秒，搜尋需求問題"
-    },
-    "create_date": {
-      "type": "string",
-      "description": "// 2017:02:09 06:11:09，exif 中的檔案建立時間，raw 值"
+    "hour": {
+      "type": "number"
     },
     "wgs84dec_x": {
       "type": "number",

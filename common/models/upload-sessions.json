@@ -33,6 +33,10 @@
       "type": "string",
       "required": true
     },
+    "messages": {
+      "type": ["string"],
+      "required": true
+    },
     "files": {
       "type": [
         "string"
