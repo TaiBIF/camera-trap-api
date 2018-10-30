@@ -1,42 +1,47 @@
 'use strict';
 
-module.exports = function(ProjectMetadata) {
+module.exports = function(Project) {
 
-  ProjectMetadata.remoteMethod (
+  Project.remoteMethod (
     'getUserRelatedProject',
     {
-        http: {path: '/related-to-me', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
+      http: {path: '/related-to-me', verb: 'post'},
+      // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+      accepts: [
+        {
+          arg: 'data', type: 'object', http: {source: 'body'},
+        },
+        {
+          arg: 'req', type: 'object', http: {source: 'req'},
+        },
+      ],
+      returns: {arg: 'ret', type: 'object'},
     }
   );
 
-  ProjectMetadata.getUserRelatedProject = function (data, req, callback) {
-    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+  Project.getUserRelatedProject = (data, req, callback) => {
+    Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      // allowed: project, contracting_organization, from_date, data_from_ts, ...
-      let sort_key = data.sort_key || "from_date";
+      // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
+      let sort_key = data.sort_key || "projectStartDate";
       sort_key = "project_metadata." + sort_key;
 
-      // let pm = db.collection(ProjectMetadata.definition.name);
+      // let pm = db.collection(Project.definition.name);
       let cu = db.collection("ctp-users");
       let user_id = req.session.user_info.user_id;
 
       let sorts = {};
       sorts[sort_key] = 1;
 
+      // @todo naming change! project => title
       let aggregate_query = [
         {'$match': {"user_id": user_id}},
         {'$unwind': "$project_roles"},
         {'$group': {_id: "$project_roles.project"}},
         {
           '$lookup': {
-            from: "project-metadata",
+            from: "project",
             localField: "_id",
             foreignField: "_id",
             as: "project_metadata"
@@ -60,9 +65,8 @@ module.exports = function(ProjectMetadata) {
     });
   }
 
-  /////////////////////////////////
-
-  ProjectMetadata.remoteMethod (
+  /* remoteMethod: addUserToProject */
+  Project.remoteMethod (
     'addUserToProject',
     {
         http: {path: '/add-user-to-project', verb: 'post'},
@@ -75,12 +79,12 @@ module.exports = function(ProjectMetadata) {
     }
   );
 
-  ProjectMetadata.addUserToProject = function (data, req, callback) {
+  Project.addUserToProject = function (data, req, callback) {
 
-    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+    Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      // let pm = db.collection(ProjectMetadata.definition.name);
+      // let pm = db.collection(Project.definition.name);
       let cu = db.collection("ctp-users");
       //let user_id = req.session.user_info.user_id;
 
@@ -150,33 +154,33 @@ module.exports = function(ProjectMetadata) {
 
   ///////////////////////////////////////////////
 
-  ProjectMetadata.remoteMethod (
+  Project.remoteMethod (
     'projectInit',
     {
-        http: {path: '/init', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
+      http: {path: '/init', verb: 'post'},
+      // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+      accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } }
+      ],
+      returns: { arg: 'ret', type: 'object' }
     }
   );
 
-  ProjectMetadata.projectInit = function (data, req, callback) {
-    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+  Project.projectInit = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
       let user_id = req.session.user_info.user_id;
 
-      let mdl = db.collection("project-metadata");
+      let mdl = db.collection("project");
       let cu = db.collection("ctp-users");
       mdl.countDocuments({_id: data.project}, function(err, prj_cnt) {
         if (prj_cnt == 0) {
           cu.countDocuments({'project_roles.project': data.project}, function(err, mngr_cnt){
             if (mngr_cnt == 0) {
               cu.updateOne(
-                {_id: user_id}, 
+                {_id: user_id},
                 {
                   '$addToSet': {
                     'project_roles': {
@@ -184,7 +188,7 @@ module.exports = function(ProjectMetadata) {
                       roles: [ "ProjectManager" ]
                     }
                   }
-                }, null, 
+                }, null,
                 function(err, res){
                   callback(null, res);
                 });
@@ -197,7 +201,7 @@ module.exports = function(ProjectMetadata) {
 
   ///////////////////////////////////////////////
 
-  ProjectMetadata.remoteMethod (
+  Project.remoteMethod (
     'getLocationMonthRetrievedNum',
     {
         http: {path: '/location-month-retrieved-num', verb: 'post'},
@@ -210,17 +214,17 @@ module.exports = function(ProjectMetadata) {
     }
   );
 
-  ProjectMetadata.getLocationMonthRetrievedNum = function (data, req, callback) {
-    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+  Project.getLocationMonthRetrievedNum = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      let full_location_md5 = data.full_location_md5;
+      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
       let project = data.project;
       let to_match = {};
 
-      if (full_location_md5) {
-        to_match['full_location_md5'] = full_location_md5;
+      if (fullCameraLocationMd5) {
+        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
       }
 
       if (year) {
@@ -244,20 +248,20 @@ module.exports = function(ProjectMetadata) {
         },
         {
           "$group":{
-            "_id": {"full_location_md5": "$full_location_md5", "month": "$month"},
+            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$month"},
             "num": {
               "$sum": 1
             },
-            "location": {"$first": "$location"},
+            "cameraLocation": {"$first": "$cameraLocation"},
             "project": {"$first": "$project"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"}      
+            "sub_site": {"$first": "$sub_site"}
           }
         },
         {
           "$group":{
-            "_id": "$_id.full_location_md5",
-            "location": {"$first": "$location"},
+            "_id": "$_id.fullCameraLocationMd5",
+            "cameraLocation": {"$first": "$cameraLocation"},
             "project": {"$first": "$project"},
             "site": {"$first": "$site"},
             "sub_site": {"$first": "$sub_site"},
@@ -279,12 +283,12 @@ module.exports = function(ProjectMetadata) {
           callback(null, location_month_num);
         }
       });
-      
+
     });
   }
-  
 
-  ProjectMetadata.remoteMethod (
+
+  Project.remoteMethod (
     'getLocationMonthIdentifiedNum',
     {
         http: {path: '/location-month-identified-num', verb: 'post'},
@@ -297,11 +301,11 @@ module.exports = function(ProjectMetadata) {
     }
   );
 
-  ProjectMetadata.getLocationMonthIdentifiedNum = function (data, req, callback) {
-    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+  Project.getLocationMonthIdentifiedNum = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      let full_location_md5 = data.full_location_md5;
+      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
       let project = data.project;
       let to_match = {
@@ -311,8 +315,8 @@ module.exports = function(ProjectMetadata) {
         ]
       };
 
-      if (full_location_md5) {
-        to_match['full_location_md5'] = full_location_md5;
+      if (fullCameraLocationMd5) {
+        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
       }
 
       if (year) {
@@ -336,20 +340,20 @@ module.exports = function(ProjectMetadata) {
         },
         {
           "$group":{
-            "_id": {"full_location_md5": "$full_location_md5", "month": "$month"},
+            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$month"},
             "num": {
               "$sum": 1
             },
-            "location": {"$first": "$location"},
+            "cameraLocation": {"$first": "$cameraLocation"},
             "project": {"$first": "$project"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"}      
+            "sub_site": {"$first": "$sub_site"}
           }
         },
         {
           "$group":{
-            "_id": "$_id.full_location_md5",
-            "location": {"$first": "$location"},
+            "_id": "$_id.fullCameraLocationMd5",
+            "cameraLocation": {"$first": "$cameraLocation"},
             "project": {"$first": "$project"},
             "site": {"$first": "$site"},
             "sub_site": {"$first": "$sub_site"},
@@ -371,8 +375,8 @@ module.exports = function(ProjectMetadata) {
           callback(null, location_month_num);
         }
       });
-      
+
     });
-  }  
+  }
 
 };

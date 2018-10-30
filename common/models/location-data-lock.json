@@ -13,7 +13,7 @@
     "TimeStamp": true
   },
   "properties": {
-    "full_location_md5": {
+    "fullCameraLocationMd5": {
       "type": "string",
       "id": true,
       "required": true

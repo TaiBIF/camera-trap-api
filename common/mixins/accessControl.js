@@ -5,9 +5,9 @@
 module.exports = function(Model, options) {
   'use strict';
   // console.log(Model.definition.rawProperties);
-  
+
   /*
-  let onlyUnique = function (value, index, self) { 
+  let onlyUnique = function (value, index, self) {
     return self.indexOf(value) === index;
   }
   //*/
@@ -21,7 +21,7 @@ module.exports = function(Model, options) {
     }
     return PermissionDeniedErr;
   }
-  
+
   let checkPermissions = function(context, user, next) {
 
     console.log(['context.req.headers', context.req.headers]);
@@ -92,7 +92,7 @@ module.exports = function(Model, options) {
               '$project': {
                 user_id: '$user_id',
                 name: '$name',
-                project: '$project_roles.project',
+                projectTitle: '$project_roles.project',
                 role: '$role_details.role',
                 permissions: '$role_details.permissions',
                 enabled: '$role_details.enabled'
@@ -131,17 +131,17 @@ module.exports = function(Model, options) {
                   if (!userPermissions.length) { next(permissionDenied("You are unauthorized.")); return; }
 
                   let projectValidated;
-                  if (Model.definition.rawProperties.hasOwnProperty('project')) {
+                  if (Model.definition.rawProperties.hasOwnProperty('projectTitle')) {
                     projectValidated = true;
                     // 先檢查使用者有無權限鎖計畫範疇資料
                     args_data.forEach(function(q){ // q for query
                       let permission_granted = false;
                       userPermissions.forEach(function(p){ // p for permission
-                        if (q.project === p.project || p.permissions.project === 'ANY') {
+                        if (q.projectTitle === p.projectTitle || p.permissions.projectTitle === 'ANY') {
                           permission_granted = true;
                         }
                       });
-                      projectValidated = projectValidated && permission_granted; 
+                      projectValidated = projectValidated && permission_granted;
                     });
                   }
                   else { // no need to validate project
@@ -153,18 +153,19 @@ module.exports = function(Model, options) {
 
                   if (projectValidated) {
                     switch (targetModelName) {
+                      // @todo change location to cameraLocation
                       case "location-data-lock": {
                         let mdl = db.collection(targetModelName);
 
                         // 再檢查資料是否已被他人鎖定
                         let go = true;
                         let go_counter = args_data.length;
-                        
+
                         args_data.forEach(function(q){ // q for query
                           // 強制寫入 locked by
                           q.locked_by = user_id;
                           // 雖然是 toArray 但這個 query 只會回傳單一結果
-                          mdl.find({_id: q.full_location_md5}).toArray(function(err, dataLock) {
+                          mdl.find({_id: q.fullCameraLocationMd5}).toArray(function(err, dataLock) {
                             console.log([user_id, dataLock]);
                             go_counter = go_counter - 1;
 
@@ -180,7 +181,7 @@ module.exports = function(Model, options) {
                             }
                             else {
                               console.log("Don't go!");
-                              permission_denied_messages.push(q.full_location_md5);
+                              permission_denied_messages.push(q.fullCameraLocationMd5);
                               go = false;
                             }
 
@@ -203,30 +204,30 @@ module.exports = function(Model, options) {
                       }
                       case "multimedia-annotations":
                       case "multimedia-metadata": {
-                        /* 
+                        /*
                         寫入 multimedia annotaiton/medatata 前尚需檢查 location lock 的問題
                         TODO: location 應該已上鎖 by user
                         1. 檢查待寫入的資料包括哪些 location, 但如何得知? => TODO: 每筆待更新資料內含 location 資訊
-                        2. 檢查資料鎖定表, query location with user id (完全成立才放行) 
+                        2. 檢查資料鎖定表, query location with user id (完全成立才放行)
                         //*/
                         let unique_location_md5_projects = {};
 
-                        // 列出待鎖的 locations
+                        // 列出待鎖的 cameraLocations
                         args_data.forEach(function(d, idx, arr) {
-                          unique_location_md5_projects[d.full_location_md5] = d.project;
+                          unique_location_md5_projects[d.fullCameraLocationMd5] = d.project;
 
                           // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
                           if (remoteMethodName == "bulkUpdate") {
                             if (!!arr[idx]['$set'] && !!arr[idx]['$set']['project']) {
                               arr[idx]['$set']['project'] = d.project;
-                              arr[idx]['$set']['full_location_md5'] = d.full_location_md5;
+                              arr[idx]['$set']['fullCameraLocationMd5'] = d.fullCameraLocationMd5;
                             }
 
                             if (!!arr[idx]['$setOninsert'] && !!arr[idx]['$setOnInsert']['project']) {
                               arr[idx]['$setOnInsert']['project'] = d.project;
-                              arr[idx]['$setOnInsert']['full_location_md5'] = d.full_location_md5;
+                              arr[idx]['$setOnInsert']['fullCameraLocationMd5'] = d.fullCameraLocationMd5;
                             }
-                            // 如果 $setOnInsert 裡有重複的 project 與 full_location_md5，bulkNormalize 裡的機制會把它們清掉
+                            // 如果 $setOnInsert 裡有重複的 project 與 fullCameraLocationMd5，bulkNormalize 裡的機制會把它們清掉
                             // 最差的情況下是吐 error
                           }
                         });
@@ -242,7 +243,7 @@ module.exports = function(Model, options) {
                             unique_location_md5s.push({loc_id: loc_id, project: unique_location_md5_projects[loc_id]});
                           }
                         }
-                       
+
                         // usage example:
                         console.log(unique_location_md5s);
 
@@ -250,7 +251,7 @@ module.exports = function(Model, options) {
                         let ldl = db.collection("location-data-lock");
                         let go = true;
                         let go_counter = unique_location_md5s.length;
-                        
+
                         if (go_counter > 0) {
                           unique_location_md5s.forEach(function(locPrj){ // q for query
                             // 雖然是 toArray 但這個 query 只會回傳單一結果
@@ -289,7 +290,7 @@ module.exports = function(Model, options) {
                               }
 
                             });
-    
+
                           });
                         }
                         else {

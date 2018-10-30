@@ -1,0 +1,127 @@
+{
+  "name": "Project",
+  "http": {"path": "/project"},
+  "base": "PersistedModel",
+  "http": {"path": "/project"},
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "AccessControl": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "projectTitle": {
+      "description": "project title",
+      "type": "string",
+      "required": true,
+      "id": true
+    },
+    "shortTitle": {
+      "description": "the 4-character short title for compact view",
+      "type": "string",
+      "required": true
+    },
+    "funder": {
+      "description": "the funding organization",
+      "type": "string",
+      "required": true
+    },
+    "projectId": {
+      "description": "the unique string that the funder uses to identify a project",
+      "type": "string",
+      "required": true
+    },
+    "principalInvestigator": {
+      "description": "principal investigator, or project lead",
+      "type": "string",
+      "required": true
+    },
+    "projectStartDate": {
+      "description": "the date which the project starts",
+      "type": "string",
+      "required": true
+    },
+    "projectEndDate": {
+      "description": "the date which the project ends",
+      "type": "string",
+      "required": true
+    },
+    "earliestRecordTimestamp": {
+      "description": "earliest record timestamp",
+      "type": "number"
+    },
+    "latestRecordTimestamp": {
+      "description": "latest record timestamp",
+      "type": "number"
+    },
+    "adminArea": {
+      "description": "administrative area",
+      "type": [
+        "string"
+      ]
+    },
+    "abstract": {
+      "description": "project abstract",
+      "type": "string"
+    },
+    "remarks": {
+      "description": "remarks for this project entry",
+      "type": "string"
+    },
+    "coverImage": {
+      "description": "URL of the designated image for the project card",
+      "type": "string"
+    },
+    "license": {
+      "description": "license combination for metadata, identification and image",
+      "type": "object"
+    },
+    "speciesList": {
+      "description": "list of identified species @todo or prospect ones?",
+      "type": [
+        "string"
+      ]
+    },
+    "dataFieldEnabled": {
+      "description": "project specific available fields, aside from required fields",
+      "type": [
+        "string"
+      ]
+    },
+    "cameraLocations": {
+      "description": "camera cameraLocation",
+      "type": [
+        "object"
+      ]
+    },
+    "dailyTestTime": {
+      "description": "time of daily camera test shot",
+      "type": [
+        {
+          "since": "number",
+          "time": "string"
+        }
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "projectLocations": {
+      "type": "embedsMany",
+      "model": "LocationMetadata",
+      "property": "cameraLocations",
+      "options": {
+        "validate": true,
+        "forceId": false,
+        "persistent": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

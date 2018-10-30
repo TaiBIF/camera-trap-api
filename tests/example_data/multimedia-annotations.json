@@ -42,10 +42,10 @@
             ]
         }
     ],
-    "project" : "測試計畫1",
+    "projectTitle" : "測試計畫1",
     "date_time_original_timestamp": 0,
-    "full_location_md5": "somerandommd5string",
-    "location": "HC20A",
+    "fullCameraLocationMd5": "somerandommd5string",
+    "cameraLocation": "HC20A",
     "site": "苗栗",
     "sub_site": "南庄鄉田美村",
     "timezone": "+8"
@@ -134,10 +134,10 @@
             ]
         }
     ],
-    "project" : "測試計畫2",
+    "projectTitle" : "測試計畫2",
     "date_time_original_timestamp": 0,
-    "full_location_md5": "somerandommd5string2",
-    "location": "HC20B",
+    "fullCameraLocationMd5": "somerandommd5string2",
+    "cameraLocation": "HC20B",
     "site": "苗栗",
     "sub_site": "南庄鄉田美村",
     "timezone": "+8"

@@ -1,20 +1,20 @@
 [{
-  "full_location_md5": "somerandommd5string",
-  "project": "測試計畫1",
+  "fullCameraLocationMd5": "somerandommd5string",
+  "projectTitle": "測試計畫1",
   "locked": false,
   "locked_by": "OrcID_0000-0003-1335-0184",
   "locked_on": 0
 },
 {
-  "full_location_md5": "somerandommd5string2",
-  "project": "測試計畫2",
+  "fullCameraLocationMd5": "somerandommd5string2",
+  "projectTitle": "測試計畫2",
   "locked": false,
   "locked_by": "OrcID_0000-0003-1335-0184",
   "locked_on": 0
 },
 {
-  "full_location_md5": "7621f2d15b1fb16ff04424baa6b08831",
-  "project": "狂犬病監測",
+  "fullCameraLocationMd5": "7621f2d15b1fb16ff04424baa6b08831",
+  "projectTitle": "狂犬病監測",
   "locked": true,
   "locked_by": "OrcID_0000-0003-1335-0184",
   "locked_on": 0

@@ -3,8 +3,8 @@
   "permissions": [
     {
       "remoteMethod": "projectInit",
-      "collection": "project-metadata",
-      "project": "ANY"
+      "collection": "project",
+      "projectTitle": "ANY"
     }
   ],
   "enabled": true
@@ -14,8 +14,8 @@
   "permissions": [
     {
       "remoteMethod": "ANY",
-      "collection": "project-metadata",
-      "project": "OWN"
+      "collection": "project",
+      "projectTitle": "OWN"
     }
   ],
   "enabled": true
@@ -26,12 +26,12 @@
     {
       "remoteMethod": "ANY",
       "collection": "location-data-lock",
-      "project": "OWN"
+      "projectTitle": "OWN"
     },
     {
       "remoteMethod": "ANY",
       "collection": "multimedia-annotations",
-      "project": "OWN"
+      "projectTitle": "OWN"
     }
   ],
   "enabled": true
@@ -41,7 +41,7 @@
     {
       "remoteMethod": "ANY",
       "collection": "ANY",
-      "project": "ANY"
+      "projectTitle": "ANY"
     }
   ],
   "enabled": true
