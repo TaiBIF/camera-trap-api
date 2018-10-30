@@ -38,7 +38,8 @@
   "routes": {
     "loopback#rest": {
       "paths": [
-        "${restApiRoot}"
+        "${restApiRoot}",
+        "${baseRestApiRoot}"
       ]
     }
   },

@@ -194,4 +194,185 @@ module.exports = function(ProjectMetadata) {
       });
     });
   }
+
+  ///////////////////////////////////////////////
+
+  ProjectMetadata.remoteMethod (
+    'getLocationMonthRetrievedNum',
+    {
+        http: {path: '/location-month-retrieved-num', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  ProjectMetadata.getLocationMonthRetrievedNum = function (data, req, callback) {
+    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+
+      let full_location_md5 = data.full_location_md5;
+      let year = data.year;
+      let project = data.project;
+      let to_match = {};
+
+      if (full_location_md5) {
+        to_match['full_location_md5'] = full_location_md5;
+      }
+
+      if (year) {
+        to_match['year'] = year;
+      }
+      else {
+        return callback(new Error("請輸入年份"));
+      }
+
+      if (project) {
+        to_match['project'] = project;
+      }
+      else {
+        return callback(new Error("請輸入計畫名稱"));
+      }
+
+      let mmm = db.collection("multimedia-metadata");
+      let aggregate_query = [
+        {
+          "$match": to_match
+        },
+        {
+          "$group":{
+            "_id": {"full_location_md5": "$full_location_md5", "month": "$month"},
+            "num": {
+              "$sum": 1
+            },
+            "location": {"$first": "$location"},
+            "project": {"$first": "$project"},
+            "site": {"$first": "$site"},
+            "sub_site": {"$first": "$sub_site"}      
+          }
+        },
+        {
+          "$group":{
+            "_id": "$_id.full_location_md5",
+            "location": {"$first": "$location"},
+            "project": {"$first": "$project"},
+            "site": {"$first": "$site"},
+            "sub_site": {"$first": "$sub_site"},
+            "monthly_num": {
+              "$push": {
+                "month": "$_id.month",
+                "num": "$num"
+              }
+            }
+          }
+        }
+      ];
+
+      mmm.aggregate(aggregate_query).toArray(function(err, location_month_num) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          callback(null, location_month_num);
+        }
+      });
+      
+    });
+  }
+  
+
+  ProjectMetadata.remoteMethod (
+    'getLocationMonthIdentifiedNum',
+    {
+        http: {path: '/location-month-identified-num', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  ProjectMetadata.getLocationMonthIdentifiedNum = function (data, req, callback) {
+    ProjectMetadata.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+
+      let full_location_md5 = data.full_location_md5;
+      let year = data.year;
+      let project = data.project;
+      let to_match = {
+        '$and': [
+          {"tokens.species_shortcut": {$ne: "尚未辨識"}},
+          {"tokens.species_shortcut": {$ne: ""}},
+        ]
+      };
+
+      if (full_location_md5) {
+        to_match['full_location_md5'] = full_location_md5;
+      }
+
+      if (year) {
+        to_match['year'] = year;
+      }
+      else {
+        return callback(new Error("請輸入年份"));
+      }
+
+      if (project) {
+        to_match['project'] = project;
+      }
+      else {
+        return callback(new Error("請輸入計畫名稱"));
+      }
+
+      let mma = db.collection("multimedia-annotations");
+      let aggregate_query = [
+        {
+          "$match": to_match
+        },
+        {
+          "$group":{
+            "_id": {"full_location_md5": "$full_location_md5", "month": "$month"},
+            "num": {
+              "$sum": 1
+            },
+            "location": {"$first": "$location"},
+            "project": {"$first": "$project"},
+            "site": {"$first": "$site"},
+            "sub_site": {"$first": "$sub_site"}      
+          }
+        },
+        {
+          "$group":{
+            "_id": "$_id.full_location_md5",
+            "location": {"$first": "$location"},
+            "project": {"$first": "$project"},
+            "site": {"$first": "$site"},
+            "sub_site": {"$first": "$sub_site"},
+            "monthly_num": {
+              "$push": {
+                "month": "$_id.month",
+                "num": "$num"
+              }
+            }
+          }
+        }
+      ];
+
+      mma.aggregate(aggregate_query).toArray(function(err, location_month_num) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          callback(null, location_month_num);
+        }
+      });
+      
+    });
+  }  
+
 };
