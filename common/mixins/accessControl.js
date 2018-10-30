@@ -43,6 +43,10 @@ module.exports = function(Model, options) {
     else {
       user_info = {user_id: "OrcID_0000-0003-1335-0184"}
       console.log(['made.up', user_info]);
+      console.log(context.req.headers);
+      let base64string = context.req.headers.authorization.split('Basic ').pop();
+      let user_password = Buffer.from(base64string, 'base64').toString();
+      console.log(user_password);
     }
 
     let permission_denied_messages = [];
