@@ -1,6 +1,7 @@
 {
   "name": "multimedia-metadata",
   "base": "MultimediaQueryShared",
+  "http": {"path": "/media"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

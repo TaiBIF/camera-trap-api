@@ -1,6 +1,7 @@
 {
   "name": "multimedia-annotation-revisions",
   "base": "PersistedModel",
+  "http": {"path": "/media/annotation-revision"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

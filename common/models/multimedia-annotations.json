@@ -1,6 +1,7 @@
 {
   "name": "multimedia-annotations",
   "base": "MultimediaQueryShared",
+  "http": {"path": "/media/annotation"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

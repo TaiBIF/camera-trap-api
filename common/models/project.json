@@ -1,6 +1,5 @@
 {
   "name": "Project",
-  "http": {"path": "/project"},
   "base": "PersistedModel",
   "http": {"path": "/project"},
   "idInjection": false,
