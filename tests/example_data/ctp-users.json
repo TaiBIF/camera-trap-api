@@ -5,13 +5,13 @@
   "email": "gsmai.taibif@gmail.com",
   "project_roles": [
     {
-      "project": "測試計畫1",
+      "projectTitle": "測試計畫1",
       "roles": [
         "DataManager", "ProjectManager", "SysAdmin"
       ]
     },
     {
-      "project": "測試計畫3",
+      "projectTitle": "測試計畫3",
       "roles": [
         "ProjectManager"
       ]
@@ -25,7 +25,7 @@
   "email": "fakeguy@example.org",
   "project_roles": [
     {
-      "project": "測試計畫2",
+      "projectTitle": "測試計畫2",
       "roles": [
         "DataManager"
       ]

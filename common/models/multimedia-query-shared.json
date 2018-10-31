@@ -19,11 +19,11 @@
       "type": "string",
       "default": ""
     },
-    "location": {
+    "cameraLocation": {
       "type": "string",
       "required": true
     },
-    "full_location_md5": {
+    "fullCameraLocationMd5": {
       "type": "string",
       "required": true
     },

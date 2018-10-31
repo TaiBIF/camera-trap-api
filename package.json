@@ -1,5 +1,5 @@
 {
-  "name": "nodejs-loopback",
+  "name": "camera-trap-api",
   "version": "0.8.0",
   "main": "server/server.js",
   "engines": {
@@ -29,8 +29,12 @@
     "strong-error-handler": "^3.0.0"
   },
   "devDependencies": {
-    "eslint": "^3.17.1",
-    "eslint-config-loopback": "^8.0.0"
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-loopback": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.11.1"
   },
   "repository": {
     "type": "",

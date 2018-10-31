@@ -1,40 +1,40 @@
 [{
   "_id": "測試計畫1",
   "$set": {
-    "project": "測試計畫1",
-    "short": "測1",
-    "contracting_organization": "林務局",
-    "code": "FB-test-cameratrap-01",
-    "pi": "測試pi",
-    "from_date": "2018-10-15",
-    "to_date": "2018-12-10",
-    "admin_area": [
+    "projectTitle": "測試計畫1",
+    "shortTitle": "測1",
+    "funder": "林務局",
+    "projectId": "FB-test-cameratrap-01",
+    "principalInvestigator": "測試principalInvestigator",
+    "projectStartDate": "2018-10-15",
+    "projectEndDate": "2018-12-10",
+    "adminArea": [
       "苗栗縣",
       "新竹縣"
     ],
     "abstract": "這是一個測試資料用的計畫，填好填滿",
     "remarks": "不曾發生過",
-    "cover_image": "http://example.org/kinda_animal_cover.jpg",
+    "coverImage": "http://example.org/kinda_animal_cover.jpg",
     "license": {
       "metadata": "CC BY 4.0",
       "data": "CC BY 4.0",
       "multimedia": "CC BY-NC 4.0"
     },
-    "species_list": [
+    "speciesList": [
       "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
     ],
-    "data_field_enabled": [
+    "dataFieldEnabled": [
       "life-stage",
       "sex",
       "antler"
     ],
-    "locations": [
+    "cameraLocations": [
       {
-        "full_location_md5": "somerandommd5string",
-        "project": "測試計畫1",
+        "fullCameraLocationMd5": "somerandommd5string",
+        "projectTitle": "測試計畫1",
         "site": "苗栗",
         "sub_site": "南庄鄉田美村",
-        "location": "HC20A",
+        "cameraLocation": "HC20A",
         "original_x": "122",
         "original_y": "23.5",
         "original_geodatum": "wgs84",
@@ -43,7 +43,7 @@
         "wgs84dec_y": 23.5,
         "twd97tm2_x": 223456,
         "twd97tm2_y": 2345678,
-        "daily_test_time": [
+        "dailyTestTime": [
           {
             "since": 1539593959,
             "time": "12:00:00"
@@ -53,7 +53,7 @@
         "land_cover": "森林"
       }
     ],
-    "daily_test_time": [
+    "dailyTestTime": [
       {
         "since": 1539593959,
         "time": "12:00:00"
@@ -65,40 +65,40 @@
 {
   "_id": "狂犬病監測",
   "$set": {
-    "project": "狂犬病監測",
-    "short": "狂犬監測",
-    "contracting_organization": "林務局",
-    "code": "FB-test-rabies-monitoring",
-    "pi": "測試pi",
-    "from_date": "2017-03-01",
-    "to_date": "2017-12-20",
-    "admin_area": [
+    "projectTitle": "狂犬病監測",
+    "shortTitle": "狂犬監測",
+    "funder": "林務局",
+    "projectId": "FB-test-rabies-monitoring",
+    "principalInvestigator": "測試principalInvestigator",
+    "projectStartDate": "2017-03-01",
+    "projectEndDate": "2017-12-20",
+    "adminArea": [
       "苗栗縣",
       "新竹縣"
     ],
     "abstract": "這是一個測試資料用的計畫，填好填滿",
     "remarks": "不曾發生過",
-    "cover_image": "http://example.org/kinda_animal_cover.jpg",
+    "coverImage": "http://example.org/kinda_animal_cover.jpg",
     "license": {
       "metadata": "CC BY 4.0",
       "data": "CC BY 4.0",
       "multimedia": "CC BY-NC 4.0"
     },
-    "species_list": [
+    "speciesList": [
       "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
     ],
-    "data_field_enabled": [
+    "dataFieldEnabled": [
       "life-stage",
       "sex",
       "antler"
     ],
-    "locations": [
+    "cameraLocations": [
       {
-        "full_location_md5": "7621f2d15b1fb16ff04424baa6b08831",
-        "project": "狂犬病監測",
+        "fullCameraLocationMd5": "7621f2d15b1fb16ff04424baa6b08831",
+        "projectTitle": "狂犬病監測",
         "site": "苗栗縣",
         "sub_site": "南庄鄉田美村",
-        "location": "20A",
+        "cameraLocation": "20A",
         "original_x": "121.017859",
         "original_y": "24.613912",
         "original_geodatum": "wgs84",
@@ -107,7 +107,7 @@
         "wgs84dec_y": 24.613912,
         "twd97tm2_x": 0,
         "twd97tm2_y": 0,
-        "daily_test_time": [
+        "dailyTestTime": [
           {
             "since": 1339593959,
             "time": "12:00:00"
@@ -117,7 +117,7 @@
         "land_cover": "森林"
       }
     ],
-    "daily_test_time": [
+    "dailyTestTime": [
       {
         "since": 1339593959,
         "time": "12:00:00"

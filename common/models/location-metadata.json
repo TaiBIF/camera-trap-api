@@ -6,7 +6,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "full_location_md5": {
+    "fullCameraLocationMd5": {
       "type": "string",
       "required": "true",
       "id": true
@@ -22,7 +22,7 @@
     "sub_site": {
       "type": "string"
     },
-    "location": {
+    "cameraLocation": {
       "type": "string",
       "required": "true"
     },
@@ -55,7 +55,7 @@
     "twd97tm2_y": {
       "type": "number"
     },
-    "daily_test_time": {
+    "dailyTestTime": {
       "type": [
         {
           "since": "number",

@@ -73,7 +73,7 @@
     "dataSource": "transient",
     "public": false
   },
-  "project-metadata": {
+  "Project": {
     "dataSource": "mongodb34",
     "public": true
   },

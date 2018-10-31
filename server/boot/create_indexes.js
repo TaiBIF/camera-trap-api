@@ -58,7 +58,7 @@ module.exports = function(app) {
     ];
 
     let index_upload_location = [
-      {"full_location_md5": 1}
+      {"fullCameraLocationMd5": 1}
     ]
 
     indexes = [index_upload_user, index_upload_location];
