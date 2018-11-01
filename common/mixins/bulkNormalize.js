@@ -39,11 +39,13 @@ module.exports = function(Model, options) {
   let dotNotationArrayIndex = {};
 
   let stringToObj = function(path, value, obj) {
+    let parts = path.split('.');
+    let part;
     // let last = parts.pop();
     let prefixParts = Model.definition.name;
     let prevObj,
       prevPart,
-      revPrefixParts;
+      prevPrefixParts;
     let last = parts[parts.length - 1];
 
     while (part === parts.shift()) {
