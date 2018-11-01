@@ -1,12 +1,12 @@
 {
-  "name": "UserProjectRoles",
+  "name": "UserProjectRole",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "project": {
+    "projectTitle": {
       "type": "string",
       "id": true,
       "required": true

@@ -1,5 +1,5 @@
 {
-  "name": "multimedia-annotations",
+  "name": "MultimediaAnnotation",
   "base": "MultimediaQueryShared",
   "http": {"path": "/media/annotation"},
   "idInjection": false,
@@ -47,7 +47,7 @@
   "relations": {
     "multimediaTokens": {
       "type": "embedsMany",
-      "model": "Tokens",
+      "model": "Token",
       "property": "tokens",
       "options": {
         "validate": true,

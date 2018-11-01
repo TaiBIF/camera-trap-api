@@ -1,6 +1,7 @@
 {
-  "name": "upload-sessions",
+  "name": "CameraLocationDataLock",
   "base": "PersistedModel",
+  "http": {"path": "/camera-location/data-lock"},
   "idInjection": false,
   "options": {
     "validateUpsert": true
@@ -9,42 +10,30 @@
     "BulkWrite": true,
     "BulkNormalize": true,
     "CustomQuery": true,
+    "AccessControl": true,
     "TimeStamp": true
   },
   "properties": {
-    "upload_session_id": {
+    "fullCameraLocationMd5": {
       "type": "string",
       "id": true,
       "required": true
     },
-    "fullCameraLocationMd5": {
+    "projectTitle": {
       "type": "string",
       "required": true
     },
-    "project": {
+    "locked": {
+      "type": "boolean",
+      "default": false
+    },
+    "locked_by": {
       "type": "string",
       "required": true
     },
-    "by": {
-      "type": "string",
+    "locked_on": {
+      "type": "number",
       "required": true
-    },
-    "status": {
-      "type": "string",
-      "required": true
-    },
-    "messages": {
-      "type": ["string"],
-      "required": false
-    },
-    "files": {
-      "type": [
-        "string"
-      ],
-      "required": false
-    },
-    "problematic_ids": {
-      "type": ["string"]
     }
   },
   "validations": [],

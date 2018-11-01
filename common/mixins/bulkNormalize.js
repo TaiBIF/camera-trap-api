@@ -159,7 +159,7 @@ module.exports = function(Model, options) {
         if (!update['$set']) update['$set'] = {};
         update['$set'].modified = now;
 
-        if (modelName.match(/^multimedia-annotations/)) {
+        if (modelName.match(/^MultimediaAnnotation/)) {
           if (userId && (update['$set'].modifiedBy !== userId)) {
             update['$set'].modifiedBy = userId;
           }
@@ -380,8 +380,8 @@ module.exports = function(Model, options) {
       }
 
       context.args.data.forEach(function(instance, idx, arr) {
-        // 先這樣，觀察一下日後其他 Model 需求再決定是否搬回 multimedia-annotations
-        if (modelName.match(/^multimedia-annotations/)) {
+        // 先這樣，觀察一下日後其他 Model 需求再決定是否搬回 MultimediaAnnotation
+        if (modelName.match(/^MultimediaAnnotation/)) {
           if (userId && (instance.modifiedBy !== userId)) {
             instance.modifiedBy = userId;
           }

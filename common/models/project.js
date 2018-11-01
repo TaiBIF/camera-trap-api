@@ -28,7 +28,7 @@ module.exports = function(Project) {
       sort_key = "project_metadata." + sort_key;
 
       // let pm = db.collection(Project.definition.name);
-      let cu = db.collection("ctp-users");
+      let cu = db.collection("CtpUser");
       let user_id = req.session.user_info.user_id;
 
       let sorts = {};
@@ -38,10 +38,10 @@ module.exports = function(Project) {
       let aggregate_query = [
         {'$match': {"user_id": user_id}},
         {'$unwind': "$project_roles"},
-        {'$group': {_id: "$project_roles.project"}},
+        {'$group': {_id: "$project_roles.projectTitle"}},
         {
           '$lookup': {
-            from: "project",
+            from: "Project",
             localField: "_id",
             foreignField: "_id",
             as: "project_metadata"
@@ -85,10 +85,10 @@ module.exports = function(Project) {
       if (err) return next(err);
 
       // let pm = db.collection(Project.definition.name);
-      let cu = db.collection("ctp-users");
+      let cu = db.collection("CtpUser");
       //let user_id = req.session.user_info.user_id;
 
-      let project = data.project;
+      let projectTitle = data.projectTitle;
       let user_to_add = data.user_id;
       let role = (!!data.role) ? data.role : "Member";
 
@@ -101,7 +101,7 @@ module.exports = function(Project) {
 
         console.log(["user_exists", res]);
         if (res) { // 如果使用者存在
-          cu.countDocuments({_id: user_to_add, "project_roles.project": project}, function(err, res) {
+          cu.countDocuments({_id: user_to_add, "project_roles.projectTitle": projectTitle}, function(err, res) {
             console.log(res);
             let update, query;
             if (res == 0) {
@@ -109,7 +109,7 @@ module.exports = function(Project) {
               update = {
                 '$addToSet': {
                   'project_roles': {
-                    project: project,
+                    projectTitle: projectTitle,
                     roles: [ role ]
                   }
                 }
@@ -118,7 +118,7 @@ module.exports = function(Project) {
             else {
               query = {
                 "_id": user_to_add,
-                "project_roles.project": project
+                "project_roles.projectTitle": projectTitle
               }
               update = {
                 '$addToSet': {
@@ -173,18 +173,18 @@ module.exports = function(Project) {
 
       let user_id = req.session.user_info.user_id;
 
-      let mdl = db.collection("project");
-      let cu = db.collection("ctp-users");
-      mdl.countDocuments({_id: data.project}, function(err, prj_cnt) {
+      let mdl = db.collection("Project");
+      let cu = db.collection("CtpUser");
+      mdl.countDocuments({_id: data.projectTitle}, function(err, prj_cnt) {
         if (prj_cnt == 0) {
-          cu.countDocuments({'project_roles.project': data.project}, function(err, mngr_cnt){
+          cu.countDocuments({'project_roles.projectTitle': data.projectTitle}, function(err, mngr_cnt){
             if (mngr_cnt == 0) {
               cu.updateOne(
                 {_id: user_id},
                 {
                   '$addToSet': {
                     'project_roles': {
-                      project: data.project,
+                      projectTitle: data.projectTitle,
                       roles: [ "ProjectManager" ]
                     }
                   }
@@ -220,7 +220,7 @@ module.exports = function(Project) {
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
-      let project = data.project;
+      let projectTitle = data.projectTitle;
       let to_match = {};
 
       if (fullCameraLocationMd5) {
@@ -234,14 +234,14 @@ module.exports = function(Project) {
         return callback(new Error("請輸入年份"));
       }
 
-      if (project) {
-        to_match['project'] = project;
+      if (projectTitle) {
+        to_match['projectTitle'] = projectTitle;
       }
       else {
         return callback(new Error("請輸入計畫名稱"));
       }
 
-      let mmm = db.collection("multimedia-metadata");
+      let mmm = db.collection("MultimediaMetadata");
       let aggregate_query = [
         {
           "$match": to_match
@@ -253,18 +253,18 @@ module.exports = function(Project) {
               "$sum": 1
             },
             "cameraLocation": {"$first": "$cameraLocation"},
-            "project": {"$first": "$project"},
+            "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"}
+            "subSite": {"$first": "$subSite"}
           }
         },
         {
           "$group":{
             "_id": "$_id.fullCameraLocationMd5",
             "cameraLocation": {"$first": "$cameraLocation"},
-            "project": {"$first": "$project"},
+            "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"},
+            "subSite": {"$first": "$subSite"},
             "monthly_num": {
               "$push": {
                 "month": "$_id.month",
@@ -307,7 +307,7 @@ module.exports = function(Project) {
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
-      let project = data.project;
+      let projectTitle = data.projectTitle;
       let to_match = {
         '$and': [
           {"tokens.species_shortcut": {$ne: "尚未辨識"}},
@@ -326,14 +326,14 @@ module.exports = function(Project) {
         return callback(new Error("請輸入年份"));
       }
 
-      if (project) {
-        to_match['project'] = project;
+      if (projectTitle) {
+        to_match['projectTitle'] = projectTitle;
       }
       else {
         return callback(new Error("請輸入計畫名稱"));
       }
 
-      let mma = db.collection("multimedia-annotations");
+      let mma = db.collection("MultimediaAnnotation");
       let aggregate_query = [
         {
           "$match": to_match
@@ -345,18 +345,18 @@ module.exports = function(Project) {
               "$sum": 1
             },
             "cameraLocation": {"$first": "$cameraLocation"},
-            "project": {"$first": "$project"},
+            "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"}
+            "subSite": {"$first": "$subSite"}
           }
         },
         {
           "$group":{
             "_id": "$_id.fullCameraLocationMd5",
             "cameraLocation": {"$first": "$cameraLocation"},
-            "project": {"$first": "$project"},
+            "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "sub_site": {"$first": "$sub_site"},
+            "subSite": {"$first": "$subSite"},
             "monthly_num": {
               "$push": {
                 "month": "$_id.month",

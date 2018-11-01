@@ -1,6 +1,7 @@
 {
-  "name": "announcements",
+  "name": "Announcement",
   "base": "PersistedModel",
+  "http": {"path": "/announcement"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

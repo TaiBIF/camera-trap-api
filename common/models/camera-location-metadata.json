@@ -1,6 +1,7 @@
 {
-  "name": "LocationMetadata",
+  "name": "CameraLocationMetadata",
   "base": "PersistedModel",
+  "http": {"path": "/camera-location"},
   "idInjection": false,
   "options": {
     "validateUpsert": true
@@ -11,7 +12,7 @@
       "required": "true",
       "id": true
     },
-    "project": {
+    "projectTitle": {
       "type": "string",
       "required": "true"
     },
@@ -19,7 +20,7 @@
       "type": "string",
       "required": "true"
     },
-    "sub_site": {
+    "subSite": {
       "type": "string"
     },
     "cameraLocation": {

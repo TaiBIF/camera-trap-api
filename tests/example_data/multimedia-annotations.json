@@ -47,7 +47,7 @@
     "fullCameraLocationMd5": "somerandommd5string",
     "cameraLocation": "HC20A",
     "site": "苗栗",
-    "sub_site": "南庄鄉田美村",
+    "subSite": "南庄鄉田美村",
     "timezone": "+8"
 },
 {
@@ -139,6 +139,6 @@
     "fullCameraLocationMd5": "somerandommd5string2",
     "cameraLocation": "HC20B",
     "site": "苗栗",
-    "sub_site": "南庄鄉田美村",
+    "subSite": "南庄鄉田美村",
     "timezone": "+8"
 }]

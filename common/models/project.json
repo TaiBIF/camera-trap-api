@@ -110,9 +110,9 @@
   },
   "validations": [],
   "relations": {
-    "projectLocations": {
+    "projectCameraLocations": {
       "type": "embedsMany",
-      "model": "LocationMetadata",
+      "model": "CameraLocationMetadata",
       "property": "cameraLocations",
       "options": {
         "validate": true,

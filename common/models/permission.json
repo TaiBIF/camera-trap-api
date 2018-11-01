@@ -1,12 +1,12 @@
 {
-  "name": "Permissions",
+  "name": "Permission",
   "base": "PersistedModel",
   "idInjection": false,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "project": {
+    "projectTitle": {
       "type": "string",
       "id": 1,
       "required": true,

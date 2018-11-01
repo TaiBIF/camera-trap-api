@@ -1,6 +1,7 @@
 {
-  "name": "data-fields-available",
+  "name": "DataFieldAvailable",
   "base": "PersistedModel",
+  "http": {"path": "/data-field-available"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

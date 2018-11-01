@@ -1,6 +1,7 @@
 {
-  "name": "ctp-users",
+  "name": "CtpUser",
   "base": "PersistedModel",
+  "http": {"path": "/ctp-user"},
   "idInjection": false,
   "options": {
     "validateUpsert": true
@@ -38,7 +39,7 @@
   "relations": {
     "userProjectRoles": {
       "type": "embedsMany",
-      "model": "UserProjectRoles",
+      "model": "UserProjectRole",
       "property": "project_roles",
       "options": {
         "validate": true,

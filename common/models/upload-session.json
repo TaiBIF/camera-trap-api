@@ -1,6 +1,7 @@
 {
-  "name": "location-data-lock",
+  "name": "UploadSession",
   "base": "PersistedModel",
+  "http": {"path": "/upload-session"},
   "idInjection": false,
   "options": {
     "validateUpsert": true
@@ -9,30 +10,42 @@
     "BulkWrite": true,
     "BulkNormalize": true,
     "CustomQuery": true,
-    "AccessControl": true,
     "TimeStamp": true
   },
   "properties": {
-    "fullCameraLocationMd5": {
+    "upload_session_id": {
       "type": "string",
       "id": true,
       "required": true
     },
-    "project": {
+    "fullCameraLocationMd5": {
       "type": "string",
       "required": true
     },
-    "locked": {
-      "type": "boolean",
-      "default": false
-    },
-    "locked_by": {
+    "projectTitle": {
       "type": "string",
       "required": true
     },
-    "locked_on": {
-      "type": "number",
+    "by": {
+      "type": "string",
       "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "messages": {
+      "type": ["string"],
+      "required": false
+    },
+    "files": {
+      "type": [
+        "string"
+      ],
+      "required": false
+    },
+    "problematic_ids": {
+      "type": ["string"]
     }
   },
   "validations": [],

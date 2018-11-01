@@ -2,9 +2,9 @@
 
 var md5 = require('md5');
 
-module.exports = function(Tokens) {
+module.exports = function(Token) {
 
-  Tokens.observe('before save', function(context, next) {
+  Token.observe('before save', function(context, next) {
     console.log(context);
     if (!context.instance.token_id) {
     

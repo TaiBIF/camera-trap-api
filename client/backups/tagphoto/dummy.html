@@ -19,9 +19,8 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="stylesheets/styleSheetStart.css">
 	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="dist/aws-cognito-sdk.min.js"></script>
-	<script src="dist/amazon-cognito-identity.min.js"></script>
 	<script src="dist/amazon-cognito-auth.min.js"></script>
+	<script src="dist/aws-cognito-sdk.min.js"></script>
 	<!-- To enable the advanced security feature -->
 	<!-- <script src="https://amazon-cognito-assets.<region>.amazoncognito.com/amazon-cognito-advanced-security-data.min.js"></script> -->
 	<!-- E.g. -->
@@ -91,54 +90,8 @@
 	</div>
 	<script>
 
-        var redirUri = "https://camera-trap.tw/dummy.html";
-        var loginUri = "https://camera-trap.tw/dummy.html";
-	var userPoolId ='ap-northeast-1_R2iDn5W3B';
-	var identityPoolId = 'ap-northeast-1:3d5edbfb-834c-4284-85f5-a4ec29d38ef0';
-        var clientId = '19m0u392bok25pq3bekb5mpks1';
-        var appWebDomain = 'camera-trap.auth.ap-northeast-1.amazoncognito.com';
-        var idpDomain = 'cognito-idp.ap-northeast-1.amazonaws.com/' + userPoolId;
-
-	// var CognitoUserPool = AwsCognitoIdentity.CognitoUserPool;
-        var poolData = {
-          UserPoolId : userPoolId, // Your user pool id here
-          ClientId : clientId // Your client id here
-        };
-
-        // 因為 AmazonCognitoIdentity 衝突了所以改個名 AwsCognitoIdentity
-        const userPool = new AwsCognitoIdentity.CognitoUserPool(poolData);
-
-        function refresh_token (cognitoUser, refToken) {
-          var logins = {};
-          logins[idpDomain] = localStorage.getItem("awsIdToken");
-	  if (!AWSCognito.config.credentials) {
-		AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-			IdentityPoolId: identityPoolId,
-			Logins: logins
-		});
-	  }
-
-          if (AWSCognito.config.credentials.needsRefresh()) {
-            cognitoUser.refreshSession(refToken.refreshToken);
-          }
-        }
-
-        function getCookie(cname) {
-            var name = cname + "=";
-            var decodedCookie = decodeURIComponent(document.cookie);
-            var ca = decodedCookie.split(';');
-            for(var i = 0; i <ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
-                }
-            }
-            return "";
-        }
-
+        var loginUri = "http://localhost:8888/tagphoto/dummy.html";
+	var userPoolId ='ap-northeast-1_JACElFd4C';
 
 	// Operations when the web page is loaded.
 	function onLoad() {
@@ -151,21 +104,11 @@
 		document.getElementById("statusAuth").style.display = 'none';
 		// Initiatlize CognitoAuth object
 		var auth = initCognitoSDK();
-
 		document.getElementById("signInButton").addEventListener("click", function() {
 			userButton(auth);
 		});
-
-		var session = auth.signInUserSession;
-		if (!!session.idToken.jwtToken && session.idToken.payload.exp > (Date.now() / 1000)) {
-			showSignedIn(session);
-			// refresh_token(auth, session.getRefreshToken());
-		}
-		else {
-			var curUrl = window.location.href;
-			auth.parseCognitoWebResponse(curUrl);
-		}
-
+		var curUrl = window.location.href;
+		auth.parseCognitoWebResponse(curUrl);
 	}
 
 	// Operation when tab is closed.
@@ -221,7 +164,7 @@
 				var payload = idToken.split('.')[1];
 				var tokenobj = JSON.parse(atob(payload));
 				var formatted = JSON.stringify(tokenobj, undefined, 2);
-				document.getElementById('idtoken').innerHTML = "\nid token:\n" + formatted;
+				document.getElementById('idtoken').innerHTML = "\nid token:\n" + formatted + "<br/><p>" + idToken + "</p>";
 			}
 			var accToken = session.getAccessToken().getJwtToken();
 			if (accToken) {
@@ -251,10 +194,10 @@
 	// Initialize a cognito auth object.
 	function initCognitoSDK() {
 		var authData = {
-			ClientId : clientId, // Your client id here
-			AppWebDomain : appWebDomain, // Exclude the "https://" part. 
+			ClientId : '78qgpc61jqls42v18mp8tfqo09', // Your client id here
+			AppWebDomain : 'tagphoto.auth.ap-northeast-1.amazoncognito.com', // Exclude the "https://" part. 
 			TokenScopesArray : ['openid', 'email', 'profile', 'aws.cognito.signin.user.admin'], // like ['openid','email','phone']...
-			RedirectUriSignIn : redirUri,
+			RedirectUriSignIn : loginUri,
 			RedirectUriSignOut : loginUri,
 			IdentityProvider : 'OrcID',
 			UserPoolId : userPoolId, 
@@ -263,34 +206,24 @@
 		var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
 		// You can also set state parameter
 		// 後端隨機產生 state
-		auth.setState(getCookie('AWSELB'));
+		auth.setState('someRandomState');
 		auth.userhandler = {
 			onSuccess: function(result) {
 				AWSCognito.config.update({region: 'ap-northeast-1'});
 
-				localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
-				jQuery.post("https://camera-trap.tw/api/ctp-users/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
-
-				// 前端取得登入使用者的 credentials 法
-
-
-				var logins = {};
-				logins[idpDomain] = result.getIdToken().getJwtToken();
-
-
-				//if (!AWSCognito.config.credentials) {
-					AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
-						IdentityPoolId: identityPoolId,
-						Logins: logins
-					});
-				//}
-				//else {
-				//	AWSCognito.config.credentials.params.Logins[idpDomain] = result.getIdToken().getJwtToken();
-				//}
+				// 前端取得登入使用者的 credential 法
+				AWSCognito.config.credentials = new AWSCognito.CognitoIdentityCredentials({
+					IdentityPoolId: 'ap-northeast-1:83570204-11bb-4601-8094-2dc2ccfbc88a',
+					Logins: {
+						'cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_JACElFd4C': result.getIdToken().getJwtToken()
+					}
+				});
 
 				AWSCognito.config.credentials.get(function(err){
 					if (err) return console.log("Error", err);
 					// ************************************************ 這樣寫可以嘎？
+					localStorage.setItem('awsIdToken', result.getIdToken().getJwtToken());
+					jQuery.post("http://localhost:8888/api/ctp-user/sign-in", {idToken: result.getIdToken().getJwtToken()}, function(data){console.log(data);});
 					// 成功透過 FB 登入 AWS Cognito，取得 identity id，不知道有沒有其他取得 identity id 的方法？
 					var identity_id = AWSCognito.config.credentials.identityId;
 					console.log("Cognito Identity Id", AWSCognito.config.credentials.identityId);
@@ -299,7 +232,7 @@
 				console.log("Sign in success");
 				showSignedIn(result);
 
-				window.open("https://camera-trap.tw/mu.html", 'camera_trap_photo_upload');
+				window.open("http://localhost:8888/tagphoto/mu.html", 'camera_trap_photo_upload');
 
 			},
 			onFailure: function(err) {

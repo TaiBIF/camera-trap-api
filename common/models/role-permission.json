@@ -1,6 +1,7 @@
 {
-  "name": "role-permissions",
+  "name": "RolePermission",
   "base": "PersistedModel",
+  "http": {"path": "/role-permission"},
   "idInjection": false,
   "options": {
     "validateUpsert": true

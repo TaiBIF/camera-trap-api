@@ -4,7 +4,7 @@
       {"$unwind": "$dataFieldEnabled"},
       {
         "$lookup": {
-          "from": "data-fields-available",
+          "from": "DataFieldAvailable",
           "localField": "dataFieldEnabled",
           "foreignField": "key",
           "as": "field_details"

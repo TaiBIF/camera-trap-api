@@ -6,7 +6,7 @@
     "validateUpsert": true
   },
   "properties": {
-    "project": {
+    "projectTitle": {
       "type": "string",
       "required": true,
       "description": "// 以下資料都要在資料匯入時填入，不給寫註解只好先塞在描述"
@@ -15,7 +15,7 @@
       "type": "string",
       "required": true
     },
-    "sub_site": {
+    "subSite": {
       "type": "string",
       "default": ""
     },

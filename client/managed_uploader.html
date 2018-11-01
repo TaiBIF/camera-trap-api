@@ -2,7 +2,8 @@
 <html>
   <head>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
-    <script src="./fe_get_credentials.js"></script>
+    <script src="js/cognito-config.js"></script>
+    <script src="js/fe_get_credentials.js"></script>
 
   <script>
 
@@ -99,7 +100,7 @@
 
 
               result[i][j].s3mu_uploader = new AWS.S3.ManagedUpload({
-                params: {Bucket: 'tagphoto', Key: "multi/" + file.name, Body: file},
+                params: {Bucket: mediaBucketName, Key: "upload/" + file.name, Body: file},
                 leavePartsOnError: true // 
               });
         
@@ -111,8 +112,6 @@
             });
           }
         }
-
-        let ffss = 5566;
 
       }
 

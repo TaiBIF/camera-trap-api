@@ -1,5 +1,5 @@
 {
-  "name": "multimedia-metadata",
+  "name": "MultimediaMetadata",
   "base": "MultimediaQueryShared",
   "http": {"path": "/media"},
   "idInjection": false,

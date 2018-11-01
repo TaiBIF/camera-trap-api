@@ -14,7 +14,7 @@
   "permissions": [
     {
       "remoteMethod": "ANY",
-      "collection": "project",
+      "collection": "Project",
       "projectTitle": "OWN"
     }
   ],
@@ -25,12 +25,12 @@
   "permissions": [
     {
       "remoteMethod": "ANY",
-      "collection": "location-data-lock",
+      "collection": "CameraLocationDataLock",
       "projectTitle": "OWN"
     },
     {
       "remoteMethod": "ANY",
-      "collection": "multimedia-annotations",
+      "collection": "MultimediaAnnotation",
       "projectTitle": "OWN"
     }
   ],

@@ -1,5 +1,5 @@
 {
-  "name": "multimedia-annotation-revisions",
+  "name": "MultimediaAnnotationRevision",
   "base": "PersistedModel",
   "http": {"path": "/media/annotation-revision"},
   "idInjection": false,
