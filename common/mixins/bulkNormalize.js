@@ -48,15 +48,15 @@ module.exports = function(Model, options) {
       prevPrefixParts;
     let last = parts[parts.length - 1];
 
-    while (part === parts.shift()) {
+    while (part = parts.shift()) {
       prefixParts = prefixParts + '.' + part;
 
-      if (Number(parseFloat(part) === part)) continue; // this level is item of Array
+      if (Number(parseFloat(part) == part)) continue; // this level is item of Array
 
       console.log(prefixParts, parts[0]);
 
-      if (typeof obj[part] !== 'object') {
-        if (Number(parseFloat(parts[0]) === parts[0])) { // this level is Array
+      if (typeof obj[part] != 'object') {
+        if (Number(parseFloat(parts[0]) == parts[0])) { // this level is Array
           obj[part] = [{}];
           dotNotationArrayIndex[prefixParts] = [];
           dotNotationArrayIndex[prefixParts].push(parts[0]);
@@ -315,7 +315,7 @@ module.exports = function(Model, options) {
         }
 
         // auto set _id field
-        if (dataSourceName !== 'transient') {
+        if (dataSourceName != 'transient') {
           if (!!defProps[propName].id) {
             instance._id = instance[propName];
           }
