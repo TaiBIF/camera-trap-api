@@ -24,7 +24,7 @@
       "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
     ],
     "dataFieldEnabled": [
-      "life-stage",
+      "lifeStage",
       "sex",
       "antler"
     ],
@@ -88,7 +88,7 @@
       "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
     ],
     "dataFieldEnabled": [
-      "life-stage",
+      "lifeStage",
       "sex",
       "antler"
     ],

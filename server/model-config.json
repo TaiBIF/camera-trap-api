@@ -92,5 +92,9 @@
   "Announcement": {
     "dataSource": "mongodb34",
     "public": true
+  },
+  "AbnormalData": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

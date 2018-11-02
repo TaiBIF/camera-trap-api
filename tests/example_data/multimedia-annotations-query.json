@@ -21,7 +21,7 @@
       {
         "$and": [
           {
-            "tokens.data.key": "life-stage"
+            "tokens.data.key": "lifeStage"
           },
           {
             "tokens.data.value": "young"

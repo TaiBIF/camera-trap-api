@@ -9,7 +9,7 @@
     ]
   },
   {
-    "key": "life-stage",
+    "key": "lifeStage",
     "label": "年齡",
     "description": "string",
     "widget_type": "select",

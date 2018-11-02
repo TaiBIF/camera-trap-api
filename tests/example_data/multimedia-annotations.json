@@ -32,7 +32,7 @@
                 },
                 {
                     "label": "年齡",
-                    "key": "life-stage",
+                    "key": "lifeStage",
                     "value": "adult",
                     "unit": "",
                     "data_error_flag": false,
@@ -84,7 +84,7 @@
                 },
                 {
                     "label": "年齡",
-                    "key": "life-stage",
+                    "key": "lifeStage",
                     "value": "young",
                     "unit": "",
                     "data_error_flag": false,
@@ -124,7 +124,7 @@
                 },
                 {
                     "label": "年齡",
-                    "key": "life-stage",
+                    "key": "lifeStage",
                     "value": "adult",
                     "unit": "",
                     "data_error_flag": false,

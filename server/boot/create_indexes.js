@@ -17,6 +17,10 @@ module.exports = function(app) {
       });
     }
 
+
+    ////////////////////////////////////////
+
+
     let MultimediaAnnotation = db.collection('MultimediaAnnotation');
 
     let unique_index_token = [
@@ -51,7 +55,7 @@ module.exports = function(app) {
     ////////////////////////////////////////
 
 
-    let UploadSessions = db.collection('UploadSession');
+    let UploadSession = db.collection('UploadSession');
 
     let index_upload_user = [
       {"by": 1}
@@ -62,7 +66,21 @@ module.exports = function(app) {
     ]
 
     indexes = [index_upload_user, index_upload_location];
-    createIndex(UploadSessions, indexes);
+    createIndex(UploadSession, indexes);
+
+
+    ////////////////////////////////////////
+
+
+    let Project = db.collection('Project');
+
+    let index_unique_location = [
+      {"cameraLocations.fullCameraLocationMd5": 1},
+      {"unique": true, "sparse": true}
+    ];
+
+    indexes = [index_unique_location];
+    createIndex(UploadSession, indexes);
 
 
 

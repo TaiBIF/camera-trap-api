@@ -220,11 +220,16 @@ module.exports = function(Project) {
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
+      let site = data.site;
       let projectTitle = data.projectTitle;
       let to_match = {};
 
       if (fullCameraLocationMd5) {
         to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+      }
+
+      if (site) {
+        to_match['site'] = site;
       }
 
       if (year) {
@@ -307,6 +312,7 @@ module.exports = function(Project) {
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
+      let site = data.site;
       let projectTitle = data.projectTitle;
       let to_match = {
         '$and': [
@@ -317,6 +323,10 @@ module.exports = function(Project) {
 
       if (fullCameraLocationMd5) {
         to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+      }
+
+      if (site) {
+        to_match['site'] = site;
       }
 
       if (year) {

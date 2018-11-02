@@ -27,7 +27,24 @@ module.exports = function(Model, options) {
       }
       //*/
 
-      collection.find(req.query, {projection: req.projection}, function(err, data) {
+      let limit = 1000;
+      if (req.limit !== undefined) {
+        if (Number(parseInt(req.limit)) == req.limit) {
+          limit = req.limit;
+        }
+      }
+
+      if (limit <= 0) limit = 1000;
+      if (limit >= 10000) limit = 10000;
+
+      let skip = 0;
+      if (req.skip !== undefined) {
+        if (Number(parseInt(req.skip)) == req.skip) {
+          skip = req.skip;
+        }
+      }
+
+      collection.find(req.query, {projection: req.projection, limit: limit, skip: skip}, function(err, data) {
         console.log(req);
         if (err) {
           _callback(err)

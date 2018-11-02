@@ -1,0 +1,63 @@
+{
+  "name": "AbnormalData",
+  "base": "PersistedModel",
+  "http": {"path": "/abnormal-data"},
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "abnormalId": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "defaultFn": "uuid"
+    },
+    "projectTitle": {
+      "type": "string",
+      "required": true
+    },
+    "site": {
+      "type": "string",
+      "required": true
+    },
+    "subSite": {
+      "type": "string",
+      "required": true,
+      "default": "NULL"
+    },
+    "cameraLocation": {
+      "type": "string",
+      "required": true
+    },
+    "fullCameraLocationMd5": {
+      "type": "string",
+      "required": true
+    },
+    "abnormalStartDate": {
+      "type": "string",
+      "required": true
+    },
+    "abnormalEndDate": {
+      "type": "string",
+      "required": true
+    },
+    "abnormalType": {
+      "type": "string",
+      "required": true
+    },
+    "remarks": {
+      "type":"string"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

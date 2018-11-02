@@ -106,7 +106,12 @@ module.exports = function(MultimediaAnnotation) {
               "filter": {_id: _revision.url_md5},
               "update": {
                 "$push": {
-                  "revisions": {created: _revision.created, tokens: _revision.tokens}
+                  "revisions": {
+                    $each: [
+                      {created: _revision.created, tokens: _revision.tokens}
+                    ],
+                    $slice: -5
+                  }
                 },
                 "$setOnInsert": {
                   _id: _revision.url_md5,
