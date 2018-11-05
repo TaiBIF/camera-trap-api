@@ -195,7 +195,7 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (let uprop in update['$set']) {
             if (update['$set'].hasOwnProperty(uprop)) {
-              if (!!instance[uprop]) {
+              if (!!instance[uprop] || instance[uprop] === 0) {
                 delete instance[uprop];
               }
             }
@@ -204,7 +204,7 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (let uprop in update['$addToSet']) {
             if (update['$addToSet'].hasOwnProperty(uprop)) {
-              if (!!instance[uprop]) {
+              if (!!instance[uprop] || instance[uprop] === 0) {
                 delete instance[uprop];
               }
             }

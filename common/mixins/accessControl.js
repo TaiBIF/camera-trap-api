@@ -44,9 +44,16 @@ module.exports = function(Model, options) {
       user_info = {user_id: "OrcID_0000-0002-7446-3249"}
       console.log(['made.up', user_info]);
       console.log(context.req.headers);
-      let base64string = context.req.headers.authorization.split('Basic ').pop();
-      let user_password = Buffer.from(base64string, 'base64').toString();
-      console.log(user_password);
+
+      // TODO: add sign in mechanism for lambda 
+      try {
+        let base64string = context.req.headers.authorization.split('Basic ').pop();
+        let user_password = Buffer.from(base64string, 'base64').toString();
+        console.log(user_password);
+      }
+      catch(e) {
+        console.log(e.message);
+      }
     }
 
     let permission_denied_messages = [];
