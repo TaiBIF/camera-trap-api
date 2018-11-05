@@ -29,7 +29,8 @@ module.exports = function(Project) {
 
       // let pm = db.collection(Project.definition.name);
       let cu = db.collection("CtpUser");
-      let user_id = req.session.user_info.user_id;
+      // TODO: remove data.user_id part from following line
+      let user_id = data.user_id || req.session.user_info.user_id;
 
       let sorts = {};
       sorts[sort_key] = 1;
@@ -171,7 +172,8 @@ module.exports = function(Project) {
     Project.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
 
-      let user_id = req.session.user_info.user_id;
+      // TODO: remove data.user_id part from following line
+      let user_id = data.user_id || req.session.user_info.user_id;
 
       let mdl = db.collection("Project");
       let cu = db.collection("CtpUser");

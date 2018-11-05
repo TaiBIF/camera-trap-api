@@ -41,7 +41,7 @@ module.exports = function(Model, options) {
       user_info = context.req.session.user_info;
     }
     else {
-      user_info = {user_id: "OrcID_0000-0003-1335-0184"}
+      user_info = {user_id: "OrcID_0000-0002-7446-3249"}
       console.log(['made.up', user_info]);
       console.log(context.req.headers);
       let base64string = context.req.headers.authorization.split('Basic ').pop();
@@ -67,59 +67,63 @@ module.exports = function(Model, options) {
         let CtpUsers = db.collection("CtpUser");
 
         // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
-        CtpUsers.aggregate(
-          [
-            { '$match': { _id: user_id } },
-            {'$unwind': '$project_roles'},
-            {'$unwind': '$project_roles.roles'},
-            {
-              '$lookup': {
-                from: "RolePermission",
-                localField: "project_roles.roles",
-                foreignField: "role",
-                as: "role_details"
-              }
-            },
-            {'$unwind': {
-              path: '$role_details',
-              preserveNullAndEmptyArrays: true
-            }},
-            {'$unwind': {
-              path: '$role_details.permissions',
-              preserveNullAndEmptyArrays: true
-            }},
-            {
-              '$project': {
-                user_id: '$user_id',
-                name: '$name',
-                projectTitle: '$project_roles.projectTitle',
-                role: '$role_details.role',
-                permissions: '$role_details.permissions',
-                enabled: '$role_details.enabled'
-              }
-            },
-            {
-              '$match': {
-                '$and': [
-                  {
-                    '$or': [
-                      {'permissions.remoteMethod': "ANY"},
-                      {'permissions.remoteMethod': remoteMethodName}
-                    ]
-                  },
-                  {
-                    '$or': [
-                      {'permissions.collection': "ANY"},
-                      {'permissions.collection': targetModelName}
-                    ]
-                  },
-                  {'permissions.projectTitle': {"$ne" : "NA"}},
-                  {'enabled': true}
-                ]
-              }
+        let user_permission_query = [
+          { '$match': { _id: user_id } },
+          {'$unwind': '$project_roles'},
+          {'$unwind': '$project_roles.roles'},
+          {
+            '$lookup': {
+              from: "RolePermission",
+              localField: "project_roles.roles",
+              foreignField: "role",
+              as: "role_details"
             }
-            //*/
-          ], {}, function(err, results){
+          },
+          {'$unwind': {
+            path: '$role_details',
+            preserveNullAndEmptyArrays: true
+          }},
+          {'$unwind': {
+            path: '$role_details.permissions',
+            preserveNullAndEmptyArrays: true
+          }},
+          {
+            '$project': {
+              user_id: '$user_id',
+              name: '$name',
+              projectTitle: '$project_roles.projectTitle',
+              role: '$role_details.role',
+              permissions: '$role_details.permissions',
+              enabled: '$role_details.enabled'
+            }
+          },
+          {
+            '$match': {
+              '$and': [
+                {
+                  '$or': [
+                    {'permissions.remoteMethod': "ANY"},
+                    {'permissions.remoteMethod': remoteMethodName}
+                  ]
+                },
+                {
+                  '$or': [
+                    {'permissions.collection': "ANY"},
+                    {'permissions.collection': targetModelName}
+                  ]
+                },
+                {'permissions.projectTitle': {"$ne" : "NA"}},
+                {'enabled': true}
+              ]
+            }
+          }
+          //*/
+        ];
+
+        console.log(user_permission_query);
+
+        CtpUsers.aggregate(
+          user_permission_query, {}, function(err, results){
             if (err) {
               next(err);
             }

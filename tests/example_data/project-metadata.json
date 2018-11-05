@@ -85,12 +85,27 @@
       "multimedia": "CC BY-NC 4.0"
     },
     "speciesList": [
-      "山羌", "水鹿", "鼬獾", "定時測試", "工作照", "空拍"
+      "空拍",
+      "定時測試",
+      "工作照",
+      "山羌",
+      "水鹿",
+      "獼猴",
+      "鼬獾",
+      "山羊",
+      "野豬",
+      "鼠類",
+      "白鼻心",
+      "人",
+      "藍腹鷴",
+      "食蟹獴",
+      "狗"
     ],
     "dataFieldEnabled": [
       "lifeStage",
       "sex",
-      "antler"
+      "antler",
+      "remarks"
     ],
     "cameraLocations": [
       {
