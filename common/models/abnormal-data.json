@@ -16,8 +16,7 @@
     "abnormalId": {
       "type": "string",
       "id": true,
-      "required": true,
-      "defaultFn": "uuid"
+      "required": true
     },
     "projectTitle": {
       "type": "string",

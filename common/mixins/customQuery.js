@@ -34,6 +34,8 @@ module.exports = function(Model, options) {
         }
       }
 
+      let sort = req.sort || {};
+
       if (limit <= 0) limit = 1000;
       if (limit >= 10000) limit = 10000;
 
@@ -44,7 +46,7 @@ module.exports = function(Model, options) {
         }
       }
 
-      collection.find(req.query, {projection: req.projection, limit: limit, skip: skip}, function(err, data) {
+      collection.find(req.query, {projection: req.projection, limit: limit, skip: skip, sort: sort}, function(err, data) {
         console.log(req);
         if (err) {
           _callback(err)

@@ -179,8 +179,8 @@ module.exports = function(Project) {
       let cu = db.collection("CtpUser");
       mdl.countDocuments({_id: data.projectTitle}, function(err, prj_cnt) {
         if (prj_cnt == 0) {
-          cu.countDocuments({'project_roles.projectTitle': data.projectTitle}, function(err, mngr_cnt){
-            if (mngr_cnt == 0) {
+          cu.find({'project_roles.projectTitle': data.projectTitle, 'project_roles.roles': "ProjectManager"}, {projection: {_id: true}}).toArray(function(err, mngrs){
+            if (mngrs.length == 0) {
               cu.updateOne(
                 {_id: user_id},
                 {
@@ -195,7 +195,17 @@ module.exports = function(Project) {
                   callback(null, res);
                 });
             }
+            else {
+              let pms = [];
+              mngrs.forEach(mngr => {
+                pms.push(mngr._id);
+              });
+              callback(new Error("計畫 `" + data.projectTitle + "` 已被`" + pms.join('`, `') + "`註冊."));
+            }
           });
+        }
+        else {
+          callback(new Error("計畫 `" + data.projectTitle + "` 已經存在."));
         }
       });
     });
@@ -390,5 +400,233 @@ module.exports = function(Project) {
 
     });
   }
+
+  // 已辨識物種數/比例
+  Project.remoteMethod (
+    'imageSpeciesGroup',
+    {
+        http: {path: '/image-species-group', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  Project.imageSpeciesGroup = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+
+      let projectTitle = data.projectTitle;
+      let to_match = {
+        '$and': [
+          {"tokens.species_shortcut": {$ne: "尚未辨識"}},
+          {"tokens.species_shortcut": {$ne: ""}},
+          {"tokens.species_shortcut": {$ne: "無法識別"}},
+          {"tokens.species_shortcut": {$ne: "空拍"}},
+          {"tokens.species_shortcut": {$ne: "定時測試"}},
+          {"tokens.species_shortcut": {$ne: "測試"}},
+          {"tokens.species_shortcut": {$ne: "工作照"}}
+        ]
+      };
+
+      if (projectTitle) {
+        to_match['projectTitle'] = projectTitle;
+      }
+      else {
+        return callback(new Error("請輸入計畫名稱"));
+      }
+
+      let mma = db.collection("MultimediaAnnotation");
+      let aggregate_query = [
+        {
+          "$match": to_match
+        },
+        {
+          "$unwind": "$tokens"
+        },
+        {
+          "$group":{
+            "_id": {"projectTitle": "$projectTitle", "species_shortcut": "$tokens.species_shortcut"},
+            "count": {
+              "$sum": 1
+            },
+            "species": {"$first": "$tokens.species_shortcut"},
+            "projectTitle": {"$first": "$projectTitle"},
+            "modified": {"$max": "$modified"}
+          }
+        },
+        {
+          "$group":{
+            "_id": null,
+            "species_group": {
+              "$push": {
+                "species": "$species",
+                "count": "$count"
+              }
+            },
+            "total": {
+              "$sum": "$count"
+            },
+            "modified": {
+              "$max": "$modified"
+            }
+          }
+        },
+        {
+          "$project":{
+            "_id": false,
+            "species_group": "$species_group",
+            "total": "$total",
+            "modified": "$modified"
+          }
+        },
+      ];
+
+      mma.aggregate(aggregate_query).toArray(function(err, species_image_count) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          if (species_image_count.length == 0) {
+            species_image_count = [{
+              species_group: [],
+              total: 0,
+              modified: null
+            }];
+          }
+
+          callback(null, species_image_count);
+        }
+      });
+
+    });
+  }
+
+  // 已辨識物種數/比例
+  Project.remoteMethod (
+    'locationMonthAbnormal',
+    {
+        http: {path: '/location-month-abnormal', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  Project.locationMonthAbnormal = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+
+      let year = data.year;
+      let site = data.site;
+      let projectTitle = data.projectTitle;
+      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
+      let to_match = {};
+
+      if (fullCameraLocationMd5) {
+        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+      }
+
+      if (site) {
+        to_match['site'] = site;
+      }
+      else {
+        return callback(new Error("請輸入樣區"));
+      }
+
+      if (year) {
+        to_match['abnormalMonthSpan.year'] = year;
+      }
+      else {
+        return callback(new Error("請輸入年份"));
+      }
+
+      if (projectTitle) {
+        to_match['projectTitle'] = projectTitle;
+      }
+      else {
+        return callback(new Error("請輸入計畫名稱"));
+      }      
+      
+      let mdl = db.collection("AbnormalData");
+      let aggregate_query = [
+        {
+          "$match": to_match
+        },
+        {
+          "$unwind": "$abnormalMonthSpan"
+        },
+        {
+          "$group":{
+            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$abnormalMonthSpan.month"},
+            "projectTitle": {"$first": "$projectTitle"},
+            "site": {"$first": "$site"},
+            "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"},
+            "fullCameraLocationMd5": {"$first": "$fullCameraLocationMd5"},
+            "year": {"$first": "$abnormalMonthSpan.year"},
+            "month": {"$first": "$abnormalMonthSpan.month"},
+            "abnormalType": {"$first": "$abnormalType"},
+            "abnormalStartDate": {"$first": "$abnormalStartDate"},
+            "abnormalEndDate": {"$first": "$abnormalEndDate"},
+            "remarks": {"$first": "$remarks"},
+          }
+        },
+        {
+          "$group":{
+            "_id": "$fullCameraLocationMd5",
+            "projectTitle": {"$first": "$projectTitle"},
+            "site": {"$first": "$site"},
+            "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"},
+            "fullCameraLocationMd5": {"$first": "$fullCameraLocationMd5"},
+            "year": {"$first": "$year"},
+            "month": {"$push": "$month"},
+            "abnormalType": {"$first": "$abnormalType"},
+            "abnormalStartDate": {"$first": "$abnormalStartDate"},
+            "abnormalEndDate": {"$first": "$abnormalEndDate"},
+            "remarks": {"$first": "$remarks"},
+          }
+        },
+        {
+          "$project":{
+            "_id": false,
+            "year": "$year",
+            "month": "$month",
+            "projectTitle": "$projectTitle",
+            "site": "$site",
+            "subSite": "$subSite",
+            "cameraLocation": "$cameraLocation",
+            "fullCameraLocationMd5": "$fullCameraLocationMd5",
+            "abnormalType": "$abnormalType",
+            "abnormalStartDate": "$abnormalStartDate",
+            "abnormalEndDate": "$abnormalEndDate",
+            "remarks": "$remarks",
+          }
+        }
+      ];
+
+      console.log(JSON.stringify(aggregate_query, null, 2));
+
+      mdl.aggregate(aggregate_query).toArray(function(err, location_month_abnormal) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          callback(null, location_month_abnormal);
+        }
+      });
+
+    });
+  }
+
+
+
 
 };
