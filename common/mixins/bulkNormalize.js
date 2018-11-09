@@ -147,7 +147,7 @@ module.exports = function(Model, options) {
       }
 
       context.args.data.forEach(function(update, idx, arr) {
-        if (!update._id || (!update['$set'] && !update['$addToSet'])) {
+        if (!update._id || (!update['$set'] && !update['$addToSet'] && !update['$push'])) {
           errMessages.push(JSON.stringify(update));
           errMessages.push('Missing _id or any of update operations from ($set, $addToSet) for update target.');
           throw BreakException;
@@ -175,6 +175,10 @@ module.exports = function(Model, options) {
 
         // 處理 $addToSet
         instance = generateInstanceWithUpdateSet(update['$addToSet'], instance, true);
+
+        // 處理 $push
+        instance = generateInstanceWithUpdateSet(update['$push'], instance, true);
+
         console.log(['$set', instance]);
 
         let updateOnly = true;
@@ -204,6 +208,15 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (let uprop in update['$addToSet']) {
             if (update['$addToSet'].hasOwnProperty(uprop)) {
+              if (!!instance[uprop] || instance[uprop] === 0) {
+                delete instance[uprop];
+              }
+            }
+          }
+
+          // remove duplicate fields in "setOnInsert"
+          for (let uprop in update['$push']) {
+            if (update['$push'].hasOwnProperty(uprop)) {
               if (!!instance[uprop] || instance[uprop] === 0) {
                 delete instance[uprop];
               }

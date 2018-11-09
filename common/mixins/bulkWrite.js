@@ -72,6 +72,7 @@ module.exports = function(Model, options) {
           let upsert = false;
           if (!!doc['$set']) update['$set'] = doc['$set'];
           if (!!doc['$addToSet']) update['$addToSet'] = doc['$addToSet'];
+          if (!!doc['$push']) update['$push'] = doc['$push'];
           if (!!doc['$setOnInsert']) {
             if (typeof doc['$setOnInsert'] === 'object') {
               update['$setOnInsert'] = doc['$setOnInsert'];

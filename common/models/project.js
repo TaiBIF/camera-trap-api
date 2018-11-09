@@ -836,4 +836,78 @@ module.exports = function(Project) {
     });
   }
 
+
+  //////////////
+  Project.remoteMethod (
+    'projectDataFields',
+    {
+        http: {path: '/data-fields', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+          { arg: 'data', type: 'object', http: { source: 'body' } },
+          { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  // 計畫總覽
+  Project.projectDataFields = function (data, req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+     
+      let projectTitle = data.projectTitle;
+
+      let mdl = db.collection('Project');
+      let aggregate_query = [
+        {"$match": {"_id": projectTitle}},
+        {"$unwind": "$dataFieldEnabled"},
+        {
+          "$lookup": {
+            "from": "DataFieldAvailable",
+            "localField": "dataFieldEnabled",
+            "foreignField": "key",
+            "as": "field_details"
+          }
+        },
+        {
+          "$project": {
+            "field_details": "$field_details",
+            "speciesList": "$speciesList",
+            "dailyTestTime": "$dailyTestTime"
+          }
+        },
+        {"$unwind": "$field_details"},
+        {
+          "$group": {
+            "_id": null,
+            "speciesList": {"$first": "$speciesList"},
+            "dailyTestTime": {"$first": "$dailyTestTime"},
+            "fieldDetails": {"$push": "$field_details"}
+          }
+        }
+      ];
+
+      // console.log(JSON.stringify(aggregate_query, null, 2));
+
+      mdl.aggregate(aggregate_query).toArray(function(err, project_data_fields) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          callback(null, project_data_fields);
+        }
+      });
+
+    });
+  }
+
+
+
+
+
+  /////////////
+  
+
+
 };
