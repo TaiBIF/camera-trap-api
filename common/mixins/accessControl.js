@@ -41,15 +41,18 @@ module.exports = function(Model, options) {
       user_info = context.req.session.user_info;
     }
     else {
-      user_info = {user_id: "OrcID_0000-0002-7446-3249"}
-      console.log(['made.up', user_info]);
-      console.log(context.req.headers);
+      //user_info = {user_id: "OrcID_0000-0002-7446-3249"}
+      //console.log(['made.up', user_info]);
+      //console.log(context.req.headers);
 
       // TODO: add sign in mechanism for lambda 
       try {
         let base64string = context.req.headers.authorization.split('Basic ').pop();
         let user_password = Buffer.from(base64string, 'base64').toString();
-        console.log(user_password);
+        if (user_password == process.env.AWS_LAMBDA_AS_USER + ":" + process.env.PASSWD_AWS_LAMBDA_AS_USER) {
+          user_info = {user_id: context.req.headers['camera-trap-user-id']}
+        }
+        // console.log(user_password);
       }
       catch(e) {
         console.log(e.message);

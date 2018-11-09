@@ -380,7 +380,7 @@ module.exports = function(Model, options) {
       if (!!context.req.session && !!context.req.session.user_info) {
         userId = context.req.session.user_info.userId;
       }
-
+      
       context.args.data.forEach(function(instance, idx, arr) {
         // 先這樣，觀察一下日後其他 Model 需求再決定是否搬回 MultimediaAnnotation
         if (modelName.match(/^MultimediaAnnotation/)) {

@@ -14,6 +14,7 @@ module.exports = function(MultimediaAnnotation) {
       let _revision, make_revision, _tokens = [];
       _revision = {};
       make_revision = true;
+      let modifiedBy;
 
       switch (method) {
         case "bulkUpdate":
@@ -22,6 +23,7 @@ module.exports = function(MultimediaAnnotation) {
             console.log("TRYING");
             let testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
+            modifiedBy = d.updateOne.update.$set.modifiedBy;
           }
           catch (e) {
             console.log(['TestRequiredError:', e.message]);
@@ -41,6 +43,7 @@ module.exports = function(MultimediaAnnotation) {
             let testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
+            modifiedBy = d.insertOne.document.modifiedBy;
           }
           catch (e) {
             console.log(['TestRequiredError:', e.message]);
@@ -60,6 +63,7 @@ module.exports = function(MultimediaAnnotation) {
             let testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
+            modifiedBy = d.replaceOne.replacement.modifiedBy;
           }
           catch (e) {
             console.log(['TestRequiredError:', e.message]);
@@ -108,7 +112,7 @@ module.exports = function(MultimediaAnnotation) {
                 "$push": {
                   "revisions": {
                     $each: [
-                      {created: _revision.created, tokens: _revision.tokens}
+                      {modifiedBy: modifiedBy, created: _revision.created, tokens: _revision.tokens}
                     ],
                     $slice: -5
                   }

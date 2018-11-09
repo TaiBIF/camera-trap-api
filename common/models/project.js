@@ -269,25 +269,74 @@ module.exports = function(Project) {
             "num": {
               "$sum": 1
             },
-            "cameraLocation": {"$first": "$cameraLocation"},
             "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"}
+            "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"}
           }
         },
         {
           "$group":{
             "_id": "$_id.fullCameraLocationMd5",
-            "cameraLocation": {"$first": "$cameraLocation"},
             "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
             "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"},
             "monthly_num": {
               "$push": {
                 "month": "$_id.month",
                 "num": "$num"
               }
             }
+          }
+        },
+        {
+          "$lookup": {
+            from: "Project",
+            localField: "_id",
+            foreignField: "cameraLocations.fullCameraLocationMd5",
+            as: "cameraLocationMeta"
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            fullCameraLocationMd5: "$_id",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            monthly_num: "$monthly_num",
+            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
+          }
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$redact": {
+            "$cond": [
+              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
+              "$$KEEP",
+              "$$PRUNE"
+            ]
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            fullCameraLocationMd5: "$fullCameraLocationMd5",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            monthly_num: "$monthly_num",
+            // cameraLocationMeta: "$cameraLocationMeta",
+            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
+            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
           }
         }
       ];
@@ -366,25 +415,74 @@ module.exports = function(Project) {
             "num": {
               "$sum": 1
             },
-            "cameraLocation": {"$first": "$cameraLocation"},
             "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"}
+            "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"}
           }
         },
         {
           "$group":{
             "_id": "$_id.fullCameraLocationMd5",
-            "cameraLocation": {"$first": "$cameraLocation"},
             "projectTitle": {"$first": "$projectTitle"},
             "site": {"$first": "$site"},
             "subSite": {"$first": "$subSite"},
+            "cameraLocation": {"$first": "$cameraLocation"},
             "monthly_num": {
               "$push": {
                 "month": "$_id.month",
                 "num": "$num"
               }
             }
+          }
+        },
+        {
+          "$lookup": {
+            from: "Project",
+            localField: "_id",
+            foreignField: "cameraLocations.fullCameraLocationMd5",
+            as: "cameraLocationMeta"
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            fullCameraLocationMd5: "$_id",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            monthly_num: "$monthly_num",
+            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
+          }
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$redact": {
+            "$cond": [
+              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
+              "$$KEEP",
+              "$$PRUNE"
+            ]
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            fullCameraLocationMd5: "$fullCameraLocationMd5",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            monthly_num: "$monthly_num",
+            // cameraLocationMeta: "$cameraLocationMeta",
+            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
+            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
           }
         }
       ];
@@ -505,7 +603,7 @@ module.exports = function(Project) {
     });
   }
 
-  // 已辨識物種數/比例
+  // 資料異常值
   Project.remoteMethod (
     'locationMonthAbnormal',
     {
@@ -535,9 +633,6 @@ module.exports = function(Project) {
 
       if (site) {
         to_match['site'] = site;
-      }
-      else {
-        return callback(new Error("請輸入樣區"));
       }
 
       if (year) {
@@ -595,19 +690,61 @@ module.exports = function(Project) {
           }
         },
         {
-          "$project":{
-            "_id": false,
-            "year": "$year",
-            "month": "$month",
-            "projectTitle": "$projectTitle",
-            "site": "$site",
-            "subSite": "$subSite",
-            "cameraLocation": "$cameraLocation",
-            "fullCameraLocationMd5": "$fullCameraLocationMd5",
-            "abnormalType": "$abnormalType",
-            "abnormalStartDate": "$abnormalStartDate",
-            "abnormalEndDate": "$abnormalEndDate",
-            "remarks": "$remarks",
+          "$lookup": {
+            from: "Project",
+            localField: "_id",
+            foreignField: "cameraLocations.fullCameraLocationMd5",
+            as: "cameraLocationMeta"
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            year: "$year",
+            month: "$month",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            fullCameraLocationMd5: "$fullCameraLocationMd5",
+            abnormalType: "$abnormalType",
+            abnormalStartDate: "$abnormalStartDate",
+            abnormalEndDate: "$abnormalEndDate",
+            remarks: "$remarks",
+            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
+          }
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$unwind": "$cameraLocationMeta"
+        },
+        {
+          "$redact": {
+            "$cond": [
+              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
+              "$$KEEP",
+              "$$PRUNE"
+            ]
+          }
+        },
+        {
+          "$project": {
+            _id: "$_id",
+            year: "$year",
+            month: "$month",
+            projectTitle: "$projectTitle",
+            site: "$site",
+            subSite: "$subSite",
+            cameraLocation: "$cameraLocation",
+            fullCameraLocationMd5: "$fullCameraLocationMd5",
+            abnormalType: "$abnormalType",
+            abnormalStartDate: "$abnormalStartDate",
+            abnormalEndDate: "$abnormalEndDate",
+            remarks: "$remarks",
+            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
+            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
           }
         }
       ];
@@ -626,7 +763,77 @@ module.exports = function(Project) {
     });
   }
 
+  Project.remoteMethod (
+    'summaryOfAll',
+    {
+        http: {path: '/summary-of-all', verb: 'get'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+          { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
 
+  // 計畫總覽
+  Project.summaryOfAll = function (req, callback) {
+    Project.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+     
+      let mdl = db.collection('CtpUser');
+      let aggregate_query = [
+        {
+          "$unwind": "$project_roles"
+        },
+        {
+          "$unwind": "$project_roles.roles"
+        },
+        {
+          "$lookup": {
+            from: "Project",
+            localField: "project_roles.projectTitle",
+            foreignField: "projectTitle",
+            as: "project"
+          }
+        },
+        {
+          "$unwind": "$project"
+        },
+        {
+          "$group": {
+            _id: "$project._id",
+            members: {
+              "$addToSet": "$user_id"
+            },
+            funder: {$first: "$project.funder"},
+            coverImage: {$first: "$project.cover_image"},
+            earliestRecordTimestamp: {$first: "$project.earliestRecordTimestamp"}
+          }
+        },
+        {
+          "$project": {
+            _id: false,
+            projectTitle: "$_id",
+            members: "$members",
+            funder: "$funder",
+            coverImage: "$coverImage",
+            earliestRecordTimestamp: "$earliestRecordTimestamp"
+          }
+        }
+      ];
 
+      // console.log(JSON.stringify(aggregate_query, null, 2));
+
+      mdl.aggregate(aggregate_query).toArray(function(err, projects_summary) {
+        if (err) {
+          callback(err);
+        }
+        else {
+          callback(null, projects_summary);
+        }
+      });
+
+    });
+  }
 
 };
