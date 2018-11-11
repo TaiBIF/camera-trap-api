@@ -1,10 +1,13 @@
 {
   "name": "MultimediaAnnotationRevision",
   "base": "PersistedModel",
-  "http": {"path": "/media/annotation-revision"},
+  "http": {"path": "/annotation-revision"},
   "idInjection": false,
   "options": {
     "validateUpsert": true
+  },
+  "mixins": {
+    "CustomQuery": true
   },
   "properties": {
     "url_md5": {
