@@ -1,4 +1,5 @@
 module.exports = {
+  parser: 'babel-eslint',
   extends: [
     'airbnb',
     'prettier',
@@ -7,7 +8,9 @@ module.exports = {
     'prettier/standard',
     'loopback',
   ],
+  plugins: ['prettier'],
   rules: {
+    'object-curly-spacing': 0,
     'no-console': 0,
     'global-require': 0,
     'no-unused-expressions': [2, { allowTaggedTemplates: true }],
