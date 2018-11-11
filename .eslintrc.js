@@ -1,13 +1,6 @@
 module.exports = {
   parser: 'babel-eslint',
-  extends: [
-    'airbnb',
-    'prettier',
-    'prettier/flowtype',
-    'prettier/react',
-    'prettier/standard',
-    'loopback',
-  ],
+  extends: ['@tbif/base', 'loopback'],
   plugins: ['prettier'],
   rules: {
     'object-curly-spacing': 0,
