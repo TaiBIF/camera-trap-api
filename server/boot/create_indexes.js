@@ -1,89 +1,72 @@
-'use strict'
-
 module.exports = function(app) {
-
-  app.datasources.mongodb34.connector.connect(function(err, db) {
-
-    let createIndex = function (MongoCollection, indexes) {
-      indexes.forEach(function(index) {
-        MongoCollection.createIndex(index, function(err, ret) {
+  app.datasources.mongodb34.connector.connect((err, db) => {
+    const createIndex = function(MongoCollection, indexes) {
+      indexes.forEach(index => {
+        MongoCollection.createIndex(index, (erri, ret) => {
           if (err) {
-            console.log(err);
-          }
-          else {
+            console.log(erri);
+          } else {
             console.log(ret);
           }
         });
       });
-    }
+    };
 
+    /* media annotation */
 
-    ////////////////////////////////////////
+    const MultimediaAnnotation = db.collection('MultimediaAnnotation');
 
-
-    let MultimediaAnnotation = db.collection('MultimediaAnnotation');
-
-    let unique_index_token = [
+    const uniqueIndexToken = [
       {
-        "tokens.token_id": 1,
+        'tokens.token_id': 1,
       },
       {
-        "unique": true /*,
-        "partialFilterExpression": {
+        unique: true,
+        /*
+          "partialFilterExpression": {
           "tokens.data.value": {
             "$exists": true
           }
-        }
-        //*/
-      }
+        },
+        */
+      },
     ];
 
-    let index_token_data_key_value = [
+    const indexTokenDataKeyValue = [
       {
-        "tokens.data.key": 1,
-        "tokens.data.value": 1
+        'tokens.data.key': 1,
+        'tokens.data.value': 1,
       },
       {
-        sparse: true
-      }
+        sparse: true,
+      },
     ];
 
-    let indexes = [unique_index_token, index_token_data_key_value];
+    let indexes = [uniqueIndexToken, indexTokenDataKeyValue];
     createIndex(MultimediaAnnotation, indexes);
 
+    /* media upload */
 
-    ////////////////////////////////////////
+    const UploadSession = db.collection('UploadSession');
 
+    const indexUploadUser = [{ by: 1 }];
 
-    let UploadSession = db.collection('UploadSession');
+    const indexUploadLocation = [{ fullCameraLocationMd5: 1 }];
 
-    let index_upload_user = [
-      {"by": 1}
-    ];
-
-    let index_upload_location = [
-      {"fullCameraLocationMd5": 1}
-    ]
-
-    indexes = [index_upload_user, index_upload_location];
+    indexes = [indexUploadUser, indexUploadLocation];
     createIndex(UploadSession, indexes);
 
+    /* project */
+    /*
+    const Project = db.collection('Project');
+    */
 
-    ////////////////////////////////////////
-
-
-    let Project = db.collection('Project');
-
-    let index_unique_location = [
-      {"cameraLocations.fullCameraLocationMd5": 1},
-      {"unique": true, "sparse": true}
+    const indexUniqueLocation = [
+      { 'cameraLocations.fullCameraLocationMd5': 1 },
+      { unique: true, sparse: true },
     ];
 
-    indexes = [index_unique_location];
+    indexes = [indexUniqueLocation];
     createIndex(UploadSession, indexes);
-
-
-
   });
-
-}
+};
