@@ -40,12 +40,16 @@ module.exports = function(Model, options) {
       console.log(['context.req.session.user_info', context.req.session.user_info]);
       user_info = context.req.session.user_info;
     }
+    else if (context.req.headers['camera-trap-user-id'] && context.req.headers['camera-trap-user-id-token']) {
+      // TODO: 只在測試環境使用
+      user_info = {user_id: context.req.headers['camera-trap-user-id'], idTokenHash: context.req.headers['camera-trap-user-id-token']}
+    }
     else {
       //user_info = {user_id: "OrcID_0000-0002-7446-3249"}
       //console.log(['made.up', user_info]);
       //console.log(context.req.headers);
 
-      // TODO: add sign in mechanism for lambda 
+      // sign in mechanism for lambda 
       try {
         let base64string = context.req.headers.authorization.split('Basic ').pop();
         let user_password = Buffer.from(base64string, 'base64').toString();
@@ -76,9 +80,14 @@ module.exports = function(Model, options) {
         let remoteMethodName = context.methodString.split(".").pop();
         let CtpUsers = db.collection("CtpUser");
 
+        let matchConditions = { _id: user_id };
+        if (user_info.idTokenHash) {
+          matchConditions['idTokenHash'] = user_info.idTokenHash;
+        }
+
         // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
         let user_permission_query = [
-          { '$match': { _id: user_id } },
+          { '$match': matchConditions },
           {'$unwind': '$project_roles'},
           {'$unwind': '$project_roles.roles'},
           {

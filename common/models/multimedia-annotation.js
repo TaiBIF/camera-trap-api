@@ -1,8 +1,11 @@
 'use strict';
 
-module.exports = function(MultimediaAnnotation) {
-  let addRevision = function(context, user, next) {
+const Json2csvParser = require('json2csv').Parser;
 
+module.exports = function(MultimediaAnnotation) {
+  
+
+  let addRevision = function(context, user, next) {
     let args_data = context.args.data;
     // console.log(context.args.data);
     let method = context.methodString.split(".").pop();
@@ -91,8 +94,9 @@ module.exports = function(MultimediaAnnotation) {
 
           if (keyCounter > 0) {
             return {
-              token_id: t.token_id,
-              data: key_val_pair
+              // token_id: t.token_id,
+              data: t.data,
+              summary: key_val_pair
             }
           }
           else {
@@ -154,6 +158,167 @@ module.exports = function(MultimediaAnnotation) {
       next();
     }
   }
+
+  MultimediaAnnotation.remoteMethod (
+    'basicCalculation',
+    {
+        http: {path: '/calculation', verb: 'post'},
+        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+        accepts: [
+        { arg: 'data', type: 'object', http: { source: 'body' } },
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+        ],
+        returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  MultimediaAnnotation.basicCalculation = function (data, req, callback) {
+    MultimediaAnnotation.getDataSource().connector.connect(function(err, db) {
+      if (err) return next(err);
+ 
+      let toMatch = {};
+
+      let projectTitle = data.projectTitle;
+      if (projectTitle) {
+        toMatch['projectTitle'] = projectTitle;
+      }
+      else {
+        return callback(new Error());
+      }
+
+      let site = data.site;
+      if (site) {
+        toMatch['site'] = site;
+      }
+      else {
+        return callback(new Error());
+      }
+
+      let subSite = data.subSite;
+      if (subSite) {
+        toMatch['subSite'] = subSite;
+      }
+
+      let species = data.species;
+      //*
+      if (species) {
+        toMatch['tokens.data.key'] = 'species';
+        toMatch['tokens.data.value'] = species;
+      }
+      //*/
+
+      let fullCameraLocationMd5s = data.fullCameraLocationMd5s;
+      if (Array.isArray(fullCameraLocationMd5s) && fullCameraLocationMd5s.length > 0) {
+        toMatch['fullCameraLocationMd5'] = {'$in': fullCameraLocationMd5s};
+      }
+
+      let projection = {
+        url: true, 
+        projectTitle: true,
+        site: true,
+        subSite: true,
+        cameraLocation: true,
+        fullCameraLocationMd5: true,
+        tokens: false,
+        'tokens.data.key': true,
+        'tokens.data.value': true,
+        //*
+        tokens: {
+          $elemMatch: {
+            'data.key': 'species',
+            'data.value': species,
+          }
+        },
+
+        //*/
+        corrected_date_time: true,
+        date_time_corrected_timestamp: true
+      }
+
+      let prjMdl = db.collection("Project");
+      prjMdl.findOne({projectTitle: projectTitle}, {projection: {dataFieldEnabled: true}}, function(err, res){
+        if (err) {
+          callback(err);
+        }
+        else {
+          if (res) {
+            let mdl = db.collection("MultimediaAnnotation");
+            let requiredFields = res.dataFieldEnabled || [];
+            requiredFields.push('species');
+
+            mdl.find(toMatch, {projection: projection}).toArray(function(err, results) {
+              if (err) {
+                callback(err);
+              }
+              else {
+
+                let csvTemplate = {};
+                requiredFields.forEach(function(f){
+                  csvTemplate[f] = "NA";
+                });
+
+
+                const keys = Object.keys(csvTemplate).sort((a,b) => b>a);
+                let fields = ['site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
+                fields = fields.concat(keys);
+                const opts = { fields };
+                const parser = new Json2csvParser(opts);
+
+                let csvRecords = [];
+
+                results.forEach(function(annotation){
+                  annotation.tokens.forEach(function(token){
+                    let csvRecord = csvTemplate;
+                    token.data.forEach(function(d){
+                      if (csvRecord[d.key]) {
+                        csvRecord[d.key] = d.value || 'NA';
+                      }
+                    });
+                    //csvRecordArr = keys.map(key => csvRecord[key]);
+                    csvRecord.filename = annotation.url.split("/").pop();
+                    csvRecord.date_time = annotation.corrected_date_time;
+                    csvRecord.site = annotation.site;
+                    csvRecord.subSite = annotation.subSite;
+                    csvRecord.cameraLocation = annotation.cameraLocation;
+                    csvRecords.push(csvRecord);
+                  });
+
+                  let csv = parser.parse(csvRecords);
+                  // TODO: write to S3
+                  let AWS = MultimediaAnnotation.app.aws;
+                  AWS.config.credentials.get(function(err){
+                    if (err) {return callback(err)}
+                    let s3 = new AWS.S3();
+                    s3.upload({Bucket: 'taibif-s3-mount-bucket', Key: "data_for_calculation/user_id_placeholder/session_id_placeholder", Body: csv, ContentType: "text/csv"/*, Tagging: tags_string*/}, {},
+                      function(err, data) {
+                        if (err) {
+                          console.log('ERROR!');
+                          callback(err);
+                        }
+                        else {
+                          console.log('OK');
+                          callback(null, csv);
+                        }
+                      });
+                  });
+
+                });
+
+                //callback(null, results);
+              }
+            });
+          }
+          else {
+            callback(null, null);
+          }
+        }
+      });
+
+      
+
+    });
+  }
+
 
   MultimediaAnnotation.afterRemote("bulkInsert", addRevision);   // tested
   MultimediaAnnotation.afterRemote("bulkReplace", addRevision);  // tested

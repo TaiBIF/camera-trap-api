@@ -55,6 +55,38 @@ module.exports = function(CtpUsers) {
 		    //let formatted = JSON.stringify(tokenobj, undefined, 2);
         //console.log(formatted);
 
+        CtpUsers.getDataSource().connector.connect(function(err, db) {
+          if (err) {
+            return callback(err);
+          }
+          let dateTime = Date.now() / 1000;
+          let mdl = db.collection("CtpUser");
+          mdl.updateOne(
+            {_id: user_id},
+            {
+              $set: {
+                modified: dateTime,
+                idTokenHash: idToken
+              },
+              $setOnInsert: {
+                _id: user_id,
+                user_id: user_id,
+                name: tokenobj.name,
+                email: "",
+                created: dateTime,
+                project_roles: [
+                  {
+                    projectTitle: 'ANY_NEW_TITLE', roles: ['ProjectInitiator']
+                  }
+                ]
+              }
+            },
+            {
+              upsert: true
+            }
+          )
+        });
+
         let user_info = {
           user_id: user_id,
           identity_id: AWS.config.credentials.identityId,
@@ -64,6 +96,7 @@ module.exports = function(CtpUsers) {
 
         req.session.user_info = user_info;
         //let identity_id = AWS.config.credentials.identityId;
+        console.log(req.session);
         console.log("Cognito Identity Id", user_id);
         //*/
         callback(null, user_id);

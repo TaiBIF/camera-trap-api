@@ -21,7 +21,7 @@ module.exports = function(Project) {
 
   Project.getUserRelatedProject = (data, req, callback) => {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
       let sort_key = data.sort_key || "projectStartDate";
@@ -30,7 +30,13 @@ module.exports = function(Project) {
       // let pm = db.collection(Project.definition.name);
       let cu = db.collection("CtpUser");
       // TODO: remove data.user_id part from following line
-      let user_id = data.user_id || req.session.user_info.user_id;
+      let user_id;
+      try {
+        user_id = data.user_id || req.session.user_info.user_id;
+      }
+      catch (e) {
+        return callback(new Error('本機測試請加送參數 { user_id: $your_user_id }'));
+      }
 
       let sorts = {};
       sorts[sort_key] = 1;
@@ -83,7 +89,7 @@ module.exports = function(Project) {
   Project.addUserToProject = function (data, req, callback) {
 
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       // let pm = db.collection(Project.definition.name);
       let cu = db.collection("CtpUser");
@@ -170,7 +176,7 @@ module.exports = function(Project) {
 
   Project.projectInit = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       // TODO: remove data.user_id part from following line
       let user_id = data.user_id || req.session.user_info.user_id;
@@ -228,11 +234,12 @@ module.exports = function(Project) {
 
   Project.getLocationMonthRetrievedNum = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
       let site = data.site;
+      let subSite = data.subSite;
       let projectTitle = data.projectTitle;
       let to_match = {};
 
@@ -242,6 +249,10 @@ module.exports = function(Project) {
 
       if (site) {
         to_match['site'] = site;
+      }
+
+      if (subSite) {
+        to_match['subSite'] = subSite;
       }
 
       if (year) {
@@ -369,11 +380,12 @@ module.exports = function(Project) {
 
   Project.getLocationMonthIdentifiedNum = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let year = data.year;
       let site = data.site;
+      let subSite = data.subSite;
       let projectTitle = data.projectTitle;
       let to_match = {
         '$and': [
@@ -388,6 +400,10 @@ module.exports = function(Project) {
 
       if (site) {
         to_match['site'] = site;
+      }
+
+      if (subSite) {
+        to_match['subSite'] = subSite;
       }
 
       if (year) {
@@ -515,7 +531,7 @@ module.exports = function(Project) {
 
   Project.imageSpeciesGroup = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       let projectTitle = data.projectTitle;
       let to_match = {
@@ -619,10 +635,11 @@ module.exports = function(Project) {
 
   Project.locationMonthAbnormal = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
 
       let year = data.year;
       let site = data.site;
+      let subSite = data.subSite;
       let projectTitle = data.projectTitle;
       let fullCameraLocationMd5 = data.fullCameraLocationMd5;
       let to_match = {};
@@ -633,6 +650,10 @@ module.exports = function(Project) {
 
       if (site) {
         to_match['site'] = site;
+      }
+
+      if (subSite) {
+        to_match['subSite'] = subSite;
       }
 
       if (year) {
@@ -749,7 +770,7 @@ module.exports = function(Project) {
         }
       ];
 
-      console.log(JSON.stringify(aggregate_query, null, 2));
+      // console.log(JSON.stringify(aggregate_query, null, 2));
 
       mdl.aggregate(aggregate_query).toArray(function(err, location_month_abnormal) {
         if (err) {
@@ -778,7 +799,7 @@ module.exports = function(Project) {
   // 計畫總覽
   Project.summaryOfAll = function (req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
      
       let mdl = db.collection('CtpUser');
       let aggregate_query = [
@@ -854,7 +875,7 @@ module.exports = function(Project) {
   // 計畫總覽
   Project.projectDataFields = function (data, req, callback) {
     Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return next(err);
+      if (err) return callback(err);
      
       let projectTitle = data.projectTitle;
 

@@ -42,7 +42,41 @@ module.exports = function(app) {
       },
     ];
 
-    let indexes = [uniqueIndexToken, indexTokenDataKeyValue];
+    const indexProjectTitle = [
+      {
+        'projectTitle': 1
+      }
+    ];
+    
+    const indexSite = [
+      {
+        'site': 1
+      }
+    ];
+    
+    const indexSubSite = [
+      {
+        'subSite': 1
+      },
+      {
+        sparse: true,
+      }
+    ];
+    
+    const indexCameraLocation = [
+      {
+        'cameraLocation': 1
+      }
+    ];
+
+    const indexFullCameraLocationMd5 = [
+      {
+        'fullCameraLocationMd5': 1
+      },
+    ];
+
+
+    let indexes = [uniqueIndexToken, indexTokenDataKeyValue, indexProjectTitle, indexSite, indexSubSite, indexCameraLocation, indexFullCameraLocationMd5];
     createIndex(MultimediaAnnotation, indexes);
 
     /* media upload */
