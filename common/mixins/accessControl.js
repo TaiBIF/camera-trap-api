@@ -3,27 +3,27 @@
 // let lb = require('loopback');
 
 module.exports = function(Model, options) {
-  'use strict';
   // console.log(Model.definition.rawProperties);
 
   /*
   let onlyUnique = function (value, index, self) {
     return self.indexOf(value) === index;
   }
-  //*/
+  // */
 
-  let permissionDenied = function (message) {
-    let PermissionDeniedErr = new Error();
-    PermissionDeniedErr.message = "Permission denied.";
+  const permissionDenied = function(message) {
+    const PermissionDeniedErr = new Error();
+    PermissionDeniedErr.message = 'Permission denied.';
 
-    if (!!message) {
-      PermissionDeniedErr.message = PermissionDeniedErr.message + ": " + message;
+    if (message) {
+      PermissionDeniedErr.message = `${
+        PermissionDeniedErr.message
+      }: ${message}`;
     }
     return PermissionDeniedErr;
-  }
+  };
 
-  let checkPermissions = function(context, user, next) {
-
+  const checkPermissions = function(context, user, next) {
     console.log(['context.req.headers', context.req.headers]);
 
     // Check login status, using
@@ -37,127 +37,142 @@ module.exports = function(Model, options) {
 
     let user_info;
     if (context.req.session && context.req.session.user_info) {
-      console.log(['context.req.session.user_info', context.req.session.user_info]);
+      console.log([
+        'context.req.session.user_info',
+        context.req.session.user_info,
+      ]);
       user_info = context.req.session.user_info;
-    }
-    else if (context.req.headers['camera-trap-user-id'] && context.req.headers['camera-trap-user-id-token']) {
-      // TODO: 只在測試環境使用
-      user_info = {user_id: context.req.headers['camera-trap-user-id'], idTokenHash: context.req.headers['camera-trap-user-id-token']}
-    }
-    else {
-      //user_info = {user_id: "OrcID_0000-0002-7446-3249"}
-      //console.log(['made.up', user_info]);
-      //console.log(context.req.headers);
+    } else if (
+      context.req.headers['camera-trap-user-id'] &&
+      context.req.headers['camera-trap-user-id-token']
+    ) {
+      // TODO: 只在測試環境使用，正式環境要把這兩個 headers 拿掉
+      user_info = {
+        user_id: context.req.headers['camera-trap-user-id'],
+        idTokenHash: context.req.headers['camera-trap-user-id-token'],
+      };
+    } else {
+      // user_info = {user_id: "OrcID_0000-0002-7446-3249"}
+      // console.log(['made.up', user_info]);
+      // console.log(context.req.headers);
 
-      // sign in mechanism for lambda 
+      // sign in mechanism for lambda
       try {
-        let base64string = context.req.headers.authorization.split('Basic ').pop();
-        let user_password = Buffer.from(base64string, 'base64').toString();
-        if (user_password == process.env.AWS_LAMBDA_AS_USER + ":" + process.env.PASSWD_AWS_LAMBDA_AS_USER) {
-          user_info = {user_id: context.req.headers['camera-trap-user-id']}
+        const base64string = context.req.headers.authorization
+          .split('Basic ')
+          .pop();
+        const user_password = Buffer.from(base64string, 'base64').toString();
+        if (
+          user_password ==
+          `${process.env.AWS_LAMBDA_AS_USER}:${
+            process.env.PASSWD_AWS_LAMBDA_AS_USER
+          }`
+        ) {
+          user_info = { user_id: context.req.headers['camera-trap-user-id'] };
         }
         // console.log(user_password);
-      }
-      catch(e) {
+      } catch (e) {
         console.log(e.message);
       }
     }
 
-    let permission_denied_messages = [];
+    const permission_denied_messages = [];
 
     if (user_info) {
-
       // 成功從 session 中取得登入資訊
-      let user_id = user_info.user_id;
+      const user_id = user_info.user_id;
 
-      console.log("User Id", user_id);
+      console.log('User Id', user_id);
 
-      Model.getDataSource().connector.connect(function(err, db) {
+      Model.getDataSource().connector.connect((err, db) => {
+        if (err) {
+          next(err);
+          return;
+        }
 
-        if (err) { next(err); return; }
+        const targetModelName = Model.definition.name;
+        const remoteMethodName = context.methodString.split('.').pop();
+        const CtpUsers = db.collection('CtpUser');
 
-        let targetModelName = Model.definition.name;
-        let remoteMethodName = context.methodString.split(".").pop();
-        let CtpUsers = db.collection("CtpUser");
-
-        let matchConditions = { _id: user_id };
+        const matchConditions = { _id: user_id };
         if (user_info.idTokenHash) {
-          matchConditions['idTokenHash'] = user_info.idTokenHash;
+          matchConditions.idTokenHash = user_info.idTokenHash;
         }
 
         // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
-        let user_permission_query = [
-          { '$match': matchConditions },
-          {'$unwind': '$project_roles'},
-          {'$unwind': '$project_roles.roles'},
+        const user_permission_query = [
+          { $match: matchConditions },
+          { $unwind: '$project_roles' },
+          { $unwind: '$project_roles.roles' },
           {
-            '$lookup': {
-              from: "RolePermission",
-              localField: "project_roles.roles",
-              foreignField: "role",
-              as: "role_details"
-            }
+            $lookup: {
+              from: 'RolePermission',
+              localField: 'project_roles.roles',
+              foreignField: 'role',
+              as: 'role_details',
+            },
           },
-          {'$unwind': {
-            path: '$role_details',
-            preserveNullAndEmptyArrays: true
-          }},
-          {'$unwind': {
-            path: '$role_details.permissions',
-            preserveNullAndEmptyArrays: true
-          }},
           {
-            '$project': {
+            $unwind: {
+              path: '$role_details',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $unwind: {
+              path: '$role_details.permissions',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
               user_id: '$user_id',
               name: '$name',
               projectTitle: '$project_roles.projectTitle',
               role: '$role_details.role',
               permissions: '$role_details.permissions',
-              enabled: '$role_details.enabled'
-            }
+              enabled: '$role_details.enabled',
+            },
           },
           {
-            '$match': {
-              '$and': [
+            $match: {
+              $and: [
                 {
-                  '$or': [
-                    {'permissions.remoteMethod': "ANY"},
-                    {'permissions.remoteMethod': remoteMethodName}
-                  ]
+                  $or: [
+                    { 'permissions.remoteMethod': 'ANY' },
+                    { 'permissions.remoteMethod': remoteMethodName },
+                  ],
                 },
                 {
-                  '$or': [
-                    {'permissions.collection': "ANY"},
-                    {'permissions.collection': targetModelName}
-                  ]
+                  $or: [
+                    { 'permissions.collection': 'ANY' },
+                    { 'permissions.collection': targetModelName },
+                  ],
                 },
-                {'permissions.projectTitle': {"$ne" : "NA"}},
-                {'enabled': true}
-              ]
-            }
-          }
-          //*/
+                { 'permissions.projectTitle': { $ne: 'NA' } },
+                { enabled: true },
+              ],
+            },
+          },
+          //* /
         ];
 
         console.log(user_permission_query);
 
-        CtpUsers.aggregate(
-          user_permission_query, {}, function(err, results){
-            if (err) {
-              next(err);
-            }
-            else {
-              results.toArray(function(err, userPermissions) {
-                if (err) { next(err); return;}
-                else {
-                  console.log(JSON.stringify(userPermissions, null, 2));
-                  if (!userPermissions.length) { next(permissionDenied("You are unauthorized.")); return; }
+        CtpUsers.aggregate(user_permission_query, {}, (err, results) => {
+          if (err) {
+            next(err);
+          } else {
+            results.toArray((err, userPermissions) => {
+              if (err) { next(err); } else {
+                console.log(JSON.stringify(userPermissions, null, 2));
+                if (!userPermissions.length) { next(permissionDenied('You are unauthorized.')); return; }
 
-                  let projectValidated;
-                  if (Model.definition.rawProperties.hasOwnProperty('projectTitle')) {
-                    projectValidated = true;
-                    // 先檢查使用者有無權限鎖計畫範疇資料
-                    args_data.forEach(function(q){ // q for query
+                let projectValidated;
+                if (Model.definition.rawProperties.hasOwnProperty('projectTitle')) {
+                  projectValidated = true;
+                  // 先檢查使用者有無權限鎖計畫範疇資料
+                  args_data.forEach((q) => { // q for query
                       let permission_granted = false;
                       userPermissions.forEach(function(p){ // p for permission
                         if (q.projectTitle === p.projectTitle || p.permissions.projectTitle === 'ANY') {
@@ -166,27 +181,27 @@ module.exports = function(Model, options) {
                       });
                       projectValidated = projectValidated && permission_granted;
                     });
-                  }
-                  else { // no need to validate project
-                    projectValidated = true;
-                  }
-                  console.log(projectValidated);
+                } else { // no need to validate project
+                  projectValidated = true;
+                }
+                console.log(projectValidated);
 
-                  // 基礎
+                // 基礎
 
-                  if (projectValidated) {
-                    switch (targetModelName) {
-                      // @todo change location to cameraLocation
-                      case "CameraLocationDataLock": {
-                        let mdl = db.collection(targetModelName);
+                if (projectValidated) {
+                  switch (targetModelName) {
+                    // @todo change location to cameraLocation
+                    case 'CameraLocationDataLock': {
+                      let mdl = db.collection(targetModelName);
 
-                        // 再檢查資料是否已被他人鎖定
-                        let go = true;
-                        let go_counter = args_data.length;
+                      // 再檢查資料是否已被他人鎖定
+                      let go = true;
+                      let go_counter = args_data.length;
 
-                        args_data.forEach(function(q){ // q for query
+                      args_data.forEach((q) => { // q for query
                           // 強制寫入 locked by
                           q.locked_by = user_id;
+                          q.locked_on = Date.now() / 1000;
                           // 雖然是 toArray 但這個 query 只會回傳單一結果
                           mdl.find({_id: q.fullCameraLocationMd5}).toArray(function(err, dataLock) {
                             console.log([user_id, dataLock]);
@@ -223,20 +238,20 @@ module.exports = function(Model, options) {
                             }
                           });
                         });
-                        break; // end of LocationDataLock logic
-                      }
-                      case "MultimediaAnnotation":
-                      case "MultimediaMetadata": {
-                        /*
+                      break; // end of LocationDataLock logic
+                    }
+                    case 'MultimediaAnnotation':
+                    case 'MultimediaMetadata': {
+                      /*
                         寫入 multimedia annotaiton/medatata 前尚需檢查 cameraLocation lock 的問題
                         TODO: cameraLocation 應該已上鎖 by user
                         1. 檢查待寫入的資料包括哪些 cameraLocation, 但如何得知? => TODO: 每筆待更新資料內含 cameraLocation 資訊
                         2. 檢查資料鎖定表, query cameraLocation with user id (完全成立才放行)
-                        //*/
-                        let uniqueLocationMd5Projects = {};
+                        // */
+                      let uniqueLocationMd5Projects = {};
 
-                        // 列出待鎖的 cameraLocations
-                        args_data.forEach(function(d, idx, arr) {
+                      // 列出待鎖的 cameraLocations
+                      args_data.forEach((d, idx, arr) => {
                           uniqueLocationMd5Projects[d.fullCameraLocationMd5] = d.projectTitle;
 
                           // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
@@ -255,27 +270,28 @@ module.exports = function(Model, options) {
                           }
                         });
 
-                        // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
-                        if (remoteMethodName == "bulkUpdate") {
-                          context.args.data = args_data;
-                        }
+                      // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
+                      if (remoteMethodName == 'bulkUpdate') {
+                        context.args.data = args_data;
+                      }
 
-                        let uniqueLocationMd5s = [];
-                        for (let loc_id in uniqueLocationMd5Projects) {
-                          if (uniqueLocationMd5Projects.hasOwnProperty(loc_id)) {
-                            uniqueLocationMd5s.push({loc_id: loc_id, projectTitle: uniqueLocationMd5Projects[loc_id]});
-                          }
-                        }
+                      let uniqueLocationMd5s = [];
+                      for (const loc_id in uniqueLocationMd5Projects) {
+                        if (uniqueLocationMd5Projects.hasOwnProperty(loc_id)) {
+                          uniqueLocationMd5s.push({loc_id, projectTitle: uniqueLocationMd5Projects[loc_id]});
+                        });
+                      }
+                      }
 
-                        // usage example:
-                        console.log(uniqueLocationMd5s);
+                      // usage example:
+                      console.log(uniqueLocationMd5s);
 
-                        let ldl = db.collection("CameraLocationDataLock");
-                        let go = true;
-                        let go_counter = uniqueLocationMd5s.length;
+                      let ldl = db.collection('CameraLocationDataLock');
+                      let go = true;
+                      let go_counter = uniqueLocationMd5s.length;
 
-                        if (go_counter > 0) {
-                          uniqueLocationMd5s.forEach(function(locPrj){ // q for query
+                      if (go_counter > 0) {
+                        uniqueLocationMd5s.forEach((locPrj) => { // q for query
                             // 雖然是 toArray 但這個 query 只會回傳單一結果
 
                             //
@@ -314,40 +330,35 @@ module.exports = function(Model, options) {
                             });
 
                           });
-                        }
-                        else {
-                          next();
-                        }
-                        break;
-
-                      }
-                      default:
+                      });
+                      else {
                         next();
-                        break;
-                    }
+                      }
+                      break;
+                      }
+                    default:
+                      next();
+                      break;
                   }
-                  else { // projectValidated is false
-                    next(permissionDenied("You have no right to write into this project."));
-                  }
+                } else { // projectValidated is false
+                  next(permissionDenied('You have no right to write into this project.'));
                 }
-              }); // end of results.forEach (function (userPermissions) {})
-            } // collection.aggregate without error
-          });
-
+              }
+            }); // end of results.forEach (function (userPermissions) {})
+          } // collection.aggregate without error
+        });
       });
-
     } // end of if session exists
     else {
-      next(permissionDenied("使用者未登入, 請先登入再執行此操作."));
+      next(permissionDenied('使用者未登入, 請先登入再執行此操作.'));
     }
-  }
+  };
 
   // Model.beforeRemote("bulk*", checkPermissions);
-  Model.beforeRemote("bulkInsert", checkPermissions);
-  Model.beforeRemote("bulkReplace", checkPermissions);
+  Model.beforeRemote('bulkInsert', checkPermissions);
+  Model.beforeRemote('bulkReplace', checkPermissions);
   // bulkUpdate 的自由度高，要注意狀況
-  Model.beforeRemote("bulkUpdate", checkPermissions);
-  Model.beforeRemote("addUserToProject", checkPermissions);
-  Model.beforeRemote("projectInit", checkPermissions);
-}
-
+  Model.beforeRemote('bulkUpdate', checkPermissions);
+  Model.beforeRemote('addUserToProject', checkPermissions);
+  Model.beforeRemote('projectInit', checkPermissions);
+};

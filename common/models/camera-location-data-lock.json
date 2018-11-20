@@ -7,10 +7,10 @@
     "validateUpsert": true
   },
   "mixins": {
+    "AccessControl": true,
     "BulkWrite": true,
     "BulkNormalize": true,
     "CustomQuery": true,
-    "AccessControl": true,
     "TimeStamp": true
   },
   "properties": {

@@ -53,6 +53,11 @@
     },
     "remarks": {
       "type":"string"
+    },
+    "abnormalMonthSpan": {
+      "type": [
+        "object"
+      ]
     }
   },
   "validations": [],

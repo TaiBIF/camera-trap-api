@@ -1,34 +1,30 @@
-'use strict';
 
 const Json2csvParser = require('json2csv').Parser;
+const uuid = require('uuid');
 
 module.exports = function(MultimediaAnnotation) {
-  
-
-  let addRevision = function(context, user, next) {
-    let args_data = context.args.data;
+  const addRevision = function(context, user, next) {
+    const args_data = context.args.data;
     // console.log(context.args.data);
-    let method = context.methodString.split(".").pop();
+    const method = context.methodString.split('.').pop();
     console.log(method);
 
-    let revisions = [];
-    args_data.forEach(function(d) {
-
-      let _revision, make_revision, _tokens = [];
+    const revisions = [];
+    args_data.forEach(d => {
+      let _revision; let make_revision; let _tokens = [];
       _revision = {};
       make_revision = true;
       let modifiedBy;
 
       switch (method) {
-        case "bulkUpdate":
+        case 'bulkUpdate':
 
           try {
-            console.log("TRYING");
-            let testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
+            console.log('TRYING');
+            const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             modifiedBy = d.updateOne.update.$set.modifiedBy;
-          }
-          catch (e) {
+          } catch (e) {
             console.log(['TestRequiredError:', e.message]);
             make_revision = false;
             break;
@@ -39,16 +35,15 @@ module.exports = function(MultimediaAnnotation) {
           _tokens = d.updateOne.update.$set.tokens;
 
           break;
-        case "bulkInsert":
+        case 'bulkInsert':
           // console.log(d.insertOne);
           try {
-            console.log("Trying to create a data revision.");
-            let testRequired = d.insertOne.document.tokens[0].data[0].key;
+            console.log('Trying to create a data revision.');
+            const testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
             modifiedBy = d.insertOne.document.modifiedBy;
-          }
-          catch (e) {
+          } catch (e) {
             console.log(['TestRequiredError:', e.message]);
             make_revision = false;
             break;
@@ -59,16 +54,15 @@ module.exports = function(MultimediaAnnotation) {
           _tokens = d.insertOne.document.tokens;
           break;
 
-        case "bulkReplace":
+        case 'bulkReplace':
 
           try {
-            console.log("TRYING");
-            let testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
+            console.log('TRYING');
+            const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
             if (testRequired === undefined) make_revision = false;
             console.log(testRequired);
             modifiedBy = d.replaceOne.replacement.modifiedBy;
-          }
-          catch (e) {
+          } catch (e) {
             console.log(['TestRequiredError:', e.message]);
             make_revision = false;
             break;
@@ -81,7 +75,6 @@ module.exports = function(MultimediaAnnotation) {
       }
 
       if (make_revision) {
-        
         _revision.tokens = _tokens.map(t => {
           let key_val_pair = {};
           let keyCounter = 0;
@@ -99,37 +92,35 @@ module.exports = function(MultimediaAnnotation) {
               summary: key_val_pair
             }
           }
-          else {
+          
             return false;
-          }
+          
         });
-
-        
-        _revision.tokens = _revision.tokens.filter(t => (t !== false));
+        _revision.tokens = _revision.tokens.filter(t => t !== false);
 
         if (_revision.tokens.length) {
           // console.log(_revision);
-          let updateOne = {
-            "updateOne": {
-              "filter": {_id: _revision.url_md5},
-              "update": {
-                "$push": {
-                  "revisions": {
+          const updateOne = {
+            updateOne: {
+              'filter': {_id: _revision.url_md5},
+              'update': {
+                $push: {
+                  revisions: {
                     $each: [
-                      {modifiedBy: modifiedBy, created: _revision.created, tokens: _revision.tokens}
+                      {modifiedBy, created: _revision.created, tokens: _revision.tokens},
                     ],
-                    $slice: -5
-                  }
+                    $slice: -5,
+                  },
                 },
-                "$setOnInsert": {
+                '$setOnInsert': {
                   _id: _revision.url_md5,
-                  url_md5: _revision.url_md5
-                }
+                  url_md5: _revision.url_md5,
+                },
               },
-              "upsert": true
-            }
-          }
-          
+              'upsert': true,
+            },
+          };
+
           revisions.push(updateOne);
         }
       }
@@ -137,13 +128,13 @@ module.exports = function(MultimediaAnnotation) {
 
     // console.log(JSON.stringify(revisions, null, 2));
     if (revisions.length > 0) {
-      MultimediaAnnotation.getDataSource().connector.connect(function(err, db) {
+      MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
         if (err) return next(err);
 
-        let MAR = db.collection("MultimediaAnnotationRevision");
+        const MAR = db.collection('MultimediaAnnotationRevision');
         // console.log(MAR);
 
-        MAR.bulkWrite(revisions, {ordered: false}, function(err, results) {
+        MAR.bulkWrite(revisions, { ordered: false }, (err, results) => {
           if (err) {
             next(err);
           }
@@ -153,67 +144,76 @@ module.exports = function(MultimediaAnnotation) {
           }
         });
       });
-    }
-    else {
+    } else {
       next();
     }
-  }
+  };
 
-  MultimediaAnnotation.remoteMethod (
-    'basicCalculation',
-    {
-        http: {path: '/calculation', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
+  MultimediaAnnotation.remoteMethod('basicCalculation', {
+    http: { path: '/calculation', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+      accepts: [
         { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
+        { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
     }
-  );
+);
 
-  MultimediaAnnotation.basicCalculation = function (data, req, callback) {
-    MultimediaAnnotation.getDataSource().connector.connect(function(err, db) {
+  MultimediaAnnotation.basicCalculation = function(data, req, callback) {
+    MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
       if (err) return next(err);
- 
-      let toMatch = {};
 
-      let projectTitle = data.projectTitle;
+      console.log(req.session);
+
+      /*
+      {
+        "projectTitle": "測試計畫1",
+        "site": "臺東處",
+        "subSite": "NULL",
+        "species": "山羌"
+      }
+      // */
+
+      const toMatch = {};
+
+      const projectTitle = data.projectTitle;
       if (projectTitle) {
-        toMatch['projectTitle'] = projectTitle;
-      }
-      else {
+        toMatch.projectTitle = projectTitle;
+      } else {
         return callback(new Error());
       }
 
-      let site = data.site;
+      const site = data.site;
       if (site) {
-        toMatch['site'] = site;
-      }
-      else {
+        toMatch.site = site;
+      } else {
         return callback(new Error());
       }
 
-      let subSite = data.subSite;
+      const subSite = data.subSite;
       if (subSite) {
-        toMatch['subSite'] = subSite;
+        toMatch.subSite = subSite;
       }
 
-      let species = data.species;
-      //*
+      const species = data.species;
+      //* 
       if (species) {
         toMatch['tokens.data.key'] = 'species';
         toMatch['tokens.data.value'] = species;
       }
-      //*/
+      //* /
 
-      let fullCameraLocationMd5s = data.fullCameraLocationMd5s;
-      if (Array.isArray(fullCameraLocationMd5s) && fullCameraLocationMd5s.length > 0) {
-        toMatch['fullCameraLocationMd5'] = {'$in': fullCameraLocationMd5s};
+      const fullCameraLocationMd5s = data.fullCameraLocationMd5s;
+      if (
+        Array.isArray(fullCameraLocationMd5s) &&
+        fullCameraLocationMd5s.length > 0
+      ) {
+        toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
       }
 
-      let projection = {
-        url: true, 
+      const projection = {
+        url: true,
         projectTitle: true,
         site: true,
         subSite: true,
@@ -222,31 +222,34 @@ module.exports = function(MultimediaAnnotation) {
         tokens: false,
         'tokens.data.key': true,
         'tokens.data.value': true,
-        //*
+        //* 
         tokens: {
           $elemMatch: {
             'data.key': 'species',
             'data.value': species,
-          }
+          },
         },
 
-        //*/
+        //* /
         corrected_date_time: true,
-        date_time_corrected_timestamp: true
-      }
+        date_time_corrected_timestamp: true,
+      };
 
-      let prjMdl = db.collection("Project");
-      prjMdl.findOne({projectTitle: projectTitle}, {projection: {dataFieldEnabled: true}}, function(err, res){
-        if (err) {
-          callback(err);
-        }
-        else {
-          if (res) {
+      const prjMdl = db.collection('Project');
+      // 取得計畫啟用的自訂欄位
+      prjMdl.findOne(
+        { projectTitle: projectTitle },
+        { projection: { dataFieldEnabled: true } },
+        function(err, res) {
+          if (err) {
+            callback(err);
+          } else if (res) {
             let mdl = db.collection("MultimediaAnnotation");
             let requiredFields = res.dataFieldEnabled || [];
-            requiredFields.push('species');
+            requiredFields = ['species'].concat(requiredFields);
+            console.log(requiredFields);
 
-            mdl.find(toMatch, {projection: projection}).toArray(function(err, results) {
+            mdl.find(toMatch, {projection: projection, sort: [['cameraLocation', 1], ['date_time_corrected_timestamp', 1], ['uploaded_file_name', 1]]}).toArray(function(err, results) {
               if (err) {
                 callback(err);
               }
@@ -257,18 +260,20 @@ module.exports = function(MultimediaAnnotation) {
                   csvTemplate[f] = "NA";
                 });
 
-
-                const keys = Object.keys(csvTemplate).sort((a,b) => b>a);
-                let fields = ['site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
+                const keys = Object.keys(csvTemplate); //.sort((a,b) => b>a);
+                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
                 fields = fields.concat(keys);
                 const opts = { fields };
                 const parser = new Json2csvParser(opts);
 
                 let csvRecords = [];
 
+                let csv = '';
+
                 results.forEach(function(annotation){
                   annotation.tokens.forEach(function(token){
-                    let csvRecord = csvTemplate;
+                    let csvRecord = {};
+                    Object.assign(csvRecord, csvTemplate);
                     token.data.forEach(function(d){
                       if (csvRecord[d.key]) {
                         csvRecord[d.key] = d.value || 'NA';
@@ -277,32 +282,52 @@ module.exports = function(MultimediaAnnotation) {
                     //csvRecordArr = keys.map(key => csvRecord[key]);
                     csvRecord.filename = annotation.url.split("/").pop();
                     csvRecord.date_time = annotation.corrected_date_time;
+                    csvRecord.projectTitle = projectTitle,
                     csvRecord.site = annotation.site;
                     csvRecord.subSite = annotation.subSite;
                     csvRecord.cameraLocation = annotation.cameraLocation;
                     csvRecords.push(csvRecord);
                   });
 
-                  let csv = parser.parse(csvRecords);
-                  // TODO: write to S3
-                  let AWS = MultimediaAnnotation.app.aws;
-                  AWS.config.credentials.get(function(err){
-                    if (err) {return callback(err)}
-                    let s3 = new AWS.S3();
-                    s3.upload({Bucket: 'taibif-s3-mount-bucket', Key: "data_for_calculation/user_id_placeholder/session_id_placeholder", Body: csv, ContentType: "text/csv"/*, Tagging: tags_string*/}, {},
-                      function(err, data) {
-                        if (err) {
-                          console.log('ERROR!');
-                          callback(err);
-                        }
-                        else {
-                          console.log('OK');
-                          callback(null, csv);
-                        }
-                      });
-                  });
-
                 });
+
+                csv = parser.parse(csvRecords);
+                // TODO: write to S3
+                let AWS = MultimediaAnnotation.app.aws;
+                console.log('Before getting credentials')
+
+                function uploadToS3 (params) {
+                  let s3 = new AWS.S3();
+                  s3.upload(params, {},
+                    function(err, data) {
+                      if (err) {
+                        console.log('ERROR!');
+                        callback(err);
+                      }
+                      else {
+                        console.log('OK');
+                        callback(null, csv);
+                      }
+                    });
+                }
+
+                let fileToBeAnalyzed = uuid() + ".csv";
+                let params = {
+                  Bucket: 'taibif-s3-mount-bucket', 
+                  Key: "data_for_calculation/" + fileToBeAnalyzed, 
+                  Body: csv, 
+                  ContentType: "text/csv",
+                  ACL: 'public-read'
+                };
+
+                uploadToS3(params);
+
+                /*
+                AWS.config.credentials.get(function(err){
+                  if (err) {return callback(err)}
+                  uploadToS3(params);
+                });
+                //*/
 
                 //callback(null, results);
               }
@@ -311,54 +336,64 @@ module.exports = function(MultimediaAnnotation) {
           else {
             callback(null, null);
           }
-        }
-      });
+        },
 
-      
 
     });
-  }
+  };
 
+  MultimediaAnnotation.afterRemote('bulkInsert', addRevision); // tested
+  MultimediaAnnotation.afterRemote('bulkReplace', addRevision); // tested
+  MultimediaAnnotation.afterRemote('bulkUpdate', addRevision); // tested
 
-  MultimediaAnnotation.afterRemote("bulkInsert", addRevision);   // tested
-  MultimediaAnnotation.afterRemote("bulkReplace", addRevision);  // tested
-  MultimediaAnnotation.afterRemote("bulkUpdate", addRevision);   // tested
+  MultimediaAnnotation.disableRemoteMethodByName('upsert'); // disables PATCH /MultimediaAnnotation
+  MultimediaAnnotation.disableRemoteMethodByName('find'); // disables GET /MultimediaAnnotation
+  MultimediaAnnotation.disableRemoteMethodByName('replaceOrCreate'); // disables PUT /MultimediaAnnotation
+  MultimediaAnnotation.disableRemoteMethodByName('create'); // disables POST /MultimediaAnnotation
 
-  MultimediaAnnotation.disableRemoteMethodByName("upsert");                               // disables PATCH /MultimediaAnnotation
-  MultimediaAnnotation.disableRemoteMethodByName("find");                                 // disables GET /MultimediaAnnotation
-  MultimediaAnnotation.disableRemoteMethodByName("replaceOrCreate");                      // disables PUT /MultimediaAnnotation
-  MultimediaAnnotation.disableRemoteMethodByName("create");                               // disables POST /MultimediaAnnotation
-
-  MultimediaAnnotation.disableRemoteMethodByName("prototype.updateAttributes");           // disables PATCH /MultimediaAnnotation/{id}
+  MultimediaAnnotation.disableRemoteMethodByName('prototype.updateAttributes'); // disables PATCH /MultimediaAnnotation/{id}
   // MultimediaAnnotation.disableRemoteMethodByName("findById");                             // disables GET /MultimediaAnnotation/{id}
-  MultimediaAnnotation.disableRemoteMethodByName("exists");                               // disables HEAD /MultimediaAnnotation/{id}
-  MultimediaAnnotation.disableRemoteMethodByName("replaceById");                          // disables PUT /MultimediaAnnotation/{id}
-  MultimediaAnnotation.disableRemoteMethodByName("deleteById");                           // disables DELETE /MultimediaAnnotation/{id}
+  MultimediaAnnotation.disableRemoteMethodByName('exists'); // disables HEAD /MultimediaAnnotation/{id}
+  MultimediaAnnotation.disableRemoteMethodByName('replaceById'); // disables PUT /MultimediaAnnotation/{id}
+  MultimediaAnnotation.disableRemoteMethodByName('deleteById'); // disables DELETE /MultimediaAnnotation/{id}
 
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__get__accessTokens');        // disable GET /MultimediaAnnotation/{id}/accessTokens
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__create__accessTokens');     // disable POST /MultimediaAnnotation/{id}/accessTokens
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__delete__accessTokens');     // disable DELETE /MultimediaAnnotation/{id}/accessTokens
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__get__accessTokens',
+  ); // disable GET /MultimediaAnnotation/{id}/accessTokens
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__create__accessTokens',
+  ); // disable POST /MultimediaAnnotation/{id}/accessTokens
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__delete__accessTokens',
+  ); // disable DELETE /MultimediaAnnotation/{id}/accessTokens
 
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__findById__accessTokens');   // disable GET /MultimediaAnnotation/{id}/accessTokens/{fk}
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__updateById__accessTokens'); // disable PUT /MultimediaAnnotation/{id}/accessTokens/{fk}
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__destroyById__accessTokens');// disable DELETE /MultimediaAnnotation/{id}/accessTokens/{fk}
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__findById__accessTokens',
+  ); // disable GET /MultimediaAnnotation/{id}/accessTokens/{fk}
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__updateById__accessTokens',
+  ); // disable PUT /MultimediaAnnotation/{id}/accessTokens/{fk}
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__destroyById__accessTokens',
+  ); // disable DELETE /MultimediaAnnotation/{id}/accessTokens/{fk}
 
-  MultimediaAnnotation.disableRemoteMethodByName('prototype.__count__accessTokens');      // disable  GET /MultimediaAnnotation/{id}/accessTokens/count
+  MultimediaAnnotation.disableRemoteMethodByName(
+    'prototype.__count__accessTokens',
+  ); // disable  GET /MultimediaAnnotation/{id}/accessTokens/count
 
-  MultimediaAnnotation.disableRemoteMethodByName("prototype.verify");                     // disable POST /MultimediaAnnotation/{id}/verify
-  MultimediaAnnotation.disableRemoteMethodByName("changePassword");                       // disable POST /MultimediaAnnotation/change-password
-  MultimediaAnnotation.disableRemoteMethodByName("createChangeStream");                   // disable GET and POST /MultimediaAnnotation/change-stream
+  MultimediaAnnotation.disableRemoteMethodByName('prototype.verify'); // disable POST /MultimediaAnnotation/{id}/verify
+  MultimediaAnnotation.disableRemoteMethodByName('changePassword'); // disable POST /MultimediaAnnotation/change-password
+  MultimediaAnnotation.disableRemoteMethodByName('createChangeStream'); // disable GET and POST /MultimediaAnnotation/change-stream
 
-  MultimediaAnnotation.disableRemoteMethodByName("confirm");                              // disables GET /MultimediaAnnotation/confirm
-  MultimediaAnnotation.disableRemoteMethodByName("count");                                // disables GET /MultimediaAnnotation/count
-  MultimediaAnnotation.disableRemoteMethodByName("findOne");                              // disables GET /MultimediaAnnotation/findOne
+  MultimediaAnnotation.disableRemoteMethodByName('confirm'); // disables GET /MultimediaAnnotation/confirm
+  MultimediaAnnotation.disableRemoteMethodByName('count'); // disables GET /MultimediaAnnotation/count
+  MultimediaAnnotation.disableRemoteMethodByName('findOne'); // disables GET /MultimediaAnnotation/findOne
 
-  MultimediaAnnotation.disableRemoteMethodByName("login");                                // disables POST /MultimediaAnnotation/login
-  MultimediaAnnotation.disableRemoteMethodByName("logout");                               // disables POST /MultimediaAnnotation/logout
+  MultimediaAnnotation.disableRemoteMethodByName('login'); // disables POST /MultimediaAnnotation/login
+  MultimediaAnnotation.disableRemoteMethodByName('logout'); // disables POST /MultimediaAnnotation/logout
 
-  MultimediaAnnotation.disableRemoteMethodByName("resetPassword");                        // disables POST /MultimediaAnnotation/reset
-  MultimediaAnnotation.disableRemoteMethodByName("setPassword");                          // disables POST /MultimediaAnnotation/reset-password
-  MultimediaAnnotation.disableRemoteMethodByName("update");                               // disables POST /MultimediaAnnotation/update
-  MultimediaAnnotation.disableRemoteMethodByName("upsertWithWhere");                      // disables POST /MultimediaAnnotation/upsertWithWhere
-      
+  MultimediaAnnotation.disableRemoteMethodByName('resetPassword'); // disables POST /MultimediaAnnotation/reset
+  MultimediaAnnotation.disableRemoteMethodByName('setPassword'); // disables POST /MultimediaAnnotation/reset-password
+  MultimediaAnnotation.disableRemoteMethodByName('update'); // disables POST /MultimediaAnnotation/update
+  MultimediaAnnotation.disableRemoteMethodByName('upsertWithWhere'); // disables POST /MultimediaAnnotation/upsertWithWhere
 };
