@@ -149,7 +149,7 @@ module.exports = function(Model, options) {
       context.args.data.forEach(function(update, idx, arr) {
         if (!update._id || (!update['$set'] && !update['$addToSet'] && !update['$push'])) {
           errMessages.push(JSON.stringify(update));
-          errMessages.push('Missing _id or any of update operations from ($set, $addToSet) for update target.');
+          errMessages.push('Missing _id or any of update operations from ($set, $addToSet, $push) for update target.');
           throw BreakException;
         }
 

@@ -18,10 +18,6 @@
       "id": true,
       "required": true
     },
-    "id_token": {
-      "type": "string",
-      "default": ""
-    },
     "name": {
       "type": "string",
       "required": true

@@ -102,8 +102,58 @@ module.exports = function(CtpUsers) {
         callback(null, user_id);
       }
     });
-
     //*/
+  }
+
+  CtpUsers.remoteMethod (
+    'whoAmI',
+    {
+      http: {path: '/me', verb: 'get'},
+      // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+      accepts: [
+        { arg: 'req', type: 'object', http: { source: 'req' } }
+      ],
+      returns: { arg: 'ret', type: 'object' }
+    }
+  );
+
+  CtpUsers.whoAmI = function (req, callback) {
+
+    console.log(req.headers);
+
+    let user_id;
+    
+    try {
+      user_id = req.session.user_info.user_id;
+    }
+    catch (e) {
+      callback(new Error('使用者未登入'));
+    }
+
+    // TODO: 只在測試環境使用，正式環境要把這個 headers 拿掉
+    try {
+      user_id = req.headers['camera-trap-user-id'];
+    }
+    catch (e) {
+      callback(new Error('使用者未登入'));
+    }
+
+    CtpUsers.getDataSource().connector.connect(function(err, db) {
+      
+      if (err) {
+        return callback(err);
+      }
+
+      let mdl = db.collection("CtpUser");
+      mdl.findOne({_id: user_id}, {projection: {project_roles: false, idTokenHash: false, _id: false, id_token: false}}, function(err, result){
+        if (err) {
+          return callback(err);
+        }
+        else {
+          return callback(null, result);
+        }
+      });
+    });
   }
 
 };

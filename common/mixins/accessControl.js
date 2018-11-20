@@ -41,7 +41,7 @@ module.exports = function(Model, options) {
       user_info = context.req.session.user_info;
     }
     else if (context.req.headers['camera-trap-user-id'] && context.req.headers['camera-trap-user-id-token']) {
-      // TODO: 只在測試環境使用
+      // TODO: 只在測試環境使用，正式環境要把這兩個 headers 拿掉
       user_info = {user_id: context.req.headers['camera-trap-user-id'], idTokenHash: context.req.headers['camera-trap-user-id-token']}
     }
     else {
@@ -187,6 +187,7 @@ module.exports = function(Model, options) {
                         args_data.forEach(function(q){ // q for query
                           // 強制寫入 locked by
                           q.locked_by = user_id;
+                          q.locked_on = Date.now() / 1000;
                           // 雖然是 toArray 但這個 query 只會回傳單一結果
                           mdl.find({_id: q.fullCameraLocationMd5}).toArray(function(err, dataLock) {
                             console.log([user_id, dataLock]);

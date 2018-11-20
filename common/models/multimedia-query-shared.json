@@ -38,6 +38,10 @@
       "type": "string",
       "description": "// 來自 exif 中的 raw 值，一個例子是 2017:02:09 06:11:09"
     },
+    "corrected_date_time": {
+      "type": "string",
+      "description": "// 使用者由 CSV 資料檔匯入的正確時間，以標準格式 YYYY-MM-DD hh:ii:ss 或 YYYY/MM/DD hh:ii:ss 呈現。如果使用者未匯入，則來自 date_time_original。"
+    },
     "date_time_original_timestamp": {
       "type": "number",
       "required": true,

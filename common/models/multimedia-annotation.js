@@ -1,6 +1,7 @@
 'use strict';
 
 const Json2csvParser = require('json2csv').Parser;
+const uuid = require('uuid');
 
 module.exports = function(MultimediaAnnotation) {
   
@@ -175,7 +176,19 @@ module.exports = function(MultimediaAnnotation) {
   MultimediaAnnotation.basicCalculation = function (data, req, callback) {
     MultimediaAnnotation.getDataSource().connector.connect(function(err, db) {
       if (err) return next(err);
- 
+
+      console.log(req.session);
+      
+      /*
+      {
+        "projectTitle": "測試計畫1",
+        "site": "臺東處",
+        "subSite": "NULL",
+        "species": "山羌"
+      }
+      //*/
+
+
       let toMatch = {};
 
       let projectTitle = data.projectTitle;
@@ -236,6 +249,7 @@ module.exports = function(MultimediaAnnotation) {
       }
 
       let prjMdl = db.collection("Project");
+      // 取得計畫啟用的自訂欄位
       prjMdl.findOne({projectTitle: projectTitle}, {projection: {dataFieldEnabled: true}}, function(err, res){
         if (err) {
           callback(err);
@@ -244,9 +258,10 @@ module.exports = function(MultimediaAnnotation) {
           if (res) {
             let mdl = db.collection("MultimediaAnnotation");
             let requiredFields = res.dataFieldEnabled || [];
-            requiredFields.push('species');
+            requiredFields = ['species'].concat(requiredFields);
+            console.log(requiredFields);
 
-            mdl.find(toMatch, {projection: projection}).toArray(function(err, results) {
+            mdl.find(toMatch, {projection: projection, sort: [['cameraLocation', 1], ['date_time_corrected_timestamp', 1], ['uploaded_file_name', 1]]}).toArray(function(err, results) {
               if (err) {
                 callback(err);
               }
@@ -257,18 +272,20 @@ module.exports = function(MultimediaAnnotation) {
                   csvTemplate[f] = "NA";
                 });
 
-
-                const keys = Object.keys(csvTemplate).sort((a,b) => b>a);
-                let fields = ['site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
+                const keys = Object.keys(csvTemplate); //.sort((a,b) => b>a);
+                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
                 fields = fields.concat(keys);
                 const opts = { fields };
                 const parser = new Json2csvParser(opts);
 
                 let csvRecords = [];
 
+                let csv = '';
+
                 results.forEach(function(annotation){
                   annotation.tokens.forEach(function(token){
-                    let csvRecord = csvTemplate;
+                    let csvRecord = {};
+                    Object.assign(csvRecord, csvTemplate);
                     token.data.forEach(function(d){
                       if (csvRecord[d.key]) {
                         csvRecord[d.key] = d.value || 'NA';
@@ -277,32 +294,52 @@ module.exports = function(MultimediaAnnotation) {
                     //csvRecordArr = keys.map(key => csvRecord[key]);
                     csvRecord.filename = annotation.url.split("/").pop();
                     csvRecord.date_time = annotation.corrected_date_time;
+                    csvRecord.projectTitle = projectTitle,
                     csvRecord.site = annotation.site;
                     csvRecord.subSite = annotation.subSite;
                     csvRecord.cameraLocation = annotation.cameraLocation;
                     csvRecords.push(csvRecord);
                   });
 
-                  let csv = parser.parse(csvRecords);
-                  // TODO: write to S3
-                  let AWS = MultimediaAnnotation.app.aws;
-                  AWS.config.credentials.get(function(err){
-                    if (err) {return callback(err)}
-                    let s3 = new AWS.S3();
-                    s3.upload({Bucket: 'taibif-s3-mount-bucket', Key: "data_for_calculation/user_id_placeholder/session_id_placeholder", Body: csv, ContentType: "text/csv"/*, Tagging: tags_string*/}, {},
-                      function(err, data) {
-                        if (err) {
-                          console.log('ERROR!');
-                          callback(err);
-                        }
-                        else {
-                          console.log('OK');
-                          callback(null, csv);
-                        }
-                      });
-                  });
-
                 });
+
+                csv = parser.parse(csvRecords);
+                // TODO: write to S3
+                let AWS = MultimediaAnnotation.app.aws;
+                console.log('Before getting credentials')
+
+                function uploadToS3 (params) {
+                  let s3 = new AWS.S3();
+                  s3.upload(params, {},
+                    function(err, data) {
+                      if (err) {
+                        console.log('ERROR!');
+                        callback(err);
+                      }
+                      else {
+                        console.log('OK');
+                        callback(null, csv);
+                      }
+                    });
+                }
+
+                let fileToBeAnalyzed = uuid() + ".csv";
+                let params = {
+                  Bucket: 'taibif-s3-mount-bucket', 
+                  Key: "data_for_calculation/" + fileToBeAnalyzed, 
+                  Body: csv, 
+                  ContentType: "text/csv",
+                  ACL: 'public-read'
+                };
+
+                uploadToS3(params);
+
+                /*
+                AWS.config.credentials.get(function(err){
+                  if (err) {return callback(err)}
+                  uploadToS3(params);
+                });
+                //*/
 
                 //callback(null, results);
               }
