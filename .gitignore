@@ -10,6 +10,11 @@
 *.swp
 *.tgz
 *.xml
+*.jpg
+*.jpeg
+*.mp4
+*.avi
+*.zip
 .DS_Store
 .idea
 .project
