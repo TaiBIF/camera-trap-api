@@ -336,8 +336,8 @@ module.exports = function(MultimediaAnnotation) {
           else {
             callback(null, null);
           }
-        },
-
+        }
+      );
 
     });
   };

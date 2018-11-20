@@ -279,8 +279,7 @@ module.exports = function(Model, options) {
                       for (const loc_id in uniqueLocationMd5Projects) {
                         if (uniqueLocationMd5Projects.hasOwnProperty(loc_id)) {
                           uniqueLocationMd5s.push({loc_id, projectTitle: uniqueLocationMd5Projects[loc_id]});
-                        });
-                      }
+                        }
                       }
 
                       // usage example:
@@ -329,9 +328,8 @@ module.exports = function(Model, options) {
 
                             });
 
-                          });
-                      });
-                      else {
+                        });
+                      } else {
                         next();
                       }
                       break;

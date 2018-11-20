@@ -319,13 +319,7 @@ let prefixParts = Model.definition.name,
             defaultValue = defProps[propName].default;
           }
 
-          if (instance[propName] === undefined)
-            instance[propName] =
-              defaultValue !== undefined
-                ? defaultValue
-                : typeof defaultFn === 'function'
-                  defaultFn() :
-                  undefined;
+          if (instance[propName] === undefined) instance[propName] = ((defaultValue !== undefined) ? defaultValue : ((typeof defaultFn === 'function') ? defaultFn() : undefined)); 
 
           // console.log("XXXXXXXXXXXXXXXX " + defProps[propName]);
         }
