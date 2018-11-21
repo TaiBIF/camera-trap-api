@@ -96,5 +96,9 @@
   "AbnormalData": {
     "dataSource": "mongodb34",
     "public": true
+  },
+  "UserReport": {
+    "dataSource": "mongodb34",
+    "public": true
   }
 }

@@ -1,0 +1,47 @@
+{
+  "name": "UserReport",
+  "base": "PersistedModel",
+  "http": {"path": "/user-report"},
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "reportId": {
+      "type": "string",
+      "id": true,
+      "required": true
+    },
+    "reportType": {
+      "type": "string",
+      "required": true
+    },
+    "reportContentType": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "string",
+      "required": true
+    },
+    "attachments": {
+      "type": [
+          "string"
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
