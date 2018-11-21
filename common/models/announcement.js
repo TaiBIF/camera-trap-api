@@ -160,12 +160,60 @@ module.exports = function(Announcement) {
           }
           else {
             allNotifications = allNotifications.concat(results);
-            // TODO: 欄位申請、問題回報、意見反饋
-            allNotifications.sort((a,b) => {return (a.modified < b.modified)});
-            callback(null, allNotifications);
+            getUserReports();
           }
         });
+      }
 
+      function getUserReports () {
+        let userModel = db.collection('CtpUser');
+        let reportModel = db.collection('UserReport');
+        let roles = ["SysAdmin"];
+
+        let query = {
+          "_id": user_id,
+          "project_roles.roles": {
+            "$in": roles
+          }
+        }
+        
+        userModel.findOne(query, {}, function(err, result) {
+          console.log(['SysAdmin', result]);
+          if (err) {
+            callback(err);
+          }
+          else {
+            if (!result) {
+              allNotifications.sort((a,b) => {return (b.modified - a.modified)});
+              callback(null, allNotifications);
+            }
+            else {
+              reportModel.find({}, {limit: 10}).toArray(function(err, results) {
+                if (err) {
+                  callback(err);
+                }
+                else {
+
+                  results.forEach(function(item, idx, arr){
+                    arr[idx].message = '<' + item.email + '><br/>[' + item.reportType + '][' + item.reportContentType + ']<br/>' + item.description;
+                    if (item.reportType == '問題回報') {
+                      arr[idx].status = 'WARNING';
+                    }
+                    else {
+                      arr[idx].status = 'INFO';
+                    }
+                    arr[idx].collection = 'UserReport'
+                  });
+
+                  allNotifications = allNotifications.concat(results);
+                  // TODO: 欄位申請
+                  allNotifications.sort((a,b) => {return (b.modified - a.modified)});
+                  callback(null, allNotifications);
+                }
+              });
+            }
+          }
+        });
       }
 
       function getAllNotifications () {
