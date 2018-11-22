@@ -70,7 +70,7 @@ orbs:
 
 workflows:
   version: 2
-  Deployment:
+  Test & Lint & Deploy:
     jobs:
       - node10/aws-deploy:
           filters:
@@ -79,9 +79,6 @@ workflows:
           requires:
             - lint
             - test
-
-  Test & Lint & Build:
-    jobs:
       - node10/run:
           name: lint
           section: Run ESLint with only modified *.js
