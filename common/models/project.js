@@ -30,12 +30,13 @@ module.exports = function(Project) {
       // let pm = db.collection(Project.definition.name);
       let cu = db.collection("CtpUser");
       // TODO: remove data.user_id part from following line
+
       let user_id;
       try {
-        user_id = data.user_id || req.session.user_info.user_id;
-      }
-      catch (e) {
-        return callback(new Error('本機測試請加送參數 { user_id: $your_user_id }'));
+        // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+        user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+      } catch (e) {
+        callback(new Error('使用者未登入'));
       }
 
       let sorts = {};
@@ -93,7 +94,6 @@ module.exports = function(Project) {
 
       // let pm = db.collection(Project.definition.name);
       let cu = db.collection("CtpUser");
-      //let user_id = req.session.user_info.user_id;
 
       let projectTitle = data.projectTitle;
       let user_to_add = data.user_id;
@@ -178,8 +178,13 @@ module.exports = function(Project) {
     Project.getDataSource().connector.connect(function(err, db) {
       if (err) return callback(err);
 
-      // TODO: remove data.user_id part from following line
-      let user_id = data.user_id || req.session.user_info.user_id;
+      let user_id;
+      try {
+        // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+        user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+      } catch (e) {
+        callback(new Error('使用者未登入'));
+      }
 
       let mdl = db.collection("Project");
       let cu = db.collection("CtpUser");

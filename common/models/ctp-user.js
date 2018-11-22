@@ -110,16 +110,9 @@ module.exports = function(CtpUsers) {
     console.log(req.headers);
 
     let user_id;
-
     try {
-      user_id = req.session.user_info.user_id;
-    } catch (e) {
-      callback(new Error('使用者未登入'));
-    }
-
-    // TODO: 只在測試環境使用，正式環境要把這個 headers 拿掉
-    try {
-      user_id = req.headers['camera-trap-user-id'];
+      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+      user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
     } catch (e) {
       callback(new Error('使用者未登入'));
     }

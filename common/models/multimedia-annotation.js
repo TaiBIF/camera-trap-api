@@ -261,7 +261,7 @@ module.exports = function(MultimediaAnnotation) {
                 });
 
                 const keys = Object.keys(csvTemplate); //.sort((a,b) => b>a);
-                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time'];
+                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time', 'timestamp'];
                 fields = fields.concat(keys);
                 const opts = { fields };
                 const parser = new Json2csvParser(opts);
@@ -282,6 +282,7 @@ module.exports = function(MultimediaAnnotation) {
                     //csvRecordArr = keys.map(key => csvRecord[key]);
                     csvRecord.filename = annotation.url.split("/").pop();
                     csvRecord.date_time = annotation.corrected_date_time;
+                    csvRecord.timestamp = annotation.date_time_corrected_timestamp;
                     csvRecord.projectTitle = projectTitle,
                     csvRecord.site = annotation.site;
                     csvRecord.subSite = annotation.subSite;
