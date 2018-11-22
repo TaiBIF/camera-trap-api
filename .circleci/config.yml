@@ -75,7 +75,7 @@ workflows:
       - node10/aws-deploy:
           filters:
             branches:
-              only: /^(master|feature\/ci)$/
+              only: /^(dev|feature\/ci)$/
 
   Test & Lint & Build:
     jobs:
