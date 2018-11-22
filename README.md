@@ -1,6 +1,20 @@
 # camera-trap-api
 Using LoopBack to develop RESTful API
 
+<p>
+  <a href="https://github.com/TaiBIF/camera-trap-api/releases">
+    <img src="https://flat.badgen.net/github/release/TaiBIF/camera-trap-api" />
+  </a>
+
+  <a href="https://circleci.com/gh/TaiBIF/camera-trap-api" alt="Build Status">
+    <img src="https://flat.badgen.net/circleci/github/TaiBIF/camera-trap-api/master" />
+  </a>
+  <a href="https://codecov.io/gh/TaiBIF/camera-trap-api" alt="Coverage">
+    <img src="https://flat.badgen.net/codecov/c/github/TaiBIF/camera-trap-api" />
+  </a>
+  <img src="https://flat.badgen.net/github/license/TaiBIF/camera-trap-api" />
+</p>
+
 ### Branching strategy
 
 1. **master**: main development branch. Will merge into _uat_ when ready for public testing.

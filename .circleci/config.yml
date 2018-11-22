@@ -1,0 +1,89 @@
+version: 2.1
+
+orbs:
+  gcloud: circleci/gcp-cli@1.0.1
+  docker: circleci/docker-publish@0.1.0
+
+  node10:
+    orbs:
+      aws: circleci/aws-cli@0.1.4
+
+    commands:
+      checkout_install:
+        description: Cehckout sources and install node_modules
+        steps:
+          - checkout
+          - restore_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+          - run: npm i
+          - save_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+              paths:
+                - node_modules
+    executors:
+      default:
+        environment:
+          - TZ: Asia/Taipei
+          - AWS_DEFAULT_REGION: $AWS_REGION
+        docker:
+          - image: circleci/node:10
+    jobs:
+      aws-deploy:
+        executor: default
+        steps:
+          - checkout
+          # Install AWS cli
+          # - aws/install
+          # - aws/configure
+          # - run:
+          #     name: Deploy to AWS EB
+          #     command: |
+                # ZIP_NAME=$(git rev-parse HEAD).zip
+                # zip $ZIP_NAME .ebextensions server common package.json
+                # aws elasticbeanstalk create-application-version --source-build-information
+          - run:
+              name: Install AWS CLI
+              command: |
+                sudo apt-get -y -qq update
+                sudo apt-get install python-pip python-dev build-essential
+                sudo pip install awsebcli --upgrade
+          # Deploy to the Elastic Beanstalk corresponding to the current branch
+          - run:
+              name: Deploy on AWS EB
+              command: |
+                eb deploy api-dev --label $CIRCLE_SHA1
+
+      run:
+        parameters:
+          command:
+            type: string
+            default: npm test
+          section:
+            type: string
+            default: <<parameters.command>>
+        executor: default
+        steps:
+          - checkout_install
+          - run:
+              name: <<parameters.section>>
+              command: <<parameters.command>>
+
+workflows:
+  version: 2
+  Deployment:
+    jobs:
+      - node10/aws-deploy:
+          filters:
+            branches:
+              only: /^(master|feature\/ci)$/
+
+  Test & Lint & Build:
+    jobs:
+      - node10/run:
+          name: lint
+          section: Run ESLint with only modified *.js
+          command: npx eslint $(git diff origin/master..HEAD --name-only -- '*.js')
+      - node10/run:
+          name: test
+          command: npm test
+

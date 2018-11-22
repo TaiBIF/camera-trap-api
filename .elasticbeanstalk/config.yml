@@ -1,0 +1,7 @@
+branch-defaults:
+  master:
+    environment: api-dev
+global:
+  application_name: Camera Trap
+  default_region: ap-northeast-1
+  sc: git
