@@ -75,7 +75,10 @@ workflows:
       - node10/aws-deploy:
           filters:
             branches:
-              only: /^(dev|feature\/ci)$/
+              only: /^(prod|dev|feature\/ci)$/
+          requires:
+            - lint
+            - test
 
   Test & Lint & Build:
     jobs:
