@@ -158,10 +158,10 @@ module.exports = function(MultimediaAnnotation) {
     ],
     returns: { arg: 'ret', type: 'object' },
     }
-);
+  );
 
   MultimediaAnnotation.basicCalculation = function(data, req, callback) {
-    MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
       if (err) return next(err);
 
       console.log(req.session);
@@ -171,9 +171,12 @@ module.exports = function(MultimediaAnnotation) {
         "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
-        "species": "山羌"
+        "species": "山羌",
+        "fromDateTime": "2018-01-01 00:00:00",
+        "toDateTime": "2018-03-31 23:59:59"
       }
       // */
+      let mdl = db.collection("MultimediaAnnotation");
 
       const toMatch = {};
 
@@ -196,14 +199,6 @@ module.exports = function(MultimediaAnnotation) {
         toMatch.subSite = subSite;
       }
 
-      const species = data.species;
-      //* 
-      if (species) {
-        toMatch['tokens.data.key'] = 'species';
-        toMatch['tokens.data.value'] = species;
-      }
-      //* /
-
       const fullCameraLocationMd5s = data.fullCameraLocationMd5s;
       if (
         Array.isArray(fullCameraLocationMd5s) &&
@@ -211,6 +206,70 @@ module.exports = function(MultimediaAnnotation) {
       ) {
         toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
       }
+
+      const fromDateTime = new Date(data.fromDateTime).getTime() / 1000;
+      const toDateTime = new Date(data.toDateTime).getTime() / 1000;
+
+      function anyDateTimeToDayStartTimestamp (currentDateTime) {
+        let currentTimestamp = new Date(currentDateTime).getTime() / 1000;
+        let offset = new Date().getTimezoneOffset() * 60;
+        let secInDay = 24 * 60 * 60;
+        let dayStartTimestamp = Math.floor((currentTimestamp - offset) / secInDay) * secInDay + offset;
+        return dayStartTimestamp;
+      }
+
+
+      toMatch.date_time_corrected_timestamp = {
+        $gte: fromDateTime,
+        $lte: toDateTime
+      }
+
+      let perLocationMinMaxWorking = {};
+      let timezoneOffset = new Date().getTimezoneOffset() * 60; // 秒
+
+
+      let perLocationMinMaxWorkingTimeAggregateQuery = [
+        {
+          "$match": toMatch
+        },
+        {
+          "$group": {
+            "_id": "$fullCameraLocationMd5",
+            "minWorkingTime": {
+              "$min": "$date_time_corrected_timestamp"
+            },
+            "maxWorkingTime": {
+              "$max": "$date_time_corrected_timestamp"
+            }
+          }
+        }
+      ];
+
+      perLocationMinMaxWorkingTime = await mdl.aggregate(perLocationMinMaxWorkingTimeAggregateQuery, {}).toArray();
+      console.log(perLocationMinMaxWorkingTime);
+
+      //*
+      perLocationMinMaxWorkingTime.forEach((item, idx, arr) => {
+        let workingHour = Math.floor(item.maxWorkingTime / 3600) - Math.floor(item.minWorkingTime / 3600) + 1;
+        // 先對齊 +8 時區的每日 0 點基準，再計算有工作的日數
+        let workingDay = Math.floor((item.maxWorkingTime - timezoneOffset)/ (3600 * 24)) - Math.floor((item.minWorkingTime - timezoneOffset) / (3600 * 24)) + 1;
+        console.log([timezoneOffset, workingHour, workingDay]);
+
+        perLocationMinMaxWorking[item._id] = {
+          hours: workingHour,
+          days: workingDay
+        }
+      });
+      console.log(perLocationMinMaxWorking);
+      //*/
+
+      const species = data.species;
+      //* 
+      if (species) {
+        toMatch['tokens.data.key'] = 'species';
+        toMatch['tokens.data.value'] = species;
+      }
+      //* /
 
       const projection = {
         url: true,
@@ -244,7 +303,6 @@ module.exports = function(MultimediaAnnotation) {
           if (err) {
             callback(err);
           } else if (res) {
-            let mdl = db.collection("MultimediaAnnotation");
             let requiredFields = res.dataFieldEnabled || [];
             requiredFields = ['species'].concat(requiredFields);
             console.log(requiredFields);
@@ -261,7 +319,7 @@ module.exports = function(MultimediaAnnotation) {
                 });
 
                 const keys = Object.keys(csvTemplate); //.sort((a,b) => b>a);
-                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time', 'timestamp'];
+                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time', 'timestamp', 'workingHours', 'workingDays'];
                 fields = fields.concat(keys);
                 const opts = { fields };
                 const parser = new Json2csvParser(opts);
@@ -287,9 +345,11 @@ module.exports = function(MultimediaAnnotation) {
                     csvRecord.site = annotation.site;
                     csvRecord.subSite = annotation.subSite;
                     csvRecord.cameraLocation = annotation.cameraLocation;
+                    csvRecord.fullCameraLocationMd5 = annotation.fullCameraLocationMd5;
+                    csvRecord.workingHours = perLocationMinMaxWorking[annotation.fullCameraLocationMd5].hours;
+                    csvRecord.workingDays = perLocationMinMaxWorking[annotation.fullCameraLocationMd5].days;
                     csvRecords.push(csvRecord);
                   });
-
                 });
 
                 csv = parser.parse(csvRecords);
