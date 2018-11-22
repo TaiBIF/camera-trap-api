@@ -1,32 +1,50 @@
-
 const Json2csvParser = require('json2csv').Parser;
 const uuid = require('uuid');
 
+function uploadToS3(params) {
+  const AWS = require('aws-sdk');
+  const s3 = new AWS.S3();
+
+  return new Promise((resolve, reject) => {
+    s3.upload(params, {}, (err, data) => {
+      if (err) {
+        console.log('ERROR!');
+        reject(err);
+      } else {
+        console.log('OK');
+        resolve();
+      }
+    });
+  });
+}
+
 module.exports = function(MultimediaAnnotation) {
   const addRevision = function(context, user, next) {
-    const args_data = context.args.data;
+    const argsData = context.args.data;
     // console.log(context.args.data);
     const method = context.methodString.split('.').pop();
     console.log(method);
 
     const revisions = [];
-    args_data.forEach(d => {
-      let _revision; let make_revision; let _tokens = [];
-      _revision = {};
-      make_revision = true;
+    argsData.forEach(d => {
+      const _revision = {};
+      let makeRevision;
+      let _tokens = [];
+
+      makeRevision = true;
       let modifiedBy;
 
+      /* eslint-disable */
       switch (method) {
         case 'bulkUpdate':
-
           try {
             console.log('TRYING');
             const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
-            if (testRequired === undefined) make_revision = false;
+            if (testRequired === undefined) makeRevision = false;
             modifiedBy = d.updateOne.update.$set.modifiedBy;
           } catch (e) {
             console.log(['TestRequiredError:', e.message]);
-            make_revision = false;
+            makeRevision = false;
             break;
           }
 
@@ -40,12 +58,12 @@ module.exports = function(MultimediaAnnotation) {
           try {
             console.log('Trying to create a data revision.');
             const testRequired = d.insertOne.document.tokens[0].data[0].key;
-            if (testRequired === undefined) make_revision = false;
+            if (testRequired === undefined) makeRevision = false;
             console.log(testRequired);
             modifiedBy = d.insertOne.document.modifiedBy;
           } catch (e) {
             console.log(['TestRequiredError:', e.message]);
-            make_revision = false;
+            makeRevision = false;
             break;
           }
 
@@ -55,16 +73,15 @@ module.exports = function(MultimediaAnnotation) {
           break;
 
         case 'bulkReplace':
-
           try {
             console.log('TRYING');
             const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
-            if (testRequired === undefined) make_revision = false;
+            if (testRequired === undefined) makeRevision = false;
             console.log(testRequired);
             modifiedBy = d.replaceOne.replacement.modifiedBy;
           } catch (e) {
             console.log(['TestRequiredError:', e.message]);
-            make_revision = false;
+            makeRevision = false;
             break;
           }
 
@@ -73,15 +90,16 @@ module.exports = function(MultimediaAnnotation) {
           _tokens = d.replaceOne.replacement.tokens;
           break;
       }
+      /* eslint-enable */
 
-      if (make_revision) {
+      if (makeRevision) {
         _revision.tokens = _tokens.map(t => {
-          let key_val_pair = {};
+          const keyValPair = {};
           let keyCounter = 0;
           t.data.forEach(_d => {
-            if (!!_d.key) {
-              keyCounter++;
-              key_val_pair[_d.key] = _d.value;
+            if (_d.key) {
+              keyCounter += 1;
+              keyValPair[_d.key] = _d.value;
             }
           });
 
@@ -89,12 +107,11 @@ module.exports = function(MultimediaAnnotation) {
             return {
               // token_id: t.token_id,
               data: t.data,
-              summary: key_val_pair
-            }
+              summary: keyValPair,
+            };
           }
-          
-            return false;
-          
+
+          return false;
         });
         _revision.tokens = _revision.tokens.filter(t => t !== false);
 
@@ -102,22 +119,26 @@ module.exports = function(MultimediaAnnotation) {
           // console.log(_revision);
           const updateOne = {
             updateOne: {
-              'filter': {_id: _revision.url_md5},
-              'update': {
+              filter: { _id: _revision.url_md5 },
+              update: {
                 $push: {
                   revisions: {
                     $each: [
-                      {modifiedBy, created: _revision.created, tokens: _revision.tokens},
+                      {
+                        modifiedBy,
+                        created: _revision.created,
+                        tokens: _revision.tokens,
+                      },
                     ],
                     $slice: -5,
                   },
                 },
-                '$setOnInsert': {
+                $setOnInsert: {
                   _id: _revision.url_md5,
                   url_md5: _revision.url_md5,
                 },
               },
-              'upsert': true,
+              upsert: true,
             },
           };
 
@@ -134,11 +155,10 @@ module.exports = function(MultimediaAnnotation) {
         const MAR = db.collection('MultimediaAnnotationRevision');
         // console.log(MAR);
 
-        MAR.bulkWrite(revisions, { ordered: false }, (err, results) => {
-          if (err) {
-            next(err);
-          }
-          else {
+        MAR.bulkWrite(revisions, { ordered: false }, (_err, results) => {
+          if (_err) {
+            next(_err);
+          } else {
             console.log(results);
             next();
           }
@@ -152,17 +172,16 @@ module.exports = function(MultimediaAnnotation) {
   MultimediaAnnotation.remoteMethod('basicCalculation', {
     http: { path: '/calculation', verb: 'post' },
     // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-      accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
     ],
     returns: { arg: 'ret', type: 'object' },
-    }
-);
+  });
 
   MultimediaAnnotation.basicCalculation = function(data, req, callback) {
     MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
-      if (err) return next(err);
+      if (err) return;
 
       console.log(req.session);
 
@@ -177,34 +196,30 @@ module.exports = function(MultimediaAnnotation) {
 
       const toMatch = {};
 
-      const projectTitle = data.projectTitle;
+      const { projectTitle, site, subSite, species } = data;
       if (projectTitle) {
         toMatch.projectTitle = projectTitle;
       } else {
         return callback(new Error());
       }
 
-      const site = data.site;
       if (site) {
         toMatch.site = site;
       } else {
         return callback(new Error());
       }
 
-      const subSite = data.subSite;
       if (subSite) {
         toMatch.subSite = subSite;
       }
 
-      const species = data.species;
-      //* 
       if (species) {
         toMatch['tokens.data.key'] = 'species';
         toMatch['tokens.data.value'] = species;
       }
       //* /
 
-      const fullCameraLocationMd5s = data.fullCameraLocationMd5s;
+      const { fullCameraLocationMd5s } = data;
       if (
         Array.isArray(fullCameraLocationMd5s) &&
         fullCameraLocationMd5s.length > 0
@@ -219,10 +234,10 @@ module.exports = function(MultimediaAnnotation) {
         subSite: true,
         cameraLocation: true,
         fullCameraLocationMd5: true,
-        tokens: false,
+        // tokens: false,
         'tokens.data.key': true,
         'tokens.data.value': true,
-        //* 
+
         tokens: {
           $elemMatch: {
             'data.key': 'species',
@@ -238,108 +253,107 @@ module.exports = function(MultimediaAnnotation) {
       const prjMdl = db.collection('Project');
       // 取得計畫啟用的自訂欄位
       prjMdl.findOne(
-        { projectTitle: projectTitle },
+        { projectTitle },
         { projection: { dataFieldEnabled: true } },
-        function(err, res) {
-          if (err) {
-            callback(err);
+        (_err, res) => {
+          if (_err) {
+            callback(_err);
           } else if (res) {
-            let mdl = db.collection("MultimediaAnnotation");
+            const mdl = db.collection('MultimediaAnnotation');
             let requiredFields = res.dataFieldEnabled || [];
             requiredFields = ['species'].concat(requiredFields);
             console.log(requiredFields);
 
-            mdl.find(toMatch, {projection: projection, sort: [['cameraLocation', 1], ['date_time_corrected_timestamp', 1], ['uploaded_file_name', 1]]}).toArray(function(err, results) {
-              if (err) {
-                callback(err);
-              }
-              else {
-
-                let csvTemplate = {};
-                requiredFields.forEach(function(f){
-                  csvTemplate[f] = "NA";
-                });
-
-                const keys = Object.keys(csvTemplate); //.sort((a,b) => b>a);
-                let fields = ['projectTitle', 'site', 'subSite', 'cameraLocation', 'filename', 'date_time', 'timestamp'];
-                fields = fields.concat(keys);
-                const opts = { fields };
-                const parser = new Json2csvParser(opts);
-
-                let csvRecords = [];
-
-                let csv = '';
-
-                results.forEach(function(annotation){
-                  annotation.tokens.forEach(function(token){
-                    let csvRecord = {};
-                    Object.assign(csvRecord, csvTemplate);
-                    token.data.forEach(function(d){
-                      if (csvRecord[d.key]) {
-                        csvRecord[d.key] = d.value || 'NA';
-                      }
-                    });
-                    //csvRecordArr = keys.map(key => csvRecord[key]);
-                    csvRecord.filename = annotation.url.split("/").pop();
-                    csvRecord.date_time = annotation.corrected_date_time;
-                    csvRecord.timestamp = annotation.date_time_corrected_timestamp;
-                    csvRecord.projectTitle = projectTitle,
-                    csvRecord.site = annotation.site;
-                    csvRecord.subSite = annotation.subSite;
-                    csvRecord.cameraLocation = annotation.cameraLocation;
-                    csvRecords.push(csvRecord);
+            mdl
+              .find(toMatch, {
+                projection,
+                sort: [
+                  ['cameraLocation', 1],
+                  ['date_time_corrected_timestamp', 1],
+                  ['uploaded_file_name', 1],
+                ],
+              })
+              .toArray((__err, results) => {
+                if (__err) {
+                  callback(__err);
+                } else {
+                  const csvTemplate = {};
+                  requiredFields.forEach(f => {
+                    csvTemplate[f] = 'NA';
                   });
 
-                });
+                  const keys = Object.keys(csvTemplate); // .sort((a,b) => b>a);
+                  let fields = [
+                    'projectTitle',
+                    'site',
+                    'subSite',
+                    'cameraLocation',
+                    'filename',
+                    'date_time',
+                    'timestamp',
+                  ];
+                  fields = fields.concat(keys);
+                  const opts = { fields };
+                  const parser = new Json2csvParser(opts);
 
-                csv = parser.parse(csvRecords);
-                // TODO: write to S3
-                let AWS = MultimediaAnnotation.app.aws;
-                console.log('Before getting credentials')
+                  const csvRecords = [];
 
-                function uploadToS3 (params) {
-                  let s3 = new AWS.S3();
-                  s3.upload(params, {},
-                    function(err, data) {
-                      if (err) {
-                        console.log('ERROR!');
-                        callback(err);
-                      }
-                      else {
-                        console.log('OK');
-                        callback(null, csv);
-                      }
+                  let csv = '';
+
+                  results.forEach(annotation => {
+                    annotation.tokens.forEach(token => {
+                      const csvRecord = {};
+                      Object.assign(csvRecord, csvTemplate);
+                      token.data.forEach(d => {
+                        if (csvRecord[d.key]) {
+                          csvRecord[d.key] = d.value || 'NA';
+                        }
+                      });
+                      // csvRecordArr = keys.map(key => csvRecord[key]);
+                      csvRecord.filename = annotation.url.split('/').pop();
+                      csvRecord.date_time = annotation.corrected_date_time;
+                      csvRecord.timestamp =
+                        annotation.date_time_corrected_timestamp;
+                      /* eslint-disable */
+                      (csvRecord.projectTitle = projectTitle),
+                        (csvRecord.site = annotation.site);
+                      /* eslint-enable */
+                      csvRecord.subSite = annotation.subSite;
+                      csvRecord.cameraLocation = annotation.cameraLocation;
+                      csvRecords.push(csvRecord);
                     });
-                }
+                  });
 
-                let fileToBeAnalyzed = uuid() + ".csv";
-                let params = {
-                  Bucket: 'taibif-s3-mount-bucket', 
-                  Key: "data_for_calculation/" + fileToBeAnalyzed, 
-                  Body: csv, 
-                  ContentType: "text/csv",
-                  ACL: 'public-read'
-                };
+                  csv = parser.parse(csvRecords);
+                  // TODO: write to S3
+                  console.log('Before getting credentials');
 
-                uploadToS3(params);
+                  const fileToBeAnalyzed = `${uuid()}.csv`;
+                  const params = {
+                    Bucket: 'taibif-s3-mount-bucket',
+                    Key: `data_for_calculation/${fileToBeAnalyzed}`,
+                    Body: csv,
+                    ContentType: 'text/csv',
+                    ACL: 'public-read',
+                  };
 
-                /*
+                  uploadToS3(params).then(() => callback(null, csv));
+
+                  /*
                 AWS.config.credentials.get(function(err){
                   if (err) {return callback(err)}
                   uploadToS3(params);
                 });
-                //*/
+                // */
 
-                //callback(null, results);
-              }
-            });
-          }
-          else {
+                  // callback(null, results);
+                }
+              });
+          } else {
             callback(null, null);
           }
-        }
+        },
       );
-
     });
   };
 

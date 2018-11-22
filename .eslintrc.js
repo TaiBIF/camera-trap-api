@@ -1,8 +1,8 @@
 module.exports = {
-  parser: 'babel-eslint',
-  extends: ['@tbif/base', 'loopback'],
-  plugins: ['prettier'],
+  extends: ['@tbif/base'],
   rules: {
     'object-curly-spacing': 0,
+    'func-names': 0,
+    'no-param-reassign': 0,
   },
 };

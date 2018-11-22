@@ -1,16 +1,11 @@
-'use strict';
-
-var md5 = require('md5');
+// const md5 = require('md5');
 
 module.exports = function(Token) {
-
-  Token.observe('before save', function(context, next) {
+  Token.observe('before save', (context, next) => {
     console.log(context);
-    if (!context.instance.token_id) {
-    
-    }
-    
+    // if (!context.instance.token_id) {
+    // }
+
     next();
   });
-
 };

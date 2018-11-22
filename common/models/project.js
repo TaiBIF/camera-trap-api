@@ -1,939 +1,908 @@
-'use strict';
-
 module.exports = function(Project) {
-
-  Project.remoteMethod (
-    'getUserRelatedProject',
-    {
-      http: {path: '/related-to-me', verb: 'post'},
-      // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-      accepts: [
-        {
-          arg: 'data', type: 'object', http: {source: 'body'},
-        },
-        {
-          arg: 'req', type: 'object', http: {source: 'req'},
-        },
-      ],
-      returns: {arg: 'ret', type: 'object'},
-    }
-  );
+  Project.remoteMethod('getUserRelatedProject', {
+    http: { path: '/related-to-me', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      {
+        arg: 'data',
+        type: 'object',
+        http: { source: 'body' },
+      },
+      {
+        arg: 'req',
+        type: 'object',
+        http: { source: 'req' },
+      },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
   Project.getUserRelatedProject = (data, req, callback) => {
-    Project.getDataSource().connector.connect(function(err, db) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
       // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
-      let sort_key = data.sort_key || "projectStartDate";
-      sort_key = "project_metadata." + sort_key;
+      let sortKey = data.sort_key || 'projectStartDate';
+      sortKey = `project_metadata.${sortKey}`;
 
       // let pm = db.collection(Project.definition.name);
-      let cu = db.collection("CtpUser");
+      const cu = db.collection('CtpUser');
       // TODO: remove data.user_id part from following line
 
-      let user_id;
+      let userId;
       try {
         // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-        user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+        userId =
+          req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
       } catch (e) {
         callback(new Error('使用者未登入'));
       }
 
-      let sorts = {};
-      sorts[sort_key] = 1;
+      const sorts = {};
+      sorts[sortKey] = 1;
 
       // @todo naming change! project => title
-      let aggregate_query = [
-        {'$match': {"user_id": user_id}},
-        {'$unwind': "$project_roles"},
-        {'$group': {_id: "$project_roles.projectTitle"}},
+      const aggregateQuery = [
+        { $match: { userId } },
+        { $unwind: '$project_roles' },
+        { $group: { _id: '$project_roles.projectTitle' } },
         {
-          '$lookup': {
-            from: "Project",
-            localField: "_id",
-            foreignField: "_id",
-            as: "project_metadata"
-          }
+          $lookup: {
+            from: 'Project',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'project_metadata',
+          },
         },
-        {'$unwind': "$project_metadata"},
+        { $unwind: '$project_metadata' },
         {
-          '$project': {
-            "project_metadata": "$project_metadata"
-          }
+          $project: {
+            project_metadata: '$project_metadata',
+          },
         },
         {
-          "$sort": sorts
-        }
+          $sort: sorts,
+        },
       ];
 
-      cu.aggregate(aggregate_query).toArray(function(err, prjs){
+      cu.aggregate(aggregateQuery).toArray((_err, prjs) => {
         callback(null, prjs);
       });
-
     });
-  }
+  };
 
   /* remoteMethod: addUserToProject */
-  Project.remoteMethod (
-    'addUserToProject',
-    {
-        http: {path: '/add-user-to-project', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Project.remoteMethod('addUserToProject', {
+    http: { path: '/add-user-to-project', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.addUserToProject = function (data, req, callback) {
-
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.addUserToProject = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
       // let pm = db.collection(Project.definition.name);
-      let cu = db.collection("CtpUser");
+      const cu = db.collection('CtpUser');
 
-      let projectTitle = data.projectTitle;
-      let user_to_add = data.user_id;
-      let role = (!!data.role) ? data.role : "Member";
+      const { projectTitle, user_id: userId } = data;
+      const role = data.role ? data.role : 'Member';
 
-      cu.countDocuments({_id: user_to_add}, function(err, res) {
-
-        if (err) {
-          callback(err);
+      cu.countDocuments({ _id: userId }, (_err, res) => {
+        if (_err) {
+          callback(_err);
           return;
         }
 
-        console.log(["user_exists", res]);
-        if (res) { // 如果使用者存在
-          cu.countDocuments({_id: user_to_add, "project_roles.projectTitle": projectTitle}, function(err, res) {
-            console.log(res);
-            let update, query;
-            if (res == 0) {
-              query = {_id: user_to_add};
-              update = {
-                '$addToSet': {
-                  'project_roles': {
-                    projectTitle: projectTitle,
-                    roles: [ role ]
-                  }
-                }
+        console.log(['user_exists', res]);
+        if (res) {
+          // 如果使用者存在
+          cu.countDocuments(
+            { _id: userId, 'project_roles.projectTitle': projectTitle },
+            (__err, _res) => {
+              console.log(_res);
+              let update;
+              let query;
+              if (_res === 0) {
+                query = { _id: userId };
+                update = {
+                  $addToSet: {
+                    project_roles: {
+                      projectTitle,
+                      roles: [role],
+                    },
+                  },
+                };
+              } else {
+                query = {
+                  _id: userId,
+                  'project_roles.projectTitle': projectTitle,
+                };
+                update = {
+                  $addToSet: {
+                    'project_roles.$.roles': role,
+                  },
+                };
               }
-            }
-            else {
-              query = {
-                "_id": user_to_add,
-                "project_roles.projectTitle": projectTitle
-              }
-              update = {
-                '$addToSet': {
-                  'project_roles.$.roles': role
-                }
-              }
-            }
 
-            console.log(['test', query, update]);
+              console.log(['test', query, update]);
 
-            cu.updateOne (
-              query, update, null,
-              function(err, res) {
-                if (err) {
-                  callback(err);
-                }
-                else {
+              cu.updateOne(query, update, null, (___err, __res) => {
+                if (___err) {
+                  callback(___err);
+                } else {
                   // console.log(res);
-                  callback(null, res);
+                  callback(null, __res);
                 }
-              }
-            );
-
-          })
-        }
-        else {
+              });
+            },
+          );
+        } else {
           callback(new Error("User doesn't exist."));
         }
       });
     });
-  }
+  };
 
+  // / ////////////////////////////////////////////
 
-  ///////////////////////////////////////////////
-
-  Project.remoteMethod (
-    'projectInit',
-    {
-      http: {path: '/init', verb: 'post'},
-      // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-      accepts: [
+  Project.remoteMethod('projectInit', {
+    http: { path: '/init', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
       { arg: 'data', type: 'object', http: { source: 'body' } },
-      { arg: 'req', type: 'object', http: { source: 'req' } }
-      ],
-      returns: { arg: 'ret', type: 'object' }
-    }
-  );
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.projectInit = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.projectInit = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
-      let user_id;
+      let userId;
       try {
         // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-        user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+        userId =
+          req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
       } catch (e) {
         callback(new Error('使用者未登入'));
       }
 
-      let mdl = db.collection("Project");
-      let cu = db.collection("CtpUser");
-      mdl.countDocuments({_id: data.projectTitle}, function(err, prj_cnt) {
-        if (prj_cnt == 0) {
-          cu.find({'project_roles.projectTitle': data.projectTitle, 'project_roles.roles': "ProjectManager"}, {projection: {_id: true}}).toArray(function(err, mngrs){
-            if (mngrs.length == 0) {
+      const mdl = db.collection('Project');
+      const cu = db.collection('CtpUser');
+      mdl.countDocuments({ _id: data.projectTitle }, (_err, prjCnt) => {
+        if (prjCnt === 0) {
+          cu.find(
+            {
+              'project_roles.projectTitle': data.projectTitle,
+              'project_roles.roles': 'ProjectManager',
+            },
+            { projection: { _id: true } },
+          ).toArray((__err, mngrs) => {
+            if (mngrs.length === 0) {
               cu.updateOne(
-                {_id: user_id},
+                { _id: userId },
                 {
-                  '$addToSet': {
-                    'project_roles': {
+                  $addToSet: {
+                    project_roles: {
                       projectTitle: data.projectTitle,
-                      roles: [ "ProjectManager" ]
-                    }
-                  }
-                }, null,
-                function(err, res){
+                      roles: ['ProjectManager'],
+                    },
+                  },
+                },
+                null,
+                (___err, res) => {
                   callback(null, res);
-                });
-            }
-            else {
-              let pms = [];
+                },
+              );
+              // );
+            } else {
+              const pms = [];
               mngrs.forEach(mngr => {
                 pms.push(mngr._id);
               });
-              callback(new Error("計畫 `" + data.projectTitle + "` 已被`" + pms.join('`, `') + "`註冊."));
+              callback(
+                new Error(
+                  `計畫 \`${data.projectTitle}\` 已被\`${pms.join(
+                    '`, `',
+                  )}\`註冊.`,
+                ),
+              );
             }
           });
-        }
-        else {
-          callback(new Error("計畫 `" + data.projectTitle + "` 已經存在."));
+        } else {
+          callback(new Error(`計畫 \`${data.projectTitle}\` 已經存在.`));
         }
       });
     });
-  }
+  };
 
-  ///////////////////////////////////////////////
+  // / ////////////////////////////////////////////
 
-  Project.remoteMethod (
-    'getLocationMonthRetrievedNum',
-    {
-        http: {path: '/location-month-retrieved-num', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Project.remoteMethod('getLocationMonthRetrievedNum', {
+    http: { path: '/location-month-retrieved-num', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.getLocationMonthRetrievedNum = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.getLocationMonthRetrievedNum = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
-      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
-      let year = data.year;
-      let site = data.site;
-      let subSite = data.subSite;
-      let projectTitle = data.projectTitle;
-      let to_match = {};
-
+      const { fullCameraLocationMd5, year, site, subSite, projectTitle } = data;
+      const toMatch = {};
       if (fullCameraLocationMd5) {
-        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+        toMatch.fullCameraLocationMd5 = fullCameraLocationMd5;
       }
 
       if (site) {
-        to_match['site'] = site;
+        toMatch.site = site;
       }
 
       if (subSite) {
-        to_match['subSite'] = subSite;
+        toMatch.subSite = subSite;
       }
 
       if (year) {
-        to_match['year'] = year;
-      }
-      else {
-        return callback(new Error("請輸入年份"));
+        toMatch.year = year;
+      } else {
+        return callback(new Error('請輸入年份'));
       }
 
       if (projectTitle) {
-        to_match['projectTitle'] = projectTitle;
-      }
-      else {
-        return callback(new Error("請輸入計畫名稱"));
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error('請輸入計畫名稱'));
       }
 
-      let mmm = db.collection("MultimediaMetadata");
-      let aggregate_query = [
+      const mmm = db.collection('MultimediaMetadata');
+      const aggregateQuery = [
         {
-          "$match": to_match
+          $match: toMatch,
         },
         {
-          "$group":{
-            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$month"},
-            "num": {
-              "$sum": 1
+          $group: {
+            _id: {
+              fullCameraLocationMd5: '$fullCameraLocationMd5',
+              month: '$month',
             },
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"}
-          }
+            num: {
+              $sum: 1,
+            },
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+          },
         },
         {
-          "$group":{
-            "_id": "$_id.fullCameraLocationMd5",
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"},
-            "monthly_num": {
-              "$push": {
-                "month": "$_id.month",
-                "num": "$num"
-              }
-            }
-          }
+          $group: {
+            _id: '$_id.fullCameraLocationMd5',
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+            monthly_num: {
+              $push: {
+                month: '$_id.month',
+                num: '$num',
+              },
+            },
+          },
         },
         {
-          "$lookup": {
-            from: "Project",
-            localField: "_id",
-            foreignField: "cameraLocations.fullCameraLocationMd5",
-            as: "cameraLocationMeta"
-          }
+          $lookup: {
+            from: 'Project',
+            localField: '_id',
+            foreignField: 'cameraLocations.fullCameraLocationMd5',
+            as: 'cameraLocationMeta',
+          },
         },
         {
-          "$project": {
-            _id: "$_id",
-            fullCameraLocationMd5: "$_id",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            monthly_num: "$monthly_num",
-            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
-          }
+          $project: {
+            _id: '$_id',
+            fullCameraLocationMd5: '$_id',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            monthly_num: '$monthly_num',
+            cameraLocationMeta: '$cameraLocationMeta.cameraLocations',
+          },
         },
         {
-          "$unwind": "$cameraLocationMeta"
+          $unwind: '$cameraLocationMeta',
         },
         {
-          "$unwind": "$cameraLocationMeta"
+          $unwind: '$cameraLocationMeta',
         },
         {
-          "$redact": {
-            "$cond": [
-              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
-              "$$KEEP",
-              "$$PRUNE"
-            ]
-          }
+          $redact: {
+            $cond: [
+              {
+                $eq: [
+                  '$cameraLocationMeta.fullCameraLocationMd5',
+                  '$fullCameraLocationMd5',
+                ],
+              },
+              '$$KEEP',
+              '$$PRUNE',
+            ],
+          },
         },
         {
-          "$project": {
-            _id: "$_id",
-            fullCameraLocationMd5: "$fullCameraLocationMd5",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            monthly_num: "$monthly_num",
+          $project: {
+            _id: '$_id',
+            fullCameraLocationMd5: '$fullCameraLocationMd5',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            monthly_num: '$monthly_num',
             // cameraLocationMeta: "$cameraLocationMeta",
-            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
-            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
-          }
-        }
+            wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+            wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
+          },
+        },
       ];
 
-      mmm.aggregate(aggregate_query).toArray(function(err, location_month_num) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          callback(null, location_month_num);
+      mmm.aggregate(aggregateQuery).toArray((_err, locationMonthNum) => {
+        if (_err) {
+          callback(_err);
+        } else {
+          callback(null, locationMonthNum);
         }
       });
-
     });
-  }
+  };
 
+  Project.remoteMethod('getLocationMonthIdentifiedNum', {
+    http: { path: '/location-month-identified-num', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.remoteMethod (
-    'getLocationMonthIdentifiedNum',
-    {
-        http: {path: '/location-month-identified-num', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
-
-  Project.getLocationMonthIdentifiedNum = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.getLocationMonthIdentifiedNum = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
-      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
-      let year = data.year;
-      let site = data.site;
-      let subSite = data.subSite;
-      let projectTitle = data.projectTitle;
-      let to_match = {
-        '$and': [
-          {"tokens.species_shortcut": {$ne: "尚未辨識"}},
-          {"tokens.species_shortcut": {$ne: ""}},
-        ]
+      const { fullCameraLocationMd5, year, site, subSite, projectTitle } = data;
+
+      const toMatch = {
+        $and: [
+          { 'tokens.species_shortcut': { $ne: '尚未辨識' } },
+          { 'tokens.species_shortcut': { $ne: '' } },
+        ],
       };
 
       if (fullCameraLocationMd5) {
-        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+        toMatch.fullCameraLocationMd5 = fullCameraLocationMd5;
       }
 
       if (site) {
-        to_match['site'] = site;
+        toMatch.site = site;
       }
 
       if (subSite) {
-        to_match['subSite'] = subSite;
+        toMatch.subSite = subSite;
       }
 
       if (year) {
-        to_match['year'] = year;
-      }
-      else {
-        return callback(new Error("請輸入年份"));
+        toMatch.year = year;
+      } else {
+        return callback(new Error('請輸入年份'));
       }
 
       if (projectTitle) {
-        to_match['projectTitle'] = projectTitle;
-      }
-      else {
-        return callback(new Error("請輸入計畫名稱"));
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error('請輸入計畫名稱'));
       }
 
-      let mma = db.collection("MultimediaAnnotation");
-      let aggregate_query = [
+      const mma = db.collection('MultimediaAnnotation');
+      const aggregateQuery = [
         {
-          "$match": to_match
+          $match: toMatch,
         },
         {
-          "$group":{
-            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$month"},
-            "num": {
-              "$sum": 1
+          $group: {
+            _id: {
+              fullCameraLocationMd5: '$fullCameraLocationMd5',
+              month: '$month',
             },
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"}
-          }
+            num: {
+              $sum: 1,
+            },
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+          },
         },
         {
-          "$group":{
-            "_id": "$_id.fullCameraLocationMd5",
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"},
-            "monthly_num": {
-              "$push": {
-                "month": "$_id.month",
-                "num": "$num"
-              }
-            }
-          }
+          $group: {
+            _id: '$_id.fullCameraLocationMd5',
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+            monthly_num: {
+              $push: {
+                month: '$_id.month',
+                num: '$num',
+              },
+            },
+          },
         },
         {
-          "$lookup": {
-            from: "Project",
-            localField: "_id",
-            foreignField: "cameraLocations.fullCameraLocationMd5",
-            as: "cameraLocationMeta"
-          }
+          $lookup: {
+            from: 'Project',
+            localField: '_id',
+            foreignField: 'cameraLocations.fullCameraLocationMd5',
+            as: 'cameraLocationMeta',
+          },
         },
         {
-          "$project": {
-            _id: "$_id",
-            fullCameraLocationMd5: "$_id",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            monthly_num: "$monthly_num",
-            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
-          }
+          $project: {
+            _id: '$_id',
+            fullCameraLocationMd5: '$_id',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            monthly_num: '$monthly_num',
+            cameraLocationMeta: '$cameraLocationMeta.cameraLocations',
+          },
         },
         {
-          "$unwind": "$cameraLocationMeta"
+          $unwind: '$cameraLocationMeta',
         },
         {
-          "$unwind": "$cameraLocationMeta"
+          $unwind: '$cameraLocationMeta',
         },
         {
-          "$redact": {
-            "$cond": [
-              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
-              "$$KEEP",
-              "$$PRUNE"
-            ]
-          }
+          $redact: {
+            $cond: [
+              {
+                $eq: [
+                  '$cameraLocationMeta.fullCameraLocationMd5',
+                  '$fullCameraLocationMd5',
+                ],
+              },
+              '$$KEEP',
+              '$$PRUNE',
+            ],
+          },
         },
         {
-          "$project": {
-            _id: "$_id",
-            fullCameraLocationMd5: "$fullCameraLocationMd5",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            monthly_num: "$monthly_num",
+          $project: {
+            _id: '$_id',
+            fullCameraLocationMd5: '$fullCameraLocationMd5',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            monthly_num: '$monthly_num',
             // cameraLocationMeta: "$cameraLocationMeta",
-            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
-            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
-          }
-        }
+            wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+            wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
+          },
+        },
       ];
 
-      mma.aggregate(aggregate_query).toArray(function(err, location_month_num) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          callback(null, location_month_num);
+      mma.aggregate(aggregateQuery).toArray((_err, locationMonthNum) => {
+        if (_err) {
+          callback(_err);
+        } else {
+          callback(null, locationMonthNum);
         }
       });
-
     });
-  }
+  };
 
   // 已辨識物種數/比例
-  Project.remoteMethod (
-    'imageSpeciesGroup',
-    {
-        http: {path: '/image-species-group', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Project.remoteMethod('imageSpeciesGroup', {
+    http: { path: '/image-species-group', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.imageSpeciesGroup = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.imageSpeciesGroup = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
-      let projectTitle = data.projectTitle;
-      let to_match = {
-        '$and': [
-          {"tokens.species_shortcut": {$ne: "尚未辨識"}},
-          {"tokens.species_shortcut": {$ne: ""}},
-          {"tokens.species_shortcut": {$ne: "無法識別"}},
-          {"tokens.species_shortcut": {$ne: "空拍"}},
-          {"tokens.species_shortcut": {$ne: "定時測試"}},
-          {"tokens.species_shortcut": {$ne: "測試"}},
-          {"tokens.species_shortcut": {$ne: "工作照"}}
-        ]
+      const { projectTitle } = data;
+      const toMatch = {
+        $and: [
+          { 'tokens.species_shortcut': { $ne: '尚未辨識' } },
+          { 'tokens.species_shortcut': { $ne: '' } },
+          { 'tokens.species_shortcut': { $ne: '無法識別' } },
+          { 'tokens.species_shortcut': { $ne: '空拍' } },
+          { 'tokens.species_shortcut': { $ne: '定時測試' } },
+          { 'tokens.species_shortcut': { $ne: '測試' } },
+          { 'tokens.species_shortcut': { $ne: '工作照' } },
+        ],
       };
 
       if (projectTitle) {
-        to_match['projectTitle'] = projectTitle;
-      }
-      else {
-        return callback(new Error("請輸入計畫名稱"));
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error('請輸入計畫名稱'));
       }
 
-      let mma = db.collection("MultimediaAnnotation");
-      let aggregate_query = [
+      const mma = db.collection('MultimediaAnnotation');
+      const aggregateQuery = [
         {
-          "$match": to_match
+          $match: toMatch,
         },
         {
-          "$unwind": "$tokens"
+          $unwind: '$tokens',
         },
         {
-          "$group":{
-            "_id": {"projectTitle": "$projectTitle", "species_shortcut": "$tokens.species_shortcut"},
-            "count": {
-              "$sum": 1
+          $group: {
+            _id: {
+              projectTitle: '$projectTitle',
+              species_shortcut: '$tokens.species_shortcut',
             },
-            "species": {"$first": "$tokens.species_shortcut"},
-            "projectTitle": {"$first": "$projectTitle"},
-            "modified": {"$max": "$modified"}
-          }
+            count: {
+              $sum: 1,
+            },
+            species: { $first: '$tokens.species_shortcut' },
+            projectTitle: { $first: '$projectTitle' },
+            modified: { $max: '$modified' },
+          },
         },
         {
-          "$group":{
-            "_id": null,
-            "species_group": {
-              "$push": {
-                "species": "$species",
-                "count": "$count"
-              }
+          $group: {
+            _id: null,
+            species_group: {
+              $push: {
+                species: '$species',
+                count: '$count',
+              },
             },
-            "total": {
-              "$sum": "$count"
+            total: {
+              $sum: '$count',
             },
-            "modified": {
-              "$max": "$modified"
-            }
-          }
+            modified: {
+              $max: '$modified',
+            },
+          },
         },
         {
-          "$project":{
-            "_id": false,
-            "species_group": "$species_group",
-            "total": "$total",
-            "modified": "$modified"
-          }
+          $project: {
+            _id: false,
+            species_group: '$species_group',
+            total: '$total',
+            modified: '$modified',
+          },
         },
       ];
 
-      mma.aggregate(aggregate_query).toArray(function(err, species_image_count) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          if (species_image_count.length == 0) {
-            species_image_count = [{
+      mma.aggregate(aggregateQuery).toArray((_err, speciesImageCount) => {
+        if (_err) {
+          callback(_err);
+        } else if (speciesImageCount.length === 0) {
+          speciesImageCount = [
+            {
               species_group: [],
               total: 0,
-              modified: null
-            }];
-          }
-
-          callback(null, species_image_count);
+              modified: null,
+            },
+          ];
+          callback(null, speciesImageCount);
         }
       });
-
     });
-  }
+  };
 
   // 資料異常值
-  Project.remoteMethod (
-    'locationMonthAbnormal',
-    {
-        http: {path: '/location-month-abnormal', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-        { arg: 'data', type: 'object', http: { source: 'body' } },
-        { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Project.remoteMethod('locationMonthAbnormal', {
+    http: { path: '/location-month-abnormal', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Project.locationMonthAbnormal = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.locationMonthAbnormal = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
 
-      let year = data.year;
-      let site = data.site;
-      let subSite = data.subSite;
-      let projectTitle = data.projectTitle;
-      let fullCameraLocationMd5 = data.fullCameraLocationMd5;
-      let to_match = {};
+      const { year, site, subSite, projectTitle, fullCameraLocationMd5 } = data;
+
+      const toMatch = {};
 
       if (fullCameraLocationMd5) {
-        to_match['fullCameraLocationMd5'] = fullCameraLocationMd5;
+        toMatch.fullCameraLocationMd5 = fullCameraLocationMd5;
       }
 
       if (site) {
-        to_match['site'] = site;
+        toMatch.site = site;
       }
 
       if (subSite) {
-        to_match['subSite'] = subSite;
+        toMatch.subSite = subSite;
       }
 
       if (year) {
-        to_match['abnormalMonthSpan.year'] = year;
-      }
-      else {
-        return callback(new Error("請輸入年份"));
+        toMatch['abnormalMonthSpan.year'] = year;
+      } else {
+        return callback(new Error('請輸入年份'));
       }
 
       if (projectTitle) {
-        to_match['projectTitle'] = projectTitle;
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error('請輸入計畫名稱'));
       }
-      else {
-        return callback(new Error("請輸入計畫名稱"));
-      }      
-      
-      let mdl = db.collection("AbnormalData");
-      let aggregate_query = [
-        {
-          "$match": to_match
-        },
-        {
-          "$unwind": "$abnormalMonthSpan"
-        },
-        {
-          "$group":{
-            "_id": {"fullCameraLocationMd5": "$fullCameraLocationMd5", "month": "$abnormalMonthSpan.month"},
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"},
-            "fullCameraLocationMd5": {"$first": "$fullCameraLocationMd5"},
-            "year": {"$first": "$abnormalMonthSpan.year"},
-            "month": {"$first": "$abnormalMonthSpan.month"},
-            "abnormalType": {"$first": "$abnormalType"},
-            "abnormalStartDate": {"$first": "$abnormalStartDate"},
-            "abnormalEndDate": {"$first": "$abnormalEndDate"},
-            "remarks": {"$first": "$remarks"},
-          }
-        },
-        {
-          "$group":{
-            "_id": "$fullCameraLocationMd5",
-            "projectTitle": {"$first": "$projectTitle"},
-            "site": {"$first": "$site"},
-            "subSite": {"$first": "$subSite"},
-            "cameraLocation": {"$first": "$cameraLocation"},
-            "fullCameraLocationMd5": {"$first": "$fullCameraLocationMd5"},
-            "year": {"$first": "$year"},
-            "month": {"$push": "$month"},
-            "abnormalType": {"$first": "$abnormalType"},
-            "abnormalStartDate": {"$first": "$abnormalStartDate"},
-            "abnormalEndDate": {"$first": "$abnormalEndDate"},
-            "remarks": {"$first": "$remarks"},
-          }
-        },
-        {
-          "$lookup": {
-            from: "Project",
-            localField: "_id",
-            foreignField: "cameraLocations.fullCameraLocationMd5",
-            as: "cameraLocationMeta"
-          }
-        },
-        {
-          "$project": {
-            _id: "$_id",
-            year: "$year",
-            month: "$month",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            fullCameraLocationMd5: "$fullCameraLocationMd5",
-            abnormalType: "$abnormalType",
-            abnormalStartDate: "$abnormalStartDate",
-            abnormalEndDate: "$abnormalEndDate",
-            remarks: "$remarks",
-            cameraLocationMeta: "$cameraLocationMeta.cameraLocations"
-          }
-        },
-        {
-          "$unwind": "$cameraLocationMeta"
-        },
-        {
-          "$unwind": "$cameraLocationMeta"
-        },
-        {
-          "$redact": {
-            "$cond": [
-              {"$eq": ['$cameraLocationMeta.fullCameraLocationMd5','$fullCameraLocationMd5']},
-              "$$KEEP",
-              "$$PRUNE"
-            ]
-          }
-        },
-        {
-          "$project": {
-            _id: "$_id",
-            year: "$year",
-            month: "$month",
-            projectTitle: "$projectTitle",
-            site: "$site",
-            subSite: "$subSite",
-            cameraLocation: "$cameraLocation",
-            fullCameraLocationMd5: "$fullCameraLocationMd5",
-            abnormalType: "$abnormalType",
-            abnormalStartDate: "$abnormalStartDate",
-            abnormalEndDate: "$abnormalEndDate",
-            remarks: "$remarks",
-            wgs84dec_x: "$cameraLocationMeta.wgs84dec_x",
-            wgs84dec_y: "$cameraLocationMeta.wgs84dec_y"
-          }
-        }
-      ];
 
-      // console.log(JSON.stringify(aggregate_query, null, 2));
-
-      mdl.aggregate(aggregate_query).toArray(function(err, location_month_abnormal) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          callback(null, location_month_abnormal);
-        }
-      });
-
-    });
-  }
-
-  Project.remoteMethod (
-    'summaryOfAll',
-    {
-        http: {path: '/summary-of-all', verb: 'get'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-          { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
-
-  // 計畫總覽
-  Project.summaryOfAll = function (req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
-      if (err) return callback(err);
-     
-      let mdl = db.collection('CtpUser');
-      let aggregate_query = [
+      const mdl = db.collection('AbnormalData');
+      const aggregateQuery = [
         {
-          "$unwind": "$project_roles"
+          $match: toMatch,
         },
         {
-          "$unwind": "$project_roles.roles"
+          $unwind: '$abnormalMonthSpan',
         },
         {
-          "$lookup": {
-            from: "Project",
-            localField: "project_roles.projectTitle",
-            foreignField: "projectTitle",
-            as: "project"
-          }
-        },
-        {
-          "$unwind": "$project"
-        },
-        {
-          "$group": {
-            _id: "$project._id",
-            members: {
-              "$addToSet": "$user_id"
+          $group: {
+            _id: {
+              fullCameraLocationMd5: '$fullCameraLocationMd5',
+              month: '$abnormalMonthSpan.month',
             },
-            funder: {$first: "$project.funder"},
-            coverImage: {$first: "$project.cover_image"},
-            earliestRecordTimestamp: {$first: "$project.earliestRecordTimestamp"}
-          }
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+            fullCameraLocationMd5: { $first: '$fullCameraLocationMd5' },
+            year: { $first: '$abnormalMonthSpan.year' },
+            month: { $first: '$abnormalMonthSpan.month' },
+            abnormalType: { $first: '$abnormalType' },
+            abnormalStartDate: { $first: '$abnormalStartDate' },
+            abnormalEndDate: { $first: '$abnormalEndDate' },
+            remarks: { $first: '$remarks' },
+          },
         },
         {
-          "$project": {
-            _id: false,
-            projectTitle: "$_id",
-            members: "$members",
-            funder: "$funder",
-            coverImage: "$coverImage",
-            earliestRecordTimestamp: "$earliestRecordTimestamp"
-          }
-        }
+          $group: {
+            _id: '$fullCameraLocationMd5',
+            projectTitle: { $first: '$projectTitle' },
+            site: { $first: '$site' },
+            subSite: { $first: '$subSite' },
+            cameraLocation: { $first: '$cameraLocation' },
+            fullCameraLocationMd5: { $first: '$fullCameraLocationMd5' },
+            year: { $first: '$year' },
+            month: { $push: '$month' },
+            abnormalType: { $first: '$abnormalType' },
+            abnormalStartDate: { $first: '$abnormalStartDate' },
+            abnormalEndDate: { $first: '$abnormalEndDate' },
+            remarks: { $first: '$remarks' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'Project',
+            localField: '_id',
+            foreignField: 'cameraLocations.fullCameraLocationMd5',
+            as: 'cameraLocationMeta',
+          },
+        },
+        {
+          $project: {
+            _id: '$_id',
+            year: '$year',
+            month: '$month',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            fullCameraLocationMd5: '$fullCameraLocationMd5',
+            abnormalType: '$abnormalType',
+            abnormalStartDate: '$abnormalStartDate',
+            abnormalEndDate: '$abnormalEndDate',
+            remarks: '$remarks',
+            cameraLocationMeta: '$cameraLocationMeta.cameraLocations',
+          },
+        },
+        {
+          $unwind: '$cameraLocationMeta',
+        },
+        {
+          $unwind: '$cameraLocationMeta',
+        },
+        {
+          $redact: {
+            $cond: [
+              {
+                $eq: [
+                  '$cameraLocationMeta.fullCameraLocationMd5',
+                  '$fullCameraLocationMd5',
+                ],
+              },
+              '$$KEEP',
+              '$$PRUNE',
+            ],
+          },
+        },
+        {
+          $project: {
+            _id: '$_id',
+            year: '$year',
+            month: '$month',
+            projectTitle: '$projectTitle',
+            site: '$site',
+            subSite: '$subSite',
+            cameraLocation: '$cameraLocation',
+            fullCameraLocationMd5: '$fullCameraLocationMd5',
+            abnormalType: '$abnormalType',
+            abnormalStartDate: '$abnormalStartDate',
+            abnormalEndDate: '$abnormalEndDate',
+            remarks: '$remarks',
+            wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+            wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
+          },
+        },
       ];
 
       // console.log(JSON.stringify(aggregate_query, null, 2));
 
-      mdl.aggregate(aggregate_query).toArray(function(err, projects_summary) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          callback(null, projects_summary);
+      mdl.aggregate(aggregateQuery).toArray((_err, locationMonthAbnormal) => {
+        if (_err) {
+          callback(_err);
+        } else {
+          callback(null, locationMonthAbnormal);
         }
       });
-
     });
-  }
+  };
 
-
-  //////////////
-  Project.remoteMethod (
-    'projectDataFields',
-    {
-        http: {path: '/data-fields', verb: 'post'},
-        // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-        accepts: [
-          { arg: 'data', type: 'object', http: { source: 'body' } },
-          { arg: 'req', type: 'object', http: { source: 'req' } }
-        ],
-        returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Project.remoteMethod('summaryOfAll', {
+    http: { path: '/summary-of-all', verb: 'get' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [{ arg: 'req', type: 'object', http: { source: 'req' } }],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
   // 計畫總覽
-  Project.projectDataFields = function (data, req, callback) {
-    Project.getDataSource().connector.connect(function(err, db) {
+  Project.summaryOfAll = function(req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
-     
-      let projectTitle = data.projectTitle;
 
-      let mdl = db.collection('Project');
-      let aggregate_query = [
-        {"$match": {"_id": projectTitle}},
-        {"$unwind": "$dataFieldEnabled"},
+      const mdl = db.collection('CtpUser');
+      const aggregateQuery = [
         {
-          "$lookup": {
-            "from": "DataFieldAvailable",
-            "localField": "dataFieldEnabled",
-            "foreignField": "key",
-            "as": "field_details"
-          }
+          $unwind: '$project_roles',
         },
         {
-          "$project": {
-            "field_details": "$field_details",
-            "speciesList": "$speciesList",
-            "dailyTestTime": "$dailyTestTime"
-          }
+          $unwind: '$project_roles.roles',
         },
-        {"$unwind": "$field_details"},
         {
-          "$group": {
-            "_id": null,
-            "speciesList": {"$first": "$speciesList"},
-            "dailyTestTime": {"$first": "$dailyTestTime"},
-            "fieldDetails": {"$push": "$field_details"}
-          }
-        }
+          $lookup: {
+            from: 'Project',
+            localField: 'project_roles.projectTitle',
+            foreignField: 'projectTitle',
+            as: 'project',
+          },
+        },
+        {
+          $unwind: '$project',
+        },
+        {
+          $group: {
+            _id: '$project._id',
+            members: {
+              $addToSet: '$user_id',
+            },
+            funder: { $first: '$project.funder' },
+            coverImage: { $first: '$project.cover_image' },
+            earliestRecordTimestamp: {
+              $first: '$project.earliestRecordTimestamp',
+            },
+          },
+        },
+        {
+          $project: {
+            _id: false,
+            projectTitle: '$_id',
+            members: '$members',
+            funder: '$funder',
+            coverImage: '$coverImage',
+            earliestRecordTimestamp: '$earliestRecordTimestamp',
+          },
+        },
       ];
 
       // console.log(JSON.stringify(aggregate_query, null, 2));
 
-      mdl.aggregate(aggregate_query).toArray(function(err, project_data_fields) {
-        if (err) {
-          callback(err);
-        }
-        else {
-          callback(null, project_data_fields);
+      mdl.aggregate(aggregateQuery).toArray((_err, projectsSummary) => {
+        if (_err) {
+          callback(_err);
+        } else {
+          callback(null, projectsSummary);
         }
       });
-
     });
-  }
+  };
 
+  // / ///////////
+  Project.remoteMethod('projectDataFields', {
+    http: { path: '/data-fields', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
 
+  // 計畫總覽
+  Project.projectDataFields = function(data, req, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
 
+      const { projectTitle } = data;
 
+      const mdl = db.collection('Project');
+      const aggregateQuery = [
+        { $match: { _id: projectTitle } },
+        { $unwind: '$dataFieldEnabled' },
+        {
+          $lookup: {
+            from: 'DataFieldAvailable',
+            localField: 'dataFieldEnabled',
+            foreignField: 'key',
+            as: 'field_details',
+          },
+        },
+        {
+          $project: {
+            field_details: '$field_details',
+            speciesList: '$speciesList',
+            dailyTestTime: '$dailyTestTime',
+          },
+        },
+        { $unwind: '$field_details' },
+        {
+          $group: {
+            _id: null,
+            speciesList: { $first: '$speciesList' },
+            dailyTestTime: { $first: '$dailyTestTime' },
+            fieldDetails: { $push: '$field_details' },
+          },
+        },
+      ];
 
-  /////////////
-  
+      // console.log(JSON.stringify(aggregate_query, null, 2));
 
+      mdl.aggregate(aggregateQuery).toArray((_err, projectDataFields) => {
+        if (_err) {
+          callback(_err);
+        } else {
+          callback(null, projectDataFields);
+        }
+      });
+    });
+  };
 
+  // / //////////
 };

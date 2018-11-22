@@ -27,8 +27,8 @@
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
     "eslint-config-loopback": "^12.0.0",
     "eslint-plugin-promise": "^4.0.1",
-    "husky": "^1.1.3",
-    "lint-staged": "^8.0.4",
+    "husky": "^1.2.0",
+    "lint-staged": "^8.1.0",
     "node": "^10.13.0"
   },
   "repository": {
@@ -45,7 +45,7 @@
       "prettier --write",
       "git add"
     ],
-    "*.{js,jsx,css}": [
+    "*.{js,jsx}": [
       "eslint --fix",
       "git add"
     ]

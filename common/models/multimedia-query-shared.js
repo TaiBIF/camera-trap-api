@@ -1,19 +1,15 @@
-'use strict';
-
 // served as an example
 module.exports = function(MultimediaQueryShared) {
-
   /* 這段搬走了，沒在用喔
   var originalSetup = MultimediaQueryShared.setup;
 
   MultimediaQueryShared.setup = function() {
-    // this will be called everytime a 
+    // this will be called everytime a
     // model is extended from this model.
-  
-    originalSetup.apply(this, arguments);
-    // This is necessary if your 
-    // MultimediaQueryShared is based of another model, like PersistedModel.
 
+    originalSetup.apply(this, arguments);
+    // This is necessary if your
+    // MultimediaQueryShared is based of another model, like PersistedModel.
 
     var ExtendedModel = this;
 
@@ -30,7 +26,7 @@ module.exports = function(MultimediaQueryShared) {
       ExtendedModel.getDataSource().connector.connect(function(err, db) {
         var _callback = callback;
         var collection = db.collection('CameraTrapBase');
-  
+
         var query = {'$or': []};
         for (var key in query_args) {
           var _query = {};
@@ -40,7 +36,7 @@ module.exports = function(MultimediaQueryShared) {
             query['$or'].push(_query);
           }
         }
-  
+
         collection.find(query, function(err, data) {
           console.log(query);
           if (err) {
@@ -54,10 +50,9 @@ module.exports = function(MultimediaQueryShared) {
           }
         });
       });
-      
+
     }
 
   };
-  //*/
-
+  // */
 };

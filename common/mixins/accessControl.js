@@ -30,24 +30,24 @@ module.exports = function(Model, options) {
     // express-session + connect-redis combo middleware.
     // Sessions and cookies are handled automatically
     // console.log(context.req.session.user_info);
-    let args_data = context.args.data;
-    if (!Array.isArray(args_data)) {
-      args_data = [args_data];
+    let argsData = context.args.data;
+    if (!Array.isArray(argsData)) {
+      argsData = [argsData];
     }
 
-    let user_info;
+    let userInfo;
     if (context.req.session && context.req.session.user_info) {
       console.log([
         'context.req.session.user_info',
         context.req.session.user_info,
       ]);
-      user_info = context.req.session.user_info;
+      userInfo = context.req.session.user_info;
     } else if (
       context.req.headers['camera-trap-user-id'] &&
       context.req.headers['camera-trap-user-id-token']
     ) {
       // TODO: 只在測試環境使用，正式環境要把這兩個 headers 拿掉
-      user_info = {
+      userInfo = {
         user_id: context.req.headers['camera-trap-user-id'],
         idTokenHash: context.req.headers['camera-trap-user-id-token'],
       };
@@ -61,14 +61,14 @@ module.exports = function(Model, options) {
         const base64string = context.req.headers.authorization
           .split('Basic ')
           .pop();
-        const user_password = Buffer.from(base64string, 'base64').toString();
+        const userPassword = Buffer.from(base64string, 'base64').toString();
         if (
-          user_password ==
+          userPassword ===
           `${process.env.AWS_LAMBDA_AS_USER}:${
             process.env.PASSWD_AWS_LAMBDA_AS_USER
           }`
         ) {
-          user_info = { user_id: context.req.headers['camera-trap-user-id'] };
+          userInfo = { user_id: context.req.headers['camera-trap-user-id'] };
         }
         // console.log(user_password);
       } catch (e) {
@@ -76,13 +76,13 @@ module.exports = function(Model, options) {
       }
     }
 
-    const permission_denied_messages = [];
+    const permissionDeniedMessages = [];
 
-    if (user_info) {
+    if (userInfo) {
       // 成功從 session 中取得登入資訊
-      const user_id = user_info.user_id;
+      const userId = userInfo.user_id;
 
-      console.log('User Id', user_id);
+      console.log('User Id', userId);
 
       Model.getDataSource().connector.connect((err, db) => {
         if (err) {
@@ -94,13 +94,13 @@ module.exports = function(Model, options) {
         const remoteMethodName = context.methodString.split('.').pop();
         const CtpUsers = db.collection('CtpUser');
 
-        const matchConditions = { _id: user_id };
-        if (user_info.idTokenHash) {
-          matchConditions.idTokenHash = user_info.idTokenHash;
+        const matchConditions = { _id: userId };
+        if (userInfo.idTokenHash) {
+          matchConditions.idTokenHash = userInfo.idTokenHash;
         }
 
         // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
-        const user_permission_query = [
+        const userPermissionQuery = [
           { $match: matchConditions },
           { $unwind: '$project_roles' },
           { $unwind: '$project_roles.roles' },
@@ -157,31 +157,45 @@ module.exports = function(Model, options) {
           //* /
         ];
 
-        console.log(user_permission_query);
+        console.log(userPermissionQuery);
 
-        CtpUsers.aggregate(user_permission_query, {}, (err, results) => {
-          if (err) {
-            next(err);
+        CtpUsers.aggregate(userPermissionQuery, {}, (_err, results) => {
+          if (_err) {
+            next(_err);
           } else {
-            results.toArray((err, userPermissions) => {
-              if (err) { next(err); } else {
+            results.toArray((__err, userPermissions) => {
+              if (__err) {
+                next(__err);
+              } else {
                 console.log(JSON.stringify(userPermissions, null, 2));
-                if (!userPermissions.length) { next(permissionDenied('You are unauthorized.')); return; }
+                if (!userPermissions.length) {
+                  next(permissionDenied('You are unauthorized.'));
+                  return;
+                }
 
                 let projectValidated;
-                if (Model.definition.rawProperties.hasOwnProperty('projectTitle')) {
+                if (
+                  // eslint-disable-next-line
+                  Model.definition.rawProperties.hasOwnProperty('projectTitle')
+                ) {
                   projectValidated = true;
                   // 先檢查使用者有無權限鎖計畫範疇資料
-                  args_data.forEach((q) => { // q for query
-                      let permission_granted = false;
-                      userPermissions.forEach(function(p){ // p for permission
-                        if (q.projectTitle === p.projectTitle || p.permissions.projectTitle === 'ANY') {
-                          permission_granted = true;
-                        }
-                      });
-                      projectValidated = projectValidated && permission_granted;
+                  argsData.forEach(q => {
+                    // q for query
+                    let permissionGranted = false;
+                    userPermissions.forEach(p => {
+                      // p for permission
+                      if (
+                        q.projectTitle === p.projectTitle ||
+                        p.permissions.projectTitle === 'ANY'
+                      ) {
+                        permissionGranted = true;
+                      }
                     });
-                } else { // no need to validate project
+                    projectValidated = projectValidated && permissionGranted;
+                  });
+                } else {
+                  // no need to validate project
                   projectValidated = true;
                 }
                 console.log(projectValidated);
@@ -192,52 +206,59 @@ module.exports = function(Model, options) {
                   switch (targetModelName) {
                     // @todo change location to cameraLocation
                     case 'CameraLocationDataLock': {
-                      let mdl = db.collection(targetModelName);
+                      const mdl = db.collection(targetModelName);
 
                       // 再檢查資料是否已被他人鎖定
                       let go = true;
-                      let go_counter = args_data.length;
+                      let goCounter = argsData.length;
 
-                      args_data.forEach((q) => { // q for query
-                          // 強制寫入 locked by
-                          q.locked_by = user_id;
-                          q.locked_on = Date.now() / 1000;
-                          // 雖然是 toArray 但這個 query 只會回傳單一結果
-                          mdl.find({_id: q.fullCameraLocationMd5}).toArray(function(err, dataLock) {
-                            console.log([user_id, dataLock]);
-                            go_counter = go_counter - 1;
+                      argsData.forEach(q => {
+                        // q for query
+                        // 強制寫入 locked by
+                        q.locked_by = userId;
+                        q.locked_on = Date.now() / 1000;
+                        // 雖然是 toArray 但這個 query 只會回傳單一結果
+                        mdl
+                          .find({ _id: q.fullCameraLocationMd5 })
+                          .toArray((___err, dataLock) => {
+                            console.log([userId, dataLock]);
+                            goCounter -= 1;
 
                             if (
-                              (dataLock.length === 0) ||
-                              (dataLock[0].locked && (q.locked_by === dataLock[0].locked_by) && (q.projectTitle === dataLock[0].projectTitle)) ||
-                              (!dataLock[0].locked && (q.projectTitle === dataLock[0].projectTitle))
+                              dataLock.length === 0 ||
+                              (dataLock[0].locked &&
+                                q.locked_by === dataLock[0].locked_by &&
+                                q.projectTitle === dataLock[0].projectTitle) ||
+                              (!dataLock[0].locked &&
+                                q.projectTitle === dataLock[0].projectTitle)
                             ) {
                               // 如果 dataLock 不存在，或
                               // 資料處於鎖定狀態，鎖定者與使用者是同一個人，且未更動計畫名稱或
                               // 資料未鎖定，任何人皆可在未更動計畫名稱
                               // 等前提下，鎖定或解鎖資料
-                            }
-                            else {
+                            } else {
                               console.log("Don't go!");
-                              permission_denied_messages.push(q.fullCameraLocationMd5);
+                              permissionDeniedMessages.push(
+                                q.fullCameraLocationMd5,
+                              );
                               go = false;
                             }
 
-                            if (go_counter === 0) {
+                            if (goCounter === 0) {
                               if (go) {
                                 next();
-                              }
-                              else {
-                                if (err) {
-                                  next(err);
-                                }
-                                else {
-                                  next(permissionDenied(permission_denied_messages.join(",")));
-                                }
+                              } else if (___err) {
+                                next(___err);
+                              } else {
+                                next(
+                                  permissionDenied(
+                                    permissionDeniedMessages.join(','),
+                                  ),
+                                );
                               }
                             }
                           });
-                        });
+                      });
                       break; // end of LocationDataLock logic
                     }
                     case 'MultimediaAnnotation':
@@ -248,98 +269,125 @@ module.exports = function(Model, options) {
                         1. 檢查待寫入的資料包括哪些 cameraLocation, 但如何得知? => TODO: 每筆待更新資料內含 cameraLocation 資訊
                         2. 檢查資料鎖定表, query cameraLocation with user id (完全成立才放行)
                         // */
-                      let uniqueLocationMd5Projects = {};
+                      const uniqueLocationMd5Projects = {};
 
                       // 列出待鎖的 cameraLocations
-                      args_data.forEach((d, idx, arr) => {
-                          uniqueLocationMd5Projects[d.fullCameraLocationMd5] = d.projectTitle;
+                      argsData.forEach((d, idx, arr) => {
+                        uniqueLocationMd5Projects[d.fullCameraLocationMd5] =
+                          d.projectTitle;
 
-                          // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
-                          if (remoteMethodName == "bulkUpdate") {
-                            if (!!arr[idx]['$set'] && !!arr[idx]['$set']['projectTitle']) {
-                              arr[idx]['$set']['projectTitle'] = d.projectTitle;
-                              arr[idx]['$set']['fullCameraLocationMd5'] = d.fullCameraLocationMd5;
-                            }
-
-                            if (!!arr[idx]['$setOninsert'] && !!arr[idx]['$setOnInsert']['projectTitle']) {
-                              arr[idx]['$setOnInsert']['projectTitle'] = d.projectTitle;
-                              arr[idx]['$setOnInsert']['fullCameraLocationMd5'] = d.fullCameraLocationMd5;
-                            }
-                            // 如果 $setOnInsert 裡有重複的 project 與 fullCameraLocationMd5，bulkNormalize 裡的機制會把它們清掉
-                            // 最差的情況下是吐 error
+                        // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
+                        if (remoteMethodName === 'bulkUpdate') {
+                          if (!!arr[idx].$set && !!arr[idx].$set.projectTitle) {
+                            arr[idx].$set.projectTitle = d.projectTitle;
+                            arr[idx].$set.fullCameraLocationMd5 =
+                              d.fullCameraLocationMd5;
                           }
-                        });
+
+                          if (
+                            !!arr[idx].$setOninsert &&
+                            !!arr[idx].$setOnInsert.projectTitle
+                          ) {
+                            arr[idx].$setOnInsert.projectTitle = d.projectTitle;
+                            arr[idx].$setOnInsert.fullCameraLocationMd5 =
+                              d.fullCameraLocationMd5;
+                          }
+                          // 如果 $setOnInsert 裡有重複的 project 與 fullCameraLocationMd5，bulkNormalize 裡的機制會把它們清掉
+                          // 最差的情況下是吐 error
+                        }
+                      });
 
                       // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
-                      if (remoteMethodName == 'bulkUpdate') {
-                        context.args.data = args_data;
+                      if (remoteMethodName === 'bulkUpdate') {
+                        context.args.data = argsData;
                       }
 
-                      let uniqueLocationMd5s = [];
-                      for (const loc_id in uniqueLocationMd5Projects) {
-                        if (uniqueLocationMd5Projects.hasOwnProperty(loc_id)) {
-                          uniqueLocationMd5s.push({loc_id, projectTitle: uniqueLocationMd5Projects[loc_id]});
+                      const uniqueLocationMd5s = [];
+                      /* eslint-disable */
+                      for (const locId in uniqueLocationMd5Projects) {
+                        if (uniqueLocationMd5Projects.hasOwnProperty(locId)) {
+                          uniqueLocationMd5s.push({
+                            locId,
+                            projectTitle: uniqueLocationMd5Projects[locId],
+                          });
                         }
                       }
+                      /* eslint-enable */
 
                       // usage example:
                       console.log(uniqueLocationMd5s);
 
-                      let ldl = db.collection('CameraLocationDataLock');
+                      const ldl = db.collection('CameraLocationDataLock');
                       let go = true;
-                      let go_counter = uniqueLocationMd5s.length;
+                      let goCounter = uniqueLocationMd5s.length;
 
-                      if (go_counter > 0) {
-                        uniqueLocationMd5s.forEach((locPrj) => { // q for query
-                            // 雖然是 toArray 但這個 query 只會回傳單一結果
+                      if (goCounter > 0) {
+                        uniqueLocationMd5s.forEach(locPrj => {
+                          // q for query
+                          // 雖然是 toArray 但這個 query 只會回傳單一結果
 
-                            //
-                            ldl.find({
+                          //
+                          ldl
+                            .find({
                               _id: locPrj.loc_id,
                               // projectTitle: locPrj.projectTitle,
                               locked: true,
-                              locked_by: user_id
-                            }).toArray(function(err, dataLock) {
-
+                              locked_by: userId,
+                            })
+                            .toArray((___err, dataLock) => {
                               if (dataLock.length === 0) {
-                                permission_denied_messages.push("Location data `" + locPrj.loc_id + "` is not locked by you.");
+                                permissionDeniedMessages.push(
+                                  `Location data \`${
+                                    locPrj.loc_id
+                                  }\` is not locked by you.`,
+                                );
                                 go = false;
-                              }
-                              else if (dataLock[0].projectTitle !== locPrj.projectTitle) {
-                                permission_denied_messages.push("You have no permission to write data to `" + locPrj.loc_id + "` because it's from `" + dataLock[0].projectTitle + "`.");
+                              } else if (
+                                dataLock[0].projectTitle !== locPrj.projectTitle
+                              ) {
+                                permissionDeniedMessages.push(
+                                  `You have no permission to write data to \`${
+                                    locPrj.loc_id
+                                  }\` because it's from \`${
+                                    dataLock[0].projectTitle
+                                  }\`.`,
+                                );
                                 go = false;
                               }
 
-                              go_counter = go_counter - 1;
+                              goCounter -= 1;
 
-                              if (go_counter === 0) {
+                              if (goCounter === 0) {
                                 if (go) {
                                   next();
-                                }
-                                else {
-                                  if (err) {
-                                    next(err);
-                                  }
-                                  else {
-                                    next(permissionDenied(permission_denied_messages.join(",")));
-                                  }
+                                } else if (___err) {
+                                  next(___err);
+                                } else {
+                                  next(
+                                    permissionDenied(
+                                      permissionDeniedMessages.join(','),
+                                    ),
+                                  );
                                 }
                               }
-
                             });
-
                         });
                       } else {
                         next();
                       }
                       break;
-                      }
+                    }
                     default:
                       next();
                       break;
                   }
-                } else { // projectValidated is false
-                  next(permissionDenied('You have no right to write into this project.'));
+                } else {
+                  // projectValidated is false
+                  next(
+                    permissionDenied(
+                      'You have no right to write into this project.',
+                    ),
+                  );
                 }
               }
             }); // end of results.forEach (function (userPermissions) {})
