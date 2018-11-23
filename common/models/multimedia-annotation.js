@@ -172,7 +172,7 @@ module.exports = function(MultimediaAnnotation) {
   };
 
   MultimediaAnnotation.remoteMethod('basicCalculation', {
-    http: { path: '/calculation', verb: 'post' },
+    http: { path: '/basic-calculation', verb: 'post' },
     // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
     accepts: [
       { arg: 'data', type: 'object', http: { source: 'body' } },
@@ -227,18 +227,8 @@ module.exports = function(MultimediaAnnotation) {
         toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
       }
 
-      const fromDateTime = new Date(data.fromDateTime).getTime() / 1000;
-      const toDateTime = new Date(data.toDateTime).getTime() / 1000;
-
-      function anyDateTimeToDayStartTimestamp(currentDateTime) {
-        const currentTimestamp = new Date(currentDateTime).getTime() / 1000;
-        const offset = new Date().getTimezoneOffset() * 60;
-        const secInDay = 24 * 60 * 60;
-        const dayStartTimestamp =
-          Math.floor((currentTimestamp - offset) / secInDay) * secInDay +
-          offset;
-        return dayStartTimestamp;
-      }
+      const fromDateTime = new Date(data.fromDateTime + '+8').getTime() / 1000;
+      const toDateTime = new Date(data.toDateTime + '+8').getTime() / 1000;
 
       toMatch.date_time_corrected_timestamp = {
         $gte: fromDateTime,
@@ -246,7 +236,7 @@ module.exports = function(MultimediaAnnotation) {
       };
 
       const perLocationMinMaxWorking = {};
-      const timezoneOffset = new Date().getTimezoneOffset() * 60; // 秒
+      const timezoneOffset = -8 * 60 * 60; // 秒
 
       const perLocationMinMaxWorkingTimeAggregateQuery = [
         {
@@ -434,6 +424,171 @@ module.exports = function(MultimediaAnnotation) {
       );
     });
   };
+
+  MultimediaAnnotation.remoteMethod('dailyFirstCaptured', {
+    http: { path: '/daily-first-captured', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
+
+  MultimediaAnnotation.dailyFirstCaptured = function(data, req, callback) {
+    /* eslint-disable */
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
+      if (err) return callback(err);
+
+      console.log(req.session);
+
+      /*
+      {
+        "projectTitle": "測試計畫1",
+        "site": "臺東處",
+        "subSite": "NULL",
+        "species": "山羌",
+        "fromDateTime": "2018-01-01 00:00:00",
+        "toDateTime": "2018-03-31 23:59:59"
+      }
+      // */
+      const mdl = db.collection('MultimediaAnnotation');
+
+      const toMatch = {};
+
+      const { projectTitle, site, subSite, species, fullCameraLocationMd5s } = data;
+      if (projectTitle) {
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error());
+      }
+
+      if (site) {
+        toMatch.site = site;
+      } else {
+        return callback(new Error());
+      }
+
+      if (subSite) {
+        toMatch.subSite = subSite;
+      }
+      
+      if (
+        Array.isArray(fullCameraLocationMd5s) &&
+        fullCameraLocationMd5s.length > 0
+      ) {
+        toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
+      }
+
+      const fromDateTime = new Date(data.fromDateTime + '+8').getTime() / 1000;
+      const toDateTime = new Date(data.toDateTime + '+8').getTime() / 1000;
+      toMatch.date_time_corrected_timestamp = {
+        $gte: fromDateTime,
+        $lte: toDateTime,
+      };
+
+      const secInDay = 24 * 60 * 60;
+      const offset = -8 * 60 * 60;
+      
+      function anyDateTimeToDayStartTimestamp(currentDateTime, isTimestamp = false) {
+        let currentTimestamp;
+        if (!isTimestamp) {
+          currentTimestamp = new Date(currentDateTime + '+8').getTime() / 1000;
+        }
+        else {
+          currentTimestamp = currentDateTime;
+        }
+        // console.log(currentTimestamp);
+        const dayStartTimestamp =
+          Math.floor((currentTimestamp - offset) / secInDay) * secInDay +
+          offset;
+        // console.log(dayStartTimestamp);
+        return dayStartTimestamp;
+      }
+
+      // 起始日零時 與 結束日零時
+      const fromDateZero = anyDateTimeToDayStartTimestamp(fromDateTime, true);
+      const toDateZero = anyDateTimeToDayStartTimestamp(toDateTime, true);
+
+      const everyDateZero = {};
+      console.log([fromDateZero, toDateZero]);
+
+
+      let cameraLocations = await mdl.aggregate(
+        [
+          {
+            $match: toMatch
+          },
+          {
+            $group: {
+              _id: "$fullCameraLocationMd5",
+              cameraLocation: {$first: "$cameraLocation"}
+            }
+          }
+        ],
+        {},
+      ).toArray();
+
+
+      console.log(cameraLocations);
+
+      // 填滿使用者設定時間範圍的每日零時
+      for (let dateZero = fromDateZero; dateZero <= toDateZero; dateZero += secInDay) {
+        cameraLocations.forEach(loc => {
+          if (!everyDateZero[dateZero]) everyDateZero[dateZero] = {};
+          everyDateZero[dateZero][loc._id] = {
+            projectTitle,
+            site,
+            subSite,
+            dateZero,
+            cameraLocation: loc.cameraLocation,
+            diff: null,
+          };
+        });
+      }
+
+      // console.log(everyDateZero);
+
+      if (species) {
+        toMatch['tokens.data.key'] = 'species';
+        toMatch['tokens.data.value'] = species;
+      } else {
+        return callback(new Error());
+      }
+
+      console.log(JSON.stringify(toMatch));
+      let matched = await mdl.find(
+        toMatch,
+        {
+          projection: {
+            fullCameraLocationMd5: true,
+            date_time_corrected_timestamp: true
+          },
+          sort: {
+            date_time_corrected_timestamp: 1
+          }
+        }
+      ).toArray();
+
+      matched.forEach(m => {
+        let dataDateZero = anyDateTimeToDayStartTimestamp(m.date_time_corrected_timestamp, true);
+        if (everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff === null) {
+          let diff = m.date_time_corrected_timestamp - dataDateZero;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].timestamp = m.date_time_corrected_timestamp;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff = diff;
+          let hour = Math.floor(diff / 3600);
+          let min = Math.floor((diff % 3600) / 60);
+          let sec = Math.floor((diff % 3600) % 60);
+          let diffText = `${hour}小時${min}分${sec}秒`;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diffText = diffText;
+          console.log(dataDateZero);
+        }
+      });
+      
+      callback(null, everyDateZero);
+        
+    });
+  }
 
   MultimediaAnnotation.afterRemote('bulkInsert', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkReplace', addRevision); // tested

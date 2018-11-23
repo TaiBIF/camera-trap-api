@@ -60,16 +60,17 @@ module.exports = function(Model, options) {
       const _callback = callback;
       const collection = db.collection(Model.definition.name);
 
+      /* eslint-disable */
       if (req.query.date_time) {
         if (req.query.date_time.$gte) {
           req.query.date_time_original_timestamp = {};
           req.query.date_time_original_timestamp.$gte =
-            new Date(req.query.date_time.$gte).getTime() / 1000;
+            new Date(`${req.query.date_time.$gte}+8`).getTime() / 1000;
         }
         if (req.query.date_time.$lte) {
           req.query.date_time_original_timestamp = {};
           req.query.date_time_original_timestamp.$lte =
-            new Date(req.query.date_time.$lte).getTime() / 1000;
+            new Date(`${req.query.date_time.$lte}+8`).getTime() / 1000;
         }
         delete req.query.date_time;
       }
@@ -78,12 +79,12 @@ module.exports = function(Model, options) {
         if (req.query.corrected_date_time.$gte) {
           req.query.date_time_corrected_timestamp = {};
           req.query.date_time_corrected_timestamp.$gte =
-            new Date(req.query.corrected_date_time.$gte).getTime() / 1000;
+            new Date(`${req.query.corrected_date_time.$gte}+8`).getTime() / 1000;
         }
         if (req.query.corrected_date_time.$lte) {
           req.query.date_time_corrected_timestamp = {};
           req.query.date_time_corrected_timestamp.$lte =
-            new Date(req.query.corrected_date_time.$lte).getTime() / 1000;
+            new Date(`${req.query.corrected_date_time.$lte}+8`).getTime() / 1000;
         }
         delete req.query.corrected_date_time;
       }
