@@ -25,15 +25,9 @@
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
-    "eslint-config-loopback": "^12.0.0",
-    "eslint-plugin-promise": "^4.0.1",
     "husky": "^1.2.0",
     "lint-staged": "^8.1.0",
     "node": "^10.13.0"
-  },
-  "repository": {
-    "type": "",
-    "url": ""
   },
   "husky": {
     "hooks": {
@@ -55,5 +49,16 @@
   "scripts": {
     "start": "node .",
     "test": "echo 'test'"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TaiBIF/camera-trap-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TaiBIF/camera-trap-api/issues"
+  },
+  "homepage": "https://github.com/TaiBIF/camera-trap-api#readme"
 }
