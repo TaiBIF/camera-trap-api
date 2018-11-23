@@ -120,6 +120,7 @@ module.exports = function(Announcement) {
         const aggregationQuery = [
           {
             $match: {
+              // eslint-disable-next-line camelcase
               user_id: userId,
               'project_roles.roles': { $in: roles },
             },
@@ -127,6 +128,7 @@ module.exports = function(Announcement) {
           {
             $project: {
               _id: false,
+              // eslint-disable-next-line camelcase
               project_roles: '$project_roles',
             },
           },
@@ -229,12 +231,6 @@ module.exports = function(Announcement) {
                 }<br/>${el.cameraLocation} ${el.earliestDataDate}-${
                   el.latestDataDate
                 }`;
-                delete arr[idx].projectTitle;
-                delete arr[idx].site;
-                delete arr[idx].subSite;
-                delete arr[idx].cameraLocation;
-                delete arr[idx].earliestDataDate;
-                delete arr[idx].latestDataDate;
                 arr[idx].collection = 'UploadSession';
               });
 
