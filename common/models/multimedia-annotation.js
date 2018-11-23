@@ -1,3 +1,4 @@
+/* eslint-disable */
 const Json2csvParser = require('json2csv').Parser;
 const uuid = require('uuid');
 
@@ -28,13 +29,11 @@ module.exports = function(MultimediaAnnotation) {
     const revisions = [];
     argsData.forEach(d => {
       const _revision = {};
-      let makeRevision;
+      let makeRevision, modifiedBy;
       let _tokens = [];
 
       makeRevision = true;
-      let modifiedBy;
 
-      /* eslint-disable */
       switch (method) {
         case 'bulkUpdate':
           try {
@@ -89,6 +88,8 @@ module.exports = function(MultimediaAnnotation) {
           _revision.created = d.replaceOne.replacement.modified;
           _tokens = d.replaceOne.replacement.tokens;
           break;
+        default:
+          break;
       }
       /* eslint-enable */
 
@@ -135,6 +136,7 @@ module.exports = function(MultimediaAnnotation) {
                 },
                 $setOnInsert: {
                   _id: _revision.url_md5,
+                  /* eslint-disable camelcase */
                   url_md5: _revision.url_md5,
                 },
               },
@@ -170,7 +172,7 @@ module.exports = function(MultimediaAnnotation) {
   };
 
   MultimediaAnnotation.remoteMethod('basicCalculation', {
-    http: { path: '/calculation', verb: 'post' },
+    http: { path: '/basic-calculation', verb: 'post' },
     // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
     accepts: [
       { arg: 'data', type: 'object', http: { source: 'body' } },
@@ -180,7 +182,8 @@ module.exports = function(MultimediaAnnotation) {
   });
 
   MultimediaAnnotation.basicCalculation = function(data, req, callback) {
-    MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
+    /* eslint-disable */
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
       if (err) return callback(err);
 
       console.log(req.session);
@@ -190,9 +193,12 @@ module.exports = function(MultimediaAnnotation) {
         "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
-        "species": "山羌"
+        "species": "山羌",
+        "fromDateTime": "2018-01-01 00:00:00",
+        "toDateTime": "2018-03-31 23:59:59"
       }
       // */
+      const mdl = db.collection('MultimediaAnnotation');
 
       const toMatch = {};
 
@@ -213,12 +219,6 @@ module.exports = function(MultimediaAnnotation) {
         toMatch.subSite = subSite;
       }
 
-      if (species) {
-        toMatch['tokens.data.key'] = 'species';
-        toMatch['tokens.data.value'] = species;
-      }
-      //* /
-
       const { fullCameraLocationMd5s } = data;
       if (
         Array.isArray(fullCameraLocationMd5s) &&
@@ -226,6 +226,68 @@ module.exports = function(MultimediaAnnotation) {
       ) {
         toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
       }
+
+      const fromDateTime = new Date(data.fromDateTime + '+8').getTime() / 1000;
+      const toDateTime = new Date(data.toDateTime + '+8').getTime() / 1000;
+
+      toMatch.date_time_corrected_timestamp = {
+        $gte: fromDateTime,
+        $lte: toDateTime,
+      };
+
+      const perLocationMinMaxWorking = {};
+      const timezoneOffset = -8 * 60 * 60; // 秒
+
+      const perLocationMinMaxWorkingTimeAggregateQuery = [
+        {
+          $match: toMatch,
+        },
+        {
+          $group: {
+            _id: '$fullCameraLocationMd5',
+            minWorkingTime: {
+              $min: '$date_time_corrected_timestamp',
+            },
+            maxWorkingTime: {
+              $max: '$date_time_corrected_timestamp',
+            },
+          },
+        },
+      ];
+
+      const perLocationMinMaxWorkingTime = await mdl
+        .aggregate(perLocationMinMaxWorkingTimeAggregateQuery, {})
+        .toArray();
+      console.log(perLocationMinMaxWorkingTime);
+
+      //* 
+      perLocationMinMaxWorkingTime.forEach((item, idx, arr) => {
+        const workingHours =
+          Math.floor(item.maxWorkingTime / 3600) -
+          Math.floor(item.minWorkingTime / 3600) +
+          1;
+        // 先對齊 +8 時區的每日 0 點基準，再計算有工作的日數
+        const workingDays =
+          Math.floor((item.maxWorkingTime - timezoneOffset) / (3600 * 24)) -
+          Math.floor((item.minWorkingTime - timezoneOffset) / (3600 * 24)) +
+          1;
+        console.log([timezoneOffset, workingHours, workingDays]);
+
+        perLocationMinMaxWorking[item._id] = {
+          hours: workingHours,
+          days: workingDays,
+        };
+      });
+
+      console.log(perLocationMinMaxWorking);
+      //* /
+
+      //*
+      if (species) {
+        toMatch['tokens.data.key'] = 'species';
+        toMatch['tokens.data.value'] = species;
+      }
+      //* /
 
       const projection = {
         url: true,
@@ -259,7 +321,6 @@ module.exports = function(MultimediaAnnotation) {
           if (_err) {
             callback(_err);
           } else if (res) {
-            const mdl = db.collection('MultimediaAnnotation');
             let requiredFields = res.dataFieldEnabled || [];
             requiredFields = ['species'].concat(requiredFields);
             console.log(requiredFields);
@@ -282,7 +343,7 @@ module.exports = function(MultimediaAnnotation) {
                     csvTemplate[f] = 'NA';
                   });
 
-                  const keys = Object.keys(csvTemplate); // .sort((a,b) => b>a);
+                  const keys = Object.keys(csvTemplate);
                   let fields = [
                     'projectTitle',
                     'site',
@@ -291,6 +352,8 @@ module.exports = function(MultimediaAnnotation) {
                     'filename',
                     'date_time',
                     'timestamp',
+                    'workingHours',
+                    'workingDays',
                   ];
                   fields = fields.concat(keys);
                   const opts = { fields };
@@ -314,12 +377,18 @@ module.exports = function(MultimediaAnnotation) {
                       csvRecord.date_time = annotation.corrected_date_time;
                       csvRecord.timestamp =
                         annotation.date_time_corrected_timestamp;
-                      /* eslint-disable */
-                      (csvRecord.projectTitle = projectTitle),
-                        (csvRecord.site = annotation.site);
-                      /* eslint-enable */
+                      csvRecord.projectTitle = projectTitle;
+                      csvRecord.site = annotation.site;
                       csvRecord.subSite = annotation.subSite;
                       csvRecord.cameraLocation = annotation.cameraLocation;
+                      csvRecord.workingHours =
+                        perLocationMinMaxWorking[
+                          annotation.fullCameraLocationMd5
+                        ].hours;
+                      csvRecord.workingDays =
+                        perLocationMinMaxWorking[
+                          annotation.fullCameraLocationMd5
+                        ].days;
                       csvRecords.push(csvRecord);
                     });
                   });
@@ -340,12 +409,11 @@ module.exports = function(MultimediaAnnotation) {
                   uploadToS3(params).then(() => callback(null, csv));
 
                   /*
-                AWS.config.credentials.get(function(err){
-                  if (err) {return callback(err)}
-                  uploadToS3(params);
-                });
-                // */
-
+                  AWS.config.credentials.get(function(err){
+                    if (err) {return callback(err)}
+                    uploadToS3(params);
+                  });
+                  // */
                   // callback(null, results);
                 }
               });
@@ -356,6 +424,171 @@ module.exports = function(MultimediaAnnotation) {
       );
     });
   };
+
+  MultimediaAnnotation.remoteMethod('dailyFirstCaptured', {
+    http: { path: '/daily-first-captured', verb: 'post' },
+    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'ret', type: 'object' },
+  });
+
+  MultimediaAnnotation.dailyFirstCaptured = function(data, req, callback) {
+    /* eslint-disable */
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
+      if (err) return callback(err);
+
+      console.log(req.session);
+
+      /*
+      {
+        "projectTitle": "測試計畫1",
+        "site": "臺東處",
+        "subSite": "NULL",
+        "species": "山羌",
+        "fromDateTime": "2018-01-01 00:00:00",
+        "toDateTime": "2018-03-31 23:59:59"
+      }
+      // */
+      const mdl = db.collection('MultimediaAnnotation');
+
+      const toMatch = {};
+
+      const { projectTitle, site, subSite, species, fullCameraLocationMd5s } = data;
+      if (projectTitle) {
+        toMatch.projectTitle = projectTitle;
+      } else {
+        return callback(new Error());
+      }
+
+      if (site) {
+        toMatch.site = site;
+      } else {
+        return callback(new Error());
+      }
+
+      if (subSite) {
+        toMatch.subSite = subSite;
+      }
+      
+      if (
+        Array.isArray(fullCameraLocationMd5s) &&
+        fullCameraLocationMd5s.length > 0
+      ) {
+        toMatch.fullCameraLocationMd5 = { $in: fullCameraLocationMd5s };
+      }
+
+      const fromDateTime = new Date(data.fromDateTime + '+8').getTime() / 1000;
+      const toDateTime = new Date(data.toDateTime + '+8').getTime() / 1000;
+      toMatch.date_time_corrected_timestamp = {
+        $gte: fromDateTime,
+        $lte: toDateTime,
+      };
+
+      const secInDay = 24 * 60 * 60;
+      const offset = -8 * 60 * 60;
+      
+      function anyDateTimeToDayStartTimestamp(currentDateTime, isTimestamp = false) {
+        let currentTimestamp;
+        if (!isTimestamp) {
+          currentTimestamp = new Date(currentDateTime + '+8').getTime() / 1000;
+        }
+        else {
+          currentTimestamp = currentDateTime;
+        }
+        // console.log(currentTimestamp);
+        const dayStartTimestamp =
+          Math.floor((currentTimestamp - offset) / secInDay) * secInDay +
+          offset;
+        // console.log(dayStartTimestamp);
+        return dayStartTimestamp;
+      }
+
+      // 起始日零時 與 結束日零時
+      const fromDateZero = anyDateTimeToDayStartTimestamp(fromDateTime, true);
+      const toDateZero = anyDateTimeToDayStartTimestamp(toDateTime, true);
+
+      const everyDateZero = {};
+      console.log([fromDateZero, toDateZero]);
+
+
+      let cameraLocations = await mdl.aggregate(
+        [
+          {
+            $match: toMatch
+          },
+          {
+            $group: {
+              _id: "$fullCameraLocationMd5",
+              cameraLocation: {$first: "$cameraLocation"}
+            }
+          }
+        ],
+        {},
+      ).toArray();
+
+
+      console.log(cameraLocations);
+
+      // 填滿使用者設定時間範圍的每日零時
+      for (let dateZero = fromDateZero; dateZero <= toDateZero; dateZero += secInDay) {
+        cameraLocations.forEach(loc => {
+          if (!everyDateZero[dateZero]) everyDateZero[dateZero] = {};
+          everyDateZero[dateZero][loc._id] = {
+            projectTitle,
+            site,
+            subSite,
+            dateZero,
+            cameraLocation: loc.cameraLocation,
+            diff: null,
+          };
+        });
+      }
+
+      // console.log(everyDateZero);
+
+      if (species) {
+        toMatch['tokens.data.key'] = 'species';
+        toMatch['tokens.data.value'] = species;
+      } else {
+        return callback(new Error());
+      }
+
+      console.log(JSON.stringify(toMatch));
+      let matched = await mdl.find(
+        toMatch,
+        {
+          projection: {
+            fullCameraLocationMd5: true,
+            date_time_corrected_timestamp: true
+          },
+          sort: {
+            date_time_corrected_timestamp: 1
+          }
+        }
+      ).toArray();
+
+      matched.forEach(m => {
+        let dataDateZero = anyDateTimeToDayStartTimestamp(m.date_time_corrected_timestamp, true);
+        if (everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff === null) {
+          let diff = m.date_time_corrected_timestamp - dataDateZero;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].timestamp = m.date_time_corrected_timestamp;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff = diff;
+          let hour = Math.floor(diff / 3600);
+          let min = Math.floor((diff % 3600) / 60);
+          let sec = Math.floor((diff % 3600) % 60);
+          let diffText = `${hour}小時${min}分${sec}秒`;
+          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diffText = diffText;
+          console.log(dataDateZero);
+        }
+      });
+      
+      callback(null, everyDateZero);
+        
+    });
+  }
 
   MultimediaAnnotation.afterRemote('bulkInsert', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkReplace', addRevision); // tested

@@ -64,12 +64,7 @@ module.exports = function(CameraLocationDataLock) {
         },
         {
           $unwind: '$cameraLocationDataLock',
-        } /* 20181111 removed as Thomas asked
-        {
-          "$match": {
-            "cameraLocationDataLock.locked": true
-          }
-        },// */,
+        } /* 20181111 removed as Thomas asked        {          "$match": {            "cameraLocationDataLock.locked": true          }        },// */,
         {
           $project: {
             _id: false,

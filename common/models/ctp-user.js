@@ -2,6 +2,7 @@ const atob = require('atob');
 
 const AWS_REGION = 'ap-northeast-1';
 const USER_POOL_ID = 'ap-northeast-1_R2iDn5W3B';
+// eslint-disable-next-line max-len
 const AWS_ID_PROVIDER = `cognito-idp.ap-northeast-1.amazonaws.com/${USER_POOL_ID}`;
 const IDENTITY_POOL_ID = 'ap-northeast-1:3d5edbfb-834c-4284-85f5-a4ec29d38ef0';
 
@@ -62,10 +63,12 @@ module.exports = function(CtpUsers) {
               },
               $setOnInsert: {
                 _id: userID,
+                // eslint-disable-next-line camelcase
                 user_id: userID,
                 name: tokenobj.name,
                 email: '',
                 created: dateTime,
+                // eslint-disable-next-line camelcase
                 project_roles: [
                   {
                     projectTitle: 'ANY_NEW_TITLE',
@@ -82,11 +85,13 @@ module.exports = function(CtpUsers) {
 
         const userInfo = {
           userID,
+          // eslint-disable-next-line camelcase
           identity_id: AWS.config.credentials.identityId,
           name: tokenobj.name,
           idToken: tokenobj,
         };
 
+        // eslint-disable-next-line camelcase
         req.session.user_info = userInfo;
         // let identity_id = AWS.config.credentials.identityId;
         console.log(req.session);
@@ -129,6 +134,7 @@ module.exports = function(CtpUsers) {
           projection: {
             idTokenHash: false,
             _id: false,
+            // eslint-disable-next-line camelcase
             id_token: false,
           },
         },

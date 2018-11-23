@@ -26,8 +26,8 @@ module.exports = function(AbnormalData) {
       // console.log(JSON.stringify(revisions, null, 2));
       const abnormalMonthSpan = [];
 
-      const startDateObj = new Date(d.abnormalStartDate);
-      const endDateObj = new Date(d.abnormalEndDate);
+      const startDateObj = new Date(`${d.abnormalStartDate}+8`);
+      const endDateObj = new Date(`${d.abnormalEndDate}+8`);
       const startYear = startDateObj.getFullYear();
       const startMonth = `00${startDateObj.getMonth() + 1}`.substr(-2);
       const startDay = `00${startDateObj.getDate()}`.substr(-2);
