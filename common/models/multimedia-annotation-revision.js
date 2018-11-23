@@ -12,7 +12,7 @@ module.exports = function(MultimediaAnnotationRevision) {
   MultimediaAnnotationRevision.restoreRevision = function(data, req, callback) {
     MultimediaAnnotationRevision.getDataSource().connector.connect(
       (err, db) => {
-        if (err) return;
+        if (err) return callback(err);
 
         // eslint-disable-next-line camelcase
         const { url_md5, revision_tokens } = data;

@@ -12,8 +12,6 @@ module.exports = function(CameraLocationDataLock) {
 
   CameraLocationDataLock.locationLocked = function(data, req, callback) {
     CameraLocationDataLock.getDataSource().connector.connect((err, db) => {
-      if (err) return;
-
       const {
         projectTitle,
         site,

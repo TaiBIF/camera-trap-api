@@ -181,7 +181,7 @@ module.exports = function(MultimediaAnnotation) {
 
   MultimediaAnnotation.basicCalculation = function(data, req, callback) {
     MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
-      if (err) return;
+      if (err) return callback(err);
 
       console.log(req.session);
 

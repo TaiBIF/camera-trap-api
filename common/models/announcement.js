@@ -9,7 +9,7 @@ module.exports = function(Announcement) {
 
   Announcement.getNotifications = function(req, callback) {
     Announcement.getDataSource().connector.connect((err, db) => {
-      if (err) return;
+      if (err) return callback(err);
 
       let userId;
 
