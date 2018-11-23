@@ -7,7 +7,6 @@
     "aws-sdk": "^2.329.0",
     "compression": "^1.0.3",
     "connect-mongo": "^2.0.1",
-    "connect-redis": "^3.4.0",
     "cors": "^2.5.2",
     "express-session": "^1.15.6",
     "helmet": "^3.10.0",
@@ -16,10 +15,7 @@
     "loopback-boot": "^2.6.5",
     "loopback-component-explorer": "^6.2.0",
     "loopback-connector-mongodb": "^3.7.1",
-    "loopback-ds-timestamp-mixin": "^3.4.1",
     "md5": "^2.2.1",
-    "redis": "^2.8.0",
-    "serve-favicon": "^2.0.1",
     "strong-error-handler": "^3.0.0",
     "uuid": "^3.3.2"
   },
