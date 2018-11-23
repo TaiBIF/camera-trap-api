@@ -1,54 +1,46 @@
 module.exports = function(Model, options) {
-  'use strict';
+  Model.remoteMethod('bulkInsert', {
+    http: { path: '/bulk-insert', verb: 'post' },
+    accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Model.remoteMethod (
-    'bulkInsert',
-    {
-      http: {path: '/bulk-insert', verb: 'post'},
-      accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
-      returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Model.remoteMethod('bulkReplace', {
+    http: { path: '/bulk-replace', verb: 'post' },
+    accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Model.remoteMethod (
-    'bulkReplace',
-    {
-      http: {path: '/bulk-replace', verb: 'post'},
-      accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
-      returns: { arg: 'ret', type: 'object' }
-    }
-  );
+  Model.remoteMethod('bulkUpdate', {
+    http: { path: '/bulk-update', verb: 'post' },
+    accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
+    returns: { arg: 'ret', type: 'object' },
+  });
 
-  Model.remoteMethod (
-    'bulkUpdate',
-    {
-      http: {path: '/bulk-update', verb: 'post'},
-      accepts: { arg: 'data', type: 'array', http: { source: 'body' } },
-      returns: { arg: 'ret', type: 'object' }
-    }
-  );
-
-
-  let _writeWrapper = function (documents, opName) {
-
+  const _writeWrapper = function(documents, opName) {
     // console.log("_writeWrapper " + documents.length);
 
-    switch(opName) {
+    switch (opName) {
       case 'insertOne':
-        documents.forEach(function(doc, idx, arr) {
-          arr[idx] = {insertOne: {document: doc}};
+        documents.forEach((doc, idx, arr) => {
+          arr[idx] = { insertOne: { document: doc } };
         });
-        console.log("BulkInsert");
+        console.log('BulkInsert');
         console.log(JSON.stringify(documents));
         break;
       case 'replaceOne':
-        documents.forEach(function(doc, idx, arr) {
-          arr[idx] = {replaceOne: {filter: {_id: doc._id}, replacement: doc, upsert: true}};
+        documents.forEach((doc, idx, arr) => {
+          arr[idx] = {
+            replaceOne: {
+              filter: { _id: doc._id },
+              replacement: doc,
+              upsert: true,
+            },
+          };
         });
         break;
       case 'updateOne':
-        documents.forEach(function(doc, idx, arr) {
-
+        documents.forEach((doc, idx, arr) => {
           /* Example Document，注意，這跟 mongodb 的寫法不盡相同
           {
             _id: some_id_string,
@@ -65,112 +57,103 @@ module.exports = function(Model, options) {
             },
             $setOnInsert: true / false
           }
-          //*/
+          // */
 
-          let filter = {_id: doc._id};
-          let update = {};
+          const filter = { _id: doc._id };
+          const update = {};
           let upsert = false;
-          if (!!doc['$set']) update['$set'] = doc['$set'];
-          if (!!doc['$addToSet']) update['$addToSet'] = doc['$addToSet'];
-          if (!!doc['$push']) update['$push'] = doc['$push'];
-          if (!!doc['$setOnInsert']) {
-            if (typeof doc['$setOnInsert'] === 'object') {
-              update['$setOnInsert'] = doc['$setOnInsert'];
+          if (doc.$set) update.$set = doc.$set;
+          if (doc.$addToSet) update.$addToSet = doc.$addToSet;
+          if (doc.$push) update.$push = doc.$push;
+          if (doc.$setOnInsert) {
+            if (typeof doc.$setOnInsert === 'object') {
+              update.$setOnInsert = doc.$setOnInsert;
             }
             upsert = true;
           }
-          if (!!doc['$upsert'] == true) {
+          if (!!doc.$upsert === true) {
             upsert = true;
           }
 
-          arr[idx] = {updateOne: {filter: filter, update: update, upsert: upsert}};
-
+          arr[idx] = {
+            updateOne: { filter, update, upsert },
+          };
         });
         console.log(JSON.stringify(documents, null, 2));
         break;
       default:
-        // error
+      // error
     }
 
     return documents;
-  }
+  };
 
-  Model.bulkInsert = function (documents, callback) {
-
+  Model.bulkInsert = function(documents, callback) {
     documents = _writeWrapper(documents, 'insertOne').filter(d => !!d);
-    if (documents.length == 0) {
+    if (documents.length === 0) {
       callback(null, []);
       return;
     }
 
-    Model.getDataSource().connector.connect(function(err, db) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
 
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
-
-      collection.bulkWrite(documents, {ordered: false}, function(err, results) {
+      collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
         // console.log();
-        if (err) {
-          _callback(err)
-        }
-        else {
+        if (_err) {
+          _callback(_err);
+        } else {
           // console.log(results);
           _callback(null, results);
         }
       });
     });
-  }
+  };
 
-  Model.bulkReplace = function (documents, callback) {
-
+  Model.bulkReplace = function(documents, callback) {
     documents = _writeWrapper(documents, 'replaceOne').filter(d => !!d);
-    if (documents.length == 0) {
+    if (documents.length === 0) {
       callback(null, []);
       return;
     }
 
-    Model.getDataSource().connector.connect(function(err, db) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
 
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
-
-      collection.bulkWrite(documents, {ordered: false}, function(err, results) {
+      collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
         // console.log();
-        if (err) {
-          _callback(err)
-        }
-        else {
+        if (_err) {
+          _callback(_err);
+        } else {
           // console.log(results);
           _callback(null, results);
         }
       });
     });
-  }
+  };
 
-  Model.bulkUpdate = function (documents, callback) {
-
+  Model.bulkUpdate = function(documents, callback) {
     documents = _writeWrapper(documents, 'updateOne').filter(d => !!d);
-    if (documents.length == 0) {
+    if (documents.length === 0) {
       callback(null, []);
       return;
     }
 
-    Model.getDataSource().connector.connect(function(err, db) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
 
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
-
-      collection.bulkWrite(documents, {ordered: false}, function(err, results) {
+      collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
         // console.log();
-        if (err) {
-          _callback(err)
-        }
-        else {
+        if (_err) {
+          _callback(_err);
+        } else {
           // console.log(results);
           _callback(null, results);
         }
       });
     });
-  }
-
-}
+  };
+};

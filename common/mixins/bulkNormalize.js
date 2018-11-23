@@ -1,5 +1,5 @@
-const md5 = require('md5');
-
+// const md5 = require('md5');
+/* eslint-disable */
 const strFunc = {};
 strFunc.uuid = require('uuid'); // 看起來 default 就是 v4
 // let lb = require('loopback');
@@ -7,7 +7,7 @@ strFunc.uuid = require('uuid'); // 看起來 default 就是 v4
 module.exports = function(Model, options) {
   // console.log(Model.definition.rawProperties);
 
-  const hasOwnProperty = Object.prototype.hasOwnProperty;
+  const { hasOwnProperty } = Object.prototype;
 
   function isEmpty(obj) {
     // null and undefined are "empty"
@@ -42,11 +42,12 @@ module.exports = function(Model, options) {
     let part;
 
     // let last = parts.pop();
-     
-let prefixParts = Model.definition.name,
 
-     
- prevObj,  prevPart,  prevPrefixParts;
+    let prefixParts = Model.definition.name;
+
+    let prevObj;
+    let prevPart;
+    let prevPrefixParts;
     const last = parts[parts.length - 1];
 
     while ((part = parts.shift())) {
@@ -193,11 +194,7 @@ let prefixParts = Model.definition.name,
         );
 
         // 處理 $push
-        instance = generateInstanceWithUpdateSet(
-          update.$push,
-          instance,
-          true,
-        );
+        instance = generateInstanceWithUpdateSet(update.$push, instance, true);
 
         console.log(['$set', instance]);
 
@@ -286,7 +283,7 @@ let prefixParts = Model.definition.name,
     if (!instance) instance = {};
 
     console.log(
-      `--------------------This instance is from: \`${ instanceFrom }\``,
+      `--------------------This instance is from: \`${instanceFrom}\``,
     );
     // console.log(instance);
     // console.log(dataSourceName);
@@ -303,11 +300,7 @@ let prefixParts = Model.definition.name,
 
           if (typeof defaultFn === 'function') {
             console.log(
-              `^^^ Default value of \`${
-                propName
-              }\` is from function \`${
-                defaultFn
-              }\``,
+              `^^^ Default value of \`${propName}\` is from function \`${defaultFn}\``,
             );
           }
 
@@ -319,7 +312,13 @@ let prefixParts = Model.definition.name,
             defaultValue = defProps[propName].default;
           }
 
-          if (instance[propName] === undefined) instance[propName] = ((defaultValue !== undefined) ? defaultValue : ((typeof defaultFn === 'function') ? defaultFn() : undefined)); 
+          if (instance[propName] === undefined)
+            instance[propName] =
+              defaultValue !== undefined
+                ? defaultValue
+                : typeof defaultFn === 'function'
+                ? defaultFn()
+                : undefined;
 
           // console.log("XXXXXXXXXXXXXXXX " + defProps[propName]);
         }
@@ -421,9 +420,7 @@ let prefixParts = Model.definition.name,
               typeof instance[propName] !== typeof true
             ) {
               errMessages.push(
-                `Property \`${
-                  propName
-                }\` (${
+                `Property \`${propName}\` (${
                   instance[propName]
                 }) isn't a Boolean.`,
               );

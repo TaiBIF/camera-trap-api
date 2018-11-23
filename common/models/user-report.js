@@ -33,9 +33,9 @@ module.exports = function(UserReport) {
       };
 
       const mdl = db.collection('UserReport');
-      mdl.insertOne(insertQuery, {}, (err, result) => {
-        if (err) {
-          callback(err);
+      mdl.insertOne(insertQuery, {}, (_err, result) => {
+        if (_err) {
+          callback(_err);
         } else {
           callback(null, result);
         }

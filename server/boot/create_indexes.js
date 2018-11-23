@@ -44,39 +44,46 @@ module.exports = function(app) {
 
     const indexProjectTitle = [
       {
-        'projectTitle': 1
-      }
+        projectTitle: 1,
+      },
     ];
-    
+
     const indexSite = [
       {
-        'site': 1
-      }
+        site: 1,
+      },
     ];
-    
+
     const indexSubSite = [
       {
-        'subSite': 1
+        subSite: 1,
       },
       {
         sparse: true,
-      }
+      },
     ];
-    
+
     const indexCameraLocation = [
       {
-        'cameraLocation': 1
-      }
+        cameraLocation: 1,
+      },
     ];
 
     const indexFullCameraLocationMd5 = [
       {
-        'fullCameraLocationMd5': 1
+        fullCameraLocationMd5: 1,
       },
     ];
 
-
-    let indexes = [uniqueIndexToken, indexTokenDataKeyValue, indexProjectTitle, indexSite, indexSubSite, indexCameraLocation, indexFullCameraLocationMd5];
+    let indexes = [
+      uniqueIndexToken,
+      indexTokenDataKeyValue,
+      indexProjectTitle,
+      indexSite,
+      indexSubSite,
+      indexCameraLocation,
+      indexFullCameraLocationMd5,
+    ];
     createIndex(MultimediaAnnotation, indexes);
 
     /* media upload */

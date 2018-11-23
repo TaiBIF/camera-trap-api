@@ -70,15 +70,15 @@ orbs:
 
 workflows:
   version: 2
-  Deployment:
+  Test & Lint & Deploy:
     jobs:
       - node10/aws-deploy:
           filters:
             branches:
-              only: /^(master|feature\/ci)$/
-
-  Test & Lint & Build:
-    jobs:
+              only: /^(prod|dev|feature\/ci)$/
+          requires:
+            - lint
+            - test
       - node10/run:
           name: lint
           section: Run ESLint with only modified *.js

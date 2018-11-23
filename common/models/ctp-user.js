@@ -20,7 +20,7 @@ module.exports = function(CtpUsers) {
     console.log(data);
     console.log(req.http);
 
-    const idToken = data.idToken;
+    const { idToken } = data;
     const AWS = CtpUsers.app.aws;
     const login = {};
     login[AWS_ID_PROVIDER] = idToken;
@@ -31,7 +31,6 @@ module.exports = function(CtpUsers) {
       Logins: login,
     });
 
-    //*
     AWS.config.credentials.get(err => {
       if (err) {
         // console.log("Error", err);
@@ -40,30 +39,30 @@ module.exports = function(CtpUsers) {
         throw err;
       } else {
         // 成功透過 OAuth 登入 AWS Cognito，取得 identity id
-        //* 
-        const idToken = AWS.config.credentials.params.Logins[AWS_ID_PROVIDER];
-        const payload = idToken.split('.')[1];
+
+        const idT = AWS.config.credentials.params.Logins[AWS_ID_PROVIDER];
+        const payload = idT.split('.')[1];
         const tokenobj = JSON.parse(atob(payload));
-        const user_id = tokenobj['cognito:username'];
+        const userID = tokenobj['cognito:username'];
         // let formatted = JSON.stringify(tokenobj, undefined, 2);
         // console.log(formatted);
 
-        CtpUsers.getDataSource().connector.connect((err, db) => {
-          if (err) {
-            return callback(err);
+        CtpUsers.getDataSource().connector.connect((_err, db) => {
+          if (_err) {
+            return callback(_err);
           }
           const dateTime = Date.now() / 1000;
           const mdl = db.collection('CtpUser');
           mdl.updateOne(
-            { _id: user_id },
+            { _id: userID },
             {
               $set: {
                 modified: dateTime,
-                idTokenHash: idToken,
+                idTokenHash: idT,
               },
               $setOnInsert: {
-                _id: user_id,
-                user_id,
+                _id: userID,
+                user_id: userID,
                 name: tokenobj.name,
                 email: '',
                 created: dateTime,
@@ -81,19 +80,19 @@ module.exports = function(CtpUsers) {
           );
         });
 
-        const user_info = {
-          user_id,
+        const userInfo = {
+          userID,
           identity_id: AWS.config.credentials.identityId,
           name: tokenobj.name,
           idToken: tokenobj,
         };
 
-        req.session.user_info = user_info;
+        req.session.user_info = userInfo;
         // let identity_id = AWS.config.credentials.identityId;
         console.log(req.session);
-        console.log('Cognito Identity Id', user_id);
+        console.log('Cognito Identity Id', userID);
         //* /
-        callback(null, user_id);
+        callback(null, userID);
       }
     });
     //* /
@@ -109,10 +108,11 @@ module.exports = function(CtpUsers) {
   CtpUsers.whoAmI = function(req, callback) {
     console.log(req.headers);
 
-    let user_id;
+    let userId;
     try {
       // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-      user_id = req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+      userId =
+        req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
     } catch (e) {
       callback(new Error('使用者未登入'));
     }
@@ -124,7 +124,7 @@ module.exports = function(CtpUsers) {
 
       const mdl = db.collection('CtpUser');
       mdl.findOne(
-        { _id: user_id },
+        { _id: userId },
         {
           projection: {
             idTokenHash: false,
@@ -132,9 +132,9 @@ module.exports = function(CtpUsers) {
             id_token: false,
           },
         },
-        (err, result) => {
-          if (err) {
-            return callback(err);
+        (_err, result) => {
+          if (_err) {
+            return callback(_err);
           }
           return callback(null, result);
         },

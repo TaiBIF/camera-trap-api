@@ -1,19 +1,14 @@
 module.exports = function(Model, options) {
-  'use strict';
+  Model.remoteMethod('query', {
+    http: { path: '/query', verb: 'post' },
+    accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
+    returns: { arg: 'results', type: [{ type: 'object' }] },
+  });
 
-  Model.remoteMethod (
-    'query',
-    {
-      http: {path: '/query', verb: 'post'},
-      accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
-      returns: { arg: 'results', type: [{type: 'object'}] }
-    }
-  );
-
-  Model.query = function (req, callback) {
-    Model.getDataSource().connector.connect(function(err, db) {
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
+  Model.query = function(req, callback) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
 
       /* 產地直送 mongodb query 語法
       var query = {'$or': []};
@@ -25,123 +20,111 @@ module.exports = function(Model, options) {
           query['$or'].push(_query);
         }
       }
-      //*/
+      // */
 
-      let limit = 1000;
-      if (req.limit !== undefined) {
-        if (Number(parseInt(req.limit)) == req.limit) {
-          limit = req.limit;
-        }
-      }
-
-      let sort = req.sort || {};
+      let limit = typeof req.limit === 'number' ? req.limit : 1000;
 
       if (limit <= 0) limit = 1000;
       if (limit >= 10000) limit = 10000;
 
-      let skip = 0;
-      if (req.skip !== undefined) {
-        if (Number(parseInt(req.skip)) == req.skip) {
-          skip = req.skip;
-        }
-      }
+      const sort = req.sort || {};
+      const skip = typeof req.skip === 'number' ? req.skip : 0;
 
-      collection.find(req.query, {projection: req.projection, limit: limit, skip: skip, sort: sort}, function(err, data) {
-        console.log(req);
-        if (err) {
-          _callback(err)
-        }
-        else {
-          //console.log(data);
-          data.toArray(function(err, result){
-            console.log(result);
-            _callback(null, result);
-          });
-        }
-      });
-
-
+      collection.find(
+        req.query,
+        { projection: req.projection, limit, skip, sort },
+        (_err, data) => {
+          console.log(req);
+          if (_err) {
+            _callback(_err);
+          } else {
+            // console.log(data);
+            data.toArray((__err, result) => {
+              console.log(result);
+              _callback(null, result);
+            });
+          }
+        },
+      );
     });
-    
-  }
+  };
 
-  Model.remoteMethod (
-    'conditionExists',
-    {
-      http: {path: '/exists', verb: 'post'},
-      accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
-      returns: { arg: 'results', type: [{type: 'object'}] }
-    }
-  );
+  Model.remoteMethod('conditionExists', {
+    http: { path: '/exists', verb: 'post' },
+    accepts: { arg: 'data', type: 'object', http: { source: 'body' } },
+    returns: { arg: 'results', type: [{ type: 'object' }] },
+  });
 
-  Model.conditionExists = function (req, callback) {
-    Model.getDataSource().connector.connect(function(err, db) {
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
+  Model.conditionExists = function(req, callback) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
 
       if (req.query.date_time) {
         if (req.query.date_time.$gte) {
           req.query.date_time_original_timestamp = {};
-          req.query.date_time_original_timestamp.$gte = new Date(req.query.date_time.$gte).getTime() / 1000;
+          req.query.date_time_original_timestamp.$gte =
+            new Date(req.query.date_time.$gte).getTime() / 1000;
         }
         if (req.query.date_time.$lte) {
           req.query.date_time_original_timestamp = {};
-          req.query.date_time_original_timestamp.$lte = new Date(req.query.date_time.$lte).getTime() / 1000;
-        }      
+          req.query.date_time_original_timestamp.$lte =
+            new Date(req.query.date_time.$lte).getTime() / 1000;
+        }
         delete req.query.date_time;
       }
 
       if (req.query.corrected_date_time) {
         if (req.query.corrected_date_time.$gte) {
           req.query.date_time_corrected_timestamp = {};
-          req.query.date_time_corrected_timestamp.$gte = new Date(req.query.corrected_date_time.$gte).getTime() / 1000;
+          req.query.date_time_corrected_timestamp.$gte =
+            new Date(req.query.corrected_date_time.$gte).getTime() / 1000;
         }
         if (req.query.corrected_date_time.$lte) {
           req.query.date_time_corrected_timestamp = {};
-          req.query.date_time_corrected_timestamp.$lte = new Date(req.query.corrected_date_time.$lte).getTime() / 1000;
-        }      
+          req.query.date_time_corrected_timestamp.$lte =
+            new Date(req.query.corrected_date_time.$lte).getTime() / 1000;
+        }
         delete req.query.corrected_date_time;
       }
 
-      collection.findOne(req.query, {projection: {_id: 1}}, function(err, data) {
-        // console.log(req);
-        if (err) {
-          _callback(err)
-        }
-        else {
-          //console.log(data);
-          _callback(null, data);
-          /*
+      collection.findOne(
+        req.query,
+        { projection: { _id: 1 } },
+        (_err, data) => {
+          // console.log(req);
+          if (_err) {
+            _callback(_err);
+          } else {
+            // console.log(data);
+            _callback(null, data);
+            /*
           data.toArray(function(err, result){
             console.log(result);
             _callback(null, result);
           });
-          //*/
-        }
+          // */
+          }
+        },
+      );
+    });
+  };
+
+  Model.remoteMethod('aggregate', {
+    http: { path: '/aggregate', verb: 'post' },
+    accepts: { arg: 'data', type: ['object'], http: { source: 'body' } },
+    returns: { arg: 'results', type: ['object'] },
+  });
+
+  Model.aggregate = function(req, callback) {
+    Model.getDataSource().connector.connect((err, db) => {
+      const _callback = callback;
+      const collection = db.collection(Model.definition.name);
+
+      collection.aggregate(req).toArray((_err, result) => {
+        console.log(result);
+        _callback(null, result);
       });
     });
-  }
-
-  Model.remoteMethod (
-    'aggregate',
-    {
-      http: {path: '/aggregate', verb: 'post'},
-      accepts: { arg: 'data', type: ['object'], http: { source: 'body' } },
-      returns: { arg: 'results', type: ['object'] }
-    }
-  );
-
-  Model.aggregate = function (req, callback) {
-    Model.getDataSource().connector.connect(function(err, db) {
-      let _callback = callback;
-      let collection = db.collection(Model.definition.name);
-
-      collection.aggregate(req).toArray(function(err, result){
-          console.log(result);
-           _callback(null, result);
-      });
-    });
-    
-  }
-}
-
+  };
+};
