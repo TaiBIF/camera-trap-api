@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = function(Announcement) {
   // location locked by someone
   Announcement.remoteMethod('getNotifications', {
@@ -119,7 +120,7 @@ module.exports = function(Announcement) {
         const aggregationQuery = [
           {
             $match: {
-              userId,
+              user_id: userId,
               'project_roles.roles': { $in: roles },
             },
           },

@@ -1,3 +1,4 @@
+/* eslint-disable */
 module.exports = function(Project) {
   Project.remoteMethod('getUserRelatedProject', {
     http: { path: '/related-to-me', verb: 'post' },
@@ -43,7 +44,7 @@ module.exports = function(Project) {
 
       // @todo naming change! project => title
       const aggregateQuery = [
-        { $match: { userId } },
+        { $match: { user_id: userId } },
         { $unwind: '$project_roles' },
         { $group: { _id: '$project_roles.projectTitle' } },
         {
@@ -105,8 +106,7 @@ module.exports = function(Project) {
             { _id: userId, 'project_roles.projectTitle': projectTitle },
             (__err, _res) => {
               console.log(_res);
-              let update;
-              let query;
+              let update, query;
               if (_res === 0) {
                 query = { _id: userId };
                 update = {
