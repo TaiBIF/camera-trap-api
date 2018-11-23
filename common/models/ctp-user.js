@@ -62,7 +62,7 @@ module.exports = function(CtpUsers) {
               },
               $setOnInsert: {
                 _id: userID,
-                userID,
+                user_id: userID,
                 name: tokenobj.name,
                 email: '',
                 created: dateTime,
