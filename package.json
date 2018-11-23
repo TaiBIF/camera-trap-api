@@ -8,6 +8,7 @@
     "compression": "^1.0.3",
     "connect-mongo": "^2.0.1",
     "cors": "^2.5.2",
+    "eslint-plugin-mocha": "^5.2.0",
     "express-session": "^1.15.6",
     "helmet": "^3.10.0",
     "json2csv": "^4.3.0",
