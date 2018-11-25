@@ -29,10 +29,11 @@
       "type": "string",
       "required": true
     },
-    "adminProjectId": {
+    "projectId": {
       "description": "the unique string that the funder uses to identify a project",
       "type": "string",
-      "required": true
+      "required": true,
+      "id": true
     },
     "principalInvestigator": {
       "description": "principal investigator, or project lead",
