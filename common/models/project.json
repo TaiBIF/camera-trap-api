@@ -14,6 +14,12 @@
     "TimeStamp": true
   },
   "properties": {
+    "projectId": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "defaultFn": "uuid"
+    },
     "projectTitle": {
       "description": "project title",
       "type": "string",
@@ -29,11 +35,10 @@
       "type": "string",
       "required": true
     },
-    "projectId": {
+    "adminProjectId": {
       "description": "the unique string that the funder uses to identify a project",
       "type": "string",
-      "required": true,
-      "id": true
+      "required": true
     },
     "principalInvestigator": {
       "description": "principal investigator, or project lead",
@@ -110,6 +115,7 @@
     "timezone": {
       "description": "time zone of the project",
       "required": true,
+      "type": "string",
       "default": "+8"
     }
   },
