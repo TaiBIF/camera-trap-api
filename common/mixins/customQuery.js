@@ -40,6 +40,41 @@ module.exports = function(Model, options) {
           } else {
             // console.log(data);
             data.toArray((__err, result) => {
+              if (Model.definition.name === 'MultimediaAnnotationRevision') {
+                const cu = db.collection('CtpUser');
+                const cptUserTable = {};
+                result.forEach(item => {
+                  item.revisions.forEach(revision => {
+                    cptUserTable[revision.modifiedBy] = null;
+                  });
+                });
+                cu.find(
+                  { _id: { $in: Object.keys(cptUserTable) } },
+                  (___err, usersQuery) => {
+                    if (___err) {
+                      return _callback(___err);
+                    }
+                    usersQuery.toArray((____err, users) => {
+                      if (____err) {
+                        return _callback(____err);
+                      }
+                      users.forEach(user => {
+                        cptUserTable[user._id] = user;
+                      });
+                      result.forEach(item => {
+                        item.revisions.forEach(revision => {
+                          revision.modifiedBy = {
+                            _id: cptUserTable[revision.modifiedBy]._id,
+                            name: cptUserTable[revision.modifiedBy].name,
+                          };
+                        });
+                      });
+                      _callback(null, result);
+                    });
+                  },
+                );
+                return;
+              }
               console.log(result);
               _callback(null, result);
             });

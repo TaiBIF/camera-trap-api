@@ -17,8 +17,7 @@
     "projectTitle": {
       "description": "project title",
       "type": "string",
-      "required": true,
-      "id": true
+      "required": true
     },
     "shortTitle": {
       "description": "the 4-character short title for compact view",
@@ -33,7 +32,8 @@
     "projectId": {
       "description": "the unique string that the funder uses to identify a project",
       "type": "string",
-      "required": true
+      "required": true,
+      "id": true
     },
     "principalInvestigator": {
       "description": "principal investigator, or project lead",
