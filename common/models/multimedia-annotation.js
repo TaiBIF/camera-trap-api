@@ -397,16 +397,48 @@ module.exports = function(MultimediaAnnotation) {
                   // TODO: write to S3
                   console.log('Before getting credentials');
 
-                  const fileToBeAnalyzed = `${uuid()}.csv`;
+                  const uniqueCalcId = uuid();
+                  const calcBucket = 'taibif-s3-mount-bucket';
+                  const calcDataContainer = 'data_for_calculation';
+                  const fileToBeAnalyzed = `${uniqueCalcId}/data.csv`;
+                  const statusOfCalculation = `${uniqueCalcId}/status.log`;
+                  const fileOfResults = `${uniqueCalcId}/results.csv`;
                   const params = {
-                    Bucket: 'taibif-s3-mount-bucket',
-                    Key: `data_for_calculation/${fileToBeAnalyzed}`,
+                    Bucket: calcBucket,
+                    Key: `${calcDataContainer}/${fileToBeAnalyzed}`,
                     Body: csv,
                     ContentType: 'text/csv',
                     ACL: 'public-read',
                   };
 
-                  uploadToS3(params).then(() => callback(null, csv));
+                  const s3UrlBase = 'https://s3-ap-northeast-1.amazonaws.com';
+                  uploadToS3(params).then(() => {
+                    const http = require('http');
+                    const calcPath = 'basic-calculation';
+                    const calcBaseUrl = 'http://10.0.10.31:8888';
+
+                    http.get(`${calcBaseUrl}/${calcPath}?id=${uniqueCalcId}`, (resp) => {
+                      let data = '';
+
+                      // A chunk of data has been recieved.
+                      resp.on('data', (chunk) => {
+                        data += chunk;
+                      });
+
+                      // The whole response has been received. Print out the result.
+                      resp.on('end', () => {
+                        console.log(JSON.parse(data).explanation);
+                        callback(null, {
+                          message: 'Calculation started.',
+                          input: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${fileToBeAnalyzed}`,
+                          status: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${statusOfCalculation}`,
+                          results: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${fileOfResults}`,
+                        });
+                      });
+                    }).on("error", (err) => {
+                      callback(err);
+                    });
+                  });
 
                   /*
                   AWS.config.credentials.get(function(err){
@@ -491,6 +523,7 @@ module.exports = function(MultimediaAnnotation) {
       const offset = -8 * 60 * 60;
       
       function anyDateTimeToDayStartTimestamp(currentDateTime, isTimestamp = false) {
+        // 換算為 +8 時區的 timestamp
         let currentTimestamp;
         if (!isTimestamp) {
           currentTimestamp = new Date(currentDateTime + '+8').getTime() / 1000;
@@ -507,11 +540,11 @@ module.exports = function(MultimediaAnnotation) {
       }
 
       // 起始日零時 與 結束日零時
-      const fromDateZero = anyDateTimeToDayStartTimestamp(fromDateTime, true);
-      const toDateZero = anyDateTimeToDayStartTimestamp(toDateTime, true);
+      const fromDateZeroTimestamp = anyDateTimeToDayStartTimestamp(fromDateTime, true);
+      const toDateZeroTimestamp = anyDateTimeToDayStartTimestamp(toDateTime, true);
 
-      const everyDateZero = {};
-      console.log([fromDateZero, toDateZero]);
+      const everyDayFirstCaptured = {};
+      console.log([fromDateZeroTimestamp, toDateZeroTimestamp]);
 
 
       let cameraLocations = await mdl.aggregate(
@@ -533,21 +566,26 @@ module.exports = function(MultimediaAnnotation) {
       console.log(cameraLocations);
 
       // 填滿使用者設定時間範圍的每日零時
-      for (let dateZero = fromDateZero; dateZero <= toDateZero; dateZero += secInDay) {
+      for (let dateZeroTimestamp = fromDateZeroTimestamp; dateZeroTimestamp <= toDateZeroTimestamp; dateZeroTimestamp += secInDay) {
         cameraLocations.forEach(loc => {
-          if (!everyDateZero[dateZero]) everyDateZero[dateZero] = {};
-          everyDateZero[dateZero][loc._id] = {
+          if (!everyDayFirstCaptured[dateZeroTimestamp]) everyDayFirstCaptured[dateZeroTimestamp] = {};
+          const dateZero = new Date((dateZeroTimestamp - offset) * 1000); // 修正回 +8 時區
+          everyDayFirstCaptured[dateZeroTimestamp][loc._id] = {
             projectTitle,
             site,
             subSite,
-            dateZero,
+            dateZeroTimestamp,
+            dateZero: `${dateZero.getUTCFullYear()}/${dateZero.getUTCMonth() + 1}/${dateZero.getUTCDate()} 00:00:00`,
+            dailyFirstCapturedTimestamp: null,
+            dailyFirstCapturedDateTime: null,
             cameraLocation: loc.cameraLocation,
             diff: null,
+            diffText: "沒有照片"
           };
         });
       }
 
-      // console.log(everyDateZero);
+      // console.log(everyDayFirstCaptured);
 
       if (species) {
         toMatch['tokens.data.key'] = 'species';
@@ -562,7 +600,8 @@ module.exports = function(MultimediaAnnotation) {
         {
           projection: {
             fullCameraLocationMd5: true,
-            date_time_corrected_timestamp: true
+            date_time_corrected_timestamp: true,
+            corrected_date_time: true
           },
           sort: {
             date_time_corrected_timestamp: 1
@@ -571,21 +610,22 @@ module.exports = function(MultimediaAnnotation) {
       ).toArray();
 
       matched.forEach(m => {
-        let dataDateZero = anyDateTimeToDayStartTimestamp(m.date_time_corrected_timestamp, true);
-        if (everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff === null) {
-          let diff = m.date_time_corrected_timestamp - dataDateZero;
-          everyDateZero[dataDateZero][m.fullCameraLocationMd5].timestamp = m.date_time_corrected_timestamp;
-          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diff = diff;
+        let dataDateZeroTimestamp = anyDateTimeToDayStartTimestamp(m.date_time_corrected_timestamp, true);
+        if (everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].diff === null) {
+          let diff = m.date_time_corrected_timestamp - dataDateZeroTimestamp;
+          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].dailyFirstCapturedTimestamp = m.date_time_corrected_timestamp;
+          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].dailyFirstCapturedDateTime = m.corrected_date_time;
+          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].diff = diff;
           let hour = Math.floor(diff / 3600);
           let min = Math.floor((diff % 3600) / 60);
           let sec = Math.floor((diff % 3600) % 60);
           let diffText = `${hour}小時${min}分${sec}秒`;
-          everyDateZero[dataDateZero][m.fullCameraLocationMd5].diffText = diffText;
-          console.log(dataDateZero);
+          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].diffText = diffText;
+          console.log(dataDateZeroTimestamp);
         }
       });
       
-      callback(null, everyDateZero);
+      callback(null, everyDayFirstCaptured);
         
     });
   }
