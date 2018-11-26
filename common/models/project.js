@@ -844,6 +844,53 @@ module.exports = function(Project) {
     });
   };
 
+  Project.remoteMethod('multimediaAnnotationErrorSites', {
+    http: { path: '/:id/multimedia-annotation-error-sites', verb: 'get' },
+    accepts: [
+      { arg: 'id', type: 'string', required: true }
+    ],
+    returns: { arg: 'results', type: [{ type: 'object' }] },
+  });
+  Project.multimediaAnnotationErrorSites = function(projectId, callback) {
+    Project.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
+      const projectCollection = db.collection('Project');
+      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
+
+      projectCollection.findOne({_id: projectId}).then((project) => {
+        if (!project) {
+          throw new Error('project not found');
+        }
+        return multimediaAnnotationCollection.aggregate([
+          {
+            $match: {
+              projectTitle: project.projectTitle,
+              multimedia_error_flag: true
+            },
+          },
+          {
+            $group: {
+              _id: {site: '$site', subSite: '$subSite'},
+              count: {$sum: 1},
+            },
+          },
+        ]).toArray();
+      }).then((result) => {
+        callback(null, result.map((item) => {
+          return {
+            site: item._id.site,
+            subSite: item._id.subSite,
+            errorCount: item.count,
+          };
+        }));
+      }).catch((error) => {
+        if (error) {
+          callback(error);
+        }
+      });
+    });
+  };
+
   // / ///////////
   Project.remoteMethod('projectDataFields', {
     http: { path: '/data-fields', verb: 'post' },
