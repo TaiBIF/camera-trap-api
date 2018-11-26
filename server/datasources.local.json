@@ -4,9 +4,9 @@
     "connector": "memory"
   },
   "ctMongoDb40": {
-    "host": "jupyter.taibif.tw",
+    "host": "localhost",
     "port": 27017,
-    "url": "mongodb://jupyter.taibif.tw:27017/ctp",
+    "url": "mongodb://localhost:27017/ctp",
     "database": "ctp",
     "password": "",
     "name": "ctMongoDb40",

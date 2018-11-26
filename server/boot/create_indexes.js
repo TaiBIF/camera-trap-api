@@ -1,5 +1,5 @@
 module.exports = function(app) {
-  app.datasources.mongodb34.connector.connect((err, db) => {
+  app.datasources.ctMongoDb40.connector.connect((err, db) => {
     const createIndex = function(MongoCollection, indexes) {
       indexes.forEach(index => {
         MongoCollection.createIndex(index, (erri, ret) => {
