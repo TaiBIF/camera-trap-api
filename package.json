@@ -8,7 +8,6 @@
     "compression": "^1.0.3",
     "connect-mongo": "^2.0.1",
     "cors": "^2.5.2",
-    "eslint-plugin-mocha": "^5.2.0",
     "express-session": "^1.15.6",
     "helmet": "^3.10.0",
     "json2csv": "^4.3.0",
@@ -19,13 +18,17 @@
     "loopback-connector-mongodb": "^3.7.1",
     "md5": "^2.2.1",
     "strong-error-handler": "^3.0.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.6",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
+    "eslint-plugin-mocha": "^5.2.0",
     "husky": "^1.2.0",
     "lint-staged": "^8.1.0",
-    "node": "^10.13.0"
+    "node": "^10.13.0",
+    "nodemon": "^1.18.6"
   },
   "husky": {
     "hooks": {
@@ -46,7 +49,15 @@
   "description": "nodejs-loopback",
   "scripts": {
     "start": "node .",
+    "dev": "nodemon server/server.js",
     "test": "echo 'test'"
+  },
+  "nodemonConfig": {
+    "execMap": {
+      "ts": "ts-node",
+      "js": "ts-node"
+    },
+    "ext": "js,ts"
   },
   "directories": {
     "test": "tests"
