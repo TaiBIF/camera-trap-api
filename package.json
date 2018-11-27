@@ -56,7 +56,7 @@
       "ts": "ts-node",
       "js": "ts-node"
     },
-    "ext": "js,ts"
+    "ext": "js,ts,json"
   },
   "directories": {
     "test": "tests"

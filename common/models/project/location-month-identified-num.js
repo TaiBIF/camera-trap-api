@@ -1,4 +1,4 @@
-module.exports = ({ data, req, res, db }) => {
+module.exports = async ({ data, req, res, db }) => {
   const { fullCameraLocationMd5, year, site, subSite, projectTitle } = data;
 
   const toMatch = {
@@ -123,11 +123,10 @@ module.exports = ({ data, req, res, db }) => {
     },
   ];
 
-  mma.aggregate(aggregateQuery).toArray((_err, locationMonthNum) => {
-    if (_err) {
-      res(_err);
-    } else {
-      res(null, locationMonthNum);
-    }
-  });
+  const rows = await mma
+    .aggregate(aggregateQuery)
+    .toArray()
+    .catch(err => res(err));
+
+  res(null, rows);
 };
