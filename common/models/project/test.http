@@ -1,0 +1,19 @@
+@host = http://localhost:3000
+@v = v0.8
+
+@userId = OrcID_0000-0002-6376-3705
+
+###
+
+POST {{host}}/{{v}}/project/location-month-identified-num
+Content-Type: application/json
+
+{
+  "year": 2017,
+  "projectTitle": "測試計畫1"
+}
+
+###
+POST {{host}}/{{v}}/project/related-to-me
+Content-Type: application/json
+camera-trap-user-id: {{userId}}
