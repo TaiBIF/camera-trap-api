@@ -1,4 +1,3 @@
-/* eslint-disable */
 module.exports = function(Project) {
   Project.remoteMethod('getUserRelatedProject', {
     http: { path: '/related-to-me', verb: 'post' },
@@ -106,7 +105,8 @@ module.exports = function(Project) {
             { _id: userId, 'project_roles.projectTitle': projectTitle },
             (__err, _res) => {
               console.log(_res);
-              let update, query;
+              let update;
+              let query;
               if (_res === 0) {
                 query = { _id: userId };
                 update = {
@@ -225,64 +225,78 @@ module.exports = function(Project) {
   // / ////////////////////////////////////////////
 
   Project.remoteMethod('multimediaAnnotationErrorCameras', {
-    http: {path: '/:id/multimedia-annotation-error-cameras', verb: 'get'},
+    http: { path: '/:id/multimedia-annotation-error-cameras', verb: 'get' },
     accepts: [
-      {arg: 'id', type: 'string', required: true},
-      {arg: 'site', type: 'string', http: {source: 'query'}},
-      {arg: 'subSite', type: 'string', http: {source: 'query'}},
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'site', type: 'string', http: { source: 'query' } },
+      { arg: 'subSite', type: 'string', http: { source: 'query' } },
     ],
-    returns: {arg: 'results', type: [{type: 'object'}]},
+    returns: { arg: 'results', type: [{ type: 'object' }] },
   });
-  Project.multimediaAnnotationErrorCameras = function(projectId, site, subSite, callback) {
+  Project.multimediaAnnotationErrorCameras = function(
+    projectId,
+    site,
+    subSite,
+    callback,
+  ) {
     Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
       const projectCollection = db.collection('Project');
-      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
-      projectCollection.findOne({_id: projectId}).then((project) => {
-        if (!project) {
-          throw new Error('project not found');
-        }
-        return multimediaAnnotationCollection.aggregate([
-          {
-            $match: (() => {
-              const query = {
-                projectTitle: project.projectTitle,
-                multimedia_error_flag: true,
-              };
-              if (site) {
-                query.site = site;
-              }
-              if (subSite) {
-                query.subSite = subSite;
-              }
-              return query;
-            })(),
-          },
-          {
-            $group: {
-              _id: {
-                site: '$site',
-                subSite: '$subSite',
-                cameraLocation: '$cameraLocation'
+      const multimediaAnnotationCollection = db.collection(
+        'MultimediaAnnotation',
+      );
+      projectCollection
+        .findOne({ _id: projectId })
+        .then(project => {
+          if (!project) {
+            throw new Error('project not found');
+          }
+          return multimediaAnnotationCollection
+            .aggregate([
+              {
+                $match: (() => {
+                  const query = {
+                    projectTitle: project.projectTitle,
+                    multimedia_error_flag: true,
+                  };
+                  if (site) {
+                    query.site = site;
+                  }
+                  if (subSite) {
+                    query.subSite = subSite;
+                  }
+                  return query;
+                })(),
               },
-              count: {$sum: 1},
-            },
-          },
-        ]).toArray();
-      }).then((result) => {
-        callback(null, result.map((item) => {
-          return {
-            site: item._id.site,
-            subSite: item._id.subSite,
-            cameraLocation: item._id.cameraLocation,
-            errorCount: item.count,
-          };
-        }));
-      }).catch((error) => {
-        if (error) {
-          callback(error);
-        }
-      });
+              {
+                $group: {
+                  _id: {
+                    site: '$site',
+                    subSite: '$subSite',
+                    cameraLocation: '$cameraLocation',
+                  },
+                  count: { $sum: 1 },
+                },
+              },
+            ])
+            .toArray();
+        })
+        .then(result => {
+          callback(
+            null,
+            result.map(item => ({
+              site: item._id.site,
+              subSite: item._id.subSite,
+              cameraLocation: item._id.cameraLocation,
+              errorCount: item.count,
+            })),
+          );
+        })
+        .catch(error => {
+          if (error) {
+            callback(error);
+          }
+        });
     });
   };
 
@@ -908,48 +922,55 @@ module.exports = function(Project) {
 
   Project.remoteMethod('multimediaAnnotationErrorSites', {
     http: { path: '/:id/multimedia-annotation-error-sites', verb: 'get' },
-    accepts: [
-      { arg: 'id', type: 'string', required: true }
-    ],
+    accepts: [{ arg: 'id', type: 'string', required: true }],
     returns: { arg: 'results', type: [{ type: 'object' }] },
   });
   Project.multimediaAnnotationErrorSites = function(projectId, callback) {
     Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
       const projectCollection = db.collection('Project');
-      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
+      const multimediaAnnotationCollection = db.collection(
+        'MultimediaAnnotation',
+      );
 
-      projectCollection.findOne({_id: projectId}).then((project) => {
-        if (!project) {
-          throw new Error('project not found');
-        }
-        return multimediaAnnotationCollection.aggregate([
-          {
-            $match: {
-              projectTitle: project.projectTitle,
-              multimedia_error_flag: true
-            },
-          },
-          {
-            $group: {
-              _id: {site: '$site', subSite: '$subSite'},
-              count: {$sum: 1},
-            },
-          },
-        ]).toArray();
-      }).then((result) => {
-        callback(null, result.map((item) => {
-          return {
-            site: item._id.site,
-            subSite: item._id.subSite,
-            errorCount: item.count,
-          };
-        }));
-      }).catch((error) => {
-        if (error) {
-          callback(error);
-        }
-      });
+      projectCollection
+        .findOne({ _id: projectId })
+        .then(project => {
+          if (!project) {
+            throw new Error('project not found');
+          }
+          return multimediaAnnotationCollection
+            .aggregate([
+              {
+                $match: {
+                  projectTitle: project.projectTitle,
+                  multimedia_error_flag: true,
+                },
+              },
+              {
+                $group: {
+                  _id: { site: '$site', subSite: '$subSite' },
+                  count: { $sum: 1 },
+                },
+              },
+            ])
+            .toArray();
+        })
+        .then(result => {
+          callback(
+            null,
+            result.map(item => ({
+              site: item._id.site,
+              subSite: item._id.subSite,
+              errorCount: item.count,
+            })),
+          );
+        })
+        .catch(error => {
+          if (error) {
+            callback(error);
+          }
+        });
     });
   };
 
