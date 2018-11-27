@@ -22,7 +22,7 @@
     "public": false
   },
   "MultimediaAnnotation": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "Token": {
@@ -42,7 +42,7 @@
     "public": false
   },
   "MultimediaMetadata": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "MultimediaMetadataExif": {
@@ -50,11 +50,11 @@
     "public": false
   },
   "UploadSession": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "CtpUser": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "UserProjectRole": {
@@ -62,11 +62,11 @@
     "public": false
   },
   "CameraLocationDataLock": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "RolePermission": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "Permission": {
@@ -74,7 +74,7 @@
     "public": false
   },
   "Project": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "CameraLocationMetadata": {
@@ -82,23 +82,23 @@
     "public": false
   },
   "MultimediaAnnotationRevision": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "DataFieldAvailable": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "Announcement": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "AbnormalData": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   },
   "UserReport": {
-    "dataSource": "mongodb34",
+    "dataSource": "ctMongoDb40",
     "public": true
   }
 }

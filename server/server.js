@@ -23,7 +23,7 @@ app.use(session({
     resave: false,
     proxy: true
 }));
-// */
+*/
 
 if (app.get('env') === 'development') {
   app.use((req, res, next) => {

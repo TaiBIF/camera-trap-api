@@ -23,3 +23,6 @@ coverage
 node_modules
 npm-debug.log
 yarn.lock
+
+### cjk local development setup
+server/datasource.local.json

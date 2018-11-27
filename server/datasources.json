@@ -3,13 +3,13 @@
     "name": "db",
     "connector": "memory"
   },
-  "mongodb34": {
+  "ctMongoDb40": {
     "host": "jupyter.taibif.tw",
     "port": 27017,
     "url": "mongodb://jupyter.taibif.tw:27017/ctp",
     "database": "ctp",
     "password": "",
-    "name": "mongodb34",
+    "name": "ctMongoDb40",
     "user": "",
     "connector": "mongodb",
     "useNewUrlParser": "true"
