@@ -1,228 +1,30 @@
+const CreateModel = require('../../server/share/CreateModel');
+
 module.exports = function(Project) {
-  Project.remoteMethod('getUserRelatedProject', {
-    http: { path: '/related-to-me', verb: 'post' },
-    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-    accepts: [
+  const model = new CreateModel(Project);
+
+  model
+    .router(
       {
-        arg: 'data',
-        type: 'object',
-        http: { source: 'body' },
+        path: '/related-to-me',
+        verb: 'post',
       },
+      require('./project/related-to-me'),
+    )
+    .router(
       {
-        arg: 'req',
-        type: 'object',
-        http: { source: 'req' },
+        path: '/add-user-to-project',
+        verb: 'post',
       },
-    ],
-    returns: { arg: 'ret', type: 'object' },
-  });
-
-  Project.getUserRelatedProject = (data, req, callback) => {
-    Project.getDataSource().connector.connect((err, db) => {
-      if (err) return callback(err);
-
-      // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
-      let sortKey = data.sort_key || 'projectStartDate';
-      sortKey = `project_metadata.${sortKey}`;
-
-      // let pm = db.collection(Project.definition.name);
-      const cu = db.collection('CtpUser');
-      // TODO: remove data.user_id part from following line
-
-      let userId;
-      try {
-        // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-        userId =
-          req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
-      } catch (e) {
-        callback(new Error('使用者未登入'));
-      }
-
-      const sorts = {};
-      sorts[sortKey] = 1;
-
-      // @todo naming change! project => title
-      const aggregateQuery = [
-        { $match: { user_id: userId } },
-        { $unwind: '$project_roles' },
-        { $group: { _id: '$project_roles.projectTitle' } },
-        {
-          $lookup: {
-            from: 'Project',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'project_metadata',
-          },
-        },
-        { $unwind: '$project_metadata' },
-        {
-          $project: {
-            project_metadata: '$project_metadata',
-          },
-        },
-        {
-          $sort: sorts,
-        },
-      ];
-
-      cu.aggregate(aggregateQuery).toArray((_err, prjs) => {
-        callback(null, prjs);
-      });
-    });
-  };
-
-  /* remoteMethod: addUserToProject */
-  Project.remoteMethod('addUserToProject', {
-    http: { path: '/add-user-to-project', verb: 'post' },
-    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-    accepts: [
-      { arg: 'data', type: 'object', http: { source: 'body' } },
-      { arg: 'req', type: 'object', http: { source: 'req' } },
-    ],
-    returns: { arg: 'ret', type: 'object' },
-  });
-
-  Project.addUserToProject = function(data, req, callback) {
-    Project.getDataSource().connector.connect((err, db) => {
-      if (err) return callback(err);
-
-      // let pm = db.collection(Project.definition.name);
-      const cu = db.collection('CtpUser');
-
-      const { projectTitle, user_id: userId } = data;
-      const role = data.role ? data.role : 'Member';
-
-      cu.countDocuments({ _id: userId }, (_err, res) => {
-        if (_err) {
-          callback(_err);
-          return;
-        }
-
-        console.log(['user_exists', res]);
-        if (res) {
-          // 如果使用者存在
-          cu.countDocuments(
-            { _id: userId, 'project_roles.projectTitle': projectTitle },
-            (__err, _res) => {
-              console.log(_res);
-              let update;
-              let query;
-              if (_res === 0) {
-                query = { _id: userId };
-                update = {
-                  $addToSet: {
-                    project_roles: {
-                      projectTitle,
-                      roles: [role],
-                    },
-                  },
-                };
-              } else {
-                query = {
-                  _id: userId,
-                  'project_roles.projectTitle': projectTitle,
-                };
-                update = {
-                  $addToSet: {
-                    'project_roles.$.roles': role,
-                  },
-                };
-              }
-
-              console.log(['test', query, update]);
-
-              cu.updateOne(query, update, null, (___err, __res) => {
-                if (___err) {
-                  callback(___err);
-                } else {
-                  // console.log(res);
-                  callback(null, __res);
-                }
-              });
-            },
-          );
-        } else {
-          callback(new Error("User doesn't exist."));
-        }
-      });
-    });
-  };
-
-  // / ////////////////////////////////////////////
-
-  Project.remoteMethod('projectInit', {
-    http: { path: '/init', verb: 'post' },
-    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-    accepts: [
-      { arg: 'data', type: 'object', http: { source: 'body' } },
-      { arg: 'req', type: 'object', http: { source: 'req' } },
-    ],
-    returns: { arg: 'ret', type: 'object' },
-  });
-
-  Project.projectInit = function(data, req, callback) {
-    Project.getDataSource().connector.connect((err, db) => {
-      if (err) return callback(err);
-
-      let userId;
-      try {
-        // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-        userId =
-          req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
-      } catch (e) {
-        callback(new Error('使用者未登入'));
-      }
-
-      const mdl = db.collection('Project');
-      const cu = db.collection('CtpUser');
-      mdl.countDocuments({ _id: data.projectTitle }, (_err, prjCnt) => {
-        if (prjCnt === 0) {
-          cu.find(
-            {
-              'project_roles.projectTitle': data.projectTitle,
-              'project_roles.roles': 'ProjectManager',
-            },
-            { projection: { _id: true } },
-          ).toArray((__err, mngrs) => {
-            if (mngrs.length === 0) {
-              cu.updateOne(
-                { _id: userId },
-                {
-                  $addToSet: {
-                    project_roles: {
-                      projectTitle: data.projectTitle,
-                      roles: ['ProjectManager'],
-                    },
-                  },
-                },
-                null,
-                (___err, res) => {
-                  callback(null, res);
-                },
-              );
-              // );
-            } else {
-              const pms = [];
-              mngrs.forEach(mngr => {
-                pms.push(mngr._id);
-              });
-              callback(
-                new Error(
-                  `計畫 \`${data.projectTitle}\` 已被\`${pms.join(
-                    '`, `',
-                  )}\`註冊.`,
-                ),
-              );
-            }
-          });
-        } else {
-          callback(new Error(`計畫 \`${data.projectTitle}\` 已經存在.`));
-        }
-      });
-    });
-  };
-
-  // / ////////////////////////////////////////////
+      require('./project/add-user-to-project'),
+    )
+    .router(
+      {
+        path: '/init',
+        verb: 'post',
+      },
+      require('./project/init'),
+    );
 
   Project.remoteMethod('multimediaAnnotationErrorCameras', {
     http: { path: '/:id/multimedia-annotation-error-cameras', verb: 'get' },
