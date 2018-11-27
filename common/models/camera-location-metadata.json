@@ -12,6 +12,10 @@
       "required": "true",
       "id": true
     },
+    "projectId": {
+      "type": "string",
+      "required": "true"
+    },
     "projectTitle": {
       "type": "string",
       "required": "true"

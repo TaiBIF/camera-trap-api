@@ -15,6 +15,9 @@
   },
   "properties": {
     "projectId": {
+      "description": [
+        "The primary key to which other data entities refer to retain data integrity."
+      ],
       "type": "string",
       "id": true,
       "required": true,

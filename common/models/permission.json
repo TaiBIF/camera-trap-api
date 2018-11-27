@@ -6,9 +6,13 @@
     "validateUpsert": true
   },
   "properties": {
-    "projectTitle": {
+    "projectId": {
       "type": "string",
       "id": 1,
+      "required": true
+    },
+    "projectTitle": {
+      "type": "string",
       "required": true,
       "default": "OWN"
     },

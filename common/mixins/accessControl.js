@@ -128,7 +128,7 @@ module.exports = function(Model, options) {
             $project: {
               user_id: '$user_id',
               name: '$name',
-              projectTitle: '$project_roles.projectTitle',
+              projectTitle: '$project_roles.projectTitle', // check-id-usage
               role: '$role_details.role',
               permissions: '$role_details.permissions',
               enabled: '$role_details.enabled',
@@ -185,6 +185,7 @@ module.exports = function(Model, options) {
                     let permissionGranted = false;
                     userPermissions.forEach(p => {
                       // p for permission
+                      // check-id-usage
                       if (
                         q.projectTitle === p.projectTitle ||
                         p.permissions.projectTitle === 'ANY'

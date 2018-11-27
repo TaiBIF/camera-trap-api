@@ -6,9 +6,13 @@
     "validateUpsert": true
   },
   "properties": {
-    "projectTitle": {
+    "projectId": {
       "type": "string",
       "id": true,
+      "required": true
+    },
+    "projectTitle": {
+      "type": "string",
       "required": true
     },
     "roles": {

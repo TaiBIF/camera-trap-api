@@ -6,6 +6,13 @@
     "validateUpsert": true
   },
   "properties": {
+    "projectId": {
+      "description": [
+        "The primary key to which other data entities refer to retain data integrity."
+      ],
+      "type": "string",
+      "required": true
+    },
     "projectTitle": {
       "type": "string",
       "required": true,
