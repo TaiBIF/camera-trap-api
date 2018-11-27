@@ -27,7 +27,7 @@ module.exports = ({ data, req, res, db }) => {
       $lookup: {
         from: 'Project',
         localField: '_id',
-        foreignField: '_id',
+        foreignField: 'projectTitle',
         as: 'project_metadata',
       },
     },
