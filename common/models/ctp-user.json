@@ -13,7 +13,7 @@
     "TimeStamp": true
   },
   "properties": {
-    "user_id": {
+    "userId": {
       "type": "string",
       "id": true,
       "required": true

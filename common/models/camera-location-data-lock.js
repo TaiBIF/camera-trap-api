@@ -103,7 +103,7 @@ module.exports = function(CameraLocationDataLock) {
                 '$cameraLocationDataLock.fullCameraLocationMd5',
               locked: '$cameraLocationDataLock.locked',
               locked_by: {
-                user_id: '$cameraLocationDataLock.locked_by',
+                userId: '$cameraLocationDataLock.locked_by',
                 name: '$lockedByUser.name',
                 email: '$lockedByUser.email',
               },

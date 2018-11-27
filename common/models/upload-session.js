@@ -9,11 +9,11 @@ module.exports = function(UploadSession) {
   UploadSession.getMyUploads = function(req, callback) {
     console.log(req.headers);
 
-    let userID;
+    let userId;
     try {
       // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-      userID =
-        req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+      userId =
+        req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
       callback(new Error('使用者未登入'));
     }
@@ -25,7 +25,7 @@ module.exports = function(UploadSession) {
 
       const mdl = db.collection('UploadSession');
       mdl
-        .find({ by: userID }, { sort: { created: -1 } })
+        .find({ by: userId }, { sort: { created: -1 } })
         .toArray((_err, results) => {
           if (_err) {
             return callback(_err);

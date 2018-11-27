@@ -22,7 +22,7 @@ module.exports = ({ db, res }) => {
       $group: {
         _id: '$project._id',
         members: {
-          $addToSet: '$user_id',
+          $addToSet: '$userId',
         },
         funder: { $first: '$project.funder' },
         coverImage: { $first: '$project.cover_image' },

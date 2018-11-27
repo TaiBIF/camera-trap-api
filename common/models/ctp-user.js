@@ -44,7 +44,7 @@ module.exports = function(CtpUsers) {
         const idT = AWS.config.credentials.params.Logins[AWS_ID_PROVIDER];
         const payload = idT.split('.')[1];
         const tokenobj = JSON.parse(atob(payload));
-        const userID = tokenobj['cognito:username'];
+        const userId = tokenobj['cognito:username'];
         // let formatted = JSON.stringify(tokenobj, undefined, 2);
         // console.log(formatted);
 
@@ -55,16 +55,16 @@ module.exports = function(CtpUsers) {
           const dateTime = Date.now() / 1000;
           const mdl = db.collection('CtpUser');
           mdl.updateOne(
-            { _id: userID },
+            { _id: userId },
             {
               $set: {
                 modified: dateTime,
                 idTokenHash: idT,
               },
               $setOnInsert: {
-                _id: userID,
+                _id: userId,
                 // eslint-disable-next-line camelcase
-                user_id: userID,
+                userId,
                 name: tokenobj.name,
                 email: '',
                 created: dateTime,
@@ -84,7 +84,7 @@ module.exports = function(CtpUsers) {
         });
 
         const userInfo = {
-          userID,
+          userId,
           // eslint-disable-next-line camelcase
           identity_id: AWS.config.credentials.identityId,
           name: tokenobj.name,
@@ -95,9 +95,9 @@ module.exports = function(CtpUsers) {
         req.session.user_info = userInfo;
         // let identity_id = AWS.config.credentials.identityId;
         console.log(req.session);
-        console.log('Cognito Identity Id', userID);
+        console.log('Cognito Identity Id', userId);
         //* /
-        callback(null, userID);
+        callback(null, userId);
       }
     });
     //* /
@@ -117,7 +117,7 @@ module.exports = function(CtpUsers) {
     try {
       // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
       userId =
-        req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
+        req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
       callback(new Error('使用者未登入'));
     }

@@ -48,11 +48,11 @@ module.exports = function(Model, options) {
     ) {
       // TODO: 只在測試環境使用，正式環境要把這兩個 headers 拿掉
       userInfo = {
-        user_id: context.req.headers['camera-trap-user-id'],
+        userId: context.req.headers['camera-trap-user-id'],
         idTokenHash: context.req.headers['camera-trap-user-id-token'],
       };
     } else {
-      // user_info = {user_id: "OrcID_0000-0002-7446-3249"}
+      // user_info = {userId: "OrcID_0000-0002-7446-3249"}
       // console.log(['made.up', user_info]);
       // console.log(context.req.headers);
 
@@ -68,7 +68,7 @@ module.exports = function(Model, options) {
             process.env.PASSWD_AWS_LAMBDA_AS_USER
           }`
         ) {
-          userInfo = { user_id: context.req.headers['camera-trap-user-id'] };
+          userInfo = { userId: context.req.headers['camera-trap-user-id'] };
         }
         // console.log(user_password);
       } catch (e) {
@@ -80,7 +80,7 @@ module.exports = function(Model, options) {
 
     if (userInfo) {
       // 成功從 session 中取得登入資訊
-      const userId = userInfo.user_id;
+      const userId = userInfo.userId;
 
       console.log('User Id', userId);
 
@@ -126,7 +126,7 @@ module.exports = function(Model, options) {
           },
           {
             $project: {
-              user_id: '$user_id',
+              userId: '$userId',
               name: '$name',
               projectTitle: '$project_roles.projectTitle', // check-id-usage
               role: '$role_details.role',

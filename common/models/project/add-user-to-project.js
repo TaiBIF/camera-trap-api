@@ -1,7 +1,7 @@
 module.exports = ({ data, req, res: callback, db }) => {
   const cu = db.collection('CtpUser');
 
-  const { projectTitle, user_id: userId } = data;
+  const { projectTitle, userId } = data;
   const role = data.role ? data.role : 'Member';
 
   cu.countDocuments({ _id: userId }, (err, res) => {
@@ -16,8 +16,7 @@ module.exports = ({ data, req, res: callback, db }) => {
         { _id: userId, 'project_roles.projectTitle': projectTitle },
         (__err, _res) => {
           console.log(_res);
-          let update;
-          let query;
+          let update, query;
           if (_res === 0) {
             query = { _id: userId };
             update = {

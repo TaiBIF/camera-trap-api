@@ -15,7 +15,7 @@ module.exports = function(Announcement) {
       let userId;
 
       try {
-        userId = req.session.user_info.user_id;
+        userId = req.session.user_info.userId;
       } catch (e) {
         // 未登入，不用 throw error，後續僅顯示系統錯誤就好
       }
@@ -121,7 +121,7 @@ module.exports = function(Announcement) {
           {
             $match: {
               // eslint-disable-next-line camelcase
-              user_id: userId,
+              userId: userId,
               'project_roles.roles': { $in: roles },
             },
           },

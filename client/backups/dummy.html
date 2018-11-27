@@ -253,12 +253,12 @@
 	function initCognitoSDK() {
 		var authData = {
 			ClientId : clientId, // Your client id here
-			AppWebDomain : appWebDomain, // Exclude the "https://" part. 
+			AppWebDomain : appWebDomain, // Exclude the "https://" part.
 			TokenScopesArray : ['openid', 'email', 'profile', 'aws.cognito.signin.user.admin'], // like ['openid','email','phone']...
 			RedirectUriSignIn : redirUri,
 			RedirectUriSignOut : loginUri,
 			IdentityProvider : 'OrcID',
-			UserPoolId : userPoolId, 
+			UserPoolId : userPoolId,
 			AdvancedSecurityDataCollectionFlag : 0
 		};
 		var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
@@ -306,8 +306,8 @@
 				let err_ = decodeURIComponent(err).replace(/\+/g, " ");
 				let providerRegexp = new RegExp(" ((" + allowedProviders.join("|") + ")_\\d+) ");
 
-				let provider_user_id = providerRegexp.exec(err_);
-				if (!!provider_user_id) {
+				let providerUserId = providerRegexp.exec(err_);
+				if (!!providerUserId) {
 					let provider = providerRegexp.exec(err_)[2];
 					authData.IdentityProvider = provider;
 					let reAuth = new AmazonCognitoIdentity.CognitoAuth(authData);
