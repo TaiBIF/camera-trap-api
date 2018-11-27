@@ -17,3 +17,11 @@ Content-Type: application/json
 POST {{host}}/{{v}}/project/related-to-me
 Content-Type: application/json
 camera-trap-user-id: {{userId}}
+
+###
+POST {{host}}/{{v}}/project/add-user-to-project
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
