@@ -1,4 +1,4 @@
-module.exports = ({ data, req, callback, db }) => {
+module.exports = ({ data, req, res, db }) => {
   const { projectTitle } = data;
   const toMatch = {
     $and: [
@@ -15,7 +15,7 @@ module.exports = ({ data, req, callback, db }) => {
   if (projectTitle) {
     toMatch.projectTitle = projectTitle;
   } else {
-    return callback(new Error('請輸入計畫名稱'));
+    return res(new Error('請輸入計畫名稱'));
   }
 
   const mma = db.collection('MultimediaAnnotation');
@@ -69,7 +69,7 @@ module.exports = ({ data, req, callback, db }) => {
 
   mma.aggregate(aggregateQuery).toArray((_err, speciesImageCount) => {
     if (_err) {
-      callback(_err);
+      res(_err);
     } else if (speciesImageCount.length === 0) {
       speciesImageCount = [
         {
@@ -78,7 +78,7 @@ module.exports = ({ data, req, callback, db }) => {
           modified: null,
         },
       ];
-      callback(null, speciesImageCount);
+      res(null, speciesImageCount);
     }
   });
 };

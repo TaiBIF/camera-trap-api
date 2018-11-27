@@ -1,11 +1,11 @@
-module.exports = ({ data, req, callback, db }) => {
+module.exports = ({ data, req, res, db }) => {
   let userId;
   try {
     // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
     userId =
       req.headers['camera-trap-user-id'] || req.session.user_info.user_id;
   } catch (e) {
-    callback(new Error('使用者未登入'));
+    res(new Error('使用者未登入'));
   }
 
   const mdl = db.collection('Project');
@@ -31,8 +31,8 @@ module.exports = ({ data, req, callback, db }) => {
               },
             },
             null,
-            (___err, res) => {
-              callback(null, res);
+            (___err, _res) => {
+              res(null, _res);
             },
           );
           // );
@@ -41,7 +41,7 @@ module.exports = ({ data, req, callback, db }) => {
           mngrs.forEach(mngr => {
             pms.push(mngr._id);
           });
-          callback(
+          res(
             new Error(
               `計畫 \`${data.projectTitle}\` 已被\`${pms.join('`, `')}\`註冊.`,
             ),
@@ -49,7 +49,7 @@ module.exports = ({ data, req, callback, db }) => {
         }
       });
     } else {
-      callback(new Error(`計畫 \`${data.projectTitle}\` 已經存在.`));
+      res(new Error(`計畫 \`${data.projectTitle}\` 已經存在.`));
     }
   });
 };

@@ -1,4 +1,4 @@
-module.exports = ({ data, req, callback, db }) => {
+module.exports = ({ data, req, res, db }) => {
   const { fullCameraLocationMd5, year, site, subSite, projectTitle } = data;
 
   const toMatch = {
@@ -23,13 +23,13 @@ module.exports = ({ data, req, callback, db }) => {
   if (year) {
     toMatch.year = year;
   } else {
-    return callback(new Error('請輸入年份'));
+    return res(new Error('請輸入年份'));
   }
 
   if (projectTitle) {
     toMatch.projectTitle = projectTitle;
   } else {
-    return callback(new Error('請輸入計畫名稱'));
+    return res(new Error('請輸入計畫名稱'));
   }
 
   const mma = db.collection('MultimediaAnnotation');
@@ -125,9 +125,9 @@ module.exports = ({ data, req, callback, db }) => {
 
   mma.aggregate(aggregateQuery).toArray((_err, locationMonthNum) => {
     if (_err) {
-      callback(_err);
+      res(_err);
     } else {
-      callback(null, locationMonthNum);
+      res(null, locationMonthNum);
     }
   });
 };

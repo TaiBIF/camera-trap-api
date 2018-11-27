@@ -1,4 +1,4 @@
-module.exports = ({ data, db, callback }) => {
+module.exports = ({ data, db, res }) => {
   const { projectTitle } = data;
 
   const mdl = db.collection('Project');
@@ -35,9 +35,9 @@ module.exports = ({ data, db, callback }) => {
 
   mdl.aggregate(aggregateQuery).toArray((_err, projectDataFields) => {
     if (_err) {
-      callback(_err);
+      res(_err);
     } else {
-      callback(null, projectDataFields);
+      res(null, projectDataFields);
     }
   });
 };

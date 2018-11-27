@@ -1,4 +1,4 @@
-module.exports = ({ db, callback }) => {
+module.exports = ({ db, res }) => {
   const mdl = db.collection('CtpUser');
   const aggregateQuery = [
     {
@@ -47,9 +47,9 @@ module.exports = ({ db, callback }) => {
 
   mdl.aggregate(aggregateQuery).toArray((_err, projectsSummary) => {
     if (_err) {
-      callback(_err);
+      res(_err);
     } else {
-      callback(null, projectsSummary);
+      res(null, projectsSummary);
     }
   });
 };

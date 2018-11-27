@@ -1,4 +1,4 @@
-module.exports = ({ callback, data, db }) => {
+module.exports = ({ res, data, db }) => {
   const { year, site, subSite, projectTitle, fullCameraLocationMd5 } = data;
 
   const toMatch = {};
@@ -18,13 +18,13 @@ module.exports = ({ callback, data, db }) => {
   if (year) {
     toMatch['abnormalMonthSpan.year'] = year;
   } else {
-    return callback(new Error('請輸入年份'));
+    return res(new Error('請輸入年份'));
   }
 
   if (projectTitle) {
     toMatch.projectTitle = projectTitle;
   } else {
-    return callback(new Error('請輸入計畫名稱'));
+    return res(new Error('請輸入計畫名稱'));
   }
 
   const mdl = db.collection('AbnormalData');
@@ -139,9 +139,9 @@ module.exports = ({ callback, data, db }) => {
 
   mdl.aggregate(aggregateQuery).toArray((_err, locationMonthAbnormal) => {
     if (_err) {
-      callback(_err);
+      res(_err);
     } else {
-      callback(null, locationMonthAbnormal);
+      res(null, locationMonthAbnormal);
     }
   });
 };
