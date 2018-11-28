@@ -1,11 +1,5 @@
-@host = http://localhost:3000
-@v = v0.8
-
-@userId = OrcID_0000-0002-6376-3705
-
 ###
-
-POST {{host}}/{{v}}/project/location-month-identified-num
+POST {{host}}/project/location-month-identified-num
 Content-Type: application/json
 
 {
@@ -14,12 +8,12 @@ Content-Type: application/json
 }
 
 ###
-POST {{host}}/{{v}}/project/related-to-me
+POST {{host}}/project/related-to-me
 Content-Type: application/json
 camera-trap-user-id: {{userId}}
 
 ###
-POST {{host}}/{{v}}/project/add-user-to-project
+POST {{host}}/project/add-user-to-project
 Content-Type: application/json
 
 {
