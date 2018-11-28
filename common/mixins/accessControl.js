@@ -333,7 +333,7 @@ module.exports = function(Model, options) {
                           //
                           ldl
                             .find({
-                              _id: locPrj.loc_id,
+                              _id: locPrj.locId,
                               // projectId: locPrj.projectId,
                               locked: true,
                               // eslint-disable-next-line
@@ -343,7 +343,7 @@ module.exports = function(Model, options) {
                               if (dataLock.length === 0) {
                                 permissionDeniedMessages.push(
                                   `Location data \`${
-                                    locPrj.loc_id
+                                    locPrj.locId
                                   }\` is not locked by you.`,
                                 );
                                 go = false;
@@ -352,7 +352,7 @@ module.exports = function(Model, options) {
                               ) {
                                 permissionDeniedMessages.push(
                                   `You have no permission to write data to \`${
-                                    locPrj.loc_id
+                                    locPrj.locId
                                   }\` because it's from project \`${
                                     dataLock[0].projectId
                                   }\`.`,
