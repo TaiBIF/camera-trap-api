@@ -1,0 +1,5 @@
+
+###
+GET {{host}}/ctp-user/me
+Content-Type: application/json
+camera-trap-user-id: {{userId}}
