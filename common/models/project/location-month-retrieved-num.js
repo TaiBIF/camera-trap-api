@@ -1,5 +1,9 @@
+/*
+  @todo add last modified timestamp.
+  TaiBIF/camera-trap-webapp/issues/16#issuecomment-437429780
+ */
 module.exports = ({ data, req, res, db }) => {
-  const { fullCameraLocationMd5, year, site, subSite, projectTitle } = data;
+  const { fullCameraLocationMd5, year, site, subSite, projectId } = data;
   const toMatch = {};
   if (fullCameraLocationMd5) {
     toMatch.fullCameraLocationMd5 = fullCameraLocationMd5;
@@ -19,10 +23,10 @@ module.exports = ({ data, req, res, db }) => {
     return res(new Error('請輸入年份'));
   }
 
-  if (projectTitle) {
-    toMatch.projectTitle = projectTitle;
+  if (projectId) {
+    toMatch.projectId = projectId;
   } else {
-    return res(new Error('請輸入計畫名稱'));
+    return res(new Error('projectId missing'));
   }
 
   const mmm = db.collection('MultimediaMetadata');
@@ -39,6 +43,7 @@ module.exports = ({ data, req, res, db }) => {
         num: {
           $sum: 1,
         },
+        projectId: { $first: '$projectId' },
         projectTitle: { $first: '$projectTitle' },
         site: { $first: '$site' },
         subSite: { $first: '$subSite' },
@@ -48,6 +53,7 @@ module.exports = ({ data, req, res, db }) => {
     {
       $group: {
         _id: '$_id.fullCameraLocationMd5',
+        projectId: { $first: '$projectId' },
         projectTitle: { $first: '$projectTitle' },
         site: { $first: '$site' },
         subSite: { $first: '$subSite' },
@@ -72,6 +78,7 @@ module.exports = ({ data, req, res, db }) => {
       $project: {
         _id: '$_id',
         fullCameraLocationMd5: '$_id',
+        projectId: '$projectId',
         projectTitle: '$projectTitle',
         site: '$site',
         subSite: '$subSite',

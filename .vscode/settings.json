@@ -1,0 +1,15 @@
+{
+  "rest-client.environmentVariables": {
+    "$shared": {
+      "userId": "OrcID_0000-0002-6376-3705"
+    },
+
+    "dev": {
+      "host": "http://localhost:3000/v0.8",
+    },
+
+    "prod": {
+      "host": "https://api.carema-trap.tw/v0.8",
+    }
+  }
+}

@@ -22,12 +22,12 @@ module.exports = async ({ data, req, res, db }) => {
   const aggregateQuery = [
     { $match: { userId } },
     { $unwind: '$project_roles' },
-    { $group: { _id: '$project_roles.projectTitle' } },
+    { $group: { _id: '$project_roles.projectId' } },
     {
       $lookup: {
         from: 'Project',
         localField: '_id',
-        foreignField: 'projectTitle',
+        foreignField: 'projectId',
         as: 'project_metadata',
       },
     },
