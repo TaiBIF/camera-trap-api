@@ -260,7 +260,7 @@ module.exports = function(MultimediaAnnotation) {
         .toArray();
       console.log(perLocationMinMaxWorkingTime);
 
-      //* 
+      //*
       perLocationMinMaxWorkingTime.forEach((item, idx, arr) => {
         const workingHours =
           Math.floor(item.maxWorkingTime / 3600) -
@@ -291,6 +291,7 @@ module.exports = function(MultimediaAnnotation) {
 
       const projection = {
         url: true,
+        projectId: true,
         projectTitle: true,
         site: true,
         subSite: true,
@@ -504,7 +505,7 @@ module.exports = function(MultimediaAnnotation) {
       if (subSite) {
         toMatch.subSite = subSite;
       }
-      
+
       if (
         Array.isArray(fullCameraLocationMd5s) &&
         fullCameraLocationMd5s.length > 0
@@ -521,7 +522,7 @@ module.exports = function(MultimediaAnnotation) {
 
       const secInDay = 24 * 60 * 60;
       const offset = -8 * 60 * 60;
-      
+
       function anyDateTimeToDayStartTimestamp(currentDateTime, isTimestamp = false) {
         // 換算為 +8 時區的 timestamp
         let currentTimestamp;
@@ -624,9 +625,9 @@ module.exports = function(MultimediaAnnotation) {
           console.log(dataDateZeroTimestamp);
         }
       });
-      
+
       callback(null, everyDayFirstCaptured);
-        
+
     });
   }
 
