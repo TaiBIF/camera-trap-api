@@ -14,8 +14,7 @@ module.exports = async ({ data, req, res: callback, db }) => {
       cu.countDocuments(
         { _id: userId, 'project_roles.projectTitle': projectTitle },
         (__err, _res) => {
-          let update;
-          let query;
+          let update, query;
 
           if (_res === 0) {
             query = { _id: userId };
