@@ -23,7 +23,9 @@
       "required": true
     },
     "reportContentType": {
-      "type": "string",
+      "type": [
+        "string"
+      ],
       "required": true
     },
     "description": {
