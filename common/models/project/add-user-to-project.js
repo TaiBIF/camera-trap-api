@@ -1,4 +1,4 @@
-module.exports = ({ data, req, res: callback, db }) => {
+module.exports = async ({ data, req, res: callback, db }) => {
   const cu = db.collection('CtpUser');
 
   const { projectTitle, userId } = data;
@@ -9,14 +9,14 @@ module.exports = ({ data, req, res: callback, db }) => {
       return callback(err);
     }
 
-    console.log(['user_exists', res]);
     if (res) {
       // 如果使用者存在
       cu.countDocuments(
         { _id: userId, 'project_roles.projectTitle': projectTitle },
         (__err, _res) => {
-          console.log(_res);
-          let update, query;
+          let update;
+          let query;
+
           if (_res === 0) {
             query = { _id: userId };
             update = {
