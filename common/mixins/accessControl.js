@@ -80,7 +80,7 @@ module.exports = function(Model, options) {
 
     if (userInfo) {
       // 成功從 session 中取得登入資訊
-      const userId = userInfo.userId;
+      const { userId } = userInfo;
 
       console.log('User Id', userId);
 
@@ -99,7 +99,7 @@ module.exports = function(Model, options) {
           matchConditions.idTokenHash = userInfo.idTokenHash;
         }
 
-        // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project name 檢查權限
+        // 所有 remoteMethod 前都需要依據 remoteMethod, user id, target model, project id 檢查權限
         const userPermissionQuery = [
           { $match: matchConditions },
           { $unwind: '$project_roles' },
@@ -128,6 +128,7 @@ module.exports = function(Model, options) {
             $project: {
               userId: '$userId',
               name: '$name',
+              projectId: '$project_roles.projectId',
               projectTitle: '$project_roles.projectTitle', // check-id-usage
               role: '$role_details.role',
               permissions: '$role_details.permissions',
@@ -149,7 +150,7 @@ module.exports = function(Model, options) {
                     { 'permissions.collection': targetModelName },
                   ],
                 },
-                { 'permissions.projectTitle': { $ne: 'NA' } },
+                { 'permissions.projectId': { $ne: 'NA' } },
                 { enabled: true },
               ],
             },
@@ -176,7 +177,7 @@ module.exports = function(Model, options) {
                 let projectValidated;
                 if (
                   // eslint-disable-next-line
-                  Model.definition.rawProperties.hasOwnProperty('projectTitle')
+                  Model.definition.rawProperties.hasOwnProperty('projectId')
                 ) {
                   projectValidated = true;
                   // 先檢查使用者有無權限鎖計畫範疇資料
@@ -187,8 +188,8 @@ module.exports = function(Model, options) {
                       // p for permission
                       // check-id-usage
                       if (
-                        q.projectTitle === p.projectTitle ||
-                        p.permissions.projectTitle === 'ANY'
+                        q.projectId === p.projectId ||
+                        p.permissions.projectId === 'ANY'
                       ) {
                         permissionGranted = true;
                       }
@@ -216,7 +217,9 @@ module.exports = function(Model, options) {
                       argsData.forEach(q => {
                         // q for query
                         // 強制寫入 locked by
+                        // eslint-disable-next-line
                         q.locked_by = userId;
+                        // eslint-disable-next-line
                         q.locked_on = Date.now() / 1000;
                         // 雖然是 toArray 但這個 query 只會回傳單一結果
                         mdl
@@ -229,9 +232,9 @@ module.exports = function(Model, options) {
                               dataLock.length === 0 ||
                               (dataLock[0].locked &&
                                 q.locked_by === dataLock[0].locked_by &&
-                                q.projectTitle === dataLock[0].projectTitle) ||
+                                q.projectId === dataLock[0].projectId) ||
                               (!dataLock[0].locked &&
-                                q.projectTitle === dataLock[0].projectTitle)
+                                q.projectId === dataLock[0].projectId)
                             ) {
                               // 如果 dataLock 不存在，或
                               // 資料處於鎖定狀態，鎖定者與使用者是同一個人，且未更動計畫名稱或
@@ -275,21 +278,21 @@ module.exports = function(Model, options) {
                       // 列出待鎖的 cameraLocations
                       argsData.forEach((d, idx, arr) => {
                         uniqueLocationMd5Projects[d.fullCameraLocationMd5] =
-                          d.projectTitle;
+                          d.projectId;
 
                         // 就程序上不應該寫在這，但為求簡化流程，暫時把資料一致性寫在這
                         if (remoteMethodName === 'bulkUpdate') {
-                          if (!!arr[idx].$set && !!arr[idx].$set.projectTitle) {
-                            arr[idx].$set.projectTitle = d.projectTitle;
+                          if (!!arr[idx].$set && !!arr[idx].$set.projectId) {
+                            arr[idx].$set.projectId = d.projectId;
                             arr[idx].$set.fullCameraLocationMd5 =
                               d.fullCameraLocationMd5;
                           }
 
                           if (
                             !!arr[idx].$setOninsert &&
-                            !!arr[idx].$setOnInsert.projectTitle
+                            !!arr[idx].$setOnInsert.projectId
                           ) {
-                            arr[idx].$setOnInsert.projectTitle = d.projectTitle;
+                            arr[idx].$setOnInsert.projectId = d.projectId;
                             arr[idx].$setOnInsert.fullCameraLocationMd5 =
                               d.fullCameraLocationMd5;
                           }
@@ -309,7 +312,7 @@ module.exports = function(Model, options) {
                         if (uniqueLocationMd5Projects.hasOwnProperty(locId)) {
                           uniqueLocationMd5s.push({
                             locId,
-                            projectTitle: uniqueLocationMd5Projects[locId],
+                            projectId: uniqueLocationMd5Projects[locId],
                           });
                         }
                       }
@@ -331,8 +334,9 @@ module.exports = function(Model, options) {
                           ldl
                             .find({
                               _id: locPrj.loc_id,
-                              // projectTitle: locPrj.projectTitle,
+                              // projectId: locPrj.projectId,
                               locked: true,
+                              // eslint-disable-next-line
                               locked_by: userId,
                             })
                             .toArray((___err, dataLock) => {
@@ -344,13 +348,13 @@ module.exports = function(Model, options) {
                                 );
                                 go = false;
                               } else if (
-                                dataLock[0].projectTitle !== locPrj.projectTitle
+                                dataLock[0].projectId !== locPrj.projectId
                               ) {
                                 permissionDeniedMessages.push(
                                   `You have no permission to write data to \`${
                                     locPrj.loc_id
-                                  }\` because it's from \`${
-                                    dataLock[0].projectTitle
+                                  }\` because it's from project \`${
+                                    dataLock[0].projectId
                                   }\`.`,
                                 );
                                 go = false;
@@ -395,8 +399,8 @@ module.exports = function(Model, options) {
           } // collection.aggregate without error
         });
       });
-    } // end of if session exists
-    else {
+      // end of if session exists
+    } else {
       next(permissionDenied('使用者未登入, 請先登入再執行此操作.'));
     }
   };

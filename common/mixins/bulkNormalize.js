@@ -222,7 +222,7 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (const uprop in update.$set) {
             if (update.$set.hasOwnProperty(uprop)) {
-              if (!!instance[uprop] || instance[uprop] === 0) {
+              if (!!instance[uprop] || instance[uprop] === 0 || instance[uprop] === '') {
                 delete instance[uprop];
               }
             }
@@ -231,7 +231,7 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (const uprop in update.$addToSet) {
             if (update.$addToSet.hasOwnProperty(uprop)) {
-              if (!!instance[uprop] || instance[uprop] === 0) {
+              if (!!instance[uprop] || instance[uprop] === 0 || instance[uprop] === '') {
                 delete instance[uprop];
               }
             }
@@ -240,7 +240,7 @@ module.exports = function(Model, options) {
           // remove duplicate fields in "setOnInsert"
           for (const uprop in update.$push) {
             if (update.$push.hasOwnProperty(uprop)) {
-              if (!!instance[uprop] || instance[uprop] === 0) {
+              if (!!instance[uprop] || instance[uprop] === 0 || instance[uprop] === '') {
                 delete instance[uprop];
               }
             }
