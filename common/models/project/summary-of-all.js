@@ -10,8 +10,8 @@ module.exports = ({ db, res }) => {
     {
       $lookup: {
         from: 'Project',
-        localField: 'project_roles.projectTitle',
-        foreignField: 'projectTitle',
+        localField: 'project_roles.projectId',
+        foreignField: 'projectId',
         as: 'project',
       },
     },
@@ -21,6 +21,8 @@ module.exports = ({ db, res }) => {
     {
       $group: {
         _id: '$project._id',
+        projectId: { $first: '$project.projectId' },
+        projectTitle: { $first: '$project.projectTitle' },
         members: {
           $addToSet: '$userId',
         },
@@ -33,8 +35,8 @@ module.exports = ({ db, res }) => {
     },
     {
       $project: {
-        _id: false,
-        projectTitle: '$_id',
+        projectId: '$projectId',
+        projectTitle: '$projectTitle',
         members: '$members',
         funder: '$funder',
         coverImage: '$coverImage',
