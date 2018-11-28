@@ -102,7 +102,7 @@ module.exports = function(Project) {
               {
                 $match: (() => {
                   const query = {
-                    projectTitle: project.projectTitle,
+                    projectId: project._id,
                     multimedia_error_flag: true,
                   };
                   if (site) {
@@ -171,7 +171,7 @@ module.exports = function(Project) {
             .aggregate([
               {
                 $match: {
-                  projectTitle: project.projectTitle,
+                  projectId: project._id,
                   multimedia_error_flag: true,
                 },
               },
