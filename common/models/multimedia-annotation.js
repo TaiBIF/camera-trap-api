@@ -190,7 +190,7 @@ module.exports = function(MultimediaAnnotation) {
 
       /*
       {
-        "projectId": ""
+        "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968"
         "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
@@ -203,9 +203,9 @@ module.exports = function(MultimediaAnnotation) {
 
       const toMatch = {};
 
-      const { projectTitle, site, subSite, species } = data;
-      if (projectTitle) {
-        toMatch.projectTitle = projectTitle;
+      const { projectId, projectTitle, site, subSite, species } = data;
+      if (projectId) {
+        toMatch.projectId = projectId;
       } else {
         return callback(new Error());
       }
@@ -317,7 +317,7 @@ module.exports = function(MultimediaAnnotation) {
       const prjMdl = db.collection('Project');
       // 取得計畫啟用的自訂欄位
       prjMdl.findOne(
-        { projectTitle },
+        { projectId },
         { projection: { dataFieldEnabled: true } },
         (_err, res) => {
           if (_err) {
@@ -480,6 +480,7 @@ module.exports = function(MultimediaAnnotation) {
 
       /*
       {
+        "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968",
         "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
@@ -492,9 +493,9 @@ module.exports = function(MultimediaAnnotation) {
 
       const toMatch = {};
 
-      const { projectTitle, site, subSite, species, fullCameraLocationMd5s } = data;
-      if (projectTitle) {
-        toMatch.projectTitle = projectTitle;
+      const { projectId, projectTitle, site, subSite, species, fullCameraLocationMd5s } = data;
+      if (projectId) {
+        toMatch.projectId = projectId;
       } else {
         return callback(new Error());
       }
@@ -575,6 +576,7 @@ module.exports = function(MultimediaAnnotation) {
           if (!everyDayFirstCaptured[dateZeroTimestamp]) everyDayFirstCaptured[dateZeroTimestamp] = {};
           const dateZero = new Date((dateZeroTimestamp - offset) * 1000); // 修正回 +8 時區
           everyDayFirstCaptured[dateZeroTimestamp][loc._id] = {
+            projectId,
             projectTitle,
             site,
             subSite,
