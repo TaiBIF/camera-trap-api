@@ -190,6 +190,7 @@ module.exports = function(MultimediaAnnotation) {
 
       /*
       {
+        "projectId": ""
         "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
@@ -346,6 +347,7 @@ module.exports = function(MultimediaAnnotation) {
 
                   const keys = Object.keys(csvTemplate);
                   let fields = [
+                    'projectId',
                     'projectTitle',
                     'site',
                     'subSite',
@@ -378,7 +380,8 @@ module.exports = function(MultimediaAnnotation) {
                       csvRecord.date_time = annotation.corrected_date_time;
                       csvRecord.timestamp =
                         annotation.date_time_corrected_timestamp;
-                      csvRecord.projectTitle = projectTitle;
+                      csvRecord.projectId = annotation.projectId;
+                      csvRecord.projectTitle = annotation.projectTitle;
                       csvRecord.site = annotation.site;
                       csvRecord.subSite = annotation.subSite;
                       csvRecord.cameraLocation = annotation.cameraLocation;
