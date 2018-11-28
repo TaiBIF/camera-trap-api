@@ -1,3 +1,7 @@
+/*
+  @todo add last modified timestamp.
+  TaiBIF/camera-trap-webapp/issues/16#issuecomment-437429780
+ */
 module.exports = ({ res, data, db }) => {
   const { year, site, subSite, projectId, fullCameraLocationMd5 } = data;
 
