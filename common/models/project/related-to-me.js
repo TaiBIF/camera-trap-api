@@ -1,4 +1,4 @@
-module.exports = ({ data, req, res, db }) => {
+module.exports = async ({ data, req, res, db }) => {
   // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
   let sortKey = data.sort_key || 'projectStartDate';
   sortKey = `project_metadata.${sortKey}`;
@@ -34,7 +34,8 @@ module.exports = ({ data, req, res, db }) => {
     { $unwind: '$project_metadata' },
     {
       $project: {
-        project_metadata: '$project_metadata',
+        _id: 0,
+        project_metadata: 1,
       },
     },
     {
@@ -42,7 +43,41 @@ module.exports = ({ data, req, res, db }) => {
     },
   ];
 
-  cu.aggregate(aggregateQuery).toArray((_err, prjs) => {
-    res(null, prjs);
-  });
+  let rows = await cu
+    .aggregate(aggregateQuery)
+    .toArray()
+    .catch(err => res(err));
+
+  const members = await cu
+    .aggregate([
+      {
+        $unwind: '$project_roles',
+      },
+      {
+        $match: {
+          $or: rows.map(r => ({
+            'project_roles.projectTitle': r.project_metadata.projectTitle,
+          })),
+        },
+      },
+      {
+        $group: {
+          _id: '$project_roles.projectTitle',
+          members: {
+            $addToSet: '$userId',
+          },
+        },
+      },
+    ])
+    .toArray()
+    .catch(err => res(err));
+
+  const membersMap = new Map(members.map(m => [m._id, m]));
+
+  rows = rows.map(row => ({
+    ...row,
+    members: membersMap.get(row.project_metadata.projectTitle).members,
+  }));
+
+  res(null, rows);
 };
