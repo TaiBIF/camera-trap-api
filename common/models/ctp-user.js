@@ -71,7 +71,8 @@ module.exports = function(CtpUsers) {
                 // eslint-disable-next-line camelcase
                 project_roles: [
                   {
-                    projectTitle: 'ANY_NEW_TITLE',
+                    projectId: 'ANY_NEW',
+                    projectTitle: 'ANY_NEW',
                     roles: ['ProjectInitiator'],
                   },
                 ],

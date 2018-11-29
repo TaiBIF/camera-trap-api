@@ -248,6 +248,7 @@ module.exports = function(Project) {
                 $match: (() => {
                   const query = {
                     projectId: project._id,
+                    // eslint-disable-next-line
                     multimedia_error_flag: true,
                   };
                   if (site) {
@@ -317,6 +318,7 @@ module.exports = function(Project) {
               {
                 $match: {
                   projectId: project._id,
+                  // eslint-disable-next-line
                   multimedia_error_flag: true,
                 },
               },
