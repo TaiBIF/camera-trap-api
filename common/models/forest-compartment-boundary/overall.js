@@ -14,7 +14,8 @@ module.exports = async ({ res, db }) => {
       properties: 1,
       geometry: 1,
     })
-    .toArray();
+    .toArray()
+    .catch(err => res(err.message));
 
   res(null, rows);
 };

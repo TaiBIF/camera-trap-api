@@ -3,3 +3,9 @@
 GET {{host}}/forest-compartment-boundary/overall
 Content-Type: application/json
 camera-trap-user-id: {{userId}}
+
+
+###
+POST {{host}}/forest-compartment-boundary/regions
+Content-Type: application/json
+camera-trap-user-id: {{userId}}
