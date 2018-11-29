@@ -2,6 +2,7 @@
   @todo add last modified timestamp.
   TaiBIF/camera-trap-webapp/issues/16#issuecomment-437429780
  */
+// eslint-disable-next-line
 module.exports = async ({ data, req, res, db }) => {
   const { fullCameraLocationMd5, year, site, subSite, projectId } = data;
 
@@ -65,6 +66,7 @@ module.exports = async ({ data, req, res, db }) => {
         site: { $first: '$site' },
         subSite: { $first: '$subSite' },
         cameraLocation: { $first: '$cameraLocation' },
+        // eslint-disable-next-line
         monthly_num: {
           $push: {
             month: '$_id.month',
@@ -85,10 +87,12 @@ module.exports = async ({ data, req, res, db }) => {
       $project: {
         _id: '$_id',
         fullCameraLocationMd5: '$_id',
+        projectId: '$projectId',
         projectTitle: '$projectTitle',
         site: '$site',
         subSite: '$subSite',
         cameraLocation: '$cameraLocation',
+        // eslint-disable-next-line
         monthly_num: '$monthly_num',
         cameraLocationMeta: '$cameraLocationMeta.cameraLocations',
       },
@@ -122,9 +126,12 @@ module.exports = async ({ data, req, res, db }) => {
         site: '$site',
         subSite: '$subSite',
         cameraLocation: '$cameraLocation',
+        // eslint-disable-next-line
         monthly_num: '$monthly_num',
         // cameraLocationMeta: "$cameraLocationMeta",
+        // eslint-disable-next-line
         wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+        // eslint-disable-next-line
         wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
       },
     },
