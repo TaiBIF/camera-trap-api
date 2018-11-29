@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 module.exports = async ({ data, req, res, db }) => {
   // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
   let sortKey = data.sort_key || 'projectStartDate';
