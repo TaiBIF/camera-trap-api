@@ -80,6 +80,7 @@ module.exports = function(Project) {
       { arg: 'id', type: 'string', required: true },
       { arg: 'site', type: 'string', http: { source: 'query' } },
       { arg: 'subSite', type: 'string', http: { source: 'query' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
       { arg: 'res', type: 'object', http: { source: 'res' } },
     ],
     returns: {},
@@ -88,23 +89,41 @@ module.exports = function(Project) {
     projectId,
     site,
     subSite,
+    req,
     res,
     callback,
   ) {
+    let userId;
+    try {
+      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+      userId =
+        req.headers['camera-trap-user-id'] || req.session.user_info.userId;
+    } catch (e) {
+      return callback(new Error('使用者未登入'));
+    }
     Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);
+      const userCollection = db.collection('CtpUser');
       const projectCollection = db.collection('Project');
       const dataFieldAvailableCollection = db.collection('DataFieldAvailable');
       const multimediaAnnotationCollection = db.collection(
         'MultimediaAnnotation',
       );
       Promise.all([
+        userCollection.findOne({ _id: userId }),
         projectCollection.findOne({ _id: projectId }),
         dataFieldAvailableCollection.find().toArray(),
       ])
-        .then(([project, dataFields]) => {
+        .then(([user, project, dataFields]) => {
+          if (!user) {
+            throw new Error('user not found');
+          }
           if (!project) {
             throw new Error('project not found');
+          }
+          const projectIds = user.project_roles.map(role => role.projectId);
+          if (projectIds.indexOf(project._id) < 0) {
+            throw new Error('permission denied');
           }
           const dataFieldTable = {};
           dataFields.forEach(field => {
