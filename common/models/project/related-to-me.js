@@ -34,7 +34,8 @@ module.exports = async ({ data, req, res, db }) => {
     { $unwind: '$project_metadata' },
     {
       $project: {
-        _id: 0,
+        _id: false,
+        // eslint-disable-next-line
         project_metadata: 1,
       },
     },
@@ -55,14 +56,14 @@ module.exports = async ({ data, req, res, db }) => {
       },
       {
         $match: {
-          $or: rows.map(r => ({
-            'project_roles.projectTitle': r.project_metadata.projectTitle,
-          })),
+          'project_roles.projectId': {
+            $in: rows.map(r => r.project_metadata.projectId),
+          },
         },
       },
       {
         $group: {
-          _id: '$project_roles.projectTitle',
+          _id: '$project_roles.projectId',
           members: {
             $addToSet: '$userId',
           },
@@ -74,10 +75,13 @@ module.exports = async ({ data, req, res, db }) => {
 
   const membersMap = new Map(members.map(m => [m._id, m]));
 
-  rows = rows.map(row => ({
-    ...row,
-    members: membersMap.get(row.project_metadata.projectTitle).members,
-  }));
+  rows = rows.map(row => {
+    const tmpMembers = membersMap.get(row.project_metadata._id);
+    return {
+      ...row,
+      members: tmpMembers ? tmpMembers.members : [],
+    };
+  });
 
   res(null, rows);
 };

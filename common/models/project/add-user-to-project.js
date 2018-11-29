@@ -1,7 +1,8 @@
+// eslint-disable-next-line
 module.exports = async ({ data, req, res: callback, db }) => {
   const cu = db.collection('CtpUser');
 
-  const { projectTitle, userId } = data;
+  const { projectId, userId } = data;
   const role = data.role ? data.role : 'Member';
 
   cu.countDocuments({ _id: userId }, (err, res) => {
@@ -12,7 +13,7 @@ module.exports = async ({ data, req, res: callback, db }) => {
     if (res) {
       // 如果使用者存在
       cu.countDocuments(
-        { _id: userId, 'project_roles.projectTitle': projectTitle },
+        { _id: userId, 'project_roles.projectId': projectId },
         (__err, _res) => {
           let update, query;
 
@@ -20,8 +21,9 @@ module.exports = async ({ data, req, res: callback, db }) => {
             query = { _id: userId };
             update = {
               $addToSet: {
+                // eslint-disable-next-line
                 project_roles: {
-                  projectTitle,
+                  projectId,
                   roles: [role],
                 },
               },
@@ -29,7 +31,7 @@ module.exports = async ({ data, req, res: callback, db }) => {
           } else {
             query = {
               _id: userId,
-              'project_roles.projectTitle': projectTitle,
+              'project_roles.projectId': projectId,
             };
             update = {
               $addToSet: {

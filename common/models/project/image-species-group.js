@@ -1,5 +1,5 @@
 module.exports = ({ data, req, res, db }) => {
-  const { projectTitle } = data;
+  const { projectId } = data;
   const toMatch = {
     $and: [
       { 'tokens.species_shortcut': { $ne: '尚未辨識' } },
@@ -12,8 +12,8 @@ module.exports = ({ data, req, res, db }) => {
     ],
   };
 
-  if (projectTitle) {
-    toMatch.projectTitle = projectTitle;
+  if (projectId) {
+    toMatch.projectId = projectId;
   } else {
     return res(new Error('請輸入計畫名稱'));
   }
@@ -29,7 +29,8 @@ module.exports = ({ data, req, res, db }) => {
     {
       $group: {
         _id: {
-          projectTitle: '$projectTitle',
+          projectId: '$projectId',
+          // eslint-disable-next-line
           species_shortcut: '$tokens.species_shortcut',
         },
         count: {
@@ -37,12 +38,14 @@ module.exports = ({ data, req, res, db }) => {
         },
         species: { $first: '$tokens.species_shortcut' },
         projectTitle: { $first: '$projectTitle' },
+        projectId: { $first: '$projectId' },
         modified: { $max: '$modified' },
       },
     },
     {
       $group: {
         _id: null,
+        // eslint-disable-next-line
         species_group: {
           $push: {
             species: '$species',
@@ -60,6 +63,7 @@ module.exports = ({ data, req, res, db }) => {
     {
       $project: {
         _id: false,
+        // eslint-disable-next-line
         species_group: '$species_group',
         total: '$total',
         modified: '$modified',
@@ -73,6 +77,7 @@ module.exports = ({ data, req, res, db }) => {
     } else if (speciesImageCount.length === 0) {
       speciesImageCount = [
         {
+          // eslint-disable-next-line
           species_group: [],
           total: 0,
           modified: null,

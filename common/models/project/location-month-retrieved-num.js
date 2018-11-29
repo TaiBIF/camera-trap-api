@@ -58,6 +58,7 @@ module.exports = ({ data, req, res, db }) => {
         site: { $first: '$site' },
         subSite: { $first: '$subSite' },
         cameraLocation: { $first: '$cameraLocation' },
+        // eslint-disable-next-line
         monthly_num: {
           $push: {
             month: '$_id.month',
@@ -83,6 +84,7 @@ module.exports = ({ data, req, res, db }) => {
         site: '$site',
         subSite: '$subSite',
         cameraLocation: '$cameraLocation',
+        // eslint-disable-next-line
         monthly_num: '$monthly_num',
         cameraLocationMeta: '$cameraLocationMeta.cameraLocations',
       },
@@ -111,13 +113,17 @@ module.exports = ({ data, req, res, db }) => {
       $project: {
         _id: '$_id',
         fullCameraLocationMd5: '$fullCameraLocationMd5',
+        projectId: '$projectId',
         projectTitle: '$projectTitle',
         site: '$site',
         subSite: '$subSite',
         cameraLocation: '$cameraLocation',
+        // eslint-disable-next-line
         monthly_num: '$monthly_num',
         // cameraLocationMeta: "$cameraLocationMeta",
+        // eslint-disable-next-line
         wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+        // eslint-disable-next-line
         wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
       },
     },

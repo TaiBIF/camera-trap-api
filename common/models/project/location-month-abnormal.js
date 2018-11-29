@@ -137,7 +137,9 @@ module.exports = ({ res, data, db }) => {
         abnormalStartDate: '$abnormalStartDate',
         abnormalEndDate: '$abnormalEndDate',
         remarks: '$remarks',
+        // eslint-disable-next-line
         wgs84dec_x: '$cameraLocationMeta.wgs84dec_x',
+        // eslint-disable-next-line
         wgs84dec_y: '$cameraLocationMeta.wgs84dec_y',
       },
     },
