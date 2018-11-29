@@ -120,7 +120,7 @@ module.exports = function(Project) {
             multimediaAnnotationQuery.subSite = subSite;
           }
           const headRow = [['樣區', '相機位置', '檔名', '時間', '物種']];
-          project.dataFieldEnabled.forEach(fieldId => {
+          (project.dataFieldEnabled || []).forEach(fieldId => {
             headRow[0].push(dataFieldTable[fieldId]);
           });
           res.setHeader(
