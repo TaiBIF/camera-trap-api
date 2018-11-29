@@ -196,7 +196,7 @@ module.exports = function(Project) {
                 });
               }
             })
-            .on('close', () => {
+            .on('end', () => {
               if (writePromise) {
                 writePromise.then(() => {
                   res.end();
