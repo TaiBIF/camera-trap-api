@@ -15,7 +15,9 @@ module.exports = async ({ data, req, res: callback, db }) => {
       cu.countDocuments(
         { _id: userId, 'project_roles.projectId': projectId },
         (__err, _res) => {
-          let update, query;
+          let update;
+          // eslint-disable-next-line
+          let query;
 
           if (_res === 0) {
             query = { _id: userId };
