@@ -142,37 +142,48 @@ module.exports = function(Project) {
             .sort('$uploaded_file_name')
             .stream()
             .on('data', multimediaAnnotation => {
-              const table = [
-                [
-                  `${multimediaAnnotation.site}-${
-                    multimediaAnnotation.subSite
-                  }`,
-                  multimediaAnnotation.cameraLocation,
-                  multimediaAnnotation.uploaded_file_name,
-                  '',
-                ],
-              ];
-              multimediaAnnotation.tokens[0].data.forEach(token => {
-                switch (token.key) {
-                  case 'species': {
-                    table[0][4] = token.value;
-                    break;
-                  }
-                  default: {
-                    for (
-                      let index = 0;
-                      index < project.dataFieldEnabled.length;
-                      index += 1
-                    ) {
-                      if (project.dataFieldEnabled[index] === token.key) {
-                        table[0][index + 5] = token.value;
-                        break;
-                      }
+              const appendLeftFields = (items, annotation) => {
+                /*
+                Append a basic information of the multimedia annotation into the array.
+                @param items {Array}
+                @param annotation {MultimediaAnnotation}
+                 */
+                items.push([
+                  `${annotation.site}-${annotation.subSite}`,
+                  annotation.cameraLocation,
+                  annotation.uploaded_file_name,
+                  annotation.corrected_date_time,
+                ]);
+              };
+              const table = [];
+              for (
+                let tokenIndex = 0;
+                tokenIndex < multimediaAnnotation.tokens.length;
+                tokenIndex += 1
+              ) {
+                appendLeftFields(table, multimediaAnnotation);
+                multimediaAnnotation.tokens[tokenIndex].data.forEach(field => {
+                  switch (field.key) {
+                    case 'species': {
+                      table[tokenIndex][4] = field.value;
+                      break;
                     }
-                    break;
+                    default: {
+                      for (
+                        let index = 0;
+                        index < project.dataFieldEnabled.length;
+                        index += 1
+                      ) {
+                        if (project.dataFieldEnabled[index] === field.key) {
+                          table[tokenIndex][index + 5] = field.value;
+                          break;
+                        }
+                      }
+                      break;
+                    }
                   }
-                }
-              });
+                });
+              }
               if (writePromise) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
