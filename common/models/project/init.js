@@ -1,3 +1,5 @@
+const uuid = require('uuid');
+
 module.exports = ({ data, req, res, db }) => {
   let userId;
   try {
@@ -19,11 +21,14 @@ module.exports = ({ data, req, res, db }) => {
         { projection: { _id: true } },
       ).toArray((__err, mngrs) => {
         if (mngrs.length === 0) {
+          const newProjectId = uuid();
           cu.updateOne(
             { _id: userId },
             {
               $addToSet: {
+                // eslint-disable-next-line
                 project_roles: {
+                  projectId: newProjectId,
                   projectTitle: data.projectTitle,
                   roles: ['ProjectManager'],
                 },
@@ -31,7 +36,7 @@ module.exports = ({ data, req, res, db }) => {
             },
             null,
             (___err, _res) => {
-              res(null, _res);
+              res(null, { projectId: newProjectId });
             },
           );
           // );

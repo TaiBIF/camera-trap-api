@@ -57,7 +57,7 @@ module.exports = function(Announcement) {
                 results.forEach((item, idx, arr) => {
                   arr[idx].message = `<${item.email}><br/>[${
                     item.reportType
-                  }][${item.reportContentType}]<br/>${item.description}`;
+                  }][${item.reportContentType.join('/')}]<br/>${item.description}`;
                   if (item.reportType === '問題回報') {
                     arr[idx].status = 'WARNING';
                   } else {
@@ -143,8 +143,8 @@ module.exports = function(Announcement) {
           {
             $lookup: {
               from: 'AbnormalData',
-              localField: 'project_roles.projectTitle',
-              foreignField: 'projectTitle',
+              localField: 'project_roles.projectId',
+              foreignField: 'projectId',
               as: 'abnormalData',
             },
           },
@@ -208,6 +208,7 @@ module.exports = function(Announcement) {
             {
               projection: {
                 _id: 1,
+                projectId: 1,
                 projectTitle: 1,
                 site: 1,
                 subSite: 1,

@@ -13,7 +13,7 @@ module.exports = function(CameraLocationDataLock) {
   CameraLocationDataLock.locationLocked = function(data, req, callback) {
     CameraLocationDataLock.getDataSource().connector.connect((err, db) => {
       const {
-        projectTitle,
+        projectId,
         site,
         subSite,
         cameraLocation,
@@ -40,8 +40,8 @@ module.exports = function(CameraLocationDataLock) {
         ] = fullCameraLocationMd5;
       }
 
-      if (projectTitle) {
-        toMatch.projectTitle = projectTitle;
+      if (projectId) {
+        toMatch.projectId = projectId;
       } else {
         return callback(new Error('請輸入計畫名稱'));
       }
@@ -75,13 +75,16 @@ module.exports = function(CameraLocationDataLock) {
           $project: {
             _id: false,
             cameraLocationDataLock: {
+              projectId: '$projectId',
               projectTitle: '$projectTitle',
               site: '$cameraLocations.site',
               subSite: '$cameraLocations.subSite',
               cameraLocation: '$cameraLocations.cameraLocation',
               fullCameraLocationMd5: '$cameraLocations.fullCameraLocationMd5',
               locked: '$cameraLocationDataLock.locked',
+              // eslint-disable-next-line
               locked_by: '$cameraLocationDataLock.locked_by',
+              // eslint-disable-next-line
               locked_on: '$cameraLocationDataLock.locked_on',
             },
           },
@@ -101,6 +104,7 @@ module.exports = function(CameraLocationDataLock) {
           $project: {
             _id: false,
             cameraLocationDataLock: {
+              projectId: '$cameraLocationDataLock.projectId',
               projectTitle: '$cameraLocationDataLock.projectTitle',
               site: '$cameraLocationDataLock.site',
               subSite: '$cameraLocationDataLock.subSite',
@@ -108,11 +112,13 @@ module.exports = function(CameraLocationDataLock) {
               fullCameraLocationMd5:
                 '$cameraLocationDataLock.fullCameraLocationMd5',
               locked: '$cameraLocationDataLock.locked',
+              // eslint-disable-next-line
               locked_by: {
                 userId: '$cameraLocationDataLock.locked_by',
                 name: '$lockedByUser.name',
                 email: '$lockedByUser.email',
               },
+              // eslint-disable-next-line
               locked_on: '$cameraLocationDataLock.locked_on',
             },
           },

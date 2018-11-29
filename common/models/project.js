@@ -1,4 +1,8 @@
+const util = require('util');
+const csv = require('csv');
 const CreateModel = require('../../server/share/CreateModel');
+
+const csvStringify = util.promisify(csv.stringify);
 
 module.exports = function(Project) {
   const model = new CreateModel(Project);
@@ -70,6 +74,166 @@ module.exports = function(Project) {
       require('./project/init'),
     );
 
+  Project.remoteMethod('exportMultimediaAnnotations', {
+    http: { path: '/:id/multimedia-annotations.csv', verb: 'get' },
+    accepts: [
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'site', type: 'string', http: { source: 'query' } },
+      { arg: 'subSite', type: 'string', http: { source: 'query' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+      { arg: 'res', type: 'object', http: { source: 'res' } },
+    ],
+    returns: {},
+  });
+  Project.exportMultimediaAnnotations = function(
+    projectId,
+    site,
+    subSite,
+    req,
+    res,
+    callback,
+  ) {
+    let userId;
+    try {
+      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+      userId =
+        req.headers['camera-trap-user-id'] || req.session.user_info.userId;
+    } catch (e) {
+      return callback(new Error('使用者未登入'));
+    }
+    Project.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
+      const userCollection = db.collection('CtpUser');
+      const projectCollection = db.collection('Project');
+      const dataFieldAvailableCollection = db.collection('DataFieldAvailable');
+      const multimediaAnnotationCollection = db.collection(
+        'MultimediaAnnotation',
+      );
+      Promise.all([
+        userCollection.findOne({ _id: userId }),
+        projectCollection.findOne({ _id: projectId }),
+        dataFieldAvailableCollection.find().toArray(),
+      ])
+        .then(([user, project, dataFields]) => {
+          if (!user) {
+            throw new Error('user not found');
+          }
+          if (!project) {
+            throw new Error('project not found');
+          }
+          const projectIds = user.project_roles.map(role => role.projectId);
+          if (projectIds.indexOf(project._id) < 0) {
+            throw new Error('permission denied');
+          }
+          const dataFieldTable = {};
+          dataFields.forEach(field => {
+            dataFieldTable[field._id] = field.label;
+          });
+          const multimediaAnnotationQuery = {
+            projectId: project._id,
+          };
+          if (site) {
+            multimediaAnnotationQuery.site = site;
+          }
+          if (subSite) {
+            multimediaAnnotationQuery.subSite = subSite;
+          }
+          const headRow = [['樣區', '相機位置', '檔名', '時間', '物種']];
+          (project.dataFieldEnabled || []).forEach(fieldId => {
+            headRow[0].push(dataFieldTable[fieldId]);
+          });
+          res.setHeader(
+            'Content-disposition',
+            'attachment; filename=export.csv',
+          );
+          res.contentType('csv');
+          return Promise.all([
+            project,
+            multimediaAnnotationQuery,
+            csvStringify(headRow),
+          ]);
+        })
+        .then(([project, multimediaAnnotationQuery, headOutput]) => {
+          res.write(headOutput);
+          let writePromise = null;
+          multimediaAnnotationCollection
+            .find(multimediaAnnotationQuery)
+            .sort('$uploaded_file_name')
+            .stream()
+            .on('data', multimediaAnnotation => {
+              const appendLeftFields = (items, annotation) => {
+                /*
+                Append a basic information of the multimedia annotation into the array.
+                @param items {Array}
+                @param annotation {MultimediaAnnotation}
+                 */
+                items.push([
+                  `${annotation.site}-${annotation.subSite}`,
+                  annotation.cameraLocation,
+                  annotation.uploaded_file_name,
+                  annotation.corrected_date_time,
+                ]);
+              };
+              const table = [];
+              for (
+                let tokenIndex = 0;
+                tokenIndex < multimediaAnnotation.tokens.length;
+                tokenIndex += 1
+              ) {
+                appendLeftFields(table, multimediaAnnotation);
+                multimediaAnnotation.tokens[tokenIndex].data.forEach(field => {
+                  switch (field.key) {
+                    case 'species': {
+                      table[tokenIndex][4] = field.value;
+                      break;
+                    }
+                    default: {
+                      for (
+                        let index = 0;
+                        index < project.dataFieldEnabled.length;
+                        index += 1
+                      ) {
+                        if (project.dataFieldEnabled[index] === field.key) {
+                          table[tokenIndex][index + 5] = field.value;
+                          break;
+                        }
+                      }
+                      break;
+                    }
+                  }
+                });
+              }
+              if (writePromise) {
+                writePromise = writePromise.then(() =>
+                  csvStringify(table).then(output => {
+                    res.write(output);
+                  }),
+                );
+              } else {
+                writePromise = csvStringify(table).then(output => {
+                  res.write(output);
+                });
+              }
+            })
+            .on('end', () => {
+              if (writePromise) {
+                writePromise.then(() => {
+                  res.end();
+                });
+              } else {
+                res.end();
+              }
+            })
+            .on('error', error => {
+              throw error;
+            });
+        })
+        .catch(error => {
+          callback(error);
+        });
+    });
+  };
+
   Project.remoteMethod('multimediaAnnotationErrorCameras', {
     http: { path: '/:id/multimedia-annotation-error-cameras', verb: 'get' },
     accepts: [
@@ -102,7 +266,8 @@ module.exports = function(Project) {
               {
                 $match: (() => {
                   const query = {
-                    projectTitle: project.projectTitle,
+                    projectId: project._id,
+                    // eslint-disable-next-line
                     multimedia_error_flag: true,
                   };
                   if (site) {
@@ -171,7 +336,8 @@ module.exports = function(Project) {
             .aggregate([
               {
                 $match: {
-                  projectTitle: project.projectTitle,
+                  projectId: project._id,
+                  // eslint-disable-next-line
                   multimedia_error_flag: true,
                 },
               },

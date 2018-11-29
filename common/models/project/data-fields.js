@@ -1,9 +1,9 @@
 module.exports = ({ data, db, res }) => {
-  const { projectTitle } = data;
+  const { projectId } = data;
 
   const mdl = db.collection('Project');
   const aggregateQuery = [
-    { $match: { _id: projectTitle } },
+    { $match: { _id: projectId } },
     { $unwind: '$dataFieldEnabled' },
     {
       $lookup: {
@@ -15,6 +15,7 @@ module.exports = ({ data, db, res }) => {
     },
     {
       $project: {
+        // eslint-disable-next-line
         field_details: '$field_details',
         speciesList: '$speciesList',
         dailyTestTime: '$dailyTestTime',
