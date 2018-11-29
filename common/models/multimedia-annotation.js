@@ -188,10 +188,9 @@ module.exports = function(MultimediaAnnotation) {
 
       console.log(req.session);
 
-      /*
+      /* 測試計畫1
       {
-        "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968"
-        "projectTitle": "測試計畫1",
+        "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968",
         "site": "臺東處",
         "subSite": "NULL",
         "species": "山羌",
@@ -336,7 +335,7 @@ module.exports = function(MultimediaAnnotation) {
                   ['uploaded_file_name', 1],
                 ],
               })
-              .toArray((__err, results) => {
+              .toArray(async (__err, results) => {
                 if (__err) {
                   callback(__err);
                 } else {
@@ -366,7 +365,7 @@ module.exports = function(MultimediaAnnotation) {
 
                   let csv = '';
 
-                  results.forEach(annotation => {
+                  results.forEach((annotation) => {
                     annotation.tokens.forEach(token => {
                       const csvRecord = {};
                       Object.assign(csvRecord, csvTemplate);
@@ -419,7 +418,9 @@ module.exports = function(MultimediaAnnotation) {
                   uploadToS3(params).then(() => {
                     const http = require('http');
                     const calcPath = 'basic-calculation';
-                    const calcBaseUrl = 'http://10.0.10.31:8888';
+                    const calcBaseUrl = 'http://52.193.13.151:80';
+
+                    console.log(`Uploaded: ${calcDataContainer}/${fileToBeAnalyzed}`);
 
                     http.get(`${calcBaseUrl}/${calcPath}?id=${uniqueCalcId}`, (resp) => {
                       let data = '';
@@ -431,9 +432,9 @@ module.exports = function(MultimediaAnnotation) {
 
                       // The whole response has been received. Print out the result.
                       resp.on('end', () => {
-                        console.log(JSON.parse(data).explanation);
+                        // console.log(JSON.parse(data).explanation);
                         callback(null, {
-                          message: 'Calculation started.',
+                          message: 'Upload completed. Calculation started.',
                           input: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${fileToBeAnalyzed}`,
                           status: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${statusOfCalculation}`,
                           results: `${s3UrlBase}/${calcBucket}/${calcDataContainer}/${fileOfResults}`,
@@ -478,10 +479,9 @@ module.exports = function(MultimediaAnnotation) {
 
       console.log(req.session);
 
-      /*
+      /* 測試計畫1
       {
         "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968",
-        "projectTitle": "測試計畫1",
         "site": "臺東處",
         "subSite": "NULL",
         "species": "山羌",
