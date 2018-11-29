@@ -84,6 +84,8 @@ module.exports = ({ data, req, res, db }) => {
         },
       ];
       res(null, speciesImageCount);
+    } else {
+      res(null, speciesImageCount);
     }
   });
 };
