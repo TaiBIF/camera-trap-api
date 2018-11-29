@@ -1,0 +1,5 @@
+
+###
+GET {{host}}/forest-compartment-boundary/overall
+Content-Type: application/json
+camera-trap-user-id: {{userId}}
