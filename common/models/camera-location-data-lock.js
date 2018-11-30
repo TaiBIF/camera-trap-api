@@ -43,7 +43,7 @@ module.exports = function(CameraLocationDataLock) {
       if (projectId) {
         toMatch.projectId = projectId;
       } else {
-        return callback(new Error('請輸入計畫名稱'));
+        return callback(new Error('請輸入 projectId'));
       }
 
       const mdl = db.collection('Project');
