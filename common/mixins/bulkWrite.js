@@ -18,15 +18,11 @@ module.exports = function(Model, options) {
   });
 
   const _writeWrapper = function(documents, opName) {
-    // console.log("_writeWrapper " + documents.length);
-
     switch (opName) {
       case 'insertOne':
         documents.forEach((doc, idx, arr) => {
           arr[idx] = { insertOne: { document: doc } };
         });
-        console.log('BulkInsert');
-        console.log(JSON.stringify(documents));
         break;
       case 'replaceOne':
         documents.forEach((doc, idx, arr) => {
@@ -79,7 +75,6 @@ module.exports = function(Model, options) {
             updateOne: { filter, update, upsert },
           };
         });
-        console.log(JSON.stringify(documents, null, 2));
         break;
       default:
       // error
@@ -100,11 +95,9 @@ module.exports = function(Model, options) {
       const collection = db.collection(Model.definition.name);
 
       collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
-        // console.log();
         if (_err) {
           _callback(_err);
         } else {
-          // console.log(results);
           _callback(null, results);
         }
       });
@@ -123,11 +116,9 @@ module.exports = function(Model, options) {
       const collection = db.collection(Model.definition.name);
 
       collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
-        // console.log();
         if (_err) {
           _callback(_err);
         } else {
-          // console.log(results);
           _callback(null, results);
         }
       });
@@ -146,11 +137,9 @@ module.exports = function(Model, options) {
       const collection = db.collection(Model.definition.name);
 
       collection.bulkWrite(documents, { ordered: false }, (_err, results) => {
-        // console.log();
         if (_err) {
           _callback(_err);
         } else {
-          // console.log(results);
           _callback(null, results);
         }
       });

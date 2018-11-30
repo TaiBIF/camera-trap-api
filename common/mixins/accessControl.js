@@ -3,8 +3,6 @@
 // let lb = require('loopback');
 
 module.exports = function(Model, options) {
-  // console.log(Model.definition.rawProperties);
-
   /*
   let onlyUnique = function (value, index, self) {
     return self.indexOf(value) === index;
@@ -24,12 +22,9 @@ module.exports = function(Model, options) {
   };
 
   const checkPermissions = function(context, user, next) {
-    console.log(['context.req.headers', context.req.headers]);
-
     // Check login status, using
     // express-session + connect-redis combo middleware.
     // Sessions and cookies are handled automatically
-    // console.log(context.req.session.user_info);
     let argsData = context.args.data;
     if (!Array.isArray(argsData)) {
       argsData = [argsData];
@@ -37,10 +32,6 @@ module.exports = function(Model, options) {
 
     let userInfo;
     if (context.req.session && context.req.session.user_info) {
-      console.log([
-        'context.req.session.user_info',
-        context.req.session.user_info,
-      ]);
       userInfo = context.req.session.user_info;
     } else if (
       context.req.headers['camera-trap-user-id'] &&
@@ -53,8 +44,6 @@ module.exports = function(Model, options) {
       };
     } else {
       // user_info = {userId: "OrcID_0000-0002-7446-3249"}
-      // console.log(['made.up', user_info]);
-      // console.log(context.req.headers);
 
       // sign in mechanism for lambda
       try {
@@ -70,9 +59,8 @@ module.exports = function(Model, options) {
         ) {
           userInfo = { userId: context.req.headers['camera-trap-user-id'] };
         }
-        // console.log(user_password);
       } catch (e) {
-        console.log(e.message);
+        // console.log(e.message);
       }
     }
 
@@ -81,8 +69,6 @@ module.exports = function(Model, options) {
     if (userInfo) {
       // 成功從 session 中取得登入資訊
       const { userId } = userInfo;
-
-      console.log('User Id', userId);
 
       Model.getDataSource().connector.connect((err, db) => {
         if (err) {
@@ -158,8 +144,6 @@ module.exports = function(Model, options) {
           //* /
         ];
 
-        console.log(userPermissionQuery);
-
         CtpUsers.aggregate(userPermissionQuery, {}, (_err, results) => {
           if (_err) {
             next(_err);
@@ -168,7 +152,6 @@ module.exports = function(Model, options) {
               if (__err) {
                 next(__err);
               } else {
-                console.log(JSON.stringify(userPermissions, null, 2));
                 if (!userPermissions.length) {
                   next(permissionDenied('You are unauthorized.'));
                   return;
@@ -200,8 +183,6 @@ module.exports = function(Model, options) {
                   // no need to validate project
                   projectValidated = true;
                 }
-                console.log(projectValidated);
-
                 // 基礎
 
                 if (projectValidated) {
@@ -225,7 +206,6 @@ module.exports = function(Model, options) {
                         mdl
                           .find({ _id: q.fullCameraLocationMd5 })
                           .toArray((___err, dataLock) => {
-                            console.log([userId, dataLock]);
                             goCounter -= 1;
 
                             if (
@@ -241,7 +221,6 @@ module.exports = function(Model, options) {
                               // 資料未鎖定，任何人皆可在未更動計畫名稱
                               // 等前提下，鎖定或解鎖資料
                             } else {
-                              console.log("Don't go!");
                               permissionDeniedMessages.push(
                                 q.fullCameraLocationMd5,
                               );
@@ -319,8 +298,6 @@ module.exports = function(Model, options) {
                       /* eslint-enable */
 
                       // usage example:
-                      console.log(uniqueLocationMd5s);
-
                       const ldl = db.collection('CameraLocationDataLock');
                       let go = true;
                       let goCounter = uniqueLocationMd5s.length;
