@@ -19,3 +19,25 @@ Content-Type: application/json
 {
   "userId": "{{userId}}"
 }
+
+
+### Add User if INVALID_PERMISSION
+POST {{host}}/project/9928d2a5-d220-4cd1-8523-b8edc7bc6e22/user/add/OrcID_0000-0001-5912-1761
+Content-Type: application/json
+camera-trap-user-id: OrcID_0007-0183-5566-2266
+
+
+### Add User
+POST {{host}}/project/d8064aa7-9643-44fb-bed9-1f23a690f968/user/add/OrcID_0007-0183-5566-2266
+Content-Type: application/json
+camera-trap-user-id: OrcID_0000-0003-1335-0184
+
+{
+  "roles": ["TEST1", "TEST2"]
+}
+
+
+### Remove User
+POST {{host}}/project/d8064aa7-9643-44fb-bed9-1f23a690f968/user/remove/OrcID_0007-0183-5566-2266
+Content-Type: application/json
+camera-trap-user-id: OrcID_0000-0003-1335-0184

@@ -39,7 +39,7 @@ if (app.get('env') === 'development') {
       console.log(
         `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
           req.method
-        }      `.substr(0, 6)} ${req.url}`,
+        }      `.substr(0, 6)} ${req.originalUrl}`,
       );
     };
     next();

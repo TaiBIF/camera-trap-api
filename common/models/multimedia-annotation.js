@@ -26,9 +26,7 @@ function leadingZero(str, zeros = '00', digit = 2) {
 module.exports = function(MultimediaAnnotation) {
   const addRevision = function(context, user, next) {
     const argsData = context.args.data;
-    // console.log(context.args.data);
     const method = context.methodString.split('.').pop();
-    console.log(method);
 
     const revisions = [];
     argsData.forEach(d => {
@@ -41,12 +39,10 @@ module.exports = function(MultimediaAnnotation) {
       switch (method) {
         case 'bulkUpdate':
           try {
-            console.log('TRYING');
             const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
             modifiedBy = d.updateOne.update.$set.modifiedBy;
           } catch (e) {
-            console.log(['TestRequiredError:', e.message]);
             makeRevision = false;
             break;
           }
@@ -57,15 +53,11 @@ module.exports = function(MultimediaAnnotation) {
 
           break;
         case 'bulkInsert':
-          // console.log(d.insertOne);
           try {
-            console.log('Trying to create a data revision.');
             const testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
-            console.log(testRequired);
             modifiedBy = d.insertOne.document.modifiedBy;
           } catch (e) {
-            console.log(['TestRequiredError:', e.message]);
             makeRevision = false;
             break;
           }
@@ -77,13 +69,10 @@ module.exports = function(MultimediaAnnotation) {
 
         case 'bulkReplace':
           try {
-            console.log('TRYING');
             const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
-            console.log(testRequired);
             modifiedBy = d.replaceOne.replacement.modifiedBy;
           } catch (e) {
-            console.log(['TestRequiredError:', e.message]);
             makeRevision = false;
             break;
           }
@@ -121,7 +110,6 @@ module.exports = function(MultimediaAnnotation) {
         _revision.tokens = _revision.tokens.filter(t => t !== false);
 
         if (_revision.tokens.length) {
-          // console.log(_revision);
           const updateOne = {
             updateOne: {
               filter: { _id: _revision.url_md5 },
@@ -153,19 +141,16 @@ module.exports = function(MultimediaAnnotation) {
       }
     });
 
-    // console.log(JSON.stringify(revisions, null, 2));
     if (revisions.length > 0) {
       MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
         if (err) return next(err);
 
         const MAR = db.collection('MultimediaAnnotationRevision');
-        // console.log(MAR);
 
         MAR.bulkWrite(revisions, { ordered: false }, (_err, results) => {
           if (_err) {
             next(_err);
           } else {
-            console.log(results);
             next();
           }
         });

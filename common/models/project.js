@@ -1,6 +1,6 @@
 const util = require('util');
 const csv = require('csv');
-const CreateModel = require('../../server/share/CreateModel');
+const CreateModel = require('./share/CreateModel');
 
 const csvStringify = util.promisify(csv.stringify);
 
@@ -17,11 +17,25 @@ module.exports = function(Project) {
     )
     .router(
       {
-        path: '/add-user-to-project',
+        path: '/:projectId/user/add/:userId',
         verb: 'post',
       },
-      require('./project/add-user-to-project'),
+      require('./project/add-user'),
     )
+    .router(
+      {
+        path: '/:projectId/user/remove/:userId',
+        verb: 'post',
+      },
+      require('./project/remove-user'),
+    )
+    // .router(
+    //   {
+    //     path: '/add-user-to-project',
+    //     verb: 'post',
+    //   },
+    //   require('./project/add-user-to-project'),
+    // )
     .router(
       {
         path: '/location-month-retrieved-num',
