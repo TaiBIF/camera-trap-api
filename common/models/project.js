@@ -29,13 +29,13 @@ module.exports = function(Project) {
       },
       require('./project/remove-user'),
     )
-    .router(
-      {
-        path: '/add-user-to-project',
-        verb: 'post',
-      },
-      require('./project/add-user-to-project'),
-    )
+    // .router(
+    //   {
+    //     path: '/add-user-to-project',
+    //     verb: 'post',
+    //   },
+    //   require('./project/add-user-to-project'),
+    // )
     .router(
       {
         path: '/location-month-retrieved-num',
