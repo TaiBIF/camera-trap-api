@@ -6,6 +6,11 @@ camera-trap-user-id: {{userId}}
 
 
 ###
-POST {{host}}/forest-compartment-boundary/regions
+POST {{host}}/forest-compartment-boundary/
 Content-Type: application/json
 camera-trap-user-id: {{userId}}
+
+{
+  "decimalLongitude": 121.3614441596377,
+  "decimalLatitude": 24.77042222260863
+}
