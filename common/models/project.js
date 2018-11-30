@@ -1,6 +1,6 @@
 const util = require('util');
 const csv = require('csv');
-const CreateModel = require('../../server/share/CreateModel');
+const CreateModel = require('./share/CreateModel');
 
 const csvStringify = util.promisify(csv.stringify);
 
@@ -14,6 +14,20 @@ module.exports = function(Project) {
         verb: 'post',
       },
       require('./project/related-to-me'),
+    )
+    .router(
+      {
+        path: '/:projectId/user/add/:userId',
+        verb: 'post',
+      },
+      require('./project/add-user'),
+    )
+    .router(
+      {
+        path: '/:projectId/user/remove/:userId',
+        verb: 'post',
+      },
+      require('./project/remove-user'),
     )
     .router(
       {
