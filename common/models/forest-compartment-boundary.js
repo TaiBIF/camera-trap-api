@@ -1,4 +1,4 @@
-const CreateModel = require('../../server/share/CreateModel');
+const CreateModel = require('./share/CreateModel');
 
 module.exports = Model => {
   const model = new CreateModel(Model);
