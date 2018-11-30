@@ -190,6 +190,7 @@ module.exports = function(Model, options) {
                     // @todo change location to cameraLocation
                     case 'CameraLocationDataLock': {
                       const mdl = db.collection(targetModelName);
+                      console.log(Model.app.get('env'));
 
                       // 再檢查資料是否已被他人鎖定
                       let go = true;
@@ -228,7 +229,12 @@ module.exports = function(Model, options) {
                             }
 
                             if (goCounter === 0) {
-                              if (go) {
+                              // bypass locaiton lock on development env
+                              // TODO: remove bypass if not dev
+                              if (
+                                go ||
+                                Model.app.get('env') === 'development'
+                              ) {
                                 next();
                               } else if (___err) {
                                 next(___err);
@@ -340,7 +346,12 @@ module.exports = function(Model, options) {
                               goCounter -= 1;
 
                               if (goCounter === 0) {
-                                if (go) {
+                                // bypass locaiton lock on development env
+                                // TODO: remove bypass if not dev
+                                if (
+                                  go ||
+                                  Model.app.get('env') === 'development'
+                                ) {
                                   next();
                                 } else if (___err) {
                                   next(___err);
