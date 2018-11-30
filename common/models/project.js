@@ -152,7 +152,7 @@ module.exports = function(Project) {
           if (subSite) {
             multimediaAnnotationQuery.subSite = subSite;
           }
-          const headRow = [['樣區', '相機位置', '檔名', '時間', '物種']];
+          const headRow = [['樣區', '子樣區', '相機位置', '檔名', '時間', '物種']];
           (project.dataFieldEnabled || []).forEach(fieldId => {
             headRow[0].push(dataFieldTable[fieldId]);
           });
@@ -172,7 +172,13 @@ module.exports = function(Project) {
           let writePromise = null;
           multimediaAnnotationCollection
             .find(multimediaAnnotationQuery)
-            .sort('$uploaded_file_name')
+            .sort(
+              [
+                ['cameraLocation', 1],
+                ['date_time_corrected_timestamp', 1],
+                ['uploaded_file_name', 1],
+              ]
+            )
             .stream()
             .on('data', multimediaAnnotation => {
               const appendLeftFields = (items, annotation) => {
@@ -182,7 +188,8 @@ module.exports = function(Project) {
                 @param annotation {MultimediaAnnotation}
                  */
                 items.push([
-                  `${annotation.site}-${annotation.subSite}`,
+                  annotation.site,
+                  annotation.subSite,
                   annotation.cameraLocation,
                   annotation.uploaded_file_name,
                   annotation.corrected_date_time,
@@ -198,7 +205,7 @@ module.exports = function(Project) {
                 multimediaAnnotation.tokens[tokenIndex].data.forEach(field => {
                   switch (field.key) {
                     case 'species': {
-                      table[tokenIndex][4] = field.value;
+                      table[tokenIndex][5] = field.value;
                       break;
                     }
                     default: {
@@ -208,7 +215,7 @@ module.exports = function(Project) {
                         index += 1
                       ) {
                         if (project.dataFieldEnabled[index] === field.key) {
-                          table[tokenIndex][index + 5] = field.value;
+                          table[tokenIndex][index + 6] = field.value;
                           break;
                         }
                       }
