@@ -19,6 +19,10 @@ function uploadToS3(params) {
   });
 }
 
+function leadingZero(str, zeros = '00', digit = 2) {
+  return (zeros + str).substr(-digit);
+}
+
 module.exports = function(MultimediaAnnotation) {
   const addRevision = function(context, user, next) {
     const argsData = context.args.data;
@@ -581,12 +585,12 @@ module.exports = function(MultimediaAnnotation) {
             site,
             subSite,
             dateZeroTimestamp,
-            dateZero: `${dateZero.getUTCFullYear()}/${dateZero.getUTCMonth() + 1}/${dateZero.getUTCDate()} 00:00:00`,
+            date: `${dateZero.getUTCFullYear()}-${leadingZero(dateZero.getUTCMonth() + 1)}-${leadingZero(dateZero.getUTCDate())}`,
             dailyFirstCapturedTimestamp: null,
             dailyFirstCapturedDateTime: null,
             cameraLocation: loc.cameraLocation,
             diff: null,
-            diffText: "沒有照片"
+            dailyFirstCapturedText: "沒有照片"
           };
         });
       }
@@ -625,13 +629,28 @@ module.exports = function(MultimediaAnnotation) {
           let hour = Math.floor(diff / 3600);
           let min = Math.floor((diff % 3600) / 60);
           let sec = Math.floor((diff % 3600) % 60);
-          let diffText = `${hour}小時${min}分${sec}秒`;
-          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].diffText = diffText;
+          let dailyFirstCapturedText = `${hour}小時${min}分${sec}秒`;
+          everyDayFirstCaptured[dataDateZeroTimestamp][m.fullCameraLocationMd5].dailyFirstCapturedText = dailyFirstCapturedText;
           console.log(dataDateZeroTimestamp);
         }
       });
 
-      callback(null, everyDayFirstCaptured);
+      let locationDailyFirstCaptured = {}
+      let locationIdToFullName = {}
+      let locations;
+      Object.keys(everyDayFirstCaptured).map(ts => {
+        if (!locations) {
+          locations = Object.keys(everyDayFirstCaptured[ts]);
+        }
+        locations.map(loc => {
+          if (!locationDailyFirstCaptured[loc]) locationDailyFirstCaptured[loc] = [];
+          locationDailyFirstCaptured[loc].push(everyDayFirstCaptured[ts][loc]);
+          if (!locationIdToFullName[loc])
+            locationIdToFullName[loc] = `${everyDayFirstCaptured[ts][loc].projectId}/${everyDayFirstCaptured[ts][loc].site}/${everyDayFirstCaptured[ts][loc].subSite}/${everyDayFirstCaptured[ts][loc].cameraLocation}`;
+        })
+      })
+
+      callback(null, {locMap: locationIdToFullName, locationDailyFirstCaptured});
 
     });
   }
