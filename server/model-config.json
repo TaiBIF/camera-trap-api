@@ -100,5 +100,9 @@
   "UserReport": {
     "dataSource": "ctMongoDb40",
     "public": true
+  },
+  "ForestCompartmentBoundary": {
+    "dataSource": "ctMongoDb40",
+    "public": true
   }
 }

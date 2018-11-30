@@ -1,0 +1,30 @@
+{
+  "name": "ForestCompartmentBoundary",
+  "base": "PersistedModel",
+  "http": {"path": "/forest-compartment-boundary"},
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "BulkWrite": true,
+    "BulkNormalize": true,
+    "CustomQuery": true,
+    "TimeStamp": true
+  },
+  "properties": {
+    "properties": {
+      "type": [
+        "object"
+      ]
+    },
+    "geometry": {
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "validations": [],
+  "acls": [],
+  "methods": {}
+}
