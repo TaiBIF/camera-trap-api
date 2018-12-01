@@ -27,11 +27,17 @@ module.exports = function(MultimediaAnnotation) {
   const addRevision = function(context, result, next) {
     const argsData = context.args.data;
     const method = context.methodString.split('.').pop();
+    let userId;
+    try {
+      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+      userId =
+        context.req.headers['camera-trap-user-id'] || context.req.session.user_info.userId;
+    } catch (e) {}
 
     const revisions = [];
     argsData.forEach(d => {
       const _revision = {};
-      let makeRevision, modifiedBy;
+      let makeRevision;
       let _tokens = [];
 
       makeRevision = true;
@@ -41,7 +47,6 @@ module.exports = function(MultimediaAnnotation) {
           try {
             const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
-            modifiedBy = d.updateOne.update.$set.modifiedBy;
           } catch (e) {
             makeRevision = false;
             break;
@@ -56,7 +61,6 @@ module.exports = function(MultimediaAnnotation) {
           try {
             const testRequired = d.insertOne.document.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
-            modifiedBy = d.insertOne.document.modifiedBy;
           } catch (e) {
             makeRevision = false;
             break;
@@ -71,7 +75,6 @@ module.exports = function(MultimediaAnnotation) {
           try {
             const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
             if (testRequired === undefined) makeRevision = false;
-            modifiedBy = d.replaceOne.replacement.modifiedBy;
           } catch (e) {
             makeRevision = false;
             break;
@@ -118,7 +121,7 @@ module.exports = function(MultimediaAnnotation) {
                   revisions: {
                     $each: [
                       {
-                        modifiedBy,
+                        modifiedBy: userId,
                         created: _revision.created,
                         tokens: _revision.tokens,
                       },
