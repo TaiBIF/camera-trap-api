@@ -31,7 +31,7 @@ orbs:
       aws-deploy:
         executor: default
         steps:
-          - checkout
+          - checkout_install
           # Install AWS cli
           # - aws/install
           # - aws/configure
