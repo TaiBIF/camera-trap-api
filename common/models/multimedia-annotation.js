@@ -24,7 +24,7 @@ function leadingZero(str, zeros = '00', digit = 2) {
 }
 
 module.exports = function(MultimediaAnnotation) {
-  const addRevision = function(context, user, next) {
+  const addRevision = function(context, result, next) {
     const argsData = context.args.data;
     const method = context.methodString.split('.').pop();
 
