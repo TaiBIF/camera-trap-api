@@ -7,6 +7,16 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "ts-node",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "${relativeFile}",
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "node",
       "args": [
         "${relativeFile}",

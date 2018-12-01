@@ -23,12 +23,15 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@slack/client": "^4.8.0",
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
+    "axios": "^0.18.0",
     "eslint-plugin-mocha": "^5.2.0",
     "husky": "^1.2.0",
     "lint-staged": "^8.1.0",
     "node": "^10.13.0",
-    "nodemon": "^1.18.7"
+    "nodemon": "^1.18.7",
+    "sh-exec": "^2.1.0"
   },
   "husky": {
     "hooks": {
