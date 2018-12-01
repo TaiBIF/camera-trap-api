@@ -41,3 +41,16 @@ camera-trap-user-id: OrcID_0000-0003-1335-0184
 POST {{host}}/project/d8064aa7-9643-44fb-bed9-1f23a690f968/user/remove/OrcID_0007-0183-5566-2266
 Content-Type: application/json
 camera-trap-user-id: OrcID_0000-0003-1335-0184
+
+###
+POST {{host}}/project/d8064aa7-9643-44fb-bed9-1f23a690f968/data-field/add
+Content-Type: application/json
+camera-trap-user-id: OrcID_0000-0003-1335-0184
+
+{
+  "widget_type" : "string",
+  "widget_date_format" : "",
+  "widget_select_options" : [],
+  "description" : "",
+  "fieldStatus" : ""
+}

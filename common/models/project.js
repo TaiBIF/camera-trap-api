@@ -1,6 +1,7 @@
 const util = require('util');
 const csv = require('csv');
 const CreateModel = require('./share/CreateModel');
+const { withCheckProjectAdmin } = require('./share/withCheckProjectRoles');
 
 const csvStringify = util.promisify(csv.stringify);
 
@@ -20,14 +21,14 @@ module.exports = function(Project) {
         path: '/:projectId/user/add/:userId',
         verb: 'post',
       },
-      require('./project/add-user'),
+      withCheckProjectAdmin(require('./project/add-user')),
     )
     .router(
       {
         path: '/:projectId/user/remove/:userId',
         verb: 'post',
       },
-      require('./project/remove-user'),
+      withCheckProjectAdmin(require('./project/remove-user')),
     )
     // .router(
     //   {
@@ -72,6 +73,13 @@ module.exports = function(Project) {
         verb: 'post',
       },
       require('./project/data-fields'),
+    )
+    .router(
+      {
+        path: '/:projectId/data-field/add',
+        verb: 'post',
+      },
+      withCheckProjectAdmin(require('./project/data-fields-add')),
     )
     .router(
       {
@@ -228,7 +236,8 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),);
+                  }),
+                );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);

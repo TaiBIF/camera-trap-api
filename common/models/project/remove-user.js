@@ -1,24 +1,7 @@
-const getMyUserId = require('../share/getMyUserId');
-const checkIsProjectAdmin = require('../share/checkIsProjectAdmin');
-const { ERR } = require('../share/CONST');
-
 module.exports = async ({ res, req, data, db }) => {
   const { userId, projectId } = req.params;
 
   const user = db.collection('CtpUser');
-
-  const [myProject] = await user
-    .aggregate()
-    .unwind('$project_roles')
-    .match({
-      userId: getMyUserId(req),
-      'project_roles.projectId': projectId,
-    })
-    .toArray();
-
-  if (!checkIsProjectAdmin(myProject.project_roles.roles)) {
-    return res(ERR.INVALID_PERMISSION);
-  }
 
   const query = {
     userId,
