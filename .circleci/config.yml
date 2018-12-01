@@ -51,9 +51,9 @@ orbs:
           - run:
               name: Deploy on AWS EB
               command: |
-                ts-node scripts/aws-deploy-start
+                npx ts-node scripts/aws-deploy-start
                 eb deploy api-dev --label $CIRCLE_SHA1
-          - run: ts-node scripts/aws-deploy-done
+          - run: npx ts-node scripts/aws-deploy-done
 
       run:
         parameters:
