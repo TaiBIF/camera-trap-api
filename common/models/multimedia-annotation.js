@@ -27,6 +27,7 @@ module.exports = function(MultimediaAnnotation) {
   const addRevision = function(context, result, next) {
     const argsData = context.args.data;
     const method = context.methodString.split('.').pop();
+    const revisions = [];
     let userId;
     try {
       // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
@@ -34,133 +35,181 @@ module.exports = function(MultimediaAnnotation) {
         context.req.headers['camera-trap-user-id'] || context.req.session.user_info.userId;
     } catch (e) {}
 
-    const revisions = [];
-    argsData.forEach(d => {
-      const _revision = {};
-      let makeRevision;
-      let _tokens = [];
-
-      makeRevision = true;
-
-      switch (method) {
-        case 'bulkUpdate':
-          try {
-            const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
-            if (testRequired === undefined) makeRevision = false;
-          } catch (e) {
-            makeRevision = false;
-            break;
-          }
-
-          _revision.url_md5 = d.updateOne.filter._id;
-          _revision.created = d.updateOne.update.$set.modified;
-          _tokens = d.updateOne.update.$set.tokens;
-
-          break;
-        case 'bulkInsert':
-          try {
-            const testRequired = d.insertOne.document.tokens[0].data[0].key;
-            if (testRequired === undefined) makeRevision = false;
-          } catch (e) {
-            makeRevision = false;
-            break;
-          }
-
-          _revision.url_md5 = d.insertOne.document._id;
-          _revision.created = d.insertOne.document.modified;
-          _tokens = d.insertOne.document.tokens;
-          break;
-
-        case 'bulkReplace':
-          try {
-            const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
-            if (testRequired === undefined) makeRevision = false;
-          } catch (e) {
-            makeRevision = false;
-            break;
-          }
-
-          _revision.url_md5 = d.replaceOne.filter._id;
-          _revision.created = d.replaceOne.replacement.modified;
-          _tokens = d.replaceOne.replacement.tokens;
-          break;
-        default:
-          break;
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
+      if (err) {
+        next(err);
       }
-      /* eslint-enable */
+      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
+      const multimediaAnnotationTable = {};
 
-      if (makeRevision) {
-        _revision.tokens = _tokens.map(t => {
-          const keyValPair = {};
-          let keyCounter = 0;
-          t.data.forEach(_d => {
-            if (_d.key) {
-              keyCounter += 1;
-              keyValPair[_d.key] = _d.value;
+      argsData.forEach(d => {
+        let firstKey;
+        switch (method) {
+          case 'bulkUpdate':
+            firstKey = Object.keys(d.updateOne.update.$set || {})[0] || '';
+            if (firstKey.indexOf('.') > 0) {
+              multimediaAnnotationTable[d.updateOne.filter._id] = null;
             }
+            break;
+          case 'bulkInsert':
+            firstKey = Object.keys(d.insertOne.document || {})[0] || '';
+            if (firstKey.indexOf('.') > 0) {
+              multimediaAnnotationTable[d.insertOne.document._id] = null;
+            }
+            break;
+          case 'bulkReplace':
+            firstKey = Object.keys(d.replaceOne.replacement || {})[0] || '';
+            if (firstKey.indexOf('.') > 0) {
+              multimediaAnnotationTable[d.replaceOne.filter._id] = null;
+            }
+            break;
+        }
+      });
+      multimediaAnnotationCollection
+        .find({_id: {$in: Object.keys(multimediaAnnotationTable)}})
+        .toArray()
+        .then(multimediaAnnotations => {
+          multimediaAnnotations.forEach(multimediaAnnotation => {
+            multimediaAnnotationTable[multimediaAnnotation._id] = multimediaAnnotation;
           });
 
-          if (keyCounter > 0) {
-            return {
-              // token_id: t.token_id,
-              data: t.data,
-              summary: keyValPair,
-            };
-          }
+          argsData.forEach(d => {
+            const _revision = {};
+            let makeRevision;
+            let _tokens = [];
 
-          return false;
-        });
-        _revision.tokens = _revision.tokens.filter(t => t !== false);
+            makeRevision = true;
 
-        if (_revision.tokens.length) {
-          const updateOne = {
-            updateOne: {
-              filter: { _id: _revision.url_md5 },
-              update: {
-                $push: {
-                  revisions: {
-                    $each: [
-                      {
-                        modifiedBy: userId,
-                        created: _revision.created,
-                        tokens: _revision.tokens,
+            switch (method) {
+              case 'bulkUpdate':
+                try {
+                  const testRequired = d.updateOne.update.$set.tokens[0].data[0].key;
+                  if (testRequired === undefined) makeRevision = false;
+                } catch (e) {
+                  makeRevision = false;
+                }
+
+                if (makeRevision) {
+                  _revision.url_md5 = d.updateOne.filter._id;
+                  _revision.created = d.updateOne.update.$set.modified;
+                  _tokens = d.updateOne.update.$set.tokens;
+                } else if (d.updateOne.filter._id in multimediaAnnotationTable) {
+                  makeRevision = true;
+                  _revision.url_md5 = d.updateOne.filter._id;
+                  _revision.created = multimediaAnnotationTable[d.updateOne.filter._id].modified;
+                  _tokens = multimediaAnnotationTable[d.updateOne.filter._id].tokens;
+                }
+                break;
+              case 'bulkInsert':
+                try {
+                  const testRequired = d.insertOne.document.tokens[0].data[0].key;
+                  if (testRequired === undefined) makeRevision = false;
+                } catch (e) {
+                  makeRevision = false;
+                }
+
+                if (makeRevision) {
+                  _revision.url_md5 = d.insertOne.document._id;
+                  _revision.created = d.insertOne.document.modified;
+                  _tokens = d.insertOne.document.tokens;
+                } else if (d.insertOne.document._id in multimediaAnnotationTable) {
+                  makeRevision = true;
+                  _revision.url_md5 = d.insertOne.document._id;
+                  _revision.created = multimediaAnnotationTable[d.insertOne.document._id].modified;
+                  _tokens = multimediaAnnotationTable[d.insertOne.document._id].tokens;
+                }
+                break;
+
+              case 'bulkReplace':
+                try {
+                  const testRequired = d.replaceOne.replacement.tokens[0].data[0].key;
+                  if (testRequired === undefined) makeRevision = false;
+                } catch (e) {
+                  makeRevision = false;
+                }
+
+                if (makeRevision) {
+                  _revision.url_md5 = d.replaceOne.filter._id;
+                  _revision.created = d.replaceOne.replacement.modified;
+                  _tokens = d.replaceOne.replacement.tokens;
+                } else if (d.replaceOne.filter._id in multimediaAnnotationTable) {
+                  makeRevision = true;
+                  _revision.url_md5 = d.replaceOne.filter._id;
+                  _revision.created = multimediaAnnotationTable[d.replaceOne.filter._id].modified;
+                  _tokens = multimediaAnnotationTable[d.replaceOne.filter._id].tokens;
+                }
+                break;
+              default:
+                break;
+            }
+            /* eslint-enable */
+            if (makeRevision) {
+              _revision.tokens = _tokens.map(t => {
+                const keyValPair = {};
+                let keyCounter = 0;
+                t.data.forEach(_d => {
+                  if (_d.key) {
+                    keyCounter += 1;
+                    keyValPair[_d.key] = _d.value;
+                  }
+                });
+                if (keyCounter > 0) {
+                  return {
+                    // token_id: t.token_id,
+                    data: t.data,
+                    summary: keyValPair,
+                  };
+                }
+                return false;
+              });
+              _revision.tokens = _revision.tokens.filter(t => t !== false);
+              if (_revision.tokens.length) {
+                const updateOne = {
+                  updateOne: {
+                    filter: { _id: _revision.url_md5 },
+                    update: {
+                      $push: {
+                        revisions: {
+                          $each: [
+                            {
+                              modifiedBy: userId,
+                              created: _revision.created,
+                              tokens: _revision.tokens,
+                            },
+                          ],
+                          $slice: -5,
+                        },
                       },
-                    ],
-                    $slice: -5,
+                      $setOnInsert: {
+                        _id: _revision.url_md5,
+                        /* eslint-disable camelcase */
+                        url_md5: _revision.url_md5,
+                      },
+                    },
+                    upsert: true,
                   },
-                },
-                $setOnInsert: {
-                  _id: _revision.url_md5,
-                  /* eslint-disable camelcase */
-                  url_md5: _revision.url_md5,
-                },
-              },
-              upsert: true,
-            },
-          };
-
-          revisions.push(updateOne);
-        }
-      }
-    });
-
-    if (revisions.length > 0) {
-      MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
-        if (err) return next(err);
-
-        const MAR = db.collection('MultimediaAnnotationRevision');
-
-        MAR.bulkWrite(revisions, { ordered: false }, (_err, results) => {
-          if (_err) {
-            next(_err);
+                };
+                revisions.push(updateOne);
+              }
+            }
+          });
+          if (revisions.length > 0) {
+            const MAR = db.collection('MultimediaAnnotationRevision');
+            MAR.bulkWrite(revisions, { ordered: false }, (_err, results) => {
+              if (_err) {
+                next(_err);
+              } else {
+                next();
+              }
+            });
           } else {
             next();
           }
+        })
+        .catch(error => {
+          next(error);
         });
-      });
-    } else {
-      next();
-    }
+    });
   };
 
   MultimediaAnnotation.remoteMethod('basicCalculation', {
