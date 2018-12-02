@@ -96,6 +96,118 @@ module.exports = function(Project) {
       require('./project/init'),
     );
 
+  Project.remoteMethod('downloadExampleMultimediaAnnotations', {
+    http: { path: '/:id/example-multimedia-annotations.csv', verb: 'get' },
+    accepts: [
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+      { arg: 'res', type: 'object', http: { source: 'res' } },
+    ],
+    returns: {},
+  });
+  Project.downloadExampleMultimediaAnnotations = function(
+    projectId,
+    req,
+    res,
+    callback,
+  ) {
+    let userId;
+    try {
+      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
+      userId =
+        req.headers['camera-trap-user-id'] || req.session.user_info.userId;
+    } catch (e) {
+      return callback(new Error('使用者未登入'));
+    }
+    Project.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
+      const userCollection = db.collection('CtpUser');
+      const projectCollection = db.collection('Project');
+      const dataFieldAvailableCollection = db.collection('DataFieldAvailable');
+      Promise.all([
+        userCollection.findOne({ _id: userId }),
+        projectCollection.findOne({ _id: projectId }),
+        dataFieldAvailableCollection.find().toArray(),
+      ])
+        .then(([user, project, dataFields]) => {
+          if (!user) {
+            throw new Error('user not found');
+          }
+          if (!project) {
+            throw new Error('project not found');
+          }
+          const projectIds = user.project_roles.map(role => role.projectId);
+          if (projectIds.indexOf(project._id) < 0) {
+            throw new Error('permission denied');
+          }
+          const dataFieldTable = {};
+          dataFields.forEach(field => {
+            dataFieldTable[field._id] = field;
+          });
+          const table = [
+            ['樣區', '子樣區', '相機位置', '檔名', '時間', '物種'],
+            [
+              '苗栗縣',
+              '南庄鄉田美村',
+              'HC20A',
+              'IMG_0001.JPG',
+              '2017-02-07 12:00:00',
+              '空拍',
+            ],
+            [
+              '苗栗縣',
+              '南庄鄉田美村',
+              'HC20A',
+              'IMG_0002.JPG',
+              '2017-02-07 12:00:00',
+              '空拍',
+            ],
+          ];
+          if (project.cameraLocations && project.cameraLocations.length) {
+            // Update site, subSite and cameraLocation when project.cameraLocation is exist.
+            const firstCamera = project.cameraLocations[0];
+            table[1][0] = firstCamera.site;
+            table[1][1] = firstCamera.subSite;
+            table[1][2] = firstCamera.cameraLocation;
+            table[2][0] = firstCamera.site;
+            table[2][1] = firstCamera.subSite;
+            table[2][2] = firstCamera.cameraLocation;
+          }
+          if (project.speciesList && project.speciesList.length) {
+            // Update spec when project.speciesList is exist.
+            const firstSpec = project.speciesList[0];
+            table[1][5] = firstSpec;
+            table[2][5] = firstSpec;
+          }
+          (project.dataFieldEnabled || []).forEach(fieldId => {
+            table[0].push(dataFieldTable[fieldId].label);
+            if (
+              dataFieldTable[fieldId].widget_select_options &&
+              dataFieldTable[fieldId].widget_select_options.length
+            ) {
+              table[1].push(dataFieldTable[fieldId].widget_select_options[0]);
+              table[2].push(dataFieldTable[fieldId].widget_select_options[0]);
+            } else {
+              table[1].push('');
+              table[2].push('');
+            }
+          });
+          return csvStringify(table);
+        })
+        .then(output => {
+          res.setHeader(
+            'Content-disposition',
+            'attachment; filename=example.csv',
+          );
+          res.contentType('csv');
+          res.send(output);
+        })
+        .catch(error => {
+          callback(error);
+        });
+    });
+  };
+
   Project.remoteMethod('exportMultimediaAnnotations', {
     http: { path: '/:id/multimedia-annotations.csv', verb: 'get' },
     accepts: [
