@@ -1,4 +1,5 @@
 const atob = require('atob');
+const errors = require('../errors');
 
 const AWS_REGION = 'ap-northeast-1';
 const USER_POOL_ID = 'ap-northeast-1_R2iDn5W3B';
@@ -120,7 +121,7 @@ module.exports = function(CtpUsers) {
       userId =
         req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
-      callback(new Error('使用者未登入'));
+      callback(new errors.Http403('使用者未登入'));
     }
 
     CtpUsers.getDataSource().connector.connect((err, db) => {

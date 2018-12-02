@@ -1,5 +1,6 @@
 const util = require('util');
 const csv = require('csv');
+const errors = require('../errors');
 const CreateModel = require('./share/CreateModel');
 const { withCheckProjectAdmin } = require('./share/withCheckProjectRoles');
 
@@ -233,7 +234,7 @@ module.exports = function(Project) {
       userId =
         req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
-      return callback(new Error('使用者未登入'));
+      return callback(new errors.Http403('使用者未登入'));
     }
     Project.getDataSource().connector.connect((err, db) => {
       if (err) return callback(err);

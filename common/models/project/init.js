@@ -1,4 +1,5 @@
 const uuid = require('uuid');
+const errors = require('../../errors');
 
 module.exports = ({ data, req, res, db }) => {
   let userId;
@@ -6,7 +7,7 @@ module.exports = ({ data, req, res, db }) => {
     // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
     userId = req.headers['camera-trap-user-id'] || req.session.user_info.userId;
   } catch (e) {
-    res(new Error('使用者未登入'));
+    res(new errors.Http403('使用者未登入'));
   }
 
   const mdl = db.collection('Project');

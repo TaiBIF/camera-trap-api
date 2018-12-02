@@ -1,3 +1,5 @@
+const errors = require('../../errors');
+
 // eslint-disable-next-line
 module.exports = async ({ data, req, res, db }) => {
   // allowed: project, funder, projectStartDate, earliestRecordTimestamp, ...
@@ -13,7 +15,7 @@ module.exports = async ({ data, req, res, db }) => {
     // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
     userId = req.headers['camera-trap-user-id'] || req.session.user_info.userId;
   } catch (e) {
-    return res(new Error('使用者未登入'));
+    return res(new errors.Http403('使用者未登入'));
   }
 
   const sorts = {};
