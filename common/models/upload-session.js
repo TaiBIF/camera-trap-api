@@ -1,3 +1,5 @@
+const errors = require('../errors');
+
 module.exports = function(UploadSession) {
   UploadSession.remoteMethod('getMyUploads', {
     http: { path: '/mine', verb: 'get' },
@@ -15,7 +17,7 @@ module.exports = function(UploadSession) {
       userId =
         req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
-      callback(new Error('使用者未登入'));
+      callback(new errors.Http403('使用者未登入'));
     }
 
     UploadSession.getDataSource().connector.connect((err, db) => {

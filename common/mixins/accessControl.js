@@ -1,3 +1,5 @@
+const errors = require('../errors');
+
 // let strFunc = {};
 // strFunc['uuid'] = require('uuid'); // 看起來 default 就是 v4
 // let lb = require('loopback');
@@ -8,18 +10,6 @@ module.exports = function(Model, options) {
     return self.indexOf(value) === index;
   }
   // */
-
-  const permissionDenied = function(message) {
-    const PermissionDeniedErr = new Error();
-    PermissionDeniedErr.message = 'Permission denied.';
-
-    if (message) {
-      PermissionDeniedErr.message = `${
-        PermissionDeniedErr.message
-      }: ${message}`;
-    }
-    return PermissionDeniedErr;
-  };
 
   const checkPermissions = function(context, user, next) {
     // Check login status, using
@@ -153,7 +143,7 @@ module.exports = function(Model, options) {
                 next(__err);
               } else {
                 if (!userPermissions.length) {
-                  next(permissionDenied('You are unauthorized.'));
+                  next(new errors.Http403('You are unauthorized.'));
                   return;
                 }
 
@@ -240,7 +230,7 @@ module.exports = function(Model, options) {
                                 next(___err);
                               } else {
                                 next(
-                                  permissionDenied(
+                                  new errors.Http403(
                                     permissionDeniedMessages.join(','),
                                   ),
                                 );
@@ -357,7 +347,7 @@ module.exports = function(Model, options) {
                                   next(___err);
                                 } else {
                                   next(
-                                    permissionDenied(
+                                    new errors.Http403(
                                       permissionDeniedMessages.join(','),
                                     ),
                                   );
@@ -377,7 +367,7 @@ module.exports = function(Model, options) {
                 } else {
                   // projectValidated is false
                   next(
-                    permissionDenied(
+                    new errors.Http403(
                       'You have no right to write into this project.',
                     ),
                   );
@@ -389,7 +379,7 @@ module.exports = function(Model, options) {
       });
       // end of if session exists
     } else {
-      next(permissionDenied('使用者未登入, 請先登入再執行此操作.'));
+      next(new errors.Http403('使用者未登入, 請先登入再執行此操作.'));
     }
   };
 
