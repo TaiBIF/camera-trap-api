@@ -129,7 +129,6 @@ module.exports = function(Model, options) {
   const bulkUpdateCallback = function(context, user, next) {
     errMessages = [];
 
-    const err = new Error();
     let currentId = null;
 
     const BreakException = {};
@@ -248,6 +247,7 @@ module.exports = function(Model, options) {
 
     if (errMessages.length >= 1) {
       errMessages.sort();
+      const err = new Error();
       err.message = `Document \`${currentId}\`:\n${errMessages.join('\n')}`;
       err.name = 'ValidationError';
       err.status = 422;
@@ -415,7 +415,6 @@ module.exports = function(Model, options) {
   const bulkInsertReplaceCallback = function(context, user, next) {
     errMessages = [];
 
-    const err = new Error();
     let currentId = null;
 
     const BreakException = {};
@@ -470,6 +469,7 @@ module.exports = function(Model, options) {
 
     if (errMessages.length >= 1) {
       errMessages.sort();
+      const err = new Error();
       err.message = `Document \`${currentId}:\n${errMessages.join('\n')}`;
       err.name = 'Validation Failed';
       err.status = 400;
