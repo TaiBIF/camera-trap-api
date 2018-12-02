@@ -6,9 +6,13 @@ const { CIRCLE_SHA1 } = process.env;
   const sha1 = CIRCLE_SHA1!.slice(0 , 6);
 
   await slack.webhook({
-    channel: '#04-cameratrap-api',
+    channel: '#04-aws',
     username: 'CircleCI',
     icon_emoji: ':circleci:',
-    text: `<https://github.com/TaiBIF/camera-trap-api/commit/${sha1}|${sha1}> Deploy to AWS Elastic Beanstalk is starting...`,
+    attachments: [
+      {
+        text: `<https://github.com/TaiBIF/camera-trap-api/commit/${sha1}|${sha1}> Deploy to AWS Elastic Beanstalk is starting...`,
+      }
+    ]
   });
 })()
