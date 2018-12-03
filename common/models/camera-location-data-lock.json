@@ -28,7 +28,7 @@
     },
     "projectTitle": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "locked": {
       "type": "boolean",

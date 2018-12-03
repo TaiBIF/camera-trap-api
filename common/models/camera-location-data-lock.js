@@ -76,7 +76,7 @@ module.exports = function(CameraLocationDataLock) {
             _id: false,
             cameraLocationDataLock: {
               projectId: '$projectId',
-              projectTitle: '$projectTitle',
+              // projectTitle: '$projectTitle',
               site: '$cameraLocations.site',
               subSite: '$cameraLocations.subSite',
               cameraLocation: '$cameraLocations.cameraLocation',
@@ -105,7 +105,7 @@ module.exports = function(CameraLocationDataLock) {
             _id: false,
             cameraLocationDataLock: {
               projectId: '$cameraLocationDataLock.projectId',
-              projectTitle: '$cameraLocationDataLock.projectTitle',
+              // projectTitle: '$cameraLocationDataLock.projectTitle',
               site: '$cameraLocationDataLock.site',
               subSite: '$cameraLocationDataLock.subSite',
               cameraLocation: '$cameraLocationDataLock.cameraLocation',
