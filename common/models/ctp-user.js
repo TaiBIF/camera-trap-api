@@ -1,4 +1,5 @@
 const atob = require('atob');
+const AWS = require('aws-sdk');
 const errors = require('../errors');
 
 const AWS_REGION = 'ap-northeast-1';
@@ -20,7 +21,6 @@ module.exports = function(CtpUsers) {
 
   CtpUsers.signIn = function(data, req, callback) {
     const { idToken } = data;
-    const AWS = CtpUsers.app.aws;
     const login = {};
     login[AWS_ID_PROVIDER] = idToken;
 
