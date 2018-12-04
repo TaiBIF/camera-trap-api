@@ -120,7 +120,7 @@ module.exports = function(CtpUsers) {
       userId =
         req.headers['camera-trap-user-id'] || req.session.user_info.userId;
     } catch (e) {
-      callback(new errors.Http403('使用者未登入'));
+      return callback(new errors.Http403('使用者未登入'));
     }
 
     CtpUsers.getDataSource().connector.connect((err, db) => {
