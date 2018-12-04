@@ -43,7 +43,6 @@ module.exports = function(Announcement) {
         };
 
         userModel.findOne(query, {}, (_err, result) => {
-          console.log(['SysAdmin', result]);
           if (_err) {
             callback(_err);
           } else if (!result) {

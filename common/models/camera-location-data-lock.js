@@ -125,8 +125,6 @@ module.exports = function(CameraLocationDataLock) {
         },
       ];
 
-      console.log(JSON.stringify(aggregateQuery, null, 2));
-
       mdl.aggregate(aggregateQuery).toArray((_err, locationMonthAbnormal) => {
         if (_err) {
           callback(_err);

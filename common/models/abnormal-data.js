@@ -18,12 +18,8 @@ module.exports = function(AbnormalData) {
     ];
 
     const argsData = context.args.data;
-    // console.log(context.args.data);
-    const method = context.methodString.split('.').pop();
-    console.log(method);
 
     argsData.forEach((d, dIdx, arr) => {
-      // console.log(JSON.stringify(revisions, null, 2));
       const abnormalMonthSpan = [];
 
       const startDateObj = new Date(`${d.abnormalStartDate}+8`);
@@ -42,13 +38,10 @@ module.exports = function(AbnormalData) {
 
       const endDate = `${endYear}/${endMonth}/${endDay}`;
 
-      console.log(startYearMonth);
-      console.log(endYearMonth);
       for (let y = startYear; y <= endYear; y += 1) {
         for (let mIdx = 0; mIdx < 12; mIdx += 1) {
           const m = months[mIdx];
           const yearMonth = `${y}-${m}`;
-          console.log([yearMonth]);
           if (yearMonth <= endYearMonth && yearMonth >= startYearMonth) {
             abnormalMonthSpan.push({ year: y, month: mIdx + 1 });
           }

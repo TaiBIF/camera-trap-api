@@ -19,9 +19,6 @@ module.exports = function(CtpUsers) {
   });
 
   CtpUsers.signIn = function(data, req, callback) {
-    console.log(data);
-    console.log(req.http);
-
     const { idToken } = data;
     const AWS = CtpUsers.app.aws;
     const login = {};
@@ -35,8 +32,6 @@ module.exports = function(CtpUsers) {
 
     AWS.config.credentials.get(err => {
       if (err) {
-        // console.log("Error", err);
-
         callback(err);
         throw err;
       } else {
@@ -46,8 +41,6 @@ module.exports = function(CtpUsers) {
         const payload = idT.split('.')[1];
         const tokenobj = JSON.parse(atob(payload));
         const userId = tokenobj['cognito:username'];
-        // let formatted = JSON.stringify(tokenobj, undefined, 2);
-        // console.log(formatted);
 
         CtpUsers.getDataSource().connector.connect((_err, db) => {
           if (_err) {
@@ -95,14 +88,9 @@ module.exports = function(CtpUsers) {
 
         // eslint-disable-next-line camelcase
         req.session.user_info = userInfo;
-        // let identity_id = AWS.config.credentials.identityId;
-        console.log(req.session);
-        console.log('Cognito Identity Id', userId);
-        //* /
         callback(null, userId);
       }
     });
-    //* /
   };
 
   CtpUsers.remoteMethod('whoAmI', {
@@ -113,8 +101,6 @@ module.exports = function(CtpUsers) {
   });
 
   CtpUsers.whoAmI = function(req, callback) {
-    console.log(req.headers);
-
     let userId;
     try {
       // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉

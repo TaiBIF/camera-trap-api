@@ -34,11 +34,9 @@ module.exports = function(Model, options) {
         req.query,
         { projection: req.projection, limit, skip, sort },
         (_err, data) => {
-          console.log(req);
           if (_err) {
             _callback(_err);
           } else {
-            // console.log(data);
             data.toArray((__err, result) => {
               if (Model.definition.name === 'MultimediaAnnotationRevision') {
                 const cu = db.collection('CtpUser');
@@ -75,7 +73,6 @@ module.exports = function(Model, options) {
                 );
                 return;
               }
-              console.log(result);
               _callback(null, result);
             });
           }
@@ -128,18 +125,10 @@ module.exports = function(Model, options) {
         req.query,
         { projection: { _id: 1 } },
         (_err, data) => {
-          // console.log(req);
           if (_err) {
             _callback(_err);
           } else {
-            // console.log(data);
             _callback(null, data);
-            /*
-          data.toArray(function(err, result){
-            console.log(result);
-            _callback(null, result);
-          });
-          // */
           }
         },
       );
@@ -158,7 +147,6 @@ module.exports = function(Model, options) {
       const collection = db.collection(Model.definition.name);
 
       collection.aggregate(req).toArray((_err, result) => {
-        console.log(result);
         _callback(null, result);
       });
     });
