@@ -8,7 +8,11 @@ const USER_POOL_ID = 'ap-northeast-1_R2iDn5W3B';
 // eslint-disable-next-line max-len
 const AWS_ID_PROVIDER = `cognito-idp.ap-northeast-1.amazonaws.com/${USER_POOL_ID}`;
 const IDENTITY_POOL_ID = 'ap-northeast-1:3d5edbfb-834c-4284-85f5-a4ec29d38ef0';
-const LOGIN_REDIRECT_HOSTNAME_WHITE_LIST = ['localhost', 'camera-trap.tw'];
+const LOGIN_REDIRECT_HOSTNAME_WHITE_LIST = [
+  'localhost',
+  'dev.camera-trap.tw',
+  'camera-trap.tw',
+];
 
 module.exports = function(CtpUsers) {
   CtpUsers.remoteMethod('signIn', {
