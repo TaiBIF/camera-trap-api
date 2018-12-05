@@ -76,6 +76,12 @@ module.exports = function(CtpUsers) {
                     projectTitle: 'ANY_NEW',
                     roles: ['ProjectInitiator'],
                   },
+                  // 2018-12-05 demo 用, 結束後請移除
+                  {
+                    projectId: 'd8064aa7-9643-44fb-bed9-1f23a690f968',
+                    projectTitle: '測試計畫1',
+                    roles: ['ProjectManager'],
+                  },
                 ],
               },
             },
