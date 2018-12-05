@@ -52,7 +52,7 @@ orbs:
               name: Deploy on AWS EB
               command: |
                 npx ts-node scripts/aws-deploy-start
-                eb deploy api-dev --label $CIRCLE_SHA1
+                eb deploy --label $CIRCLE_SHA1
           - run: npx ts-node scripts/aws-deploy-done
 
       run:

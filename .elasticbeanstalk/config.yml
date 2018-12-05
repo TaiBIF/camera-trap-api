@@ -2,7 +2,7 @@ branch-defaults:
   dev:
     environment: api-dev
   prod:
-    environment: api
+    environment: api-prod
 global:
   application_name: Camera Trap
   default_region: ap-northeast-1
