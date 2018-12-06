@@ -693,10 +693,10 @@ module.exports = function(MultimediaAnnotation) {
   }
 
   MultimediaAnnotation.remoteMethod('replicateRow', {
-    http: { path: '/media/annotation/:id/token/:index', verb: 'get' },
+    http: { path: '/media/annotation/:id/token/:index/replicate', verb: 'get' },
     accepts: [
       { arg: 'id', type: 'string', required: true },
-      { arg: 'index', type: 'string', required: true }
+      { arg: 'index', type: 'number', required: true }
     ],
     returns: {arg: 'ret'},
   });
@@ -726,7 +726,10 @@ module.exports = function(MultimediaAnnotation) {
 
       const replicateRes = await multimediaAnnotationCollection.updateOne ({_id: annId}, {
         $push: {
-          tokens: tokenX
+          tokens: {
+            $each: [ tokenX ],
+            $position: tokenIndex + 1
+          }
         }
       })
 
