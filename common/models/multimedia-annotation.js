@@ -736,6 +736,46 @@ module.exports = function(MultimediaAnnotation) {
     });
   }
 
+  MultimediaAnnotation.remoteMethod('deleteRow', {
+    http: { path: '/media/annotation/:id/token/:index/delete', verb: 'get' },
+    accepts: [
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'index', type: 'number', required: true }
+    ],
+    returns: {arg: 'ret'},
+  });
+  
+  MultimediaAnnotation.deleteRow = function(
+    annId,
+    tokenIndex,
+    callback,
+  ) {
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
+
+      if (err) {
+        return callback(err);
+      }
+
+      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
+      const { tokens } = await multimediaAnnotationCollection.findOne({_id: annId}, {projection: {tokens: 1}});
+
+      if (tokens.length > 1) {
+        tokens.splice(tokenIndex, 1);
+      }
+
+      const deleteRes = await multimediaAnnotationCollection.updateOne ({_id: annId}, {
+        $set: {
+          tokens: tokens
+        }
+      })
+
+      callback(null, deleteRes);
+
+    });
+  }
+
+
+
   MultimediaAnnotation.afterRemote('bulkInsert', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkReplace', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkUpdate', addRevision); // tested
