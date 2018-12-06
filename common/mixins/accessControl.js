@@ -142,7 +142,12 @@ module.exports = function(Model, options) {
               if (__err) {
                 next(__err);
               } else {
-                if (!userPermissions.length) {
+                // bypass locaiton lock on development env
+                // TODO: remove bypass if not dev
+                if (
+                  !userPermissions.length &&
+                  Model.app.get('env') !== 'development'
+                ) {
                   next(new errors.Http403('You are unauthorized.'));
                   return;
                 }
