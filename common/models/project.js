@@ -341,7 +341,8 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }), );
+                  }),
+                );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
@@ -520,7 +521,7 @@ module.exports = function(Project) {
         name: m.name,
         role: m.project_roles
           .map(pr => ({ projectId: pr.projectId, role: pr.roles.join('|') }))
-          .filter(x => x.projectId == projectId),
+          .filter(x => x.projectId === projectId),
       }));
       callback(null, retMembers);
     });
