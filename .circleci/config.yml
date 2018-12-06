@@ -20,6 +20,16 @@ orbs:
               key: node_modules#{{ checksum "package-lock.json" }}
               paths:
                 - node_modules
+          - run: git checkout -- .
+      decrypt_api_secret:
+        steps:
+          - run:
+              name: Decrypt API Secret
+              command: |
+                sudo apt-get -y -qq update
+                sudo apt-get install bsdmainutils
+                npx api-secret -c aes-256-cbc -p "$API_SECRET" -y
+
     executors:
       default:
         environment:
@@ -32,6 +42,7 @@ orbs:
         executor: default
         steps:
           - checkout_install
+          - decrypt_api_secret
           # Install AWS cli
           # - aws/install
           # - aws/configure
@@ -77,7 +88,7 @@ workflows:
       - node10/aws-deploy:
           filters:
             branches:
-              only: /^(prod|dev|feature\/ci)$/
+              only: /^(prod|dev|ci)$/
           requires:
             - lint
             - test
@@ -88,4 +99,3 @@ workflows:
       - node10/run:
           name: test
           command: npm test
-
