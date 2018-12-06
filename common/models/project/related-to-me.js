@@ -10,13 +10,10 @@ module.exports = async ({ data, req, res, db }) => {
   const cu = db.collection('CtpUser');
   // TODO: remove data.userId part from following line
 
-  let userId;
-  try {
-    // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-    userId = req.headers['camera-trap-user-id'] || req.session.user_info.userId;
-  } catch (e) {
+  if (!req.session.user_info) {
     return res(new errors.Http403('使用者未登入'));
   }
+  const { userId } = req.session.user_info;
 
   const sorts = {};
   sorts[sortKey] = 1;

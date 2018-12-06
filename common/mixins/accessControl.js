@@ -21,17 +21,8 @@ module.exports = function(Model, options) {
     }
 
     let userInfo;
-    if (context.req.session && context.req.session.user_info) {
+    if (context.req.session.user_info) {
       userInfo = context.req.session.user_info;
-    } else if (
-      context.req.headers['camera-trap-user-id'] &&
-      context.req.headers['camera-trap-user-id-token']
-    ) {
-      // TODO: 只在測試環境使用，正式環境要把這兩個 headers 拿掉
-      userInfo = {
-        userId: context.req.headers['camera-trap-user-id'],
-        idTokenHash: context.req.headers['camera-trap-user-id-token'],
-      };
     } else {
       // user_info = {userId: "OrcID_0000-0002-7446-3249"}
 

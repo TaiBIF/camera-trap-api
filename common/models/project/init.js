@@ -2,13 +2,10 @@ const uuid = require('uuid');
 const errors = require('../../errors');
 
 module.exports = ({ data, req, res, db }) => {
-  let userId;
-  try {
-    // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-    userId = req.headers['camera-trap-user-id'] || req.session.user_info.userId;
-  } catch (e) {
+  if (!req.session.user_info) {
     res(new errors.Http403('使用者未登入'));
   }
+  const { userId } = req.session.user_info;
 
   const mdl = db.collection('Project');
   const cu = db.collection('CtpUser');

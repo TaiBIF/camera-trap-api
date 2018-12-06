@@ -29,11 +29,9 @@ module.exports = function(MultimediaAnnotation) {
     const method = context.methodString.split('.').pop();
     const revisions = [];
     let userId;
-    try {
-      // TODO: camera-trap-user-id 只在測試環境使用，正式環境要把這個 headers 拿掉
-      userId =
-        context.req.headers['camera-trap-user-id'] || context.req.session.user_info.userId;
-    } catch (e) {}
+    if (context.req.session.user_info) {
+      userId = context.req.session.user_info.userId;
+    }
 
     MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
       if (err) {
@@ -700,7 +698,7 @@ module.exports = function(MultimediaAnnotation) {
     ],
     returns: {arg: 'ret'},
   });
-  
+
   MultimediaAnnotation.replicateRow = function(
     annId,
     tokenIndex,

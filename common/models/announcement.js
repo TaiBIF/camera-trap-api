@@ -20,14 +20,6 @@ module.exports = function(Announcement) {
         // 未登入，不用 throw error，後續僅顯示系統錯誤就好
       }
 
-      // TODO: 只在測試環境使用，正式環境要把這個 headers 拿掉
-      try {
-        userId =
-          req.headers['camera-trap-user-id'] || 'OrcID_0000-0002-7446-3249';
-      } catch (e) {
-        // 未登入，不用 throw error，後續僅顯示系統錯誤就好
-      }
-
       let allNotifications = [];
 
       function getUserReports() {
