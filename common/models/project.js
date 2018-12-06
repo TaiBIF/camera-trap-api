@@ -341,8 +341,7 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),
-                );
+                  }), );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
@@ -499,6 +498,31 @@ module.exports = function(Project) {
             callback(error);
           }
         });
+    });
+  };
+
+  Project.remoteMethod('getProjectMembers', {
+    http: { path: '/:id/members', verb: 'get' },
+    accepts: [{ arg: 'id', type: 'string', required: true }],
+    returns: { arg: 'results', type: [{ type: 'object' }] },
+  });
+
+  Project.getProjectMembers = function(projectId, callback) {
+    Project.getDataSource().connector.connect(async (err, db) => {
+      if (err) return callback(err);
+      const ctpUserCollection = db.collection('CtpUser');
+      const members = await ctpUserCollection
+        .find({ 'project_roles.projectId': projectId })
+        .toArray();
+      // console.log(members);
+      const retMembers = members.map(m => ({
+        _id: m._id,
+        name: m.name,
+        role: m.project_roles
+          .map(pr => ({ projectId: pr.projectId, role: pr.roles.join('|') }))
+          .filter(x => x.projectId == projectId),
+      }));
+      callback(null, retMembers);
     });
   };
 };
