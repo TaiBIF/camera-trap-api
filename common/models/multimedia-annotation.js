@@ -692,6 +692,49 @@ module.exports = function(MultimediaAnnotation) {
     });
   }
 
+  MultimediaAnnotation.remoteMethod('replicateRow', {
+    http: { path: '/media/annotation/:id/token/:index', verb: 'get' },
+    accepts: [
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'index', type: 'string', required: true }
+    ],
+    returns: {arg: 'ret'},
+  });
+  
+  MultimediaAnnotation.replicateRow = function(
+    annId,
+    tokenIndex,
+    callback,
+  ) {
+    MultimediaAnnotation.getDataSource().connector.connect(async (err, db) => {
+
+      if (err) {
+        return callback(err);
+      }
+
+      const multimediaAnnotationCollection = db.collection('MultimediaAnnotation');
+      const { tokens } = await multimediaAnnotationCollection.findOne({_id: annId}, {projection: {tokens: 1}});
+
+      let tokenX = tokens[tokenIndex];
+      if (!tokenX.meta) {
+        tokenX.meta = {};
+      }
+
+      tokenX.meta.virtual_individual_id = uuid();
+      tokenX.meta.virtual_part_id = uuid();
+      tokenX.token_id = uuid();
+
+      const replicateRes = await multimediaAnnotationCollection.updateOne ({_id: annId}, {
+        $push: {
+          tokens: tokenX
+        }
+      })
+
+      callback(null, replicateRes);
+
+    });
+  }
+
   MultimediaAnnotation.afterRemote('bulkInsert', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkReplace', addRevision); // tested
   MultimediaAnnotation.afterRemote('bulkUpdate', addRevision); // tested
