@@ -341,8 +341,7 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),
-                );
+                  }),);
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
@@ -524,6 +523,26 @@ module.exports = function(Project) {
           .filter(x => x.projectId === projectId),
       }));
       callback(null, retMembers);
+    });
+  };
+
+  Project.remoteMethod('titleDupCheck', {
+    http: { path: '/title-duplication-check', verb: 'post' },
+    accepts: [
+      { arg: 'data', type: 'object', http: { source: 'body' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+    ],
+    returns: { arg: 'duplicateExists', type: 'boolean' },
+  });
+
+  Project.titleDupCheck = function(data, req, callback) {
+    Project.getDataSource().connector.connect(async (err, db) => {
+      if (err) return callback(err);
+      const projectCollection = db.collection('Project');
+      const matchedProject = await projectCollection.findOne({
+        projectTitle: data.projectTitle,
+      });
+      callback(null, !!matchedProject);
     });
   };
 };
