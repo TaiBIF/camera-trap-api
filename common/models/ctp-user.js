@@ -116,6 +116,16 @@ module.exports = function(CtpUsers) {
     });
   };
 
+  CtpUsers.remoteMethod('signOut', {
+    http: { path: '/sign-out', verb: 'post' },
+    accepts: [{ arg: 'req', type: 'object', http: { source: 'req' } }],
+    returns: { arg: 'ret', type: 'object' },
+  });
+  CtpUsers.signOut = function(req, callback) {
+    delete req.session.user_info;
+    callback(null, {});
+  };
+
   CtpUsers.remoteMethod('whoAmI', {
     http: { path: '/me', verb: 'get' },
     // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
