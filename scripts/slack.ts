@@ -6,8 +6,7 @@ const { SLACK_WEBHOOK_TOKEN, CIRCLE_SHA1 } = process.env;
 
 const slackWebhook = axios.create({
   baseURL: 'https://hooks.slack.com/services',
-  url: `/T72568CHZ/BEAEQ2ZML/${SLACK_WEBHOOK_TOKEN ||
-    'T6Uolg0tzWLjCqCwYT8MwEu0'}`,
+  url: `/T72568CHZ/BEAEQ2ZML/${SLACK_WEBHOOK_TOKEN}`,
 });
 
 const slack = {
