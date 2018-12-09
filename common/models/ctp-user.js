@@ -1,7 +1,7 @@
 const url = require('url');
 const atob = require('atob');
 const AWS = require('aws-sdk');
-const errors = require('../errors');
+// const errors = require('../errors');
 
 const AWS_REGION = 'ap-northeast-1';
 const USER_POOL_ID = 'ap-northeast-1_R2iDn5W3B';
@@ -14,7 +14,27 @@ const LOGIN_REDIRECT_HOSTNAME_WHITE_LIST = [
   'camera-trap.tw',
 ];
 
+const CreateModel = require('./share/CreateModel');
+
 module.exports = function(CtpUsers) {
+  const model = new CreateModel(CtpUsers);
+
+  model
+    .router(
+      {
+        path: '/me',
+        verb: 'get',
+      },
+      require('./ctp-user/me'),
+    )
+    .router(
+      {
+        path: '/me/update',
+        verb: 'patch',
+      },
+      require('./ctp-user/me-update'),
+    );
+
   CtpUsers.remoteMethod('signIn', {
     http: { path: '/sign-in', verb: 'post' },
     // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
@@ -124,44 +144,5 @@ module.exports = function(CtpUsers) {
   CtpUsers.signOut = function(req, callback) {
     delete req.session.user_info;
     callback(null, {});
-  };
-
-  CtpUsers.remoteMethod('whoAmI', {
-    http: { path: '/me', verb: 'get' },
-    // accepts: { arg: 'data', type: 'string', http: { source: 'body' } },
-    accepts: [{ arg: 'req', type: 'object', http: { source: 'req' } }],
-    returns: { arg: 'ret', type: 'object' },
-  });
-
-  CtpUsers.whoAmI = function(req, callback) {
-    if (!req.session.user_info) {
-      return callback(new errors.Http403('使用者未登入'));
-    }
-    const { userId } = req.session.user_info;
-
-    CtpUsers.getDataSource().connector.connect((err, db) => {
-      if (err) {
-        return callback(err);
-      }
-
-      const mdl = db.collection('CtpUser');
-      mdl.findOne(
-        { _id: userId },
-        {
-          projection: {
-            idTokenHash: false,
-            _id: false,
-            // eslint-disable-next-line camelcase
-            id_token: false,
-          },
-        },
-        (_err, result) => {
-          if (_err) {
-            return callback(_err);
-          }
-          return callback(null, result);
-        },
-      );
-    });
   };
 };
