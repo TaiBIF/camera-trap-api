@@ -30,7 +30,7 @@
     },
     "widget_select_options": {
       "type": [
-        "string"
+        "object"
       ]
     },
     "widget_date_format": {
