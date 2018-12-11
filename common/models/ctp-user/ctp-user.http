@@ -2,4 +2,15 @@
 ###
 GET {{host}}/ctp-user/me
 Content-Type: application/json
-camera-trap-user-id: {{userId}}
+
+
+###
+PATCH  {{host}}/ctp-user/me/update
+Content-Type: application/json
+
+{
+  "speciesKeys": {
+    "空拍": "AR",
+    "工作照": "WP"
+  }
+}
