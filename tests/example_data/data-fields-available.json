@@ -5,7 +5,18 @@
     "description": "string",
     "widget_type": "select",
     "widget_select_options": [
-      "M", "F", "Unknown"
+      {
+        "key": "male",
+        "label": "M"
+      },
+      {
+        "key": "female",
+        "label": "F"
+      },
+      {
+        "key": "unknown",
+        "label": "未知"
+      }
     ]
   },
   {
@@ -14,7 +25,18 @@
     "description": "string",
     "widget_type": "select",
     "widget_select_options": [
-      "Young", "Adult", "Unknown"
+      {
+        "key": "juvenile",
+        "label": "幼體"
+      },
+      {
+        "key": "subAdult",
+        "label": "亞成體"
+      },
+      {
+        "key": "adult",
+        "label": "成體"
+      }
     ]
   },
   {
@@ -23,7 +45,46 @@
     "description": "string",
     "widget_type": "select",
     "widget_select_options": [
-      "TBD", "Unknown"
+      {
+        "key": "InitialAppearanceOfAntlerInVelvet",
+        "label": "初茸"
+      },
+      {
+        "key": "1PointAntlerInVelvet",
+        "label": "茸角一尖"
+      },
+      {
+        "key": "2PointAntlerInVelvet",
+        "label": "茸角一岔二尖"
+      },
+      {
+        "key": "3PointAntlerInVelvet",
+        "label": "茸角二岔三尖"
+      },
+      {
+        "key": "4PointAntlerInVelvet",
+        "label": "茸角三岔四尖"
+      },
+      {
+        "key": "1PointAntler",
+        "label": "硬角一尖"
+      },
+      {
+        "key": "2PointAntler",
+        "label": "硬角一岔二尖"
+      },
+      {
+        "key": "3PointAntler",
+        "label": "硬角二岔三尖"
+      },
+      {
+        "key": "4PointAntler",
+        "label": "硬角三岔四尖"
+      },
+      {
+        "key": "AntlerDrop",
+        "label": "解角"
+      }
     ]
   },
   {
