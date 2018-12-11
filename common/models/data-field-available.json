@@ -36,6 +36,9 @@
     "widget_date_format": {
       "type": "string"
     },
+    "widgetStringFormat": {
+      "type": "string"
+    },
     "description": {
       "type": "string",
       "required": true
