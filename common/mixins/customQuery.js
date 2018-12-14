@@ -38,42 +38,53 @@ module.exports = function(Model, options) {
             _callback(_err);
           } else {
             data.toArray((__err, result) => {
-              if (Model.definition.name === 'MultimediaAnnotationRevision') {
+              if (
+                Model.definition.name === 'MultimediaAnnotationRevision' &&
+                result.length > 0
+              ) {
                 const cu = db.collection('CtpUser');
-                const cptUserTable = {};
+                const ctpUserTable = {};
                 result.forEach(item => {
                   item.revisions.forEach(revision => {
-                    cptUserTable[revision.modifiedBy] = null;
+                    if (revision.modifiedBy)
+                      ctpUserTable[revision.modifiedBy] = null;
                   });
                 });
-                cu.find(
-                  { _id: { $in: Object.keys(cptUserTable) } },
-                  (___err, usersQuery) => {
-                    if (___err) {
-                      return _callback(___err);
+                const ctpUsers = Object.keys(ctpUserTable);
+                cu.find({ _id: { $in: ctpUsers } }, (___err, usersQuery) => {
+                  if (___err) {
+                    return _callback(___err);
+                  }
+                  usersQuery.toArray((____err, users) => {
+                    if (____err) {
+                      return _callback(____err);
                     }
-                    usersQuery.toArray((____err, users) => {
-                      if (____err) {
-                        return _callback(____err);
-                      }
-                      users.forEach(user => {
-                        cptUserTable[user._id] = user;
-                      });
-                      result.forEach(item => {
-                        item.revisions.forEach(revision => {
-                          revision.modifiedBy = {
-                            _id: cptUserTable[revision.modifiedBy]._id,
-                            name: cptUserTable[revision.modifiedBy].name,
-                          };
-                        });
-                      });
-                      _callback(null, result);
+                    users.forEach(user => {
+                      ctpUserTable[user._id] = user;
                     });
-                  },
-                );
-                return;
+                    result.forEach((item, iid, itemArr) => {
+                      itemArr[iid].revisions.forEach(
+                        (revision, rid, revArr) => {
+                          if (revision.modifiedBy) {
+                            revArr[rid].modifiedBy = {
+                              _id: ctpUserTable[revision.modifiedBy]._id,
+                              name: ctpUserTable[revision.modifiedBy].name,
+                            };
+                          } else {
+                            revArr[rid].modifiedBy = {
+                              _id: 'NA',
+                              name: 'NA',
+                            };
+                          }
+                        },
+                      );
+                    });
+                    return _callback(null, result);
+                  });
+                });
+              } else {
+                _callback(null, result);
               }
-              _callback(null, result);
             });
           }
         },
