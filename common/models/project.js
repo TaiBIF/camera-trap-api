@@ -341,7 +341,8 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),);
+                  }),
+                );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
