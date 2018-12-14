@@ -39,6 +39,9 @@ module.exports = function(Model, options) {
           }`
         ) {
           userInfo = { userId: context.req.headers['camera-trap-user-id'] };
+          // Make lambda work like normal user
+          // eslint-disable-next-line
+          context.req.session.user_info = userInfo;
         }
       } catch (e) {
         // console.log(e.message);

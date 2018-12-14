@@ -95,6 +95,13 @@ module.exports = function(Project) {
         verb: 'post',
       },
       require('./project/init'),
+    )
+    .router(
+      {
+        path: '/camera-locations',
+        verb: 'get',
+      },
+      require('./project/camera-locations'),
     );
 
   Project.remoteMethod('downloadExampleMultimediaAnnotations', {
