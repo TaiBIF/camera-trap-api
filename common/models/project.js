@@ -341,7 +341,8 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),);
+                  }),
+                );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
@@ -519,8 +520,9 @@ module.exports = function(Project) {
         _id: m._id,
         name: m.name,
         role: m.project_roles
-          .map(pr => ({ projectId: pr.projectId, role: pr.roles.join('|') }))
-          .filter(x => x.projectId === projectId),
+          .filter(pr => pr.projectId === projectId)
+          .map(r => r.role)
+          .toLocaleString(),
       }));
       callback(null, retMembers);
     });
