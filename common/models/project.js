@@ -95,6 +95,13 @@ module.exports = function(Project) {
         verb: 'post',
       },
       require('./project/init'),
+    )
+    .router(
+      {
+        path: '/camera-locations',
+        verb: 'get',
+      },
+      require('./project/camera-locations'),
     );
 
   Project.remoteMethod('downloadExampleMultimediaAnnotations', {
@@ -341,7 +348,8 @@ module.exports = function(Project) {
                 writePromise = writePromise.then(() =>
                   csvStringify(table).then(output => {
                     res.write(output);
-                  }),);
+                  }),
+                );
               } else {
                 writePromise = csvStringify(table).then(output => {
                   res.write(output);
