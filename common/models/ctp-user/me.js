@@ -2,7 +2,7 @@ const errors = require('../../errors');
 
 module.exports = async ({ req, res, db }) => {
   if (!req.session.user_info) {
-    return res(new errors.Http403('使用者未登入'));
+    return res(new errors.Http403('User is not logged in.'));
   }
 
   const { userId } = req.session.user_info;

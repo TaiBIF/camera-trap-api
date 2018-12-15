@@ -18,8 +18,7 @@ const checkProjectRoles = (checkedRoles = []) => {
       .toArray();
 
     const isChecked =
-      myProject.project_roles &&
-      myProject.project_roles.roles.some(role => rolesSet.has(role));
+      myProject.project_roles && rolesSet.has(myProject.project_roles.role);
 
     if (!isChecked) {
       return res(ERR.INVALID_PERMISSION);
