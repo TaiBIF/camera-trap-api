@@ -13,8 +13,9 @@ module.exports = ({ data, req, res, db }) => {
     if (prjCnt === 0) {
       cu.find(
         {
+          'project_roles.projectId': data.projectId,
           'project_roles.projectTitle': data.projectTitle,
-          'project_roles.roles': 'ProjectManager',
+          'project_roles.role': 'ProjectManager',
         },
         { projection: { _id: true } },
       ).toArray((__err, mngrs) => {
@@ -28,7 +29,7 @@ module.exports = ({ data, req, res, db }) => {
                 project_roles: {
                   projectId: newProjectId,
                   projectTitle: data.projectTitle,
-                  roles: ['ProjectManager'],
+                  role: 'ProjectManager',
                 },
               },
             },

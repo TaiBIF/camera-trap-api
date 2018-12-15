@@ -5,7 +5,7 @@ module.exports = ({ db, res }) => {
       $unwind: '$project_roles',
     },
     {
-      $unwind: '$project_roles.roles',
+      $unwind: '$project_roles.role',
     },
     {
       $lookup: {

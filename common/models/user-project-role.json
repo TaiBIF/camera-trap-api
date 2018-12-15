@@ -15,13 +15,9 @@
       "type": "string",
       "required": true
     },
-    "roles": {
-      "type": [
-        "string"
-      ],
-      "default": [
-        "normal_user"
-      ]
+    "role": {
+      "type": "string",
+      "default": "CaseOfficer"
     }
   },
   "validations": [],
