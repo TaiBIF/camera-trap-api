@@ -70,11 +70,11 @@ module.exports = function(Model, options) {
         const userPermissionQuery = [
           { $match: matchConditions },
           { $unwind: '$project_roles' },
-          { $unwind: '$project_roles.roles' },
+          { $unwind: '$project_roles.role' },
           {
             $lookup: {
               from: 'RolePermission',
-              localField: 'project_roles.roles',
+              localField: 'project_roles.role',
               foreignField: 'role',
               as: 'role_details',
             },
