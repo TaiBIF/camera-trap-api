@@ -5,16 +5,14 @@
   "email": "gsmai.taibif@gmail.com",
   "project_roles": [
     {
+      "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968",
       "projectTitle": "測試計畫1",
-      "roles": [
-        "DataManager", "ProjectManager", "SysAdmin"
-      ]
+      "role": "ProjectManager"
     },
     {
-      "projectTitle": "測試計畫3",
-      "roles": [
-        "ProjectManager"
-      ]
+      "projectId": "ea0bddbe-9b70-4e7c-842d-e4735b920ca5",
+      "projectTitle": "測試-計畫名稱計畫名稱計畫名稱計畫名稱",
+      "role": "ProjectManager"
     }
   ]
 },
@@ -25,10 +23,9 @@
   "email": "fakeguy@example.org",
   "project_roles": [
     {
-      "projectTitle": "測試計畫2",
-      "roles": [
-        "DataManager"
-      ]
+      "projectId": "d8064aa7-9643-44fb-bed9-1f23a690f968",
+      "projectTitle": "測試計畫1",
+      "roles": "DataManager"
     }
   ]
 }]
