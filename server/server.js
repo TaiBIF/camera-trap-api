@@ -42,6 +42,35 @@ app.use(
   }),
 );
 
+if (app.get('env') === 'development') {
+  app
+    .use((req, res, next) => {
+      const startTime = new Date();
+      const originEndFunc = res.end;
+      res.end = function(...args) {
+        originEndFunc.apply(this, args);
+        const now = new Date();
+        const processTime = `${now - startTime}`.replace(
+          /\B(?=(\d{3})+(?!\d))/g,
+          ',',
+        );
+        console.log(
+          `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
+            req.method
+          }      `.substr(0, 6)} ${req.originalUrl}`,
+        );
+      };
+      next();
+    })
+    .use((req, res, next) => {
+      req.session.user_info = {
+        userId: 'OrcID_0000-0002-6376-3705',
+      };
+
+      next();
+    });
+}
+
 app.start = function() {
   // start the web server
   return app.listen(() => {
