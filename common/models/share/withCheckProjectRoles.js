@@ -8,23 +8,26 @@ const checkProjectRoles = (checkedRoles = []) => {
     const user = db.collection('CtpUser');
     const projectId = req.params.projectId || data.projectId;
 
-    const [myProject] = await user
-      .aggregate()
-      .unwind('$project_roles')
-      .match({
-        userId: getMyUserId(req),
-        'project_roles.projectId': projectId,
-      })
-      .toArray();
+    try {
+      const [myProject] = await user
+        .aggregate()
+        .unwind('$project_roles')
+        .match({
+          userId: getMyUserId(req),
+          'project_roles.projectId': projectId,
+        })
+        .toArray();
+      const isChecked =
+        myProject.project_roles && rolesSet.has(myProject.project_roles.role);
 
-    const isChecked =
-      myProject.project_roles && rolesSet.has(myProject.project_roles.role);
+      if (!isChecked) {
+        return res(ERR.INVALID_PERMISSION);
+      }
 
-    if (!isChecked) {
-      return res(ERR.INVALID_PERMISSION);
+      routerFunc({ db, req, res, data, myProject });
+    } catch (err) {
+      console.log(`withCheckProjectRoles: ${err}`);
     }
-
-    routerFunc({ db, req, res, data, myProject });
   };
 };
 
