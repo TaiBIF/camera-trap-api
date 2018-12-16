@@ -4,26 +4,8 @@ const leftPad = require('left-pad');
 
 const app = loopback();
 
-// using redis. express-session and connect-redis combo to keep sign-in session
-// redis can be replaced with AWS ElasticCache
-
-// var redis   = require("redis");
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-
-// var redisStore = require('connect-redis')(session);
-// var client  = redis.createClient();
-
-/*
-app.use(session({
-    secret: 'camera trap reveals secrets',
-    name: 'ctp_session_id',
-    store: new redisStore({ host: 'ctp-redis.gsupl3.0001.apne1.cache.amazonaws.com', port: 6379, client: client, ttl:  36000}), //10 hours, enough through my working hours
-    saveUninitialized: false,
-    resave: false,
-    proxy: true
-}));
-*/
 
 if (app.get('env') === 'development') {
   app.use((req, res, next) => {
@@ -46,6 +28,9 @@ if (app.get('env') === 'development') {
   });
 }
 
+/**
+ * @todo Investigate the implication of providing the store property.
+ */
 app.use(
   session({
     secret: 'camera trap reveals secrets',
