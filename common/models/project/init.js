@@ -13,7 +13,8 @@ module.exports = ({ data, req, res, db }) => {
     if (prjCnt === 0) {
       cu.find(
         {
-          'project_roles.projectId': data.projectId,
+          // 這時 projectId 還不存在
+          // 'project_roles.projectId': data.projectId,
           'project_roles.projectTitle': data.projectTitle,
           'project_roles.role': 'ProjectManager',
         },
