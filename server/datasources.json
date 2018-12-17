@@ -6,6 +6,7 @@
   "ctMongoDb40": {
     "host": "jupyter.taibif.tw",
     "port": 27017,
+    "url": "mongodb://jupyter.taibif.tw:27017/ctp",
     "database": "ctp",
     "password": "",
     "name": "ctMongoDb40",
