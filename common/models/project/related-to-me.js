@@ -44,34 +44,40 @@ module.exports = async ({ data, req, res, db }) => {
     },
   ];
 
-  let rows = await cu
-    .aggregate(aggregateQuery)
-    .toArray()
-    .catch(err => res(err));
+  let rows;
+  try {
+    rows = await cu.aggregate(aggregateQuery).toArray();
+  } catch (error) {
+    return res(error);
+  }
 
-  const members = await cu
-    .aggregate([
-      {
-        $unwind: '$project_roles',
-      },
-      {
-        $match: {
-          'project_roles.projectId': {
-            $in: rows.map(r => r.project_metadata.projectId),
+  let members;
+  try {
+    members = await cu
+      .aggregate([
+        {
+          $unwind: '$project_roles',
+        },
+        {
+          $match: {
+            'project_roles.projectId': {
+              $in: rows.map(r => r.project_metadata.projectId),
+            },
           },
         },
-      },
-      {
-        $group: {
-          _id: '$project_roles.projectId',
-          members: {
-            $addToSet: '$userId',
+        {
+          $group: {
+            _id: '$project_roles.projectId',
+            members: {
+              $addToSet: '$userId',
+            },
           },
         },
-      },
-    ])
-    .toArray()
-    .catch(err => res(err));
+      ])
+      .toArray();
+  } catch (error) {
+    return res(error);
+  }
 
   const membersMap = new Map(members.map(m => [m._id, m]));
 
