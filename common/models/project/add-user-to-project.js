@@ -26,7 +26,7 @@ module.exports = async ({ data, req, res: callback, db }) => {
                 // eslint-disable-next-line
                 project_roles: {
                   projectId,
-                  roles: [role],
+                  role,
                 },
               },
             };
@@ -36,8 +36,8 @@ module.exports = async ({ data, req, res: callback, db }) => {
               'project_roles.projectId': projectId,
             };
             update = {
-              $addToSet: {
-                'project_roles.$.roles': role,
+              $set: {
+                'project_roles.$.role': role,
               },
             };
           }

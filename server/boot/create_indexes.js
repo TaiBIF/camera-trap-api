@@ -6,7 +6,7 @@ module.exports = function(app) {
           if (err) {
             console.log(erri);
           } else {
-            console.log(ret);
+            console.log(`Index ${ret} created.`);
           }
         });
       });

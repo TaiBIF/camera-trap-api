@@ -5,9 +5,6 @@ module.exports = ({ db, res }) => {
       $unwind: '$project_roles',
     },
     {
-      $unwind: '$project_roles.roles',
-    },
-    {
       $lookup: {
         from: 'Project',
         localField: 'project_roles.projectId',

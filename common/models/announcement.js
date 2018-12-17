@@ -29,7 +29,7 @@ module.exports = function(Announcement) {
 
         const query = {
           _id: userId,
-          'project_roles.roles': {
+          'project_roles.role': {
             $in: roles,
           },
         };
@@ -113,7 +113,7 @@ module.exports = function(Announcement) {
             $match: {
               // eslint-disable-next-line camelcase
               userId: userId,
-              'project_roles.roles': { $in: roles },
+              'project_roles.role': { $in: roles },
             },
           },
           {
@@ -128,7 +128,7 @@ module.exports = function(Announcement) {
           },
           {
             $match: {
-              'project_roles.roles': { $in: roles },
+              'project_roles.role': { $in: roles },
             },
           },
           {

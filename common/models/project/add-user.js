@@ -1,6 +1,6 @@
 module.exports = async ({ res, req, data, db, myProject }) => {
   const { userId, projectId } = req.params;
-  const { roles } = data;
+  const { role } = data;
   const user = db.collection('CtpUser');
 
   const query = {
@@ -14,16 +14,14 @@ module.exports = async ({ res, req, data, db, myProject }) => {
   );
 
   if (hasMatchedProject) {
-    hasMatchedProject.roles = [
-      ...new Set([...hasMatchedProject.roles, ...roles]),
-    ];
+    hasMatchedProject.role = role;
   } else {
     row.project_roles = [
       ...row.project_roles,
       {
         projectTitle: myProject.project_roles.projectTitle,
         projectId,
-        roles,
+        role,
       },
     ];
   }
