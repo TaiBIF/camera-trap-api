@@ -14,7 +14,7 @@ module.exports = async ({ res, req, data, db, myProject }) => {
   );
 
   if (hasMatchedProject) {
-    hasMatchedProject.role = [...new Set([...hasMatchedProject.role, ...role])];
+    hasMatchedProject.role = role;
   } else {
     row.project_roles = [
       ...row.project_roles,
