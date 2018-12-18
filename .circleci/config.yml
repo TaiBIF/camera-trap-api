@@ -22,12 +22,16 @@ orbs:
                 - node_modules
           - run: git checkout -- .
           - run:
-              name: Decrypt API Secret
+              name: Decrypt Secret
               command: |
                 sudo apt-get -y -qq update
                 sudo apt-get install bsdmainutils
                 yarn --silent transcrypt -p "$API_SECRET" -y
-                yarn build-env
+          - run:
+              name: Set Env
+              command: |
+                echo "$(yarn --silent ts-node scripts/export-env)" >> $BASH_ENV
+                source $BASH_ENV
 
     executors:
       default:
@@ -50,7 +54,6 @@ orbs:
           - run:
               name: Deploy on AWS EB
               command: |
-                source .env
                 npx ts-node scripts/aws-deploy-start
                 eb deploy --label $CIRCLE_SHA1
           - run: npx ts-node scripts/aws-deploy-done
