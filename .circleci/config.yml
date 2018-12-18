@@ -28,7 +28,7 @@ orbs:
               command: |
                 sudo apt-get -y -qq update
                 sudo apt-get install bsdmainutils
-                npx transcrypt -c aes-256-cbc -p "$API_SECRET" -y
+                yarn transcrypt -p "$API_SECRET" -y
 
     executors:
       default:
