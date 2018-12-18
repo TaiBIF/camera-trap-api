@@ -52,6 +52,7 @@
   "description": "nodejs-loopback",
   "scripts": {
     "transcrypt": "curl -s https://raw.githubusercontent.com/elasticdog/transcrypt/master/transcrypt | bash -s --",
+    "build-env": "ts-node scripts/build-env",
     "start": "node .",
     "dev": "nodemon server/server.js",
     "test": "echo 'test'"

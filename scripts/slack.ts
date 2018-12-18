@@ -1,12 +1,12 @@
 import axios from 'axios';
 // import sh from 'sh-exec';
 import { IncomingWebhookSendArguments } from '@slack/client';
-const { SLACK_WEBHOOK_TOKEN, CIRCLE_SHA1 } = process.env;
 
+import env from '../common/.env'
 
 const slackWebhook = axios.create({
   baseURL: 'https://hooks.slack.com/services',
-  url: `/T72568CHZ/BEAEQ2ZML/${SLACK_WEBHOOK_TOKEN}`,
+  url: `/T72568CHZ/BEAEQ2ZML/${env.SLACK_WEBHOOK_TOKEN}`,
 });
 
 const slack = {

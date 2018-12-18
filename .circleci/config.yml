@@ -21,20 +21,18 @@ orbs:
               paths:
                 - node_modules
           - run: git checkout -- .
-      decrypt_api_secret:
-        steps:
           - run:
               name: Decrypt API Secret
               command: |
                 sudo apt-get -y -qq update
                 sudo apt-get install bsdmainutils
-                yarn transcrypt -p "$API_SECRET" -y
+                yarn --silent transcrypt -p "$API_SECRET" -y
+                yarn build-env
 
     executors:
       default:
         environment:
           - TZ: Asia/Taipei
-          - AWS_DEFAULT_REGION: $AWS_REGION
         docker:
           - image: circleci/node:10
     jobs:
@@ -42,16 +40,6 @@ orbs:
         executor: default
         steps:
           - checkout_install
-          - decrypt_api_secret
-          # Install AWS cli
-          # - aws/install
-          # - aws/configure
-          # - run:
-          #     name: Deploy to AWS EB
-          #     command: |
-                # ZIP_NAME=$(git rev-parse HEAD).zip
-                # zip $ZIP_NAME .ebextensions server common package.json
-                # aws elasticbeanstalk create-application-version --source-build-information
           - run:
               name: Install AWS CLI
               command: |
@@ -62,6 +50,7 @@ orbs:
           - run:
               name: Deploy on AWS EB
               command: |
+                source .env
                 npx ts-node scripts/aws-deploy-start
                 eb deploy --label $CIRCLE_SHA1
           - run: npx ts-node scripts/aws-deploy-done
