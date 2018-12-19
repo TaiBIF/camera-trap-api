@@ -32,7 +32,7 @@
   },
   "session": {},
   "parse": {
-    "body-parser#json": { "params" : { "limit" : "50mb"} },
+    "body-parser#json": { "params" : { "limit" : "100mb"} },
     "body-parser#urlencoded": {"params": { "limit" : "50mb", "extended": true }}
   },
   "routes": {

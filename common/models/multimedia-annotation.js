@@ -241,7 +241,7 @@ module.exports = function(MultimediaAnnotation) {
 
       const toMatch = {};
 
-      const { projectId, projectTitle, site, subSite, species } = data;
+      const { projectId, projectTitle, site, subSite, species, effectiveTimeInterval } = data;
       if (projectId) {
         toMatch.projectId = projectId;
       } else {
@@ -461,7 +461,7 @@ module.exports = function(MultimediaAnnotation) {
 
                     console.log(`Uploaded: ${calcDataContainer}/${fileToBeAnalyzed}`);
 
-                    http.get(`${calcBaseUrl}/${calcPath}?id=${uniqueCalcId}`, (resp) => {
+                    http.get(`${calcBaseUrl}/${calcPath}?id=${uniqueCalcId}&interval=${effectiveTimeInterval}`, (resp) => {
                       let data = '';
 
                       // A chunk of data has been recieved.
