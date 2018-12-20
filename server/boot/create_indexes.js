@@ -75,6 +75,18 @@ module.exports = function(app) {
       },
     ];
 
+    const indexUploadedFileName = [
+      {
+        uploaded_file_name: 1,
+      },
+    ];
+
+    const indexSpeciesShortCut = [
+      {
+        'tokens.species_shortcut': 1,
+      },
+    ];
+
     let indexes = [
       uniqueIndexToken,
       indexTokenDataKeyValue,
@@ -83,6 +95,8 @@ module.exports = function(app) {
       indexSubSite,
       indexCameraLocation,
       indexFullCameraLocationMd5,
+      indexUploadedFileName,
+      indexSpeciesShortCut,
     ];
     createIndex(MultimediaAnnotation, indexes);
 
