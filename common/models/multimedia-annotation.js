@@ -826,7 +826,7 @@ module.exports = function(MultimediaAnnotation) {
   }
 
   MultimediaAnnotation.remoteMethod('replicateRow', {
-    http: { path: '/media/annotation/:id/token/:index/replicate', verb: 'get' },
+    http: { path: '/media/annotation/:id/token/:index/replicate', verb: 'post' },
     accepts: [
       { arg: 'id', type: 'string', required: true },
       { arg: 'index', type: 'number', required: true }
@@ -872,7 +872,7 @@ module.exports = function(MultimediaAnnotation) {
   }
 
   MultimediaAnnotation.remoteMethod('deleteRow', {
-    http: { path: '/media/annotation/:id/token/:index/delete', verb: 'get' },
+    http: { path: '/media/annotation/:id/token/:index/delete', verb: 'post' },
     accepts: [
       { arg: 'id', type: 'string', required: true },
       { arg: 'index', type: 'number', required: true }
