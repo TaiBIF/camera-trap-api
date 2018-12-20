@@ -1,6 +1,11 @@
 /* eslint-disable */
+const util = require('util');
+const csv = require('csv');
 const Json2csvParser = require('json2csv').Parser;
 const uuid = require('uuid');
+const errors = require('../../common/errors');
+
+const csvStringify = util.promisify(csv.stringify);
 
 function uploadToS3(params) {
   const AWS = require('aws-sdk');
@@ -206,6 +211,136 @@ module.exports = function(MultimediaAnnotation) {
         })
         .catch(error => {
           next(error);
+        });
+    });
+  };
+
+  MultimediaAnnotation.remoteMethod('export', {
+    http: { path: '/export.csv', verb: 'get' },
+    accepts: [
+      { arg: 'query', type: 'string', http: { source: 'query' } },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+      { arg: 'res', type: 'object', http: { source: 'res' } },
+    ],
+    returns: {},
+  });
+  MultimediaAnnotation.export = function(query, req, res, callback) {
+    if (!req.session.user_info) {
+      return callback(new errors.Http403('使用者未登入'));
+    }
+    MultimediaAnnotation.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
+      const dataFieldAvailableCollection = db.collection('DataFieldAvailable');
+      const multimediaAnnotationCollection = db.collection(
+        'MultimediaAnnotation',
+      );
+
+      query = JSON.parse(query);
+      let limit = typeof query.limit === 'number' ? query.limit : 1000;
+      if (limit <= 0) limit = 1000;
+      if (limit >= 10000) limit = 10000;
+      const sort = query.sort || {};
+      const skip = typeof query.skip === 'number' ? query.skip : 0;
+
+      dataFieldAvailableCollection
+        .find()
+        .toArray()
+        .then(dataFields => {
+          const headRow = [
+            ['樣區', '子樣區', '相機位置', '檔名', '時間', '物種'],
+          ];
+          dataFields.forEach(dataField => {
+            headRow[0].push(dataField.label);
+          });
+          res.setHeader(
+            'Content-disposition',
+            'attachment; filename=export.csv',
+          );
+          res.contentType('csv');
+          return Promise.all([dataFields, csvStringify(headRow)]);
+        })
+        .then(([dataFields, headOutput]) => {
+          res.write(headOutput);
+          let writePromise = null;
+          multimediaAnnotationCollection
+            .find(query.query, {
+              projection: query.projection,
+              limit,
+              skip,
+              sort,
+            })
+            .stream()
+            .on('data', multimediaAnnotation => {
+              const appendLeftFields = (items, annotation) => {
+                /*
+                Append a basic information of the multimedia annotation into the array.
+                @param items {Array}
+                @param annotation {MultimediaAnnotation}
+                 */
+                items.push([
+                  annotation.site,
+                  annotation.subSite,
+                  annotation.cameraLocation,
+                  annotation.uploaded_file_name,
+                  annotation.corrected_date_time,
+                ]);
+              };
+              const table = [];
+              for (
+                let tokenIndex = 0;
+                tokenIndex < multimediaAnnotation.tokens.length;
+                tokenIndex += 1
+              ) {
+                appendLeftFields(table, multimediaAnnotation);
+                multimediaAnnotation.tokens[tokenIndex].data.forEach(field => {
+                  switch (field.key) {
+                    case 'species': {
+                      table[tokenIndex][5] = field.value;
+                      break;
+                    }
+                    default: {
+                      for (
+                        let index = 0;
+                        index < dataFields.length;
+                        index += 1
+                      ) {
+                        if (dataFields[index].key === field.key) {
+                          table[tokenIndex][index + 6] = field.value;
+                          break;
+                        }
+                      }
+                      break;
+                    }
+                  }
+                });
+              }
+              if (writePromise) {
+                writePromise = writePromise.then(() =>
+                  csvStringify(table).then(output => {
+                    res.write(output);
+                  }),
+                );
+              } else {
+                writePromise = csvStringify(table).then(output => {
+                  res.write(output);
+                });
+              }
+            })
+            .on('end', () => {
+              if (writePromise) {
+                writePromise.then(() => {
+                  res.end();
+                });
+              } else {
+                res.end();
+              }
+            })
+            .on('error', error => {
+              throw error;
+            });
+        })
+        .catch(error => {
+          callback(error);
         });
     });
   };
@@ -744,7 +879,7 @@ module.exports = function(MultimediaAnnotation) {
     ],
     returns: {arg: 'ret'},
   });
-  
+
   MultimediaAnnotation.deleteRow = function(
     annId,
     tokenIndex,
