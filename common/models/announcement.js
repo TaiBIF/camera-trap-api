@@ -152,7 +152,12 @@ module.exports = function(Announcement) {
               _id: '$abnormalData._id',
               message: {
                 $concat: [
-                  '(使用者) 回報相機異常：',
+                  '<span data-user-id="',
+                  '$abnormalData.userId',
+                  '">',
+                  '$abnormalData.userName',
+                  '</span>',
+                  ' 回報相機異常：',
                   '$abnormalData.abnormalType',
                   '<br/>',
                   '$abnormalData.projectTitle',
