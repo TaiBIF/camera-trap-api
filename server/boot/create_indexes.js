@@ -87,6 +87,42 @@ module.exports = function(app) {
       },
     ];
 
+    const indexProjectId = [
+      {
+        'projectId': 1,
+      },
+    ];
+
+    const indexYear = [
+      {
+        'year': 1,
+      },
+    ];
+
+    const indexMonth = [
+      {
+        'month': 1,
+      },
+    ];
+
+    const indexDay = [
+      {
+        'day': 1,
+      },
+    ];
+
+    const indexHour = [
+      {
+        'hour': 1,
+      },
+    ];
+
+    const indexRelatedUploadSessions = [
+      {
+        'related_upload_sessions': 1,
+      },
+    ];
+
     let indexes = [
       uniqueIndexToken,
       indexTokenDataKeyValue,
@@ -97,6 +133,12 @@ module.exports = function(app) {
       indexFullCameraLocationMd5,
       indexUploadedFileName,
       indexSpeciesShortCut,
+      indexProjectId,
+      indexYear,
+      indexMonth,
+      indexDay,
+      indexHour,
+      indexRelatedUploadSessions,
     ];
     createIndex(MultimediaAnnotation, indexes);
 
