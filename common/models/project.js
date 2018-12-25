@@ -554,4 +554,59 @@ module.exports = function(Project) {
       callback(null, !!matchedProject);
     });
   };
+
+  Project.remoteMethod('locationLastUpdated', {
+    http: {
+      path: '/:projectId/location-last-updated/:fullCameraLocationMd5',
+      verb: 'get',
+    },
+    accepts: [
+      { arg: 'projectId', type: 'string', required: true },
+      { arg: 'fullCameraLocationMd5', type: 'string', required: true },
+      { arg: 'req', type: 'object', http: { source: 'req' } },
+      { arg: 'res', type: 'object', http: { source: 'res' } },
+    ],
+    returns: { arg: 'lastModified', type: 'string' },
+  });
+  Project.locationLastUpdated = function(
+    projectId,
+    fullCameraLocationMd5,
+    req,
+    res,
+    callback,
+  ) {
+    if (!req.session.user_info) {
+      return callback(new errors.Http403('使用者未登入'));
+    }
+    Project.getDataSource().connector.connect((err, db) => {
+      if (err) return callback(err);
+      const multimediaAnnotationCollection = db.collection(
+        'MultimediaAnnotation',
+      );
+      const aggregateQuery = [
+        {
+          $match: {
+            projectId,
+            fullCameraLocationMd5,
+          },
+        },
+        {
+          $group: {
+            _id: '$fullCameraLocationMd5',
+            lastModified: {
+              $max: '$modified',
+            },
+          },
+        },
+      ];
+      multimediaAnnotationCollection
+        .aggregate(aggregateQuery)
+        .toArray((_err, results) => {
+          if (_err) {
+            callback(err);
+          }
+          callback(null, results[0].lastModified);
+        });
+    });
+  };
 };
