@@ -10,8 +10,9 @@ module.exports = async ({ req, res, db }) => {
   const cu = db.collection('CtpUser');
   const Proj = db.collection('Project');
 
-  const user = await cu
-    .findOne(
+  let user;
+  try {
+    user = await cu.findOne(
       {
         _id: userId,
       },
@@ -21,37 +22,41 @@ module.exports = async ({ req, res, db }) => {
           idTokenHash: 0,
         },
       },
-    )
-    .catch(err => res(err));
-
-  const projects = user.project_roles.map(p => p.projectId);
-
-  const speciesRows = await Proj.aggregate()
-    .match({
-      _id: {
-        $in: projects,
-      },
-    })
-    .project({
-      speciesList: 1,
-    })
-    .toArray()
-    .catch(err => res(err));
-
-  let species = speciesRows.reduce((a, b) => a.concat(b.speciesList), []);
-
-  species = [...new Set(species)].filter(s => !!s);
-
-  user.speciesKeys = {
-    ...species.reduce(
-      (keys, s) => ({
-        [s]: null,
-        ...keys,
-      }),
-      {},
-    ),
-    ...user.speciesKeys,
-  };
+    );
+  } catch (error) {
+    return res(error);
+  }
+  if (!user.speciesKeys || !Object.keys(user.speciesKeys).length) {
+    // append defaults
+    const projects = user.project_roles.map(p => p.projectId);
+    let speciesRows = [];
+    try {
+      speciesRows = await Proj.aggregate()
+        .match({
+          _id: {
+            $in: projects,
+          },
+        })
+        .project({
+          speciesList: 1,
+        })
+        .toArray();
+    } catch (error) {
+      return res(error);
+    }
+    let species = speciesRows.reduce((a, b) => a.concat(b.speciesList), []);
+    species = [...new Set(species)].filter(s => !!s);
+    user.speciesKeys = {
+      ...species.reduce(
+        (keys, s) => ({
+          [s]: null,
+          ...keys,
+        }),
+        {},
+      ),
+      ...user.speciesKeys,
+    };
+  }
 
   res(null, user);
 };
