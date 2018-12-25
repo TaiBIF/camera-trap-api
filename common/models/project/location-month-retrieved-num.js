@@ -51,6 +51,14 @@ module.exports = ({ data, req, res, db }) => {
       },
     },
     {
+      $lookup: {
+        from: 'UploadSession',
+        localField: '_id.fullCameraLocationMd5',
+        foreignField: 'fullCameraLocationMd5',
+        as: 'relatedUploadSessions',
+      },
+    },
+    {
       $group: {
         _id: '$_id.fullCameraLocationMd5',
         projectId: { $first: '$projectId' },
@@ -63,6 +71,9 @@ module.exports = ({ data, req, res, db }) => {
           $push: {
             month: '$_id.month',
             num: '$num',
+            lastUploaded: {
+              $max: '$relatedUploadSessions.modified',
+            },
           },
         },
       },
@@ -128,6 +139,8 @@ module.exports = ({ data, req, res, db }) => {
       },
     },
   ];
+
+  console.log(JSON.stringify(aggregateQuery, null, 2));
 
   mmm.aggregate(aggregateQuery).toArray((_err, locationMonthNum) => {
     if (_err) {
