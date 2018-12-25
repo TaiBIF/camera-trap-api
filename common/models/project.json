@@ -109,7 +109,7 @@
     "geoDatum": {
       "description": "project-wised geo datum",
       "type": "string",
-      "default": "WGS84"
+      "default": ""
     },
     "dailyTestTime": {
       "description": "time of daily camera test shot",
