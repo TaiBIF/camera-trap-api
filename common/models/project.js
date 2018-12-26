@@ -603,7 +603,7 @@ module.exports = function(Project) {
         .aggregate(aggregateQuery)
         .toArray((_err, results) => {
           if (_err) {
-            callback(err);
+            return callback(err);
           }
           callback(null, results[0].lastModified);
         });
