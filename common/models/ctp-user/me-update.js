@@ -8,8 +8,9 @@ module.exports = async ({ req, res, db, data }) => {
   const { userId } = req.session.user_info;
 
   const cu = db.collection('CtpUser');
-  const user = await cu
-    .findOne(
+  let user;
+  try {
+    user = await cu.findOne(
       {
         _id: userId,
       },
@@ -18,21 +19,25 @@ module.exports = async ({ req, res, db, data }) => {
           idTokenHash: 0,
         },
       },
-    )
-    .catch(err => res(err));
+    );
+  } catch (error) {
+    return res(error);
+  }
 
   Object.assign(user, data);
 
-  await cu
-    .updateOne(
+  try {
+    await cu.updateOne(
       {
         _id: userId,
       },
       {
         $set: user,
       },
-    )
-    .catch(err => res(err));
+    );
+  } catch (error) {
+    return res(error);
+  }
 
   res(null, user);
 };

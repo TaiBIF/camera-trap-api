@@ -137,10 +137,12 @@ module.exports = async ({ data, req, res, db }) => {
     },
   ];
 
-  const rows = await mma
-    .aggregate(aggregateQuery)
-    .toArray()
-    .catch(err => res(err));
+  let rows;
+  try {
+    rows = await mma.aggregate(aggregateQuery).toArray();
+  } catch (error) {
+    return res(error);
+  }
 
   res(null, rows);
 };
