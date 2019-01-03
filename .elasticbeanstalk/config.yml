@@ -1,6 +1,6 @@
 branch-defaults:
   dev:
-    environment: api-dev
+    environment: api-dev-1
   prod:
     environment: api-prod
 global:
