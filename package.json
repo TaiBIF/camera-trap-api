@@ -1,0 +1,32 @@
+{
+  "name": "camera-trap-api",
+  "version": "1.0.0",
+  "description": "Camera Trap RESTful API",
+  "main": "src/web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TaiBIF/camera-trap-api.git"
+  },
+  "author": "",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/TaiBIF/camera-trap-api/issues"
+  },
+  "homepage": "https://github.com/TaiBIF/camera-trap-api#readme",
+  "dependencies": {
+    "config": "^3.0.1"
+  },
+  "devDependencies": {
+    "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
+    "eslint-plugin-mocha": "^5.3.0"
+  },
+  "lint-staged": {
+    "*.{js}": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
