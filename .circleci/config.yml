@@ -1,0 +1,15 @@
+version: 2.0
+workflows:
+  version: 2
+  build:
+    jobs:
+      - node10
+jobs:
+  node10:
+    working_directory: ~/camera-trap-api
+    docker:
+      - image: node:10.15.0
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm test
