@@ -1,4 +1,5 @@
 const { Schema } = require('mongoose');
+const UserPermission = require('../const/user-permission');
 
 const model = global.db.model(
   'UserModel',
@@ -16,6 +17,17 @@ const model = global.db.model(
         type: String,
         required: true,
       },
+      email: {
+        type: String,
+        index: {
+          name: 'Email',
+        },
+      },
+      permission: {
+        type: String,
+        required: true,
+        enum: UserPermission.all(),
+      },
     },
     {
       collection: 'Users',
@@ -27,6 +39,7 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     name: this.name,
+    email: this.email,
   };
 };
 
