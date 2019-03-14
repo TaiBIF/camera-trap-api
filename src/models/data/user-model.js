@@ -1,7 +1,9 @@
 const { Schema } = require('mongoose');
 const UserPermission = require('../const/user-permission');
+const utils = require('../../common/utils');
 
-const model = global.db.model(
+const db = utils.getDatabaseConnection();
+const model = db.model(
   'UserModel',
   Schema(
     {
