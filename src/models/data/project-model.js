@@ -109,6 +109,12 @@ const model = db.model(
           type: String,
         },
       ],
+      dailyTestTime: {
+        // 每日測試照片拍攝時間
+        // null 或空字串代表關閉此功能。ex: 13:00:00
+        // 此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。
+        type: String,
+      },
     },
     {
       collection: 'Projects',
@@ -145,6 +151,7 @@ model.prototype.dump = function() {
       return result;
     }),
     dataFieldIds: this.dataFieldIds,
+    dailyTestTime: this.dailyTestTime,
   };
 };
 
