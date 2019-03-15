@@ -1,10 +1,9 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ProjectSpeciesCode = require('../const/project-species-code');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
-  'ProjectSpeciesModel',
+  'ProjectSiteModel',
   utils.generateSchema(
     {
       project: {
@@ -16,29 +15,20 @@ const model = db.model(
         },
       },
       title: {
-        // 物種名稱
+        // 樣區名稱
         'zh-TW': {
           // 繁體中文
           type: String,
-          index: {
-            // We will use species to search from .csv.
-            name: 'TitleZhTW',
-          },
         },
       },
-      index: {
-        // 排序 (由小到大)
-        type: Number,
-        default: 0,
-      },
-      code: {
-        // 供「提示定義」使用
-        type: String,
-        enum: ProjectSpeciesCode.all(),
+      parentSite: {
+        // 子樣區的話會有上層的 id
+        type: Schema.ObjectId,
+        ref: 'ProjectSiteModel',
       },
     },
     {
-      collection: 'ProjectSpecies',
+      collection: 'ProjectSites',
     },
   ),
 );
@@ -47,8 +37,6 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     title: this.title,
-    index: this.index,
-    code: this.code,
   };
 };
 

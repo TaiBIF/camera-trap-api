@@ -103,6 +103,12 @@ const model = db.model(
           },
         },
       ],
+      dataFieldIds: [
+        // 資料欄位的 id
+        {
+          type: String,
+        },
+      ],
     },
     {
       collection: 'Projects',
@@ -114,6 +120,31 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     title: this.title,
+    shortTitle: this.shortTitle,
+    funder: this.funder,
+    code: this.code,
+    principalInvestigator: this.principalInvestigator,
+    startTime: this.startTime,
+    endTime: this.endTime,
+    areas: this.areas,
+    description: this.description,
+    note: this.note,
+    coverImageUrl: this.coverImageUrl,
+    publishTime: this.publishTime,
+    interpretiveDataLicense: this.interpretiveDataLicense,
+    identificationInformationLicense: this.identificationInformationLicense,
+    videoMaterialLicense: this.videoMaterialLicense,
+    members: this.members.map(member => {
+      const result = {
+        user: member.user,
+        role: member.role,
+      };
+      if (member.user && typeof member.user.dump === 'function') {
+        result.user = member.user.dump();
+      }
+      return result;
+    }),
+    dataFieldIds: this.dataFieldIds,
   };
 };
 
