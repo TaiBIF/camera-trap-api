@@ -1,13 +1,13 @@
-const { Schema } = require('mongoose');
 const UserPermission = require('../const/user-permission');
 const utils = require('../../common/utils');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
   'UserModel',
-  Schema(
+  utils.generateSchema(
     {
       orcId: {
+        // https://orcid.org/
         type: String,
         required: true,
         index: {
@@ -26,6 +26,7 @@ const model = db.model(
         },
       },
       permission: {
+        // 使用者權限
         type: String,
         required: true,
         enum: UserPermission.all(),
