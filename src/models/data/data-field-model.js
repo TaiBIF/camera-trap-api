@@ -33,11 +33,13 @@ const model = db.model(
         'zh-TW': {
           // 繁體中文
           type: String,
+          required: true,
         },
       },
       widgetType: {
         // 欄位形式
         type: String,
+        required: true,
         enum: DataFieldWidgetType.all(),
       },
       description: {
@@ -53,6 +55,7 @@ const model = db.model(
           'zh-TW': {
             // 繁體中文
             type: String,
+            required: true,
           },
         },
       ],

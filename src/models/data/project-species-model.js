@@ -20,6 +20,7 @@ const model = db.model(
         'zh-TW': {
           // 繁體中文
           type: String,
+          required: true,
           index: {
             // We will use species to search from .csv.
             name: 'TitleZhTW',
