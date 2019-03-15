@@ -2,7 +2,7 @@ const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const ProjectArea = require('../const/project-area');
 const License = require('../const/license');
-const ProjectRol = require('../const/project-role');
+const ProjectRole = require('../const/project-role');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -99,7 +99,7 @@ const model = db.model(
           role: {
             type: String,
             required: true,
-            enum: ProjectRol.all(),
+            enum: ProjectRole.all(),
           },
         },
       ],
