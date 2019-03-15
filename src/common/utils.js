@@ -50,6 +50,7 @@ exports.generateSchema = (model, options) => {
     options,
   );
   schema.pre('save', function(next) {
+    this.increment();
     this.updateTime = Date.now();
     next();
   });
