@@ -1,7 +1,7 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const ProjectArea = require('../const/project-area');
-const License = require('../const/license');
+const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
 
 const db = utils.getDatabaseConnection();
@@ -65,23 +65,23 @@ const model = db.model(
         // 詮釋資料 創用CC授權許可
         type: String,
         enum: [
-          License.freeingContent,
-          License.attributionAlone,
-          License.attributionAndNoncommercial,
+          ProjectLicense.freeingContent,
+          ProjectLicense.attributionAlone,
+          ProjectLicense.attributionAndNoncommercial,
         ],
       },
       identificationInformationLicense: {
         // 鑑定資訊 創用CC授權許可
         type: String,
-        enum: [License.attributionAlone],
+        enum: [ProjectLicense.attributionAlone],
       },
       videoMaterialLicense: {
         // 影像資料 創用CC授權許可
         type: String,
         enum: [
-          License.freeingContent,
-          License.attributionAlone,
-          License.attributionAndNoncommercial,
+          ProjectLicense.freeingContent,
+          ProjectLicense.attributionAlone,
+          ProjectLicense.attributionAndNoncommercial,
         ],
       },
       members: [
