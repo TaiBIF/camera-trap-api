@@ -103,10 +103,12 @@ const model = db.model(
           },
         },
       ],
-      dataFieldIds: [
-        // 資料欄位的 id
+      dataFields: [
+        // 資料欄位
         {
-          type: String,
+          type: Schema.ObjectId,
+          ref: 'DataFieldModel',
+          required: true,
         },
       ],
       dailyTestTime: {
@@ -150,7 +152,12 @@ model.prototype.dump = function() {
       }
       return result;
     }),
-    dataFieldIds: this.dataFieldIds,
+    dataFields: this.dataFields.map(dataField => {
+      if (dataField && typeof dataField.dump === 'function') {
+        return dataField.dump();
+      }
+      return dataField;
+    }),
     dailyTestTime: this.dailyTestTime,
   };
 };
