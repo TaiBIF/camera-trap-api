@@ -1,18 +1,18 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ProjectDataFieldSystemCode = require('../const/project-data-field-system-code');
-const ProjectDataFieldWidgetType = require('../const/project-data-field-widget-type');
-const ProjectDataFieldState = require('../const/project-data-field-state');
+const DataFieldSystemCode = require('../const/data-field-system-code');
+const DataFieldWidgetType = require('../const/data-field-widget-type');
+const DataFieldState = require('../const/data-field-state');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
-  'ProjectDataFieldModel',
+  'DataFieldModel',
   utils.generateSchema(
     {
       systemCode: {
         // 供判斷為何種系統預設欄位使用，null 為客製化欄位
         type: String,
-        enum: ProjectDataFieldSystemCode.all(),
+        enum: DataFieldSystemCode.all(),
       },
       user: {
         // 提出審核的使用者
@@ -25,8 +25,8 @@ const model = db.model(
       state: {
         // 欄位的審核狀態
         type: String,
-        default: ProjectDataFieldState.waitForReview,
-        enum: ProjectDataFieldState.all(),
+        default: DataFieldState.waitForReview,
+        enum: DataFieldState.all(),
       },
       title: {
         // 欄位名稱
@@ -38,7 +38,7 @@ const model = db.model(
       widgetType: {
         // 欄位形式
         type: String,
-        enum: ProjectDataFieldWidgetType.all(),
+        enum: DataFieldWidgetType.all(),
       },
       description: {
         // 欄位形式為輸入框時儲存輸入格式內容
@@ -62,7 +62,7 @@ const model = db.model(
       },
     },
     {
-      collection: 'ProjectDataFields',
+      collection: 'DataFields',
     },
   ),
 );
