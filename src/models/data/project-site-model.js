@@ -1,5 +1,6 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
+const ProjectSiteState = require('../const/project-site-state');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -12,6 +13,16 @@ const model = db.model(
         required: true,
         index: {
           name: 'Project',
+        },
+      },
+      state: {
+        // 狀態
+        // 因相機使用軟刪除，樣區也必須使用軟刪除
+        type: String,
+        default: ProjectSiteState.active,
+        enum: ProjectSiteState.all(),
+        index: {
+          name: 'State',
         },
       },
       title: {

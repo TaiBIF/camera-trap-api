@@ -1,5 +1,6 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
+const ProjectCameraState = require('../const/project-camera-state');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -19,6 +20,16 @@ const model = db.model(
         type: Schema.ObjectId,
         ref: 'ProjectSiteModel',
         required: true,
+      },
+      state: {
+        // 狀態
+        // 相機使用軟刪除，因為報表須提供「相機撤除」的資料
+        type: String,
+        default: ProjectCameraState.active,
+        enum: ProjectCameraState.all(),
+        index: {
+          name: 'State',
+        },
       },
       name: {
         // 相機位置名稱

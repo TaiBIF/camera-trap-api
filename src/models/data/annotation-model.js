@@ -69,7 +69,6 @@ const model = db.model(
             required: true,
           },
           value: {
-            _id: false,
             time: {
               type: Date,
             },
