@@ -67,10 +67,17 @@ exports.getImageUrl = (imageType, imageFilename) => {
   @param imageFilename {string}
   @returns {string}
    */
+  if (!imageFilename) {
+    return '';
+  }
   switch (imageType) {
     case ImageType.projectCover:
       return `${config.s3.urlPrefix}${
-        config.s3.folders.projectCover
+        config.s3.folders.projectCovers
+      }/${imageFilename}`;
+    case ImageType.annotation:
+      return `${config.s3.urlPrefix}${
+        config.s3.folders.annotations
       }/${imageFilename}`;
     default:
       throw new Error('Error image type.');

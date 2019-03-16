@@ -21,7 +21,7 @@ const model = db.model(
           type: String,
         },
       },
-      parentSite: {
+      parent: {
         // 子樣區的話會有上層的 id
         type: Schema.ObjectId,
         ref: 'ProjectSiteModel',
