@@ -53,6 +53,12 @@ const model = db.model(
       options: [
         // 欄位形式為下拉選單時儲存輸入格式內容
         {
+          _id: {
+            type: Schema.ObjectId,
+            index: {
+              name: 'OptionsId',
+            },
+          },
           'zh-TW': {
             // 繁體中文
             type: String,
