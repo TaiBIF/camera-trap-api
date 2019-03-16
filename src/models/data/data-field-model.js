@@ -11,6 +11,7 @@ const model = db.model(
     {
       systemCode: {
         // 供判斷為何種系統預設欄位使用，null 為客製化欄位
+        // This filed is index with "partialFilterExpression". Find the script at index.js.
         type: String,
         enum: DataFieldSystemCode.all(),
       },

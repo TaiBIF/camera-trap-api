@@ -3,10 +3,11 @@ const config = require('config');
 const mongoose = require('mongoose');
 
 let _db;
-exports.getDatabaseConnection = () => {
+exports.getDatabaseConnection = (autoIndex = false) => {
   /*
   Get database connection.
   example: https://github.com/Automattic/mongoose/tree/master/examples/express
+  @params autoIndex {bool}
   @returns {Connection}
    */
   if (_db) {
@@ -14,6 +15,7 @@ exports.getDatabaseConnection = () => {
   }
   _db = mongoose.createConnection(config.database.url, {
     useNewUrlParser: true,
+    autoIndex,
   });
   return _db;
 };

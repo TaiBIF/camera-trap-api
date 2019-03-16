@@ -15,10 +15,31 @@ Using LoopBack to develop RESTful API
   <img src="https://flat.badgen.net/github/license/TaiBIF/camera-trap-api" />
 </p>
 
-### Running it locally
-```$ npm start```
+## Setup the develop environment
+### 1. Clone repositories
+```bash
+# host
+$ git clone git@github.com:TaiBIF/camera-trap-api.git --recurse-submodules
+$ cd camera-trap-api
+$ npm install
+```
 
-### Branching strategy
+### 2. Running it locally
+```bash
+$ npm start
+```
+
+## Commands
+### Create collections and indexes of all models.
+```bash
+$ node . -c
+```
+### Insert database default data.
+```bash
+$ node . -i
+```
+
+## Branching strategy
 1. **master**: main development branch. No CI workflow connected.
 2. **dev**: connedted to dev CI workflow. Will merge into _uat_ when ready for User Acceptance Testing.
 2. **dev-[personID]**: personal working branch. **Only the creator can commit to this branch**. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.

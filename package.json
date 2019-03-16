@@ -2,7 +2,7 @@
   "name": "camera-trap-api",
   "version": "1.0.0",
   "description": "Camera Trap RESTful API",
-  "main": "src/web.js",
+  "main": "index.js",
   "scripts": {
     "start": "./node_modules/nodemon/bin/nodemon.js src/web.js --watch src",
     "test": "echo \"Error: no test specified\" && exit 0"
@@ -20,7 +20,9 @@
   "dependencies": {
     "config": "^3.0.1",
     "express": "^4.16.4",
-    "mongoose": "^5.4.19"
+    "mongoose": "^5.4.19",
+    "optimist": "^0.6.1",
+    "qlimit": "^0.1.1"
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
