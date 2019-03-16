@@ -1,6 +1,7 @@
 const util = require('util');
 const config = require('config');
 const mongoose = require('mongoose');
+const ImageType = require('../models/const/image-type');
 
 let _db;
 exports.getDatabaseConnection = (autoIndex = false) => {
@@ -57,4 +58,21 @@ exports.generateSchema = (model, options) => {
     next();
   });
   return schema;
+};
+
+exports.getImageUrl = (imageType, imageFilename) => {
+  /*
+  Get the image url.
+  @param imageType {string}
+  @param imageFilename {string}
+  @returns {string}
+   */
+  switch (imageType) {
+    case ImageType.projectCover:
+      return `${config.s3.urlPrefix}${
+        config.s3.folders.projectCover
+      }/${imageFilename}`;
+    default:
+      throw new Error('Error image type.');
+  }
 };

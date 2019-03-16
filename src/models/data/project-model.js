@@ -3,6 +3,7 @@ const utils = require('../../common/utils');
 const ProjectArea = require('../const/project-area');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
+const ImageType = require('../const/image-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -53,8 +54,8 @@ const model = db.model(
         // 備註
         type: String,
       },
-      coverImageUrl: {
-        // 計畫封面網址
+      coverImageFilename: {
+        // 計畫封面圖片檔名
         type: String,
       },
       publishTime: {
@@ -137,7 +138,11 @@ model.prototype.dump = function() {
     areas: this.areas,
     description: this.description,
     note: this.note,
-    coverImageUrl: this.coverImageUrl,
+    coverImageFilename: this.coverImageFilename,
+    coverImageUrl: utils.getImageUrl(
+      ImageType.projectCover,
+      this.coverImageFilename,
+    ),
     publishTime: this.publishTime,
     interpretiveDataLicense: this.interpretiveDataLicense,
     identificationInformationLicense: this.identificationInformationLicense,
