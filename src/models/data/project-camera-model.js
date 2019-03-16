@@ -47,7 +47,7 @@ const model = db.model(
       vegetation: {
         // 植被
         // todo: i18n
-        type: Schema,
+        type: String,
       },
     },
     {
