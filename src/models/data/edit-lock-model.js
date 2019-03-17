@@ -32,6 +32,14 @@ const model = db.model(
         ref: 'UserModel',
         required: true,
       },
+      expiredTime: {
+        // 超過此時間後自動解鎖
+        type: Date,
+        required: true,
+        index: {
+          name: 'ExpiredTime',
+        },
+      },
     },
     {
       collection: 'EditLocks',
