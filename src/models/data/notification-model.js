@@ -29,6 +29,14 @@ const model = db.model(
         type: Schema.ObjectId,
         ref: 'DataFieldModel',
       },
+      uploadSession: {
+        type: Schema.ObjectId,
+        ref: 'UploadSessionModel',
+      },
+      issue: {
+        type: Schema.ObjectId,
+        ref: 'IssueModel',
+      },
       expiredTime: {
         // 超過時間後不顯示，用於系統公告
         type: Date,
@@ -52,6 +60,14 @@ model.prototype.dump = function() {
       this.dataField && typeof this.dataField.dump === 'function'
         ? this.dataField.dump()
         : this.dataField,
+    uploadSession:
+      this.uploadSession && typeof this.uploadSession.sump === 'function'
+        ? this.uploadSession.dump()
+        : this.uploadSession,
+    issue:
+      this.issue && typeof typeof this.issue.dump === 'function'
+        ? this.issue.dump()
+        : this.issue,
     createTime: this.createTime,
   };
 };
