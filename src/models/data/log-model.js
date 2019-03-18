@@ -48,6 +48,10 @@ const model = db.model(
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    user:
+      this.user && typeof this.user.dump === 'function'
+        ? this.user.dump()
+        : this.user,
     method: this.method,
     path: this.path,
     headers: (function() {
