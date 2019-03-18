@@ -37,6 +37,7 @@ const model = db.model(
         required: true,
         index: {
           name: 'Name',
+          unique: true,
         },
       },
       settingTime: {
