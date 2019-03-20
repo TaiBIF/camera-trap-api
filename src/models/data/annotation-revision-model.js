@@ -31,10 +31,10 @@ const model = db.model(
         type: Schema.ObjectId,
         ref: 'ProjectSiteModel',
       },
-      camera: {
+      cameraLocation: {
         // 相機
         type: Schema.ObjectId,
-        ref: 'ProjectCameraModel',
+        ref: 'ProjectCameraLocationModel',
       },
       filename: {
         // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）

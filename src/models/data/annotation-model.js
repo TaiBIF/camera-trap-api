@@ -24,10 +24,10 @@ const model = db.model(
           name: 'Site',
         },
       },
-      camera: {
+      cameraLocation: {
         // 相機
         type: Schema.ObjectId,
-        ref: 'ProjectCameraModel',
+        ref: 'ProjectCameraLocationModel',
         required: true,
         index: {
           name: 'Camera',
@@ -119,7 +119,7 @@ model.prototype.dump = function() {
       }
       return result;
     })(),
-    camera: this.camera && this.camera.name ? this.camera.name : this.camera,
+    cameraLocation: this.cameraLocation && this.cameraLocation.name ? this.cameraLocation.name : this.cameraLocation,
     filename: this.filename,
     imageFileName: this.imageFileName,
     imageUrl: utils.getImageUrl(ImageType.annotation, this.imageFileName),

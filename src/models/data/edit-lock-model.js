@@ -14,9 +14,9 @@ const model = db.model(
           name: 'Project',
         },
       },
-      camera: {
+      cameraLocation: {
         type: Schema.ObjectId,
-        ref: 'ProjectCameraModel',
+        ref: 'ProjectCameraLocationModel',
         required: true,
       },
       site: {

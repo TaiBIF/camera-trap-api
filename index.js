@@ -69,7 +69,7 @@ if (op.argv.createCollections) {
     }),
     new DataFieldModel({
       // 欄位：相機位置
-      systemCode: DataFieldSystemCode.camera,
+      systemCode: DataFieldSystemCode.cameraLocation,
       title: {
         'zh-TW': '相機位置',
       },
