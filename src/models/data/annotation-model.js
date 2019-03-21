@@ -27,7 +27,7 @@ const model = db.model(
       cameraLocation: {
         // 相機
         type: Schema.ObjectId,
-        ref: 'ProjectCameraLocationModel',
+        ref: 'CameraLocationModel',
         required: true,
         index: {
           name: 'Camera',
@@ -53,7 +53,7 @@ const model = db.model(
       species: {
         // 物種
         type: Schema.ObjectId,
-        ref: 'ProjectSpeciesModel',
+        ref: 'SpeciesModel',
         index: {
           name: 'Species',
         },

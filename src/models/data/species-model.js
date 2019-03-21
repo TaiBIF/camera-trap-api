@@ -1,10 +1,10 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ProjectSpeciesCode = require('../const/project-species-code');
+const SpeciesCode = require('../const/species-code');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
-  'ProjectSpeciesModel',
+  'SpeciesModel',
   utils.generateSchema(
     {
       project: {
@@ -35,7 +35,7 @@ const model = db.model(
       code: {
         // 供「提示定義」使用
         type: String,
-        enum: ProjectSpeciesCode.all(),
+        enum: SpeciesCode.all(),
       },
     },
     {

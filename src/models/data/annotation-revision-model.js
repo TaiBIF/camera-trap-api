@@ -34,7 +34,7 @@ const model = db.model(
       cameraLocation: {
         // 相機
         type: Schema.ObjectId,
-        ref: 'ProjectCameraLocationModel',
+        ref: 'CameraLocationModel',
       },
       filename: {
         // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）
@@ -51,7 +51,7 @@ const model = db.model(
       species: {
         // 物種
         type: Schema.ObjectId,
-        ref: 'ProjectSpeciesModel',
+        ref: 'SpeciesModel',
       },
       customFields: [
         // 儲存非系統預設欄位的資料
