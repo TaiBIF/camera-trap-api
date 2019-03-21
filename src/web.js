@@ -1,11 +1,13 @@
 const http = require('http');
 const config = require('config');
 const express = require('express');
+const nocache = require('nocache');
 const webRouter = require('./routers/web-router');
 
 const app = express();
 const server = http.createServer(app);
 
+app.use(nocache());
 app.use('/api/v1', webRouter);
 
 // launch server

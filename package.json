@@ -21,6 +21,7 @@
     "config": "^3.0.1",
     "express": "^4.16.4",
     "mongoose": "^5.4.19",
+    "nocache": "^2.0.0",
     "optimist": "^0.6.1",
     "qlimit": "^0.1.1"
   },
