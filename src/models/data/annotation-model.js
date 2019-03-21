@@ -119,7 +119,10 @@ model.prototype.dump = function() {
       }
       return result;
     })(),
-    cameraLocation: this.cameraLocation && this.cameraLocation.name ? this.cameraLocation.name : this.cameraLocation,
+    cameraLocation:
+      this.cameraLocation && typeof this.cameraLocation.dump
+        ? this.cameraLocation.dump()
+        : this.cameraLocation,
     filename: this.filename,
     imageFileName: this.imageFileName,
     imageUrl: utils.getImageUrl(ImageType.annotation, this.imageFileName),
