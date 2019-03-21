@@ -39,7 +39,7 @@ const model = db.model(
       },
     },
     {
-      collection: 'ProjectSpecies',
+      collection: 'Species',
     },
   ),
 );

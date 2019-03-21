@@ -63,7 +63,7 @@ const model = db.model(
       },
     },
     {
-      collection: 'ProjectCameraLocations',
+      collection: 'CameraLocations',
     },
   ),
 );
