@@ -10,7 +10,7 @@ exports.Http403 = class Http403 extends Error {
   constructor(message) {
     super(message);
     this.status = 403;
-    this.message = `${message} || 'permission denied'`;
+    this.message = `${message || 'permission denied'}`;
   }
 };
 
