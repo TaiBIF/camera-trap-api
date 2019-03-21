@@ -6,6 +6,14 @@ exports.Http400 = class Http400 extends Error {
   }
 };
 
+exports.Http403 = class Http403 extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 403;
+    this.message = `${message} || 'permission denied'`;
+  }
+};
+
 exports.Http404 = class Http404 extends Error {
   constructor(message) {
     super(message);

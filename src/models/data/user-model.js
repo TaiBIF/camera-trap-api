@@ -38,6 +38,10 @@ const model = db.model(
   ),
 );
 
+model.prototype.isLogin = function() {
+  return !!this._id;
+};
+
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,

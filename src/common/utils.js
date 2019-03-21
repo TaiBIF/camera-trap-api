@@ -82,3 +82,5 @@ exports.getFileUrl = (fileType, filename) => {
   mapping[FileType.issueAttachment] = config.s3.folders.issueAttachments;
   return `${config.s3.urlPrefix}${mapping[fileType]}/${filename}`;
 };
+
+exports.getAnonymous = () => ({ isLogin: () => false });

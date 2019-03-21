@@ -4,8 +4,11 @@ const config = require('config');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 const nocache = require('nocache');
 const errors = require('./models/errors');
+const authentication = require('./auth/authentication');
 const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
 
@@ -43,12 +46,25 @@ app.use((req, res, next) => {
 
 app.use(cookieParser()); // setup req.cookies
 app.use(bodyParser.json()); // setup req.body
+app.use(
+  session(
+    util._extend(
+      {
+        store: new MongoStore(config.sessionStoreOptions),
+      },
+      config.sessionOptions,
+    ),
+  ),
+);
+
+app.use(authentication.session);
 
 // write log
-if (!config.enableLog) {
+if (config.enableLog) {
   app.use((req, res, next) => {
     const originEndFunc = res.end;
     const log = new LogModel({
+      user: req.user.isLogin() ? req.user : undefined,
       ip: req.ip,
       method: req.method,
       path: req.url,
