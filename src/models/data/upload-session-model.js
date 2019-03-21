@@ -29,9 +29,9 @@ const model = db.model(
           name: 'User',
         },
       },
-      originalName: {
-        // The original filename.
-        type: String,
+      file: {
+        type: Schema.ObjectId,
+        ref: 'FileModel',
         required: true,
       },
     },
@@ -49,7 +49,10 @@ model.prototype.dump = function() {
       this.project && typeof this.project.dump === 'function'
         ? this.project.dump()
         : this.project,
-    originalName: this.originalName,
+    file:
+      this.file && typeof this.file.dump === 'function'
+        ? this.file.dump()
+        : this.file,
     createTime: this.createTime,
   };
 };

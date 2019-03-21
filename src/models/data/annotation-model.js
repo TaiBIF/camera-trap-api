@@ -1,6 +1,5 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ImageType = require('../const/image-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -38,9 +37,14 @@ const model = db.model(
         type: String,
         required: true,
       },
-      imageFileName: {
-        // s3 filename
-        type: String,
+      file: {
+        // S3 file.
+        // 匯入 .csv 時不一定要有圖片，所以 annotation 有可能會只有檔名但沒檔案
+        type: Schema.ObjectId,
+        ref: 'FileModel',
+        index: {
+          name: 'File',
+        },
       },
       time: {
         // 時間
@@ -124,8 +128,10 @@ model.prototype.dump = function() {
         ? this.cameraLocation.dump()
         : this.cameraLocation,
     filename: this.filename,
-    imageFileName: this.imageFileName,
-    imageUrl: utils.getImageUrl(ImageType.annotation, this.imageFileName),
+    file:
+      this.file && typeof this.file.dump === 'function'
+        ? this.file.dump()
+        : this.file,
     time: this.time,
     species:
       this.species && typeof this.species.dump === 'function'

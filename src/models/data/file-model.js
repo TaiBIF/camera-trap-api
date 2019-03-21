@@ -1,17 +1,20 @@
 const path = require('path');
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ImageType = require('../const/image-type');
+const FileType = require('../const/file-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
-  'ImageModel',
+  'FileModel',
   utils.generateSchema(
     {
       type: {
         type: String,
         required: true,
-        enum: ImageType.all(),
+        enum: FileType.all(),
+        index: {
+          name: 'Type',
+        },
       },
       project: {
         type: Schema.ObjectId,
@@ -21,14 +24,14 @@ const model = db.model(
         },
       },
       user: {
-        // The image owner.
+        // The file owner.
         type: Schema.ObjectId,
         ref: 'UserModel',
         index: {
           name: 'User',
         },
       },
-      originalName: {
+      originalFilename: {
         // The original filename.
         type: String,
         required: true,
@@ -39,26 +42,32 @@ const model = db.model(
       },
     },
     {
-      collection: 'Images',
+      collection: 'Files',
     },
   ),
 );
 
 model.prototype.getExtensionName = function() {
   return path
-    .extname(this.originalName)
+    .extname(this.originalFilename)
     .replace('.', '')
     .toLowerCase();
 };
 model.prototype.getFilename = function() {
+  /*
+  Get the filename on S3.
+  @returns {string}
+   */
   return `${this._id}.${this.getExtensionName()}`;
 };
 
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    originalFilename: this.originalFilename,
     filename: this.getFilename(),
-    url: utils.getImageUrl(this.type, this.getFilename()),
+    url: utils.getFileUrl(this.type, this.getFilename()),
+    size: this.size,
   };
 };
 

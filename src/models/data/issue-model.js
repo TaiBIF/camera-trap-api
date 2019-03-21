@@ -1,8 +1,8 @@
-const config = require('config');
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const IssueType = require('../const/issue-type');
 const IssueCategory = require('../const/issue-category');
+const FileType = require('../const/file-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -54,9 +54,10 @@ model.prototype.dump = function() {
     description: this.description,
     email: this.email,
     attachmentFileName: this.attachmentFileName,
-    attachmentUrl: `${config.s3.urlPrefix}${
-      config.s3.folders.issueAttachments
-    }/${this.attachmentFileName}`,
+    attachmentUrl: utils.getFileUrl(
+      FileType.issueAttachment,
+      this.attachmentFileName,
+    ),
   };
 };
 

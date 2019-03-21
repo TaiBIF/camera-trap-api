@@ -3,7 +3,7 @@ const utils = require('../../common/utils');
 const ProjectArea = require('../const/project-area');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
-const ImageType = require('../const/image-type');
+const FileType = require('../const/file-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -139,8 +139,8 @@ model.prototype.dump = function() {
     description: this.description,
     note: this.note,
     coverImageFilename: this.coverImageFilename,
-    coverImageUrl: utils.getImageUrl(
-      ImageType.projectCover,
+    coverImageUrl: utils.getFileUrl(
+      FileType.projectCoverImage,
       this.coverImageFilename,
     ),
     publishTime: this.publishTime,

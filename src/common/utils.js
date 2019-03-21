@@ -1,7 +1,7 @@
 const util = require('util');
 const config = require('config');
 const mongoose = require('mongoose');
-const ImageType = require('../models/const/image-type');
+const FileType = require('../models/const/file-type');
 
 let _db;
 exports.getDatabaseConnection = (autoIndex = false) => {
@@ -60,26 +60,25 @@ exports.generateSchema = (model, options) => {
   return schema;
 };
 
-exports.getImageUrl = (imageType, imageFilename) => {
+exports.getFileUrl = (fileType, filename) => {
   /*
   Get the image url.
-  @param imageType {string}
-  @param imageFilename {string}
+  @param fileType {string}
+  @param filename {string}
   @returns {string}
    */
-  if (!imageFilename) {
+  if (FileType.all().indexOf(fileType) < 0) {
+    throw new Error('Error file type.');
+  }
+  if (!filename) {
     return '';
   }
-  switch (imageType) {
-    case ImageType.projectCover:
-      return `${config.s3.urlPrefix}${
-        config.s3.folders.projectCovers
-      }/${imageFilename}`;
-    case ImageType.annotation:
-      return `${config.s3.urlPrefix}${
-        config.s3.folders.annotations
-      }/${imageFilename}`;
-    default:
-      throw new Error('Error image type.');
-  }
+  const mapping = {};
+  mapping[FileType.projectCoverImage] = config.s3.folders.projectCovers;
+  mapping[FileType.annotationImage] = config.s3.folders.annotationImages;
+  mapping[FileType.annotationVideo] = config.s3.folders.annotationVideos;
+  mapping[FileType.annotationCSV] = config.s3.folders.annotationCSVs;
+  mapping[FileType.annotationZIP] = config.s3.folders.annotationZIPs;
+  mapping[FileType.issueAttachment] = config.s3.folders.issueAttachments;
+  return `${config.s3.urlPrefix}${mapping[fileType]}/${filename}`;
 };
