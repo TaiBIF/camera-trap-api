@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/TaiBIF/camera-trap-api#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "config": "^3.0.1",
+    "cookie-parser": "^1.4.4",
     "express": "^4.16.4",
     "mongoose": "^5.4.19",
     "nocache": "^2.0.0",

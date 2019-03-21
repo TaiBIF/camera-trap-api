@@ -13,6 +13,9 @@ const model = db.model(
           name: 'User',
         },
       },
+      ip: {
+        type: String,
+      },
       method: {
         type: String,
       },
@@ -31,7 +34,7 @@ const model = db.model(
         type: Number,
         default: 0,
       },
-      errorMessage: {
+      errorStack: {
         type: String,
       },
       processTime: {
@@ -52,6 +55,7 @@ model.prototype.dump = function() {
       this.user && typeof this.user.dump === 'function'
         ? this.user.dump()
         : this.user,
+    ip: this.ip,
     method: this.method,
     path: this.path,
     headers: (function() {
@@ -75,7 +79,7 @@ model.prototype.dump = function() {
       }
     })(),
     responseStatus: this.responseStatus,
-    errorMessage: this.errorMessage,
+    errorStack: this.errorStack,
     processTime: this.processTime,
   };
 };
