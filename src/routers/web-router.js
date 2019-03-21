@@ -40,4 +40,5 @@ const router = {
   },
 };
 
+router.get('/me', accountHandler.getMyProfile);
 router.post('/logout', accountHandler.logout);
