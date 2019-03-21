@@ -1,10 +1,10 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ProjectSiteState = require('../const/project-site-state');
+const StudyAreaState = require('../const/study-area-state');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
-  'ProjectSiteModel',
+  'StudyAreaModel',
   utils.generateSchema(
     {
       project: {
@@ -19,8 +19,8 @@ const model = db.model(
         // 狀態
         // 因相機使用軟刪除，樣區也必須使用軟刪除
         type: String,
-        default: ProjectSiteState.active,
-        enum: ProjectSiteState.all(),
+        default: StudyAreaState.active,
+        enum: StudyAreaState.all(),
         index: {
           name: 'State',
         },
@@ -35,11 +35,11 @@ const model = db.model(
       parent: {
         // 子樣區的話會有上層的 id
         type: Schema.ObjectId,
-        ref: 'ProjectSiteModel',
+        ref: 'StudyAreaModel',
       },
     },
     {
-      collection: 'ProjectSites',
+      collection: 'StudyAreas',
     },
   ),
 );

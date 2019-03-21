@@ -26,10 +26,10 @@ const model = db.model(
         required: true,
       },
       // ----- 以下欄位為記錄 annotation 使用 -----
-      site: {
+      studyArea: {
         // 樣區
         type: Schema.ObjectId,
-        ref: 'ProjectSiteModel',
+        ref: 'StudyAreaModel',
       },
       cameraLocation: {
         // 相機

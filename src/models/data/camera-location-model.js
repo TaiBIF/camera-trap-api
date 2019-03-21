@@ -15,10 +15,10 @@ const model = db.model(
           name: 'Project',
         },
       },
-      site: {
+      studyArea: {
         // 樣區
         type: Schema.ObjectId,
-        ref: 'ProjectSiteModel',
+        ref: 'StudyAreaModel',
         required: true,
       },
       state: {

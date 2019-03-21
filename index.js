@@ -57,7 +57,7 @@ if (op.argv.createCollections) {
   const data = [
     new DataFieldModel({
       // 欄位：樣區
-      systemCode: DataFieldSystemCode.site,
+      systemCode: DataFieldSystemCode.studyArea,
       title: {
         'zh-TW': '樣區',
       },

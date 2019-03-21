@@ -15,13 +15,13 @@ const model = db.model(
           name: 'Project',
         },
       },
-      site: {
+      studyArea: {
         // 樣區
         type: Schema.ObjectId,
-        ref: 'ProjectSiteModel',
+        ref: 'StudyAreaModel',
         required: true,
         index: {
-          name: 'Site',
+          name: 'StudyArea',
         },
       },
       cameraLocation: {
@@ -30,7 +30,7 @@ const model = db.model(
         ref: 'CameraLocationModel',
         required: true,
         index: {
-          name: 'Camera',
+          name: 'CameraLocation',
         },
       },
       filename: {
@@ -104,16 +104,16 @@ const model = db.model(
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
-    site: (() => {
-      if (typeof this.site === 'string') {
-        return this.site;
+    studyArea: (() => {
+      if (typeof this.studyArea === 'string') {
+        return this.studyArea;
       }
       const result = {
-        'zh-TW': this.site.title['zh-TW'],
+        'zh-TW': this.studyArea.title['zh-TW'],
       };
-      if (this.site.parent) {
+      if (this.studyArea.parent) {
         result['zh-TW'] = [
-          this.site.parent.title['zh-TW'],
+          this.studyArea.parent.title['zh-TW'],
           result['zh-TW'],
         ].join('-');
       }

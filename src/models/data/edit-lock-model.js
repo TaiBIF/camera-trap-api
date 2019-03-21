@@ -19,12 +19,12 @@ const model = db.model(
         ref: 'CameraLocationModel',
         required: true,
       },
-      site: {
+      studyArea: {
         type: Schema.ObjectId,
-        ref: 'ProjectSiteModel',
+        ref: 'StudyAreaModel',
         required: true,
         index: {
-          name: 'Site',
+          name: 'StudyArea',
         },
       },
       user: {
@@ -50,6 +50,10 @@ const model = db.model(
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    user:
+      this.user && typeof this.user.dump === 'function'
+        ? this.user.dump()
+        : this.user,
   };
 };
 
