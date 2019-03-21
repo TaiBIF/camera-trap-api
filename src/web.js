@@ -1,12 +1,12 @@
 const http = require('http');
 const config = require('config');
 const express = require('express');
-const utils = require('./common/utils');
+const webRouter = require('./routers/web-router');
 
 const app = express();
 const server = http.createServer(app);
 
-global.db = utils.getDatabaseConnection(); // This is for handlers.
+app.use('/api/v1', webRouter);
 
 // launch server
 server.listen(config.server.port, config.server.host, () => {
