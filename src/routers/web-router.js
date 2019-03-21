@@ -1,6 +1,7 @@
 const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
+const systemHandler = require('../handlers/system-handler');
 
 const expressRouter = express.Router();
 module.exports = expressRouter;
@@ -39,6 +40,8 @@ const router = {
     expressRouter.delete(path, promiseErrorHandler(handler));
   },
 };
+
+router.get('/config', systemHandler.getConfig);
 
 router.get('/me', accountHandler.getMyProfile);
 router.post('/logout', accountHandler.logout);
