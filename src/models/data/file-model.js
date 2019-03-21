@@ -64,6 +64,7 @@ model.prototype.getFilename = function() {
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    type: this.type,
     originalFilename: this.originalFilename,
     filename: this.getFilename(),
     url: utils.getFileUrl(this.type, this.getFilename()),
