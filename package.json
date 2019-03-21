@@ -24,6 +24,7 @@
     "cookie-parser": "^1.4.4",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "got": "^9.6.0",
     "mongoose": "^5.4.19",
     "nocache": "^2.0.0",
     "optimist": "^0.6.1",

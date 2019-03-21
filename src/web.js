@@ -102,7 +102,8 @@ if (config.enableLog) {
 }
 
 app.use(nocache());
-app.use('/api/v1', webRouter);
+app.use('/api/v1', webRouter.api);
+app.use('/callback', webRouter.callback);
 
 // error handler
 app.use((req, res, next) => {
