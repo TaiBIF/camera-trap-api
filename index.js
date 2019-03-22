@@ -20,6 +20,7 @@ if (op.argv.createCollections) {
   // Create collections and indexes of all models.
   const models = require('./src/models/data').allModels;
   const DataFieldModel = require('./src/models/data/data-field-model');
+  const UserModel = require('./src/models/data/user-model');
   const limit = qLimit(1);
 
   Promise.all(
@@ -39,6 +40,19 @@ if (op.argv.createCollections) {
           unique: true,
           partialFilterExpression: {
             systemCode: { $exists: true },
+          },
+        },
+      ),
+    )
+    .then(() =>
+      UserModel.collection.createIndex(
+        { email: 1 },
+        {
+          name: 'Email',
+          background: true,
+          unique: true,
+          partialFilterExpression: {
+            email: { $exists: true },
           },
         },
       ),

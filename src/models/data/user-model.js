@@ -20,10 +20,8 @@ const model = db.model(
         required: true,
       },
       email: {
+        // This filed is index with "partialFilterExpression". Find the script at index.js.
         type: String,
-        index: {
-          name: 'Email',
-        },
       },
       permission: {
         // 使用者權限
