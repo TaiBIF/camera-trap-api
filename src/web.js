@@ -33,7 +33,7 @@ app.use((req, res, next) => {
       // eslint-disable-next-line prefer-rest-params
       const result = originEndFunc.apply(this, arguments);
       console.log(
-        `[${res.statusCode}] ${`${req.method}      `.substr(0, 6)} ${req.url}`,
+        `[${res.statusCode}] ${`${req.method}      `.substr(0, 6)} ${req.originalUrl}`,
       );
       if (res.error) {
         console.error(res.error.stack);
@@ -67,7 +67,7 @@ if (config.enableLog) {
       user: req.user.isLogin() ? req.user : undefined,
       ip: req.ip,
       method: req.method,
-      path: req.url,
+      path: req.originalUrl,
       headers: (() => {
         if (req.headers && typeof req.body === 'object') {
           const headers = util._extend({}, req.headers);
