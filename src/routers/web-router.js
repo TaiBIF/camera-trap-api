@@ -54,6 +54,7 @@ class CustomRouter {
 const apiRouter = new CustomRouter(exports.api);
 apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
+apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 
 // /callback
