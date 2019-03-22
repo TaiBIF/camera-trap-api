@@ -58,4 +58,4 @@ apiRouter.post('/logout', accountHandler.logout);
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
-callbackRouter.get('/orcid/authorization', callbackHandler.orcidAuthorization);
+callbackRouter.get('/orcid/auth', callbackHandler.orcidAuth);

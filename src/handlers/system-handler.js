@@ -12,7 +12,7 @@ exports.getConfig = (req, res) => {
       client_id: config.orcId.clientId,
       response_type: 'code',
       scope: '/authenticate',
-      redirect_uri: `${config.apiServerUrl}/callback/orcid/authorization`,
+      redirect_uri: `${config.apiServerUrl}/callback/orcid/auth`,
     })}`,
   });
 };

@@ -2,9 +2,9 @@ const config = require('config');
 const got = require('got');
 const authentication = require('../auth/authentication');
 
-exports.orcidAuthorization = (req, res) =>
+exports.orcidAuth = (req, res) =>
   /*
-  POST /callback/orcid/authorization
+  POST /callback/orcid/auth
    */
   got({
     method: 'POST',
