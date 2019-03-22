@@ -33,7 +33,9 @@ app.use((req, res, next) => {
       // eslint-disable-next-line prefer-rest-params
       const result = originEndFunc.apply(this, arguments);
       console.log(
-        `[${res.statusCode}] ${`${req.method}      `.substr(0, 6)} ${req.originalUrl}`,
+        `[${res.statusCode}] ${`${req.method}      `.substr(0, 6)} ${
+          req.originalUrl
+        }`,
       );
       if (res.error) {
         console.error(res.error.stack);
