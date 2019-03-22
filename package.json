@@ -30,7 +30,8 @@
     "nocache": "^2.0.0",
     "optimist": "^0.6.1",
     "qlimit": "^0.1.1",
-    "query-string": "^6.4.0"
+    "query-string": "^6.4.0",
+    "string-template": "^1.0.0"
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
