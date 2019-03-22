@@ -1,6 +1,7 @@
 const http = require('http');
 const util = require('util');
 const config = require('config');
+const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -104,7 +105,7 @@ if (config.enableLog) {
 }
 
 app.use(nocache());
-app.use('/api/v1', webRouter.api);
+app.use('/api/v1', cors(config.corsOptions), webRouter.api);
 app.use('/callback', webRouter.callback);
 
 // error handler
