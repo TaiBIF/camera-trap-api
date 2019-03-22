@@ -1,18 +1,21 @@
 const UserPermission = require('../models/const/user-permission');
 const auth = require('../auth/authorization');
 
-exports.logout = (req, res) =>
+exports.logout = auth(
   /*
   POST /api/v1/logout
    */
-  new Promise((resolve, reject) => {
-    req.session.destroy(error => {
-      if (error) {
-        return reject(error);
-      }
-      resolve(res.json({}));
-    });
-  });
+  UserPermission.all(),
+  (req, res) =>
+    new Promise((resolve, reject) => {
+      req.session.destroy(error => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(res.json({}));
+      });
+    }),
+);
 
 exports.getMyProfile = auth(UserPermission.all(), (req, res) => {
   /*
