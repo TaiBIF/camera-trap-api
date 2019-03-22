@@ -1,6 +1,7 @@
 const util = require('util');
 const config = require('config');
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 const FileType = require('../models/const/file-type');
 
 let _db;
@@ -52,6 +53,7 @@ exports.generateSchema = (model, options) => {
     ),
     options,
   );
+  schema.plugin(mongoosePaginate);
   schema.pre('save', function(next) {
     this.increment();
     this.updateTime = Date.now();

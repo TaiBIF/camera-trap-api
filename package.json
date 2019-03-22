@@ -27,6 +27,7 @@
     "express-session": "^1.15.6",
     "got": "^9.6.0",
     "mongoose": "^5.4.19",
+    "mongoose-paginate": "^5.0.3",
     "nocache": "^2.0.0",
     "optimist": "^0.6.1",
     "qlimit": "^0.1.1",
