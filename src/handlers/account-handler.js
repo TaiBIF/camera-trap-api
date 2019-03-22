@@ -1,12 +1,18 @@
 const UserPermission = require('../models/const/user-permission');
 const auth = require('../auth/authorization');
 
-exports.logout = (req, res) => {
+exports.logout = (req, res) =>
   /*
   POST /api/v1/logout
    */
-  throw new Error('not implemented');
-};
+  new Promise((resolve, reject) => {
+    req.session.destroy(error => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(res.json({}));
+    });
+  });
 
 exports.getMyProfile = auth(UserPermission.all(), (req, res) => {
   /*
