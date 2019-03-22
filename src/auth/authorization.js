@@ -19,6 +19,6 @@ module.exports = (permissions = [], func) =>
       next(new errors.Http403());
     } else {
       // eslint-disable-next-line prefer-rest-params
-      func.apply(this, arguments);
+      return func.apply(this, arguments);
     }
   };
