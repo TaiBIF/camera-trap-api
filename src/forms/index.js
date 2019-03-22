@@ -256,6 +256,9 @@ const filters = {
 };
 
 module.exports = {
+  constants: {
+    PAGE_SIZE_MAXIMUM: 100,
+  },
   Form,
   validators,
   filters,

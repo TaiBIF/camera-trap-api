@@ -2,6 +2,7 @@ const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const callbackHandler = require('../handlers/callback-handler');
+const projectHandler = require('../handlers/project-handler');
 const systemHandler = require('../handlers/system-handler');
 
 exports.api = express.Router();
@@ -56,6 +57,8 @@ apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
+apiRouter.get('/projects', projectHandler.getProjects);
+apiRouter.post('/projects', projectHandler.addProject);
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);

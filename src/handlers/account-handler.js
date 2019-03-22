@@ -35,6 +35,7 @@ exports.updateMyProfile = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
+
   req.user.name = form.name;
   req.user.email = form.email;
   return req.user.save().then(user => res.json(user.dump()));
