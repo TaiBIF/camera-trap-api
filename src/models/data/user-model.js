@@ -45,6 +45,7 @@ model.prototype.dump = function() {
     id: `${this._id}`,
     name: this.name,
     email: this.email,
+    permission: this.permission,
   };
 };
 
