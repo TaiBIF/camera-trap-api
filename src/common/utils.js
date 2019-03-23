@@ -67,13 +67,13 @@ exports.getFileUrl = (fileType, filename) => {
   Get the image url.
   @param fileType {string}
   @param filename {string}
-  @returns {string}
+  @returns {string|undefined}
    */
   if (FileType.all().indexOf(fileType) < 0) {
     throw new Error('Error file type.');
   }
   if (!filename) {
-    return '';
+    return;
   }
   const mapping = {};
   mapping[FileType.projectCoverImage] = config.s3.folders.projectCovers;
