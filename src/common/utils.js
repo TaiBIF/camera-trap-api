@@ -1,7 +1,7 @@
 const util = require('util');
 const config = require('config');
 const mongoose = require('mongoose');
-const mongoosePaginate = require('mongoose-paginate');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const FileType = require('../models/const/file-type');
 
 let _db;
