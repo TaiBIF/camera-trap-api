@@ -118,6 +118,17 @@ if (op.argv.createCollections) {
       state: DataFieldState.published,
     }),
     new DataFieldModel({
+      systemCode: DataFieldSystemCode.species,
+      title: {
+        'zh-TW': '物種',
+      },
+      description: {
+        'zh-TW': '',
+      },
+      widgetType: DataFieldWidgetType.select,
+      state: DataFieldState.published,
+    }),
+    new DataFieldModel({
       // 欄位：性別
       title: {
         'zh-TW': '性別',
