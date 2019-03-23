@@ -118,6 +118,20 @@ const model = db.model(
         // 此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。
         type: String,
       },
+      latestAnnotationTime: {
+        // 資料最後更新時間
+        type: Date,
+        index: {
+          name: 'LatestAnnotationTime',
+        },
+      },
+      oldestAnnotationTime: {
+        // 資料起始年份
+        type: Date,
+        index: {
+          name: 'OldestAnnotationTime',
+        },
+      },
     },
     {
       collection: 'Projects',
@@ -164,6 +178,8 @@ model.prototype.dump = function() {
       return dataField;
     }),
     dailyTestTime: this.dailyTestTime,
+    latestAnnotationTime: this.latestAnnotationTime,
+    oldestAnnotationTime: this.oldestAnnotationTime,
   };
 };
 
