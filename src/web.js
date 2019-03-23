@@ -77,13 +77,11 @@ if (config.enableLog) {
           delete headers.cookie; // Don't log user's cookie.
           return JSON.stringify(headers);
         }
-        return undefined;
       })(),
       requestBody: (() => {
         if (req.body && typeof req.body === 'object') {
           return JSON.stringify(req.body);
         }
-        return undefined;
       })(),
       createTime: req.startTime,
     });

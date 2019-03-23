@@ -56,7 +56,7 @@ class Form {
     }
     const errorFieldNames = Object.keys(errors);
     if (!errorFieldNames.length) {
-      return undefined;
+      return;
     }
     return errorFieldNames
       .map(errorFieldName => `${errorFieldName}: ${errors[errorFieldName]}`)
