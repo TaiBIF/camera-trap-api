@@ -20,5 +20,12 @@ ProjectsSearchForm.define({
       return result;
     },
   }),
+  sort: new forms.fields.StringField({
+    validators: [
+      forms.validators.regexp(
+        /^-?(oldestAnnotationTime)|(latestAnnotationTime)|(funder)|(title)$/,
+      ),
+    ],
+  }),
 });
 module.exports = ProjectsSearchForm;

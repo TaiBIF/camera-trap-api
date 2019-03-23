@@ -17,7 +17,13 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = ProjectModel.where().populate('members.user');
+  const query = ProjectModel.where()
+    .populate('members.user')
+    .sort(form.sort);
+  if (req.user.permission !== UserPermission.administrator) {
+    // General accounts just fetch hims' projects. (Administrator fetch all projects.)
+    query.where({ 'members.user': req.user._id });
+  }
   return ProjectModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,
