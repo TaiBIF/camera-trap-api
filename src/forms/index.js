@@ -1,7 +1,7 @@
 const format = require('string-template');
 
 const ERROR_MESSAGE_REQUIRED = 'This field is required.';
-const ERROR_MESSAGE_REGEXP = 'The value is not match the pattern.';
+const ERROR_MESSAGE_REGEXP = 'The value is not match the pattern {0}.';
 const ERROR_MESSAGE_ID = 'The value should be a id.';
 const ERROR_MESSAGE_EMAIL = 'The value should be a email.';
 const ERROR_MESSAGE_ANY_OF = 'The value should be {0}.';
@@ -176,7 +176,8 @@ const validators = {
     } else {
       regexp = new RegExp(pattern);
     }
-    return value => (regexp.test(value) ? null : errorMessage);
+    return value =>
+      regexp.test(value) ? null : format(errorMessage, regexp.toString());
   },
   id: (errorMessage = ERROR_MESSAGE_ID) => {
     const regexp = /^[a-f\d]{24}$/;
