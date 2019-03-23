@@ -6,6 +6,8 @@ const ProjectRole = require('../models/const/project-role');
 const ProjectModel = require('../models/data/project-model');
 const ProjectsSearchForm = require('../forms/project/projects-search-form');
 const ProjectForm = require('../forms/project/project-form');
+const DataFieldModel = require('../models/data/data-field-model');
+const DataFieldSystemCode = require('../models/const/data-field-system-code');
 
 exports.getProjects = auth(UserPermission.all(), (req, res) => {
   /*
@@ -19,6 +21,7 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
 
   const query = ProjectModel.where()
     .populate('members.user')
+    .populate('dataFields')
     .sort(form.sort);
   if (req.user.permission !== UserPermission.administrator) {
     // General accounts just fetch hims' projects. (Administrator fetch all projects.)
@@ -42,16 +45,35 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const project = new ProjectModel({
-    title: form.title,
-    members: [
-      {
-        user: req.user,
-        role: ProjectRole.manager,
-      },
-    ],
-  });
-  return project.save().then(() => {
-    res.json(project.dump());
-  });
+  return DataFieldModel.where({ systemCode: { $exists: true } })
+    .then(dataFields => {
+      const getDataFieldByCode = code => {
+        for (let index = 0; index < dataFields.length; index += 1) {
+          if (dataFields[index].systemCode === code) {
+            return dataFields[index];
+          }
+        }
+      };
+
+      const project = new ProjectModel({
+        title: form.title,
+        members: [
+          {
+            user: req.user,
+            role: ProjectRole.manager,
+          },
+        ],
+        dataFields: [
+          getDataFieldByCode(DataFieldSystemCode.studyArea),
+          getDataFieldByCode(DataFieldSystemCode.cameraLocation),
+          getDataFieldByCode(DataFieldSystemCode.fileName),
+          getDataFieldByCode(DataFieldSystemCode.time),
+          getDataFieldByCode(DataFieldSystemCode.species),
+        ],
+      });
+      return project.save();
+    })
+    .then(project => {
+      res.json(project.dump());
+    });
 });
