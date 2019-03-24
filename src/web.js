@@ -1,4 +1,5 @@
 const http = require('http');
+const os = require('os');
 const util = require('util');
 const config = require('config');
 const cors = require('cors');
@@ -67,6 +68,7 @@ if (config.enableLog) {
   app.use((req, res, next) => {
     const originEndFunc = res.end;
     const log = new LogModel({
+      hostname: os.hostname(),
       user: req.user.isLogin() ? req.user : undefined,
       ip: req.ip,
       method: req.method,

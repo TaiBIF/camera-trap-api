@@ -6,6 +6,9 @@ const model = db.model(
   'LogModel',
   utils.generateSchema(
     {
+      hostname: {
+        type: String,
+      },
       user: {
         type: Schema.ObjectId,
         ref: 'UserModel',
@@ -30,6 +33,10 @@ const model = db.model(
         // json string
         type: String,
       },
+      extra: {
+        // json string
+        type: String,
+      },
       responseStatus: {
         type: Number,
         default: 0,
@@ -51,6 +58,7 @@ const model = db.model(
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    hostname: this.hostname,
     user:
       this.user && typeof this.user.dump === 'function'
         ? this.user.dump()
@@ -76,6 +84,16 @@ model.prototype.dump = function() {
         return JSON.parse(this.requestBody);
       } catch (error) {
         return this.requestBody;
+      }
+    })(),
+    extra: (function() {
+      if (!this.extra) {
+        return this.extra;
+      }
+      try {
+        return JSON.parse(this.extra);
+      } catch (error) {
+        return this.extra;
       }
     })(),
     responseStatus: this.responseStatus,
