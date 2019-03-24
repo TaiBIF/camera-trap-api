@@ -5,48 +5,57 @@ const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
 
 const db = utils.getDatabaseConnection();
-const model = db.model(
-  'FileModel',
-  utils.generateSchema(
-    {
-      type: {
-        type: String,
-        required: true,
-        enum: FileType.all(),
-        index: {
-          name: 'Type',
-        },
-      },
-      project: {
-        type: Schema.ObjectId,
-        ref: 'ProjectModel',
-        index: {
-          name: 'Project',
-        },
-      },
-      user: {
-        // The file owner.
-        type: Schema.ObjectId,
-        ref: 'UserModel',
-        index: {
-          name: 'User',
-        },
-      },
-      originalFilename: {
-        // The original filename.
-        type: String,
-        required: true,
-      },
-      size: {
-        // The file size.
-        type: Number,
+const schema = utils.generateSchema(
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: FileType.all(),
+      index: {
+        name: 'Type',
       },
     },
-    {
-      collection: 'Files',
+    project: {
+      type: Schema.ObjectId,
+      ref: 'ProjectModel',
+      index: {
+        name: 'Project',
+      },
     },
-  ),
+    user: {
+      // The file owner.
+      type: Schema.ObjectId,
+      ref: 'UserModel',
+      index: {
+        name: 'User',
+      },
+    },
+    originalFilename: {
+      // The original filename.
+      type: String,
+      required: true,
+    },
+    size: {
+      // The file size.
+      type: Number,
+    },
+  },
+  {
+    collection: 'Files',
+  },
 );
+schema.post('remove', file => {
+  if (file.type === FileType.projectCoverImage) {
+    utils
+      .deleteS3Objects([
+        `${config.s3.folders.projectCovers}/${file.getFilename()}`,
+      ])
+      .catch(error => {
+        utils.logError(error, { file: file.dump() });
+      });
+  }
+});
+const model = db.model('FileModel', schema);
 
 model.prototype.getExtensionName = function() {
   return path
