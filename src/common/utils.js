@@ -1,3 +1,4 @@
+const os = require('os');
 const util = require('util');
 const AWS = require('aws-sdk');
 const config = require('config');
@@ -268,3 +269,33 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
 };
 
 exports.getAnonymous = () => ({ isLogin: () => false });
+
+exports.logError = (error, extra) => {
+  /*
+  @param error {Error}
+  @param extra {Object}
+   */
+  const LogModel = require('../models/data/log-model');
+  if (config.isDebug) {
+    console.error(error);
+  }
+  if (!config.enableLog) {
+    return;
+  }
+  const log = new LogModel({
+    server: os.hostname(),
+    errorStack: error ? error.stack : undefined,
+    extra: (() => {
+      try {
+        let result;
+        if (extra) {
+          result = JSON.stringify(extra);
+        }
+        return result;
+      } catch (e) {
+        /* empty */
+      }
+    })(),
+  });
+  log.save();
+};
