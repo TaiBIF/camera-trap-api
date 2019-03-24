@@ -18,26 +18,32 @@ const model = db.model(
       shortTitle: {
         // 計畫簡稱
         type: String,
+        required: true,
       },
       funder: {
         // 委辦單位
         type: String,
+        required: true,
       },
       code: {
         // 計畫編號
         type: String,
+        required: true,
       },
       principalInvestigator: {
         // 計畫主持人
         type: String,
+        required: true,
       },
       startTime: {
         // 計畫時間（開始）
         type: Date,
+        required: true,
       },
       endTime: {
         // 計畫時間（結束）
         type: Date,
+        required: true,
       },
       areas: [
         // 計畫地區

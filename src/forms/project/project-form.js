@@ -9,19 +9,27 @@ ProjectForm.define({
     validators: [forms.validators.length({ max: 1024 })],
   }),
   shortTitle: new forms.fields.StringField({
-    validators: [forms.validators.length({ max: 1024 })],
+    required: true,
+    validators: [forms.validators.length({ max: 4 })],
   }),
   funder: new forms.fields.StringField({
+    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
   code: new forms.fields.StringField({
+    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
   principalInvestigator: new forms.fields.StringField({
+    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  startTime: new forms.fields.DateField(),
-  endTime: new forms.fields.DateField(),
+  startTime: new forms.fields.DateField({
+    required: true,
+  }),
+  endTime: new forms.fields.DateField({
+    required: true,
+  }),
   areas: new forms.fields.Field({
     filter: value => (value == null ? [] : value),
     validators: [
