@@ -225,6 +225,27 @@ exports.uploadToS3 = (buffer, filename, isPublic) =>
     });
   });
 
+exports.deleteS3Objects = (filenames = []) =>
+  /*
+  Delete objects on S3.
+  @param filenames {Array<string>}
+  @returns {Promise<>}
+   */
+  new Promise((resolve, reject) => {
+    const params = {
+      Bucket: config.s3.bucket,
+      Delete: {
+        Objects: filenames.map(filename => ({ Key: filename })),
+      },
+    };
+    s3.deleteObjects(params, (error, result) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(result);
+    });
+  });
+
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
