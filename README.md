@@ -24,7 +24,13 @@ $ cd camera-trap-api
 $ npm install
 ```
 
-### 2. Running it locally
+### 2. Install libraries
+We use [gm](https://www.npmjs.com/package/gm), so that we need install [graphicsmagick](http://www.graphicsmagick.org/) or imagemagick.
+```bash
+$ brew install graphicsmagick
+```
+
+### 3. Running it locally
 ```bash
 $ npm start
 ```

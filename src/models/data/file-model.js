@@ -1,4 +1,5 @@
 const path = require('path');
+const config = require('config');
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
@@ -59,6 +60,31 @@ model.prototype.getFilename = function() {
   @returns {string}
    */
   return `${this._id}.${this.getExtensionName()}`;
+};
+
+model.prototype.saveWithContent = function(buffer) {
+  /*
+  Save the document with binary content.
+  @param buffer {Buffer}
+  @returns {Promise<FileModel>}
+   */
+  return this.save().then(() => {
+    if (this.type === FileType.projectCoverImage) {
+      return utils
+        .resizeImageAndUploadToS3({
+          buffer,
+          filename: `${config.s3.folders.projectCovers}/${this.getFilename()}`,
+          format: this.getExtensionName(),
+          width: 383,
+          height: 185,
+          isPublic: true,
+        })
+        .then(result => {
+          this.size = result.buffer.length;
+          return this.save();
+        });
+    }
+  });
 };
 
 model.prototype.dump = function() {

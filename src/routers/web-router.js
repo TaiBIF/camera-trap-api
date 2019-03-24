@@ -2,6 +2,7 @@ const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const callbackHandler = require('../handlers/callback-handler');
+const fileHandler = require('../handlers/file-handler');
 const projectHandler = require('../handlers/project-handler');
 const systemHandler = require('../handlers/system-handler');
 
@@ -59,6 +60,8 @@ apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
+// multipart/form-data
+apiRouter.post('/files', fileHandler.uploadFile);
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
