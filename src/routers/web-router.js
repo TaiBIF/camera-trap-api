@@ -70,6 +70,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.addProjectSpecies,
 );
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
+  speciesHandler.updateProjectSpecies,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data

@@ -82,3 +82,43 @@ exports.addProjectSpecies = auth(UserPermission.all(), (req, res) => {
       res.json(species.dump());
     });
 });
+
+exports.updateProjectSpecies = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/projects/:projectId/species/:speciesId
+   */
+  const form = new SpeciesForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    SpeciesModel.findById(req.params.speciesId),
+  ])
+    .then(([project, species]) => {
+      if (
+        !project ||
+        !species ||
+        `${species.project._id}` !== `${project._id}`
+      ) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+      species.title = form.title;
+      species.index = form.index;
+      return species.save();
+    })
+    .then(species => {
+      res.json(species.dump());
+    });
+});
