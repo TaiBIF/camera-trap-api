@@ -54,6 +54,7 @@ const model = db.model(
         // 欄位形式為下拉選單時儲存輸入格式內容
         {
           _id: {
+            auto: true,
             type: Schema.ObjectId,
             index: {
               name: 'OptionsId',
