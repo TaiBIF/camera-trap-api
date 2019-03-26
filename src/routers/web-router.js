@@ -2,6 +2,7 @@ const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const callbackHandler = require('../handlers/callback-handler');
+const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const projectHandler = require('../handlers/project-handler');
 const systemHandler = require('../handlers/system-handler');
@@ -60,6 +61,7 @@ apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
+apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
 
