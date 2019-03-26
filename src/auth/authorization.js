@@ -16,7 +16,12 @@ module.exports = (permissions = [], func) =>
       permissions.indexOf(req.user.permission) < 0
     ) {
       // req.user isn't administrator and not in the white list.
-      next(new errors.Http403());
+      if (req.user.isLogin()) {
+        next(new errors.Http403());
+      } else {
+        // Redirect the user to the login page.
+        next(new errors.Http401());
+      }
     } else {
       // eslint-disable-next-line prefer-rest-params
       return func.apply(this, arguments);

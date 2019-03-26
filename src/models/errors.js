@@ -6,6 +6,14 @@ exports.Http400 = class Http400 extends Error {
   }
 };
 
+exports.Http401 = class Http401 extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 401;
+    this.message = `${message || 'unauthorized'}`;
+  }
+};
+
 exports.Http403 = class Http403 extends Error {
   constructor(message) {
     super(message);
