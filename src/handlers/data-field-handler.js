@@ -52,6 +52,6 @@ exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
     offset: form.index * form.size,
     limit: form.size,
   }).then(result => {
-    res.json(new PageList(form.index, form.size, result.total, result.docs));
+    res.json(new PageList(form.index, form.size, result.totalDocs, result.docs));
   });
 });
