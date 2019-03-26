@@ -74,6 +74,10 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
   speciesHandler.updateProjectSpecies,
 );
+apiRouter.delete(
+  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
+  speciesHandler.deleteProjectSpecies,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data
