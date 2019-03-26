@@ -5,6 +5,7 @@ const callbackHandler = require('../handlers/callback-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const projectHandler = require('../handlers/project-handler');
+const speciesHandler = require('../handlers/species-handler');
 const systemHandler = require('../handlers/system-handler');
 
 exports.api = express.Router();
@@ -61,6 +62,10 @@ apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/species',
+  speciesHandler.getProjectSpecies,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data
