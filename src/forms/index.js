@@ -12,7 +12,8 @@ const ERROR_MESSAGE_BYTE_LENGTH =
   'The length of the value should between {0} and {1} in byte.';
 const ERROR_MESSAGE_MISSING_LANGUAGES = 'Missing some languages.';
 const ERROR_MESSAGE_MISSING_LANGUAGE = 'Missing language {0}.';
-const ERROR_MESSGAE_SHOULD_BE_OBJECT = 'This field should be an object.';
+const ERROR_MESSAGE_SHOULD_BE_OBJECT = 'This field should be an object.';
+const ERROR_MESSAGE_SHOULD_BE_ARRAY = 'This field should be an array.';
 
 class Form {
   constructor(args = {}) {
@@ -178,16 +179,16 @@ class MultiLanguageField extends Field {
     @param args {Object}
       required: {bool|null} The default is false.
       filter: {function|null} This filter will be called when the form initial with data.
-        ex: const form = new LoginForm(req.body); <-- execute at this time.
       validators: {Array<function>} The validator should return null or the error message.
       subField: {Field} The instance of Field.
      */
     super(args);
     this.subField = args.subField;
+    // Append a validator to validate sub fields.
     this.validators.push(values => {
       const result = [];
       if (typeof values !== 'object') {
-        return ERROR_MESSGAE_SHOULD_BE_OBJECT;
+        return ERROR_MESSAGE_SHOULD_BE_OBJECT;
       }
       const systemLanguageCodes = Object.keys(config.languages);
       if (Object.keys(values).length !== systemLanguageCodes.length) {
@@ -199,7 +200,6 @@ class MultiLanguageField extends Field {
           return format(ERROR_MESSAGE_MISSING_LANGUAGE, languageCode);
         }
         this.subField.validators.forEach(validator => {
-          // if the field is required we should let 0 pass
           if (
             this.subField.required &&
             (values[languageCode] === '' || values[languageCode] == null)
@@ -225,10 +225,12 @@ class MultiLanguageField extends Field {
   }
 
   readValue(values = {}) {
+    if (typeof values !== 'object') {
+      // The validator will return an error message.
+      return values;
+    }
     const result = {};
-    const languageCodes = Object.keys(
-      typeof values === 'object' ? values || {} : {},
-    );
+    const languageCodes = Object.keys(values || {});
     if (languageCodes.length <= 0) {
       return this.filter(undefined);
     }
@@ -238,6 +240,58 @@ class MultiLanguageField extends Field {
       );
     });
     return this.filter(result);
+  }
+}
+
+class ArrayField extends Field {
+  constructor(args) {
+    /*
+    @param args {Object}
+      required: {bool|null} The default is false.
+      filter: {function|null} This filter will be called when the form initial with data.
+      validators: {Array<function>} The validator should return null or the error message.
+      subField: {Field} The instance of Field.
+     */
+    super(args);
+    this.subField = args.subField;
+    // Append a validator to validate sub fields.
+    this.validators.push(values => {
+      const result = [];
+      if (!Array.isArray(values)) {
+        return ERROR_MESSAGE_SHOULD_BE_ARRAY;
+      }
+      for (let index = 0; index < values.length; index += 1) {
+        this.subField.validators.forEach(validator => {
+          if (
+            this.subField.required &&
+            (values[index] === '' || values[index] == null)
+          ) {
+            result.push(`[${index}]: ${ERROR_MESSAGE_REQUIRED}`);
+          } else if (
+            !this.subField.required &&
+            (values[index] === '' || values[index] == null)
+          ) {
+            // Don't validate for null.
+          } else {
+            const message = validator(values[index]);
+            if (message != null) {
+              result.push(message);
+            }
+          }
+        });
+      }
+      if (result.length) {
+        return result.join('\n');
+      }
+    });
+  }
+
+  readValue(values = []) {
+    if (!Array.isArray(values)) {
+      // The validator will return an error message.
+      return values;
+    }
+    return this.filter(values.map(value => this.subField.readValue(value)));
   }
 }
 
@@ -344,5 +398,6 @@ module.exports = {
     FloatField,
     DateField,
     MultiLanguageField,
+    ArrayField,
   },
 };

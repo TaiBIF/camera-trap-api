@@ -18,6 +18,15 @@ DataFieldForm.define({
       validators: [forms.validators.length({ max: 1024 })],
     }),
   }),
+  options: new forms.fields.ArrayField({
+    subField: new forms.fields.MultiLanguageField({
+      required: true,
+      subField: new forms.fields.StringField({
+        required: true,
+        validators: [forms.validators.length({ max: 1024 })],
+      }),
+    }),
+  }),
   note: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
