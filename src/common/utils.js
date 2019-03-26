@@ -276,7 +276,10 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               if (error) {
                 return reject(error);
               }
-              Promise.all([result, exports.uploadToS3(buffer, args.filename)])
+              Promise.all([
+                result,
+                exports.uploadToS3(buffer, args.filename, args.isPublic),
+              ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
             });
