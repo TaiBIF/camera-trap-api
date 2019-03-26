@@ -61,6 +61,7 @@ apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
+apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
