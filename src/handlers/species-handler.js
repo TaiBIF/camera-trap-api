@@ -41,7 +41,9 @@ exports.getProjectSpecies = auth(UserPermission.all(), (req, res) => {
       });
     })
     .then(result => {
-      res.json(new PageList(form.index, form.size, result.totalDocs, result.docs));
+      res.json(
+        new PageList(form.index, form.size, result.totalDocs, result.docs),
+      );
     });
 });
 
