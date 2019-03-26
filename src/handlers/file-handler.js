@@ -21,6 +21,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   /*
   POST /api/v1/files?type&projectId
   Content-Type: multipart/form-data
+  The input name is "file" of the form.
    */
   const form = new FileForm(req.query);
   const errorMessage = form.validate();
