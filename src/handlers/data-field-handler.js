@@ -23,8 +23,10 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     );
   }
 
-  const dataField = new DataFieldModel(form);
-  dataField.user = req.user;
+  const dataField = new DataFieldModel({
+    ...form,
+    user: req.user,
+  });
   return dataField.save(() => {
     res.json(dataField.dump());
   });

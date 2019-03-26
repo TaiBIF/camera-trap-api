@@ -56,21 +56,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
       };
 
       const project = new ProjectModel({
-        title: form.title,
-        shortTitle: form.shortTitle,
-        funder: form.funder,
-        code: form.code,
-        principalInvestigator: form.principalInvestigator,
-        startTime: form.startTime,
-        endTime: form.endTime,
-        areas: form.areas,
-        description: form.description,
-        note: form.note,
-        coverImageFilename: form.coverImageFilename,
-        publishTime: form.publishTime,
-        interpretiveDataLicense: form.interpretiveDataLicense,
-        identificationInformationLicense: form.identificationInformationLicense,
-        videoMaterialLicense: form.videoMaterialLicense,
+        ...form,
         members: [
           {
             user: req.user,

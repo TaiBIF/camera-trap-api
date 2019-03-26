@@ -30,22 +30,19 @@ ProjectForm.define({
   endTime: new forms.fields.DateField({
     required: true,
   }),
-  areas: new forms.fields.Field({
-    filter: value => (value == null ? [] : value),
+  areas: new forms.fields.ArrayField({
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.anyOf(ProjectArea.all())],
+    }),
     validators: [
       (values = []) => {
-        if (!Array.isArray(values)) {
-          return 'This field should be array.';
-        }
         const allAreas = ProjectArea.all();
         if (values.length > allAreas.length) {
           return `The length limited of this field is ${allAreas.length}`;
         }
         const areas = new Set();
         for (let index = 0; index < values.length; index += 1) {
-          if (allAreas.indexOf(values[index]) < 0) {
-            return `${values[index]} is invalid.`;
-          }
           if (areas.has(values[index])) {
             return `${values[index]} is already exist.`;
           }

@@ -254,6 +254,7 @@ class ArrayField extends Field {
      */
     super(args);
     this.subField = args.subField;
+    this.filter = args.filter || (values => (values == null ? [] : values));
     // Append a validator to validate sub fields.
     this.validators.push(values => {
       const result = [];
