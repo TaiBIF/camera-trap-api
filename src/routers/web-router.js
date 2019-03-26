@@ -66,6 +66,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.getProjectSpecies,
 );
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/species',
+  speciesHandler.addProjectSpecies,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data
