@@ -3,6 +3,7 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectRole = require('../models/const/project-role');
+const ProjectAreaModel = require('../models/data/project-area-model');
 const ProjectModel = require('../models/data/project-model');
 const ProjectsSearchForm = require('../forms/project/projects-search-form');
 const ProjectForm = require('../forms/project/project-form');
@@ -49,8 +50,11 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  return DataFieldModel.where({ systemCode: { $exists: true } })
-    .then(dataFields => {
+  return Promise.all([
+    DataFieldModel.where({ systemCode: { $exists: true } }),
+    ProjectAreaModel.find({ _id: { $in: form.areas } }),
+  ])
+    .then(([dataFields, projectAreas]) => {
       const getDataFieldByCode = code => {
         for (let index = 0; index < dataFields.length; index += 1) {
           if (dataFields[index].systemCode === code) {
@@ -61,6 +65,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
 
       const project = new ProjectModel({
         ...form,
+        areas: projectAreas,
         members: [
           {
             user: req.user,
