@@ -23,7 +23,7 @@ SpeciesSearchForm.define({
     },
   }),
   sort: new forms.fields.StringField({
-    default: 'index',
+    filter: value => value || 'index',
     validators: [forms.validators.regexp(/^-?(index)$/)],
   }),
 });

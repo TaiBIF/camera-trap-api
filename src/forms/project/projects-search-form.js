@@ -21,7 +21,7 @@ ProjectsSearchForm.define({
     },
   }),
   sort: new forms.fields.StringField({
-    default: 'oldestAnnotationTime',
+    filter: value => value || 'oldestAnnotationTime',
     validators: [
       forms.validators.regexp(
         /^-?(oldestAnnotationTime)|(latestAnnotationTime)|(funder)|(title)$/,

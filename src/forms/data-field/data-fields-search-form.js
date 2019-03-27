@@ -23,7 +23,7 @@ DataFieldsSearchForm.define({
     },
   }),
   sort: new forms.fields.StringField({
-    default: 'createTime',
+    filter: value => value || 'createTime',
     validators: [forms.validators.regexp(/^-?(createTime)$/)],
   }),
 });
