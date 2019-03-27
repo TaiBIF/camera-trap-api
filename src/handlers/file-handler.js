@@ -33,6 +33,9 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   multerTable[FileType.projectCoverImage] = imageMulter;
   return multerTable[form.type](req, res)
     .then(() => {
+      if (!req.file) {
+        throw new errors.Http400('Missing the file.');
+      }
       const file = new FileModel({
         type: form.type,
         user: req.user,
