@@ -79,7 +79,7 @@ if (op.argv.createCollections) {
         'zh-TW': '樣區-子樣區',
       },
       widgetType: DataFieldWidgetType.select,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：相機位置
@@ -91,7 +91,7 @@ if (op.argv.createCollections) {
         'zh-TW': '相機位置名稱',
       },
       widgetType: DataFieldWidgetType.select,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：檔名
@@ -103,7 +103,7 @@ if (op.argv.createCollections) {
         'zh-TW': '01234.jpg',
       },
       widgetType: DataFieldWidgetType.text,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：日期時間
@@ -115,7 +115,7 @@ if (op.argv.createCollections) {
         'zh-TW': 'YY/MM/DD hh:mm',
       },
       widgetType: DataFieldWidgetType.time,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       systemCode: DataFieldSystemCode.species,
@@ -126,7 +126,7 @@ if (op.argv.createCollections) {
         'zh-TW': '',
       },
       widgetType: DataFieldWidgetType.select,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：性別
@@ -145,7 +145,7 @@ if (op.argv.createCollections) {
         },
       ],
       widgetType: DataFieldWidgetType.select,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：年齡
@@ -167,7 +167,7 @@ if (op.argv.createCollections) {
         },
       ],
       widgetType: DataFieldWidgetType.select,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
     new DataFieldModel({
       // 欄位：備註
@@ -178,7 +178,7 @@ if (op.argv.createCollections) {
         'zh-TW': '',
       },
       widgetType: DataFieldWidgetType.text,
-      state: DataFieldState.published,
+      state: DataFieldState.approved,
     }),
   ];
   Promise.all(
