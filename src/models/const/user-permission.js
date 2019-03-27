@@ -1,4 +1,3 @@
-// @todo to sync with project-role?
 module.exports = {
   administrator: 'administrator', // 系統管理員
   generalAccount: 'general-account', // 一般帳戶

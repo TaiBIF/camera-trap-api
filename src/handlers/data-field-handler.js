@@ -45,7 +45,7 @@ exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = DataFieldModel.where({ state: DataFieldState.published }).sort(
+  const query = DataFieldModel.where({ state: DataFieldState.approved }).sort(
     form.sort,
   );
   return DataFieldModel.paginate(query, {

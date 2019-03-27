@@ -64,20 +64,20 @@ ProjectForm.define({
   interpretiveDataLicense: new forms.fields.StringField({
     validators: [
       forms.validators.anyOf([
-        ProjectLicense.freeingContent,
-        ProjectLicense.attributionAlone,
+        ProjectLicense.publicDomain,
+        ProjectLicense.attributionOnly,
         ProjectLicense.attributionAndNoncommercial,
       ]),
     ],
   }),
   identificationInformationLicense: new forms.fields.StringField({
-    validators: [forms.validators.anyOf([ProjectLicense.attributionAlone])],
+    validators: [forms.validators.anyOf([ProjectLicense.attributionOnly])],
   }),
   videoMaterialLicense: new forms.fields.StringField({
     validators: [
       forms.validators.anyOf([
-        ProjectLicense.freeingContent,
-        ProjectLicense.attributionAlone,
+        ProjectLicense.publicDomain,
+        ProjectLicense.attributionOnly,
         ProjectLicense.attributionAndNoncommercial,
       ]),
     ],
