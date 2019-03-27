@@ -1,7 +1,8 @@
 module.exports = {
-  active: 'active', // 啟用
-  deleted: 'deleted', // 已刪除
+  active: 'active', // 使用中
+  suspended: 'suspended', // 停用中
+  removed: 'removed', // 已撤除
   all() {
-    return [this.active, this.deleted];
+    return [this.active, this.suspended, this.removed];
   },
 };
