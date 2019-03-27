@@ -4,6 +4,7 @@ const accountHandler = require('../handlers/account-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
+const projectAreaHandler = require('../handlers/project-area-handler');
 const projectHandler = require('../handlers/project-handler');
 const speciesHandler = require('../handlers/species-handler');
 const systemHandler = require('../handlers/system-handler');
@@ -60,6 +61,7 @@ apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
+apiRouter.get('/project-areas', projectAreaHandler.getProjectAreas);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
 apiRouter.get(
