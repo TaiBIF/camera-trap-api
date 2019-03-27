@@ -72,22 +72,22 @@ const model = db.model(
         // 詮釋資料 創用CC授權許可
         type: String,
         enum: [
-          ProjectLicense.freeingContent,
-          ProjectLicense.attributionAlone,
+          ProjectLicense.publicDomain,
+          ProjectLicense.attributionOnly,
           ProjectLicense.attributionAndNoncommercial,
         ],
       },
       identificationInformationLicense: {
         // 鑑定資訊 創用CC授權許可
         type: String,
-        enum: [ProjectLicense.attributionAlone],
+        enum: [ProjectLicense.attributionOnly],
       },
       videoMaterialLicense: {
         // 影像資料 創用CC授權許可
         type: String,
         enum: [
-          ProjectLicense.freeingContent,
-          ProjectLicense.attributionAlone,
+          ProjectLicense.publicDomain,
+          ProjectLicense.attributionOnly,
           ProjectLicense.attributionAndNoncommercial,
         ],
       },
