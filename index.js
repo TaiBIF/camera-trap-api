@@ -67,6 +67,7 @@ if (op.argv.createCollections) {
   const DataFieldSystemCode = require('./src/models/const/data-field-system-code');
   const DataFieldWidgetType = require('./src/models/const/data-field-widget-type');
   const DataFieldState = require('./src/models/const/data-field-state');
+  const ProjectAreaModel = require('./src/models/data/project-area-model');
 
   const data = [
     new DataFieldModel({
@@ -179,6 +180,72 @@ if (op.argv.createCollections) {
       },
       widgetType: DataFieldWidgetType.text,
       state: DataFieldState.approved,
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '台北市', 'en-US': 'Taipei City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '新北市', 'en-US': 'New Taipei City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '桃園市', 'en-US': 'Taoyuan City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '台中市', 'en-US': 'Taichung City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '台南市', 'en-US': 'Tainan City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '高雄市', 'en-US': 'Kaohsiung City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '基隆市', 'en-US': 'Keelung City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '新竹市', 'en-US': 'Hsinchu City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '嘉義市', 'en-US': 'Chiayi City' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '新竹縣', 'en-US': 'Hsinchu County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '苗栗縣', 'en-US': 'Miaoli County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '彰化縣', 'en-US': 'Changhua County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '南投縣', 'en-US': 'Nantou County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '雲林縣', 'en-US': 'Yunlin County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '嘉義縣', 'en-US': 'Chiayi County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '屏東縣', 'en-US': 'Pingtung County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '宜蘭縣', 'en-US': 'Yilan County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '花蓮縣', 'en-US': 'Hualien County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '桃園縣', 'en-US': 'Taitung County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '澎湖縣', 'en-US': 'Penghu County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '金門縣', 'en-US': 'Kinmen County' },
+    }),
+    new ProjectAreaModel({
+      title: { 'zh-TW': '連江縣', 'en-US': 'Lienchiang County' },
     }),
   ];
   Promise.all(

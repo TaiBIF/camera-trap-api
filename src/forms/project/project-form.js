@@ -1,5 +1,4 @@
 const forms = require('../');
-const ProjectArea = require('../../models/const/project-area');
 const ProjectLicense = require('../../models/const/project-license');
 
 class ProjectForm extends forms.Form {}
@@ -33,14 +32,10 @@ ProjectForm.define({
   areas: new forms.fields.ArrayField({
     subField: new forms.fields.StringField({
       required: true,
-      validators: [forms.validators.anyOf(ProjectArea.all())],
+      validators: [forms.validators.id()],
     }),
     validators: [
       (values = []) => {
-        const allAreas = ProjectArea.all();
-        if (values.length > allAreas.length) {
-          return `The length limited of this field is ${allAreas.length}`;
-        }
         const areas = new Set();
         for (let index = 0; index < values.length; index += 1) {
           if (areas.has(values[index])) {

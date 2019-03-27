@@ -1,6 +1,5 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
-const ProjectArea = require('../const/project-area');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
 const FileType = require('../const/file-type');
@@ -48,8 +47,9 @@ const model = db.model(
       areas: [
         // 計畫地區
         {
-          type: String,
-          enum: ProjectArea.all(),
+          type: Schema.ObjectId,
+          ref: 'ProjectAreaModel',
+          required: true,
         },
       ],
       description: {
@@ -155,7 +155,9 @@ model.prototype.dump = function() {
     principalInvestigator: this.principalInvestigator,
     startTime: this.startTime,
     endTime: this.endTime,
-    areas: this.areas,
+    areas: this.areas.map(area =>
+      area && typeof area.dump === 'function' ? area.dump() : area,
+    ),
     description: this.description,
     note: this.note,
     coverImageFilename: this.coverImageFilename,
@@ -177,12 +179,11 @@ model.prototype.dump = function() {
       }
       return result;
     }),
-    dataFields: this.dataFields.map(dataField => {
-      if (dataField && typeof dataField.dump === 'function') {
-        return dataField.dump();
-      }
-      return dataField;
-    }),
+    dataFields: this.dataFields.map(dataField =>
+      dataField && typeof dataField.dump === 'function'
+        ? dataField.dump()
+        : dataField,
+    ),
     dailyTestTime: this.dailyTestTime,
     latestAnnotationTime: this.latestAnnotationTime,
     oldestAnnotationTime: this.oldestAnnotationTime,
