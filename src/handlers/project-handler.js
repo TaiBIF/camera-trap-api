@@ -37,6 +37,29 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
   });
 });
 
+exports.getProject = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/projects/:projectId
+   */
+  ProjectModel.findById(req.params.projectId)
+    .populate('areas')
+    .populate('members.user')
+    .populate('dataFields')
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        project.members.map(x => `${x.user._id}`).indexOf(`${req.user._id}`) < 0
+      ) {
+        throw new errors.Http403();
+      }
+
+      res.json(project.dump());
+    }),
+);
+
 exports.addProject = auth(UserPermission.all(), (req, res) => {
   /*
   POST /api/v1/projects
