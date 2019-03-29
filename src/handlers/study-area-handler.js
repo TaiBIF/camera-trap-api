@@ -7,6 +7,48 @@ const StudyAreaForm = require('../forms/study-area/study-area-form');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 
+exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/projects/:projectId/study-areas
+   */
+  Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    StudyAreaModel.where({ state: StudyAreaState.active })
+      .where({ project: req.params.projectId })
+      .sort('title.zh-TW'),
+  ]).then(([project, studyAreas]) => {
+    if (!project) {
+      throw new errors.Http404();
+    }
+    if (
+      req.user.permission !== UserPermission.administrator &&
+      project.members.map(x => `${x.user._id}`).indexOf(`${req.user._id}`) < 0
+    ) {
+      throw new errors.Http403();
+    }
+
+    const rootStudyAreas = [];
+    studyAreas.forEach(studyArea => {
+      if (!studyArea.parent) {
+        const studyAreaInformation = studyArea.dump();
+        studyAreaInformation.children = [];
+        rootStudyAreas.push(studyAreaInformation);
+      }
+    });
+    studyAreas.forEach(studyArea => {
+      if (studyArea.parent) {
+        const parent = rootStudyAreas.find(
+          rootStudyArea => rootStudyArea.id === `${studyArea.parent}`,
+        );
+        if (parent) {
+          parent.children.push(studyArea.dump());
+        }
+      }
+    });
+    res.json(rootStudyAreas);
+  }),
+);
+
 exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
   /*
   POST /api/v1/projects/:projectId/study-areas
