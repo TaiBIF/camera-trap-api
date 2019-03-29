@@ -7,6 +7,7 @@ const fileHandler = require('../handlers/file-handler');
 const projectAreaHandler = require('../handlers/project-area-handler');
 const projectHandler = require('../handlers/project-handler');
 const speciesHandler = require('../handlers/species-handler');
+const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 
 exports.api = express.Router();
@@ -79,6 +80,10 @@ apiRouter.put(
 apiRouter.delete(
   '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
   speciesHandler.deleteProjectSpecies,
+);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/study-areas',
+  studyAreaHandler.addProjectStudyArea,
 );
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);

@@ -30,6 +30,9 @@ const model = db.model(
         'zh-TW': {
           // 繁體中文
           type: String,
+          index: {
+            name: 'TitleZhTW',
+          },
         },
       },
       parent: {
