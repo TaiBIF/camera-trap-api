@@ -1,3 +1,0 @@
-[submodule "submodules/camera-trap-credentials"]
-	path = submodules/camera-trap-credentials
-	url = git@github.com:TaiBIF/camera-trap-credentials.git

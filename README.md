@@ -19,7 +19,7 @@ Using LoopBack to develop RESTful API
 ### 1. Clone repositories
 ```bash
 # host
-$ git clone git@github.com:TaiBIF/camera-trap-api.git --recurse-submodules
+$ git clone git@github.com:TaiBIF/camera-trap-api.git
 $ cd camera-trap-api
 $ npm install
 ```
