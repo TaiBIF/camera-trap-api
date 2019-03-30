@@ -11,5 +11,3 @@ jobs:
       - image: node:10.15.0
     steps:
       - checkout
-      - run: npm install
-      - run: npm test
