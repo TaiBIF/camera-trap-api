@@ -44,11 +44,11 @@ const model = db.model(
         type: Date,
       },
       latitude: {
-        // 緯度
+        // 緯度 (WGS84)
         type: Number,
       },
       longitude: {
-        // 經度
+        // 經度 (WGS84)
         type: Number,
       },
       altitude: {
