@@ -71,9 +71,7 @@ exports.addProjectSpecies = auth(UserPermission.all(), (req, res) => {
       ) {
         throw new errors.Http403();
       }
-      return project;
-    })
-    .then(project => {
+
       const species = new SpeciesModel({
         ...form,
         project,
