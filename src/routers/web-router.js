@@ -2,6 +2,7 @@ const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const callbackHandler = require('../handlers/callback-handler');
+const cameraLocationHandler = require('../handlers/camera-location-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const projectAreaHandler = require('../handlers/project-area-handler');
@@ -89,6 +90,10 @@ apiRouter.get(
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
   studyAreaHandler.addProjectStudyArea,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/camera-locations',
+  cameraLocationHandler.getStudyAreaCameraLocations,
 );
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
