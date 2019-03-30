@@ -2,6 +2,9 @@ const forms = require('../');
 
 class DataFieldsSearchForm extends forms.Form {}
 DataFieldsSearchForm.define({
+  filter: new forms.fields.StringField({
+    validators: [forms.validators.anyOf(['system', 'custom'])],
+  }),
   index: new forms.fields.IntegerField({
     filter: value => {
       const result = forms.filters.integer(0)(value);

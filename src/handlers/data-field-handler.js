@@ -48,6 +48,11 @@ exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
   const query = DataFieldModel.where({ state: DataFieldState.approved }).sort(
     form.sort,
   );
+  if (form.filter === 'system') {
+    query.where({ systemCode: { $exists: true } });
+  } else if (form.filter === 'custom') {
+    query.where({ systemCode: { $exists: false } });
+  }
   return DataFieldModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,
