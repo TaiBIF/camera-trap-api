@@ -95,6 +95,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/camera-locations',
   cameraLocationHandler.getStudyAreaCameraLocations,
 );
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/camera-locations',
+  cameraLocationHandler.addStudyAreaCameraLocation,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 // multipart/form-data

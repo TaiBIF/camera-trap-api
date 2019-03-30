@@ -46,10 +46,12 @@ const model = db.model(
       latitude: {
         // 緯度 (WGS84)
         type: Number,
+        required: true,
       },
       longitude: {
         // 經度 (WGS84)
         type: Number,
+        required: true,
       },
       altitude: {
         // 海拔（公尺）
@@ -57,7 +59,10 @@ const model = db.model(
       },
       vegetation: {
         // 植被
-        // todo: i18n
+        type: String,
+      },
+      landCover: {
+        // 土地覆蓋類型
         type: String,
       },
     },
@@ -76,6 +81,7 @@ model.prototype.dump = function() {
     longitude: this.longitude,
     altitude: this.altitude,
     vegetation: this.vegetation,
+    landCover: this.landCover,
   };
 };
 
