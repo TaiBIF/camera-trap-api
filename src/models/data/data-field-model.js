@@ -82,6 +82,7 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     systemCode: this.systemCode,
+    state: this.state,
     title: this.title,
     widgetType: this.widgetType,
     description: this.description,

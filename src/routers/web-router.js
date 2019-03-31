@@ -101,6 +101,10 @@ apiRouter.post(
 );
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
+apiRouter.get(
+  '/data-fields/:dataFieldId([a-f\\d]{24})',
+  dataFieldHandler.getDataField,
+);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
 
