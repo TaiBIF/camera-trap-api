@@ -111,3 +111,51 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
       res.json(cameraLocation.dump());
     });
 });
+
+exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /projects/:projectId/camera-locations/:cameraLocationId
+   */
+  const form = new CameraLocationForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    CameraLocationModel.findById(req.params.cameraLocationId).populate(
+      'studyArea',
+    ),
+  ])
+    .then(([project, cameraLocation]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (
+        !cameraLocation ||
+        `${cameraLocation.project._id}` !== `${project._id}` ||
+        cameraLocation.state === CameraLocationState.removed
+      ) {
+        throw new errors.Http404();
+      }
+      if (cameraLocation.studyArea.state !== StudyAreaState.active) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+
+      Object.assign(cameraLocation, form);
+      return cameraLocation.save();
+    })
+    .then(cameraLocation => {
+      res.json(cameraLocation.dump());
+    });
+});

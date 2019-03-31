@@ -99,6 +99,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/camera-locations',
   cameraLocationHandler.addStudyAreaCameraLocation,
 );
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})',
+  cameraLocationHandler.updateCameraLocation,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 apiRouter.get(
