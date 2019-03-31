@@ -11,6 +11,32 @@ const CameraLocationState = require('../models/const/camera-location-state');
 const CameraLocationForm = require('../forms/camera-location/camera-location-form');
 const CameraLocationsSearchForm = require('../forms/camera-location/camera-locations-search-form');
 
+exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
+  /*
+  GET /projects/:projectId/camera-locations
+   */
+  const form = new CameraLocationsSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const query = CameraLocationModel.where({
+    project: req.params.projectId,
+  }).where({ state: CameraLocationState.active });
+  if (form.name) {
+    query.where({ name: form.name });
+  }
+  return CameraLocationModel.paginate(query, {
+    offset: form.index * form.size,
+    limit: form.size,
+  }).then(result => {
+    res.json(
+      new PageList(form.index, form.size, result.totalDocs, result.docs),
+    );
+  });
+});
+
 exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
   GET /projects/:projectId/study-areas/:studyAreaId/camera-locations

@@ -26,5 +26,8 @@ CameraLocationsSearchForm.define({
     filter: value => value || 'name',
     validators: [forms.validators.regexp(/^-?(name)$/)],
   }),
+  name: new forms.fields.StringField({
+    validators: [forms.validators.length({ max: 1024 })],
+  }),
 });
 module.exports = CameraLocationsSearchForm;
