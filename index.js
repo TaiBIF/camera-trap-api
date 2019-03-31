@@ -21,6 +21,8 @@ if (op.argv.createCollections) {
   const models = require('./src/models/data').allModels;
   const DataFieldModel = require('./src/models/data/data-field-model');
   const UserModel = require('./src/models/data/user-model');
+  const CameraLocationModel = require('./src/models/data/camera-location-model');
+  const CameraLocationState = require('./src/models/const/camera-location-state');
   const limit = qLimit(1);
 
   Promise.all(
@@ -53,6 +55,19 @@ if (op.argv.createCollections) {
           unique: true,
           partialFilterExpression: {
             email: { $exists: true },
+          },
+        },
+      ),
+    )
+    .then(() =>
+      CameraLocationModel.collection.createIndex(
+        { project: 1, name: 1 },
+        {
+          name: 'UniqueName',
+          background: true,
+          unique: true,
+          partialFilterExpression: {
+            state: CameraLocationState.active,
           },
         },
       ),
