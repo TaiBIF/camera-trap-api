@@ -2,6 +2,7 @@ const http = require('http');
 const os = require('os');
 const util = require('util');
 const config = require('config');
+const leftPad = require('left-pad');
 const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -34,10 +35,15 @@ app.use((req, res, next) => {
     res.end = function() {
       // eslint-disable-next-line prefer-rest-params
       const result = originEndFunc.apply(this, arguments);
+      const now = new Date();
+      const processTime = `${now - req.startTime}`.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        ',',
+      );
       console.log(
-        `[${res.statusCode}] ${`${req.method}      `.substr(0, 6)} ${
-          req.originalUrl
-        }`,
+        `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
+          req.method
+        }      `.substr(0, 6)} ${req.originalUrl}`,
       );
       if (res.error) {
         console.error(res.error.stack);
