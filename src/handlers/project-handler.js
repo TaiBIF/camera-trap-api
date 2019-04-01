@@ -6,7 +6,9 @@ const ProjectRole = require('../models/const/project-role');
 const ProjectAreaModel = require('../models/data/project-area-model');
 const ProjectModel = require('../models/data/project-model');
 const ProjectsSearchForm = require('../forms/project/projects-search-form');
+const ProjectMemberForm = require('../forms/project/project-member-form');
 const ProjectForm = require('../forms/project/project-form');
+const UserModel = require('../models/data/user-model');
 const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const SpeciesModel = require('../models/data/species-model');
@@ -136,5 +138,56 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     })
     .then(([project]) => {
       res.json(project.dump());
+    });
+});
+
+exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
+  /*
+  POST /projects/:projectId/members
+   */
+  const form = new ProjectMemberForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const userQuery = UserModel.find();
+  if (form.user.indexOf('@')) {
+    userQuery.where({ email: form.user });
+  } else {
+    userQuery.where({ orcId: form.user });
+  }
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId).populate('members.user'),
+    userQuery.findOne(),
+  ])
+    .then(([project, user]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!user) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+      if (project.members.find(x => `${x.user._id}` === `${user._id}`)) {
+        throw new errors.Http400(`User ${user._id} is already exists.`);
+      }
+
+      project.members.push({
+        user,
+        role: form.role,
+      });
+      return project.save();
+    })
+    .then(project => {
+      res.json(project.dump().members);
     });
 });

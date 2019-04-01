@@ -67,6 +67,10 @@ apiRouter.get('/project-areas', projectAreaHandler.getProjectAreas);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
 apiRouter.get('/projects/:projectId([a-f\\d]{24})', projectHandler.getProject);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/members',
+  projectHandler.addProjectMember,
+);
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.getProjectSpecies,
