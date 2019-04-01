@@ -72,6 +72,9 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
+      if (form.parent && !parent) {
+        throw new errors.Http404();
+      }
       if (parent && parent.parent) {
         throw new errors.Http400('Can not add the three-tier study-area.');
       }
