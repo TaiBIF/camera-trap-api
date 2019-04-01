@@ -185,3 +185,45 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
       res.json(cameraLocation.dump());
     });
 });
+
+exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
+  /*
+  DELETE /projects/:projectId/camera-locations/:cameraLocationId
+   */
+  Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    CameraLocationModel.findById(req.params.cameraLocationId).populate(
+      'studyArea',
+    ),
+  ])
+    .then(([project, cameraLocation]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (
+        !cameraLocation ||
+        `${cameraLocation.project._id}` !== `${project._id}` ||
+        cameraLocation.state === CameraLocationState.removed
+      ) {
+        throw new errors.Http404();
+      }
+      if (cameraLocation.studyArea.state !== StudyAreaState.active) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+
+      cameraLocation.state = CameraLocationState.removed;
+      return cameraLocation.save();
+    })
+    .then(() => {
+      res.status(204).send();
+    }),
+);

@@ -107,6 +107,10 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.updateCameraLocation,
 );
+apiRouter.delete(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})',
+  cameraLocationHandler.deleteCameraLocation,
+);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 apiRouter.get(
