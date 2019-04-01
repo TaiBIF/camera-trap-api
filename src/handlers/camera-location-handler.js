@@ -13,7 +13,7 @@ const CameraLocationsSearchForm = require('../forms/camera-location/camera-locat
 
 exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
-  GET /projects/:projectId/camera-locations
+  GET /api/v1/projects/:projectId/camera-locations
    */
   const form = new CameraLocationsSearchForm(req.query);
   const errorMessage = form.validate();
@@ -39,7 +39,7 @@ exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
 
 exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
-  GET /projects/:projectId/study-areas/:studyAreaId/camera-locations
+  GET /api/v1/projects/:projectId/study-areas/:studyAreaId/camera-locations
    */
   const form = new CameraLocationsSearchForm(req.query);
   const errorMessage = form.validate();
@@ -93,7 +93,7 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
 
 exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
   /*
-  POST /projects/:projectId/study-areas/:studyAreaId/camera-locations
+  POST /api/v1/projects/:projectId/study-areas/:studyAreaId/camera-locations
    */
   const form = new CameraLocationForm(req.body);
   const errorMessage = form.validate();
@@ -140,7 +140,7 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
 
 exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
   /*
-  PUT /projects/:projectId/camera-locations/:cameraLocationId
+  PUT /api/v1/projects/:projectId/camera-locations/:cameraLocationId
    */
   const form = new CameraLocationForm(req.body);
   const errorMessage = form.validate();
@@ -188,7 +188,7 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
 
 exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
   /*
-  DELETE /projects/:projectId/camera-locations/:cameraLocationId
+  DELETE /api/v1/projects/:projectId/camera-locations/:cameraLocationId
    */
   Promise.all([
     ProjectModel.findById(req.params.projectId),

@@ -143,7 +143,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
 
 exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
   /*
-  POST /projects/:projectId/members
+  POST /api/v1/projects/:projectId/members
    */
   const form = new ProjectMemberForm(req.body);
   const errorMessage = form.validate();
