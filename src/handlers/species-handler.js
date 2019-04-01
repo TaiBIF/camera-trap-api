@@ -150,7 +150,7 @@ exports.deleteProjectSpecies = auth(UserPermission.all(), (req, res) =>
       }
       return species.delete();
     })
-    .then(species => {
-      res.json(species.dump());
+    .then(() => {
+      res.status(204).send();
     }),
 );
