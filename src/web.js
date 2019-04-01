@@ -115,7 +115,7 @@ app.use((req, res, next) => {
 });
 app.use((error, req, res, next) => {
   error.status = error.status || 500;
-  res.statusCode = error.status;
+  res.status(error.status);
   res.error = error;
   res.json({
     message: error.message,
