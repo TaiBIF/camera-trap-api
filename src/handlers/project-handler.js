@@ -191,3 +191,36 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
       res.json(project.dump().members);
     });
 });
+
+exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
+  /*
+  DELETE /api/v1/projects/:projectId/members/:userId
+   */
+  ProjectModel.findById(req.params.projectId)
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+
+      const memberIndex = project.members.findIndex(
+        x => `${x.user._id}` === req.params.userId,
+      );
+      if (memberIndex < 0) {
+        throw new errors.Http400(`User ${req.params.userId} is not exists.`);
+      }
+      project.members.splice(memberIndex, 1);
+      return project.save();
+    })
+    .then(() => {
+      res.status(204).send();
+    }),
+);
