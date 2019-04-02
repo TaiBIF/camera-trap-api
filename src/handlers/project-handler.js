@@ -53,7 +53,7 @@ exports.getProject = auth(UserPermission.all(), (req, res) =>
       }
       if (
         req.user.permission !== UserPermission.administrator &&
-        project.members.map(x => `${x.user._id}`).indexOf(`${req.user._id}`) < 0
+        !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
       ) {
         throw new errors.Http403();
       }
