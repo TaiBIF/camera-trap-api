@@ -14,7 +14,7 @@ exports.logout = auth(
         if (error) {
           return reject(error);
         }
-        resolve(res.json({}));
+        resolve(res.status(204).send());
       });
     }),
 );
