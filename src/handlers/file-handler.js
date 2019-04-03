@@ -102,6 +102,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           throw new errors.Http403();
         }
 
+        file.project = cameraLocation.project;
         const annotation = new AnnotationModel({
           project: cameraLocation.project,
           studyArea: cameraLocation.studyArea,
@@ -109,20 +110,20 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           filename: file.originalFilename,
           time: new Date(), // todo: from exif
         });
-        return Promise.all([
-          file.saveWithContent(req.file.buffer),
-          annotation.save(),
-        ]);
+        return Promise.all([file.saveWithContent(req.file.buffer), annotation]);
       }
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
     .then(([file, annotation]) => {
       /*
       @param file {FileModel} This is saved.
-      @param annotation {AnnotationModel} This is saved without the field `file`.
+      @param annotation {AnnotationModel} This is didn't save. It is missing a field `file`.
        */
       if (annotation) {
         annotation.file = file;
+        if (file.exif) {
+          annotation.time = file.exif.dateTime;
+        }
         return Promise.all([file, annotation.saveWithRevision(req.user)]);
       }
       return Promise.all([file]);

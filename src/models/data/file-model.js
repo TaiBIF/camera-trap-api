@@ -3,6 +3,7 @@ const config = require('config');
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
+const ExchangeableImageFileModel = require('./exchangeable-image-file-model');
 
 const db = utils.getDatabaseConnection();
 const schema = utils.generateSchema(
@@ -35,8 +36,12 @@ const schema = utils.generateSchema(
       type: String,
       required: true,
     },
+    exif: {
+      type: Schema.ObjectId,
+      ref: 'ExchangeableImageFileModel',
+    },
     size: {
-      // The file size.
+      // The file total size.
       type: Number,
     },
   },
@@ -104,6 +109,7 @@ model.prototype.saveWithContent = function(buffer) {
             format: this.getExtensionName(),
             width: 383,
             height: 185,
+            isFillUp: true,
             isPublic: true,
           })
           .then(result => {
@@ -111,13 +117,59 @@ model.prototype.saveWithContent = function(buffer) {
             return this.save();
           });
       case FileType.annotationImage:
-        return utils
-          .uploadToS3(
+        return Promise.all([
+          utils.uploadToS3(
             buffer,
-            `${config.s3.folders.annotationImages}/${this.getFilename()}`,
+            `${
+              config.s3.folders.annotationOriginalImages
+            }/${this.getFilename()}`,
             true,
-          )
-          .then(() => this);
+          ),
+          utils.resizeImageAndUploadToS3({
+            buffer,
+            filename: `${
+              config.s3.folders.annotationImages
+            }/${this.getFilename()}`,
+            format: this.getExtensionName(),
+            width: 1280,
+            height: 1280,
+            isFillUp: false,
+            isPublic: true,
+            isReturnExif: true,
+          }),
+        ])
+          .then(([originalBuffer, thumbnailResult]) => {
+            const items = thumbnailResult.exif.split('\n');
+            const make = items.find(x => /^Make=/.test(x));
+            const exifModel = items.find(x => /^Model=/.test(x));
+            let dateTime;
+            const dateTimeOriginal = items.find(x =>
+              /^DateTimeOriginal=/.test(x),
+            );
+            if (dateTimeOriginal) {
+              dateTime = new Date(
+                `${dateTimeOriginal
+                  .match(/^DateTimeOriginal=(.*)$/)[1]
+                  .replace(':', '-')
+                  .replace(':', '-')
+                  .replace(' ', 'T')}.000Z`,
+              );
+              dateTime.setUTCMinutes(
+                dateTime.getUTCMinutes() - config.defaultTimezone,
+              );
+            }
+
+            const exif = new ExchangeableImageFileModel({
+              rawData: thumbnailResult.exif,
+              make: make ? make.match(/^Make=(.*)$/)[1] : undefined,
+              model: exifModel ? exifModel.match(/^Model=(.*)$/)[1] : undefined,
+              dateTime,
+            });
+            this.exif = exif;
+            this.size = originalBuffer.length + thumbnailResult.buffer.length;
+            return exif.save();
+          })
+          .then(() => this.save());
       default:
         throw new Error('error type');
     }
