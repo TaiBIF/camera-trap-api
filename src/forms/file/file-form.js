@@ -7,5 +7,8 @@ FileForm.define({
     required: true,
     validators: [forms.validators.anyOf(FileType.all())],
   }),
+  cameraLocation: new forms.fields.StringField({
+    validators: [forms.validators.id()],
+  }),
 });
 module.exports = FileForm;

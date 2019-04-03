@@ -45,14 +45,28 @@ const schema = utils.generateSchema(
   },
 );
 schema.post('remove', file => {
-  if (file.type === FileType.projectCoverImage) {
-    utils
-      .deleteS3Objects([
-        `${config.s3.folders.projectCovers}/${file.getFilename()}`,
-      ])
-      .catch(error => {
-        utils.logError(error, { file: file.dump() });
-      });
+  switch (file.type) {
+    case FileType.projectCoverImage:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.projectCovers}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, { file: file.dump() });
+        });
+      break;
+    case FileType.annotationImage:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.annotationImages}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, { file: file.dump() });
+        });
+      break;
+    default:
+      utils.logError(new Error('not implement'), { file: file.dump() });
+      break;
   }
 });
 const model = db.model('FileModel', schema);
@@ -77,21 +91,35 @@ model.prototype.saveWithContent = function(buffer) {
   @param buffer {Buffer}
   @returns {Promise<FileModel>}
    */
+  this.size = buffer.length;
   return this.save().then(() => {
-    if (this.type === FileType.projectCoverImage) {
-      return utils
-        .resizeImageAndUploadToS3({
-          buffer,
-          filename: `${config.s3.folders.projectCovers}/${this.getFilename()}`,
-          format: this.getExtensionName(),
-          width: 383,
-          height: 185,
-          isPublic: true,
-        })
-        .then(result => {
-          this.size = result.buffer.length;
-          return this.save();
-        });
+    switch (this.type) {
+      case FileType.projectCoverImage:
+        return utils
+          .resizeImageAndUploadToS3({
+            buffer,
+            filename: `${
+              config.s3.folders.projectCovers
+            }/${this.getFilename()}`,
+            format: this.getExtensionName(),
+            width: 383,
+            height: 185,
+            isPublic: true,
+          })
+          .then(result => {
+            this.size = result.buffer.length;
+            return this.save();
+          });
+      case FileType.annotationImage:
+        return utils
+          .uploadToS3(
+            buffer,
+            `${config.s3.folders.annotationImages}/${this.getFilename()}`,
+            true,
+          )
+          .then(() => this);
+      default:
+        throw new Error('error type');
     }
   });
 };

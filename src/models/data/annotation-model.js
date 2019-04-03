@@ -1,5 +1,6 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
+const AnnotationRevisionModel = require('./annotation-revision-model');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -104,6 +105,42 @@ const model = db.model(
     },
   ),
 );
+
+model.prototype.saveWithRevision = function(user) {
+  /*
+  Save the annotation and create a new revision.
+  @param user {UserModel}
+  @returns {Promise<AnnotationModel>}
+   */
+  let revisionQuery;
+  if (this._id) {
+    revisionQuery = AnnotationRevisionModel.where({
+      annotation: this._id,
+    }).where({ isCurrent: true });
+  }
+  return Promise.all([this.save(), revisionQuery])
+    .then(([annotation, oldRevisions]) => {
+      const tasks = oldRevisions.map(revision => {
+        revision.isCurrency = false;
+        return revision.save();
+      });
+      const revision = new AnnotationRevisionModel({
+        annotation,
+        user,
+        studyArea: annotation.studyArea,
+        cameraLocation: annotation.cameraLocation,
+        filename: annotation.filename,
+        file: annotation.file,
+        time: annotation.time,
+        species: annotation.species,
+        customFields: annotation.customFields,
+      });
+      tasks.unshift(annotation);
+      tasks.push(revision.save());
+      return Promise.all(tasks);
+    })
+    .then(([annotation]) => annotation);
+};
 
 model.prototype.dump = function() {
   return {

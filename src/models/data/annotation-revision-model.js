@@ -40,9 +40,9 @@ const model = db.model(
         // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）
         type: String,
       },
-      imageFileName: {
-        // s3 filename
-        type: String,
+      file: {
+        type: Schema.ObjectId,
+        ref: 'FileModel',
       },
       time: {
         // 時間
