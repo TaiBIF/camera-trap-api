@@ -52,8 +52,8 @@ ProjectForm.define({
   note: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  coverImageFilename: new forms.fields.StringField({
-    validators: [forms.validators.regexp(/^[a-f\d]{24}\.(jpg)|(png)$/)],
+  coverImageFile: new forms.fields.StringField({
+    validators: [forms.validators.id()],
   }),
   publishTime: new forms.fields.DateField(),
   interpretiveDataLicense: new forms.fields.StringField({

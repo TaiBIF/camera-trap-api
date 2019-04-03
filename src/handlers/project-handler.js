@@ -13,6 +13,8 @@ const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesCode = require('../models/const/species-code');
+const FileModel = require('../models/data/file-model');
+const FileType = require('../models/const/file-type');
 
 exports.getProjects = auth(UserPermission.all(), (req, res) => {
   /*
@@ -24,7 +26,9 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = ProjectModel.where().sort(form.sort);
+  const query = ProjectModel.where()
+    .sort(form.sort)
+    .populate('coverImageFile');
   if (req.user.permission !== UserPermission.administrator) {
     // General accounts just fetch hims' projects. (Administrator fetch all projects.)
     query.where({ 'members.user': req.user._id });
@@ -44,6 +48,7 @@ exports.getProject = auth(UserPermission.all(), (req, res) =>
   GET /api/v1/projects/:projectId
    */
   ProjectModel.findById(req.params.projectId)
+    .populate('coverImageFile')
     .populate('areas')
     .populate('members.user')
     .populate('dataFields')
@@ -75,8 +80,15 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
   return Promise.all([
     DataFieldModel.where({ systemCode: { $exists: true } }),
     ProjectAreaModel.find({ _id: { $in: form.areas } }),
+    FileModel.findById(form.coverImageFile),
   ])
-    .then(([dataFields, projectAreas]) => {
+    .then(([dataFields, projectAreas, coverImageFile]) => {
+      if (
+        form.coverImageFile &&
+        (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
+      ) {
+        throw new errors.Http400('The cover image file is not found.');
+      }
       const getDataFieldByCode = code => {
         for (let index = 0; index < dataFields.length; index += 1) {
           if (dataFields[index].systemCode === code) {
@@ -87,6 +99,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
 
       const project = new ProjectModel({
         ...form,
+        coverImageFile,
         areas: projectAreas,
         members: [
           {
@@ -102,9 +115,9 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
           getDataFieldByCode(DataFieldSystemCode.species),
         ],
       });
-      return project.save();
+      return Promise.all([project.save(), coverImageFile]);
     })
-    .then(project => {
+    .then(([project, coverImageFile]) => {
       // Add default species.
       const species = [
         new SpeciesModel({
@@ -133,6 +146,10 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
         }),
       ];
       const result = species.map(doc => doc.save());
+      if (coverImageFile) {
+        coverImageFile.project = project;
+        result.push(coverImageFile.save());
+      }
       result.unshift(project);
       return Promise.all(result);
     })

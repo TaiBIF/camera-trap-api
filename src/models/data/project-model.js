@@ -2,7 +2,6 @@ const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
-const FileType = require('../const/file-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -60,9 +59,10 @@ const model = db.model(
         // 備註
         type: String,
       },
-      coverImageFilename: {
-        // 計畫封面圖片檔名
-        type: String,
+      coverImageFile: {
+        // 計畫封面圖片
+        type: Schema.ObjectId,
+        ref: 'FileModel',
       },
       publishTime: {
         // 公開日期
@@ -160,11 +160,10 @@ model.prototype.dump = function() {
     ),
     description: this.description,
     note: this.note,
-    coverImageFilename: this.coverImageFilename,
-    coverImageUrl: utils.getFileUrl(
-      FileType.projectCoverImage,
-      this.coverImageFilename,
-    ),
+    coverImageFile:
+      this.coverImageFile && typeof this.coverImageFile.dump === 'function'
+        ? this.coverImageFile.dump()
+        : this.coverImageFile,
     publishTime: this.publishTime,
     interpretiveDataLicense: this.interpretiveDataLicense,
     identificationInformationLicense: this.identificationInformationLicense,
