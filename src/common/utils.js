@@ -250,7 +250,7 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
   @param args {object}
-    buffer {Buffer|gm}
+    buffer {Buffer}
     filename {string} The file name with path.
     format {string} "jpg|png|gif"
     width {Number}
@@ -258,10 +258,12 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     quality {Number|null} The image quality. The default is 86.
     isFillUp {bool}
     isPublic {bool}
+    isReturnExif {bool}
   @returns {Promise<object>}
     buffer: {Buffer}
     width: {int}
     height: {int}
+    exif: {string|null}
    */
   args.quality = args.quality || 86;
   return exports
@@ -269,8 +271,23 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     .then(
       result =>
         new Promise((resolve, reject) => {
-          result.gm.noProfile();
+          if (!args.isReturnExif) {
+            return resolve([result]);
+          }
+          result.gm.identify('%[EXIF:*]', (error, exif) => {
+            if (error) {
+              exports.logError(error, { filename: args.filename });
+              return resolve([result]);
+            }
+            return resolve([result, exif]);
+          });
+        }),
+    )
+    .then(
+      ([result, exif]) =>
+        new Promise((resolve, reject) => {
           result.gm
+            .noProfile()
             .quality(args.quality)
             .toBuffer(args.format, (error, buffer) => {
               if (error) {
@@ -279,16 +296,18 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               Promise.all([
                 result,
                 exports.uploadToS3(buffer, args.filename, args.isPublic),
+                exif,
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
             });
         }),
     )
-    .then(([result, buffer]) => ({
+    .then(([result, buffer, exif]) => ({
       buffer,
       width: result.width,
       height: result.height,
+      exif,
     }));
 };
 
