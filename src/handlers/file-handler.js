@@ -129,6 +129,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           file,
           filename: file.originalFilename,
         });
+        // todo: 使用相機位置、檔名、時間檢查是否已存在 annotation，存在的話替換 annotation.file
         // todo: 檢查檔名是否連續、相片時間是否合理
         return Promise.all([
           file.saveWithContent(req.file.buffer),
