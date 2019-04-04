@@ -37,7 +37,7 @@ const model = db.model(
 );
 
 model.prototype.isLogin = function() {
-  return !!this._id;
+  return this.isNew === false;
 };
 
 model.prototype.dump = function() {
