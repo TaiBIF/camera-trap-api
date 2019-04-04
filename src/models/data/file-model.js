@@ -64,6 +64,7 @@ schema.post('remove', file => {
       utils
         .deleteS3Objects([
           `${config.s3.folders.annotationImages}/${file.getFilename()}`,
+          `${config.s3.folders.annotationOriginalImages}/${file.getFilename()}`,
         ])
         .catch(error => {
           utils.logError(error, { file: file.dump() });
