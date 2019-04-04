@@ -20,6 +20,10 @@ const model = db.model(
           name: 'Project',
         },
       },
+      cameraLocation: {
+        type: Schema.ObjectId,
+        ref: 'CameraLocationModel',
+      },
       user: {
         // uploader
         type: Schema.ObjectId,
@@ -49,6 +53,10 @@ model.prototype.dump = function() {
       this.project && typeof this.project.dump === 'function'
         ? this.project.dump()
         : this.project,
+    cameraLocation:
+      this.cameraLocation && typeof this.cameraLocation.dump === 'function'
+        ? this.cameraLocation.dump()
+        : this.cameraLocation,
     file:
       this.file && typeof this.file.dump === 'function'
         ? this.file.dump()

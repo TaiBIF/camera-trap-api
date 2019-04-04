@@ -11,6 +11,8 @@ const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationModel = require('../models/data/annotation-model');
+const UploadSessionModel = require('../models/data/upload-session-model');
+const UploadSessionState = require('../models/const/upload-session-state');
 
 const imageMulter = util.promisify(
   multer({
@@ -34,10 +36,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   }
   if (form.type === FileType.annotationImage) {
     if (!form.cameraLocation) {
-      throw new errors.Http400('studyArea and cameraLocation are required.');
+      throw new errors.Http400('The cameraLocation is required.');
     }
   }
 
+  let uploadSession;
   const multerTable = {};
   multerTable[FileType.projectCoverImage] = imageMulter;
   multerTable[FileType.annotationImage] = imageMulter;
@@ -113,14 +116,25 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         }
 
         file.project = cameraLocation.project;
+        uploadSession = new UploadSessionModel({
+          project: cameraLocation.project,
+          user: req.user,
+          file,
+          cameraLocation,
+        });
         const annotation = new AnnotationModel({
           project: cameraLocation.project,
           studyArea: cameraLocation.studyArea,
           cameraLocation,
+          file,
           filename: file.originalFilename,
         });
         // todo: 檢查檔名是否連續、相片時間是否合理
-        return Promise.all([file.saveWithContent(req.file.buffer), annotation]);
+        return Promise.all([
+          file.saveWithContent(req.file.buffer),
+          annotation,
+          uploadSession.save(),
+        ]);
       }
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
@@ -133,15 +147,26 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
        */
       if (annotation) {
-        annotation.file = file;
         if (file.exif) {
           annotation.time = file.exif.dateTime;
         }
-        return Promise.all([file, annotation.saveWithRevision(req.user)]);
+        uploadSession.state = UploadSessionState.success;
+        return Promise.all([
+          file,
+          annotation.saveWithRevision(req.user),
+          uploadSession.save(),
+        ]);
       }
       return Promise.all([file]);
     })
     .then(([file]) => {
       res.json(file.dump());
+    })
+    .catch(error => {
+      if (uploadSession) {
+        uploadSession.state = UploadSessionState.failure;
+        uploadSession.save();
+      }
+      throw error;
     });
 });
