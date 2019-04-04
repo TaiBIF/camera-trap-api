@@ -50,7 +50,6 @@ const model = db.model(
       time: {
         // 時間
         type: Date,
-        required: true,
         index: {
           name: 'Time',
         },

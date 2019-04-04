@@ -118,8 +118,8 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           studyArea: cameraLocation.studyArea,
           cameraLocation,
           filename: file.originalFilename,
-          time: new Date(), // todo: from exif
         });
+        // todo: 檢查檔名是否連續、相片時間是否合理
         return Promise.all([file.saveWithContent(req.file.buffer), annotation]);
       }
       return Promise.all([file.saveWithContent(req.file.buffer)]);
