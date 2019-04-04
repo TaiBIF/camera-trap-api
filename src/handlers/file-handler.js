@@ -43,6 +43,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   multerTable[FileType.annotationImage] = imageMulter;
   return multerTable[form.type](req, res)
     .then(() => {
+      /*
+      - Check the extension name of the uploaded file.
+      - Create a file.
+      @returns {Promise<[{FileModel}, {CameraLocationModel|null}]>}
+       */
       if (!req.file) {
         throw new errors.Http400('Missing the file.');
       }
@@ -72,8 +77,13 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     })
     .then(([file, cameraLocation]) => {
       /*
+      - Check authorization of the project, study area, camera location.
+      - Append a field `project` of the file.
+      - Create an annotation.
+      - Save a file.
       @param file {FileModel} This file didn't save. We should check the permission.
       @param cameraLocation {CameraLocationModel|null}
+      @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
        */
       if (form.type === FileType.annotationImage) {
         if (
@@ -116,8 +126,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     })
     .then(([file, annotation]) => {
       /*
+      - Append fields `file` and `time` of the annotation.
+      - Save an annotation.
       @param file {FileModel} This is saved.
-      @param annotation {AnnotationModel} This is didn't save. It is missing a field `file`.
+      @param annotation {AnnotationModel|null} This is didn't save. It is missing a field `file`.
+      @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
        */
       if (annotation) {
         annotation.file = file;
