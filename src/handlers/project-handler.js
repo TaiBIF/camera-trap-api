@@ -83,19 +83,22 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     FileModel.findById(form.coverImageFile),
   ])
     .then(([dataFields, projectAreas, coverImageFile]) => {
+      /*
+      - Check the file is exists and it is a cover image.
+      - Create a new project with the form.
+      - Add req.user into the project.members.
+      - Add system data fields at the new project.
+      @param dataFields {Array<DataFieldModel>} System data fields.
+      @param projectAreas {Array<ProjectAreaModel>}
+      @param coverImageFile {FileModel}
+      @returns {Promise<[{ProjectModel}, {FileModel}]>}
+       */
       if (
         form.coverImageFile &&
         (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
       ) {
         throw new errors.Http400('The cover image file is not found.');
       }
-      const getDataFieldByCode = code => {
-        for (let index = 0; index < dataFields.length; index += 1) {
-          if (dataFields[index].systemCode === code) {
-            return dataFields[index];
-          }
-        }
-      };
 
       const project = new ProjectModel({
         ...form,
@@ -108,16 +111,25 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
           },
         ],
         dataFields: [
-          getDataFieldByCode(DataFieldSystemCode.studyArea),
-          getDataFieldByCode(DataFieldSystemCode.cameraLocation),
-          getDataFieldByCode(DataFieldSystemCode.fileName),
-          getDataFieldByCode(DataFieldSystemCode.time),
-          getDataFieldByCode(DataFieldSystemCode.species),
+          dataFields.find(x => x.systemCode === DataFieldSystemCode.studyArea),
+          dataFields.find(
+            x => x.systemCode === DataFieldSystemCode.cameraLocation,
+          ),
+          dataFields.find(x => x.systemCode === DataFieldSystemCode.fileName),
+          dataFields.find(x => x.systemCode === DataFieldSystemCode.time),
+          dataFields.find(x => x.systemCode === DataFieldSystemCode.species),
         ],
       });
       return Promise.all([project.save(), coverImageFile]);
     })
     .then(([project, coverImageFile]) => {
+      /*
+      - Add default species (空拍, 測試, 人) for this project.
+      - Add coverImageFile.project and save it.
+      @param project {ProjectModel}
+      @param coverImageFile {FileModel}
+      @returns {Promises<[{ProjectModel}]>}
+       */
       // Add default species.
       const species = [
         new SpeciesModel({
@@ -156,6 +168,60 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     .then(([project]) => {
       res.json(project.dump());
     });
+});
+
+exports.updateProject = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/projects/:projectId
+   */
+  const form = new ProjectForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    FileModel.findById(form.coverImageFile),
+  ])
+    .then(([project, coverImageFile]) => {
+      /*
+      - Check the project is exists and req.user have the permission to update it.
+      - Check the file is exists and it is a cover image.
+      - Copy fields of the form to the project then save it.
+      - Assign the project id to coverImageFile.project then save it.
+      @param project {ProjectModel}
+      @param coverImageFile {FileModel}
+      @returns {Promise<[{ProjectModel}]>}
+       */
+      if (!project) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+      if (
+        form.coverImageFile &&
+        (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
+      ) {
+        throw new errors.Http400('The cover image file is not found.');
+      }
+
+      Object.assign(project, form);
+      const tasks = [project.save()];
+      if (coverImageFile) {
+        coverImageFile.project = project;
+        tasks.push(coverImageFile.save());
+      }
+      return Promise.all(tasks);
+    })
+    .then(() => exports.getProject(req, res));
 });
 
 exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
