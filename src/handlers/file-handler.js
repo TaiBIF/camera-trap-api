@@ -130,8 +130,6 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           file,
           filename: file.originalFilename,
         });
-        // todo: 使用相機位置、檔名、時間檢查是否已存在 annotation，存在的話替換 annotation.file
-        // todo: 檢查檔名是否連續、相片時間是否合理
         return Promise.all([
           file.saveWithContent(req.file.buffer),
           annotation,
@@ -143,23 +141,55 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     .then(([file, annotation]) => {
       /*
       - Append fields `file` and `time` of the annotation.
-      - Save an annotation.
+      - Find the duplicate annotation.
+        使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話替換 annotation.file。
       @param file {FileModel} This is saved.
-      @param annotation {AnnotationModel|null} This is didn't save. It is missing a field `file`.
-      @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
+      @param annotation {AnnotationModel|null} This is didn't save. It is missing a field `time`.
+      @returns {Promise<[{FileModel}, {AnnotationModel|null}, {AnnotationModel|null}]>}
        */
       if (annotation) {
         if (file.exif) {
           annotation.time = file.exif.dateTime;
         }
-        uploadSession.state = UploadSessionState.success;
         return Promise.all([
           file,
-          annotation.saveAndAddRevision(req.user),
-          uploadSession.save(),
+          annotation,
+          AnnotationModel.where({ cameraLocation: annotation.cameraLocation })
+            .where({ filename: annotation.filename })
+            .where({ time: annotation.time })
+            .populate('file')
+            .findOne(),
         ]);
       }
       return Promise.all([file]);
+    })
+    .then(([file, annotation, duplicateAnnotation]) => {
+      /*
+      - Save annotation or duplicateAnnotation.
+      - Set uploadSession.state as success then save it.
+      @param file {FileModel}
+      @param annotation {AnnotationModel} This is didn't save.
+      @param duplicateAnnotation {AnnotationModel}
+      @returns {Promise<[{FileModel}]>}
+       */
+      const tasks = [file];
+      if (annotation) {
+        if (duplicateAnnotation) {
+          if (duplicateAnnotation.file) {
+            // Delete the old file.
+            tasks.push(duplicateAnnotation.file.delete());
+          }
+          // Replace the old file with a new one.
+          duplicateAnnotation.file = file;
+          tasks.push(duplicateAnnotation.save());
+        } else {
+          // todo: 檢查檔名是否連續、相片時間是否合理
+          tasks.push(annotation.saveAndAddRevision(req.user));
+        }
+        uploadSession.state = UploadSessionState.success;
+        tasks.push(uploadSession.save());
+      }
+      return Promise.all(tasks);
     })
     .then(([file]) => {
       res.json(file.dump());
