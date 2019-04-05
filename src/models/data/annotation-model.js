@@ -105,7 +105,7 @@ const model = db.model(
   ),
 );
 
-model.prototype.saveWithRevision = function(user) {
+model.prototype.saveAndAddRevision = function(user) {
   /*
   Save the annotation and create a new revision.
   @param user {UserModel}

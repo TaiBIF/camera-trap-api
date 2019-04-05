@@ -54,6 +54,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       if (!req.file) {
         throw new errors.Http400('Missing the file.');
       }
+
       const file = new FileModel({
         type: form.type,
         user: req.user,
@@ -154,7 +155,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         uploadSession.state = UploadSessionState.success;
         return Promise.all([
           file,
-          annotation.saveWithRevision(req.user),
+          annotation.saveAndAddRevision(req.user),
           uploadSession.save(),
         ]);
       }
