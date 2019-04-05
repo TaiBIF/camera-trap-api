@@ -387,6 +387,7 @@ const filters = {
 module.exports = {
   constants: {
     PAGE_SIZE_MAXIMUM: 100,
+    SPECIES_SIZE_MAXIMUM: Number.MAX_SAFE_INTEGER,
   },
   Form,
   validators,

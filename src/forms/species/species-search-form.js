@@ -10,14 +10,14 @@ SpeciesSearchForm.define({
   }),
   size: new forms.fields.IntegerField({
     filter: value => {
-      const result = forms.filters.integer(forms.constants.PAGE_SIZE_MAXIMUM)(
-        value,
-      );
+      const result = forms.filters.integer(
+        forms.constants.SPECIES_SIZE_MAXIMUM,
+      )(value);
       if (result < 0) {
-        return forms.constants.PAGE_SIZE_MAXIMUM;
+        return forms.constants.SPECIES_SIZE_MAXIMUM;
       }
-      if (result > forms.constants.PAGE_SIZE_MAXIMUM) {
-        return forms.constants.PAGE_SIZE_MAXIMUM;
+      if (result > forms.constants.SPECIES_SIZE_MAXIMUM) {
+        return forms.constants.SPECIES_SIZE_MAXIMUM;
       }
       return result;
     },
