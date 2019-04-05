@@ -23,5 +23,5 @@ exports.orcidAuth = (req, res) =>
     })
     .then(user => {
       req.session.userId = user._id;
-      res.redirect(config.webAppUrl);
+      res.redirect(`${config.webAppUrl}/project/overview`);
     });
