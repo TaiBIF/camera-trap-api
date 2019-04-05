@@ -197,6 +197,13 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
       if (project.members.find(x => `${x.user._id}` === `${user._id}`)) {
         throw new errors.Http400(`User ${user._id} is already exists.`);
       }
+      if (
+        form.role === ProjectRole.manager &&
+        project.members.find(x => x.role === ProjectRole.manager)
+      ) {
+        // 一個計劃限制只能一個管理員
+        throw new errors.Http400('Can not add more managers.');
+      }
 
       project.members.push({
         user,
@@ -233,6 +240,9 @@ exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
       );
       if (memberIndex < 0) {
         throw new errors.Http400(`User ${req.params.userId} is not exists.`);
+      }
+      if (project.members[memberIndex].role === ProjectRole.manager) {
+        throw new errors.Http400('Can nat delete the manager.');
       }
       project.members.splice(memberIndex, 1);
       return project.save();
