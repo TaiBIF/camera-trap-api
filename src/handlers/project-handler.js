@@ -181,17 +181,21 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
   }
 
   return Promise.all([
-    ProjectModel.findById(req.params.projectId),
+    ProjectModel.findById(req.params.projectId).populate('dataFields'),
     FileModel.findById(form.coverImageFile),
+    DataFieldModel.find({ _id: { $in: form.dataFields } }),
   ])
-    .then(([project, coverImageFile]) => {
+    .then(([project, coverImageFile, dataFields]) => {
       /*
       - Check the project is exists and req.user have the permission to update it.
       - Check the file is exists and it is a cover image.
+      - Check form.dataFields are exists.
+      - Check top 5 data fields are system default fields.
       - Copy fields of the form to the project then save it.
       - Assign the project id to coverImageFile.project then save it.
       @param project {ProjectModel}
       @param coverImageFile {FileModel}
+      @param dataFields {Array<DataFieldModel>}
       @returns {Promise<[{ProjectModel}]>}
        */
       if (!project) {
@@ -211,6 +215,21 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
         (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
       ) {
         throw new errors.Http400('The cover image file is not found.');
+      }
+      if (dataFields.length !== form.dataFields.length) {
+        throw new errors.Http400('Some data fields are not found.');
+      }
+      for (let index = 0; index < project.dataFields.length; index += 1) {
+        if (!project.dataFields[index].systemCode) {
+          break;
+        }
+        if (`${project.dataFields[index]._id}` !== form.dataFields[index]) {
+          throw new errors.Http400(
+            `The data fields [${index}] should be ${
+              project.dataFields[index]._id
+            }.`,
+          );
+        }
       }
 
       Object.assign(project, form);

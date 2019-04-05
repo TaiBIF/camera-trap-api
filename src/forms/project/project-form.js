@@ -77,5 +77,25 @@ ProjectForm.define({
       ]),
     ],
   }),
+  dataFields: new forms.fields.ArrayField({
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.id()],
+    }),
+    validators: [
+      (values = []) => {
+        const fields = new Set();
+        for (let index = 0; index < values.length; index += 1) {
+          if (fields.has(values[index])) {
+            return `${values[index]} is already exist.`;
+          }
+          fields.add(values[index]);
+        }
+      },
+    ],
+  }),
+  dailyTestTime: new forms.fields.StringField({
+    validators: [forms.validators.regexp(/\d{2}:\d{2}:\d{2}/)],
+  }),
 });
 module.exports = ProjectForm;
