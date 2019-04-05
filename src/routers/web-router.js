@@ -83,6 +83,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.getProjectSpecies,
 );
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/species',
+  speciesHandler.updateProjectSpeciesList,
+);
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.addProjectSpecies,

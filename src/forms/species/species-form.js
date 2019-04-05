@@ -2,6 +2,9 @@ const forms = require('../');
 
 class SpeciesForm extends forms.Form {}
 SpeciesForm.define({
+  id: new forms.fields.StringField({
+    validators: [forms.validators.id()],
+  }),
   title: new forms.fields.MultiLanguageField({
     required: true,
     subField: new forms.fields.StringField({
