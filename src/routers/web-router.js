@@ -95,10 +95,6 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
   speciesHandler.updateProjectSpecies,
 );
-apiRouter.delete(
-  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
-  speciesHandler.deleteProjectSpecies,
-);
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
   studyAreaHandler.getProjectStudyAreas,
