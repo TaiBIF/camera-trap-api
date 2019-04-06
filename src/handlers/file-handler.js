@@ -130,7 +130,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           cameraLocation,
           file,
           filename: file.originalFilename,
-          time: new Date(), // We should update this fake time.
+          time: new Date(), // We will update this fake time.
         });
         return Promise.all([
           file.saveWithContent(req.file.buffer),
@@ -162,7 +162,6 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           AnnotationModel.where({ cameraLocation: annotation.cameraLocation })
             .where({ filename: annotation.filename })
             .where({ time: annotation.time })
-            .populate('file')
             .findOne(),
         ]);
       }
