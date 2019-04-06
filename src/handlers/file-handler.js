@@ -11,6 +11,7 @@ const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationModel = require('../models/data/annotation-model');
+const ProjectModel = require('../models/data/project-model');
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
@@ -35,10 +36,18 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-  if (form.type === FileType.annotationImage) {
-    if (!form.cameraLocation) {
-      throw new errors.Http400('The cameraLocation is required.');
-    }
+  switch (form.type) {
+    case FileType.annotationImage:
+      if (!form.cameraLocation) {
+        throw new errors.Http400('The cameraLocation is required.');
+      }
+      break;
+    case FileType.annotationCSV:
+      if (!form.project) {
+        throw new errors.Http400('The project is required.');
+      }
+      break;
+    default:
   }
 
   let uploadSession;
@@ -61,62 +70,92 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         user: req.user,
         originalFilename: req.file.originalname,
       });
-      if (
-        [FileType.projectCoverImage, FileType.annotationImage].indexOf(
-          form.type,
-        ) >= 0
-      ) {
-        if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
-          throw new errors.Http400('Just allow jpg and png files.');
-        }
+      switch (form.type) {
+        case FileType.projectCoverImage:
+        case FileType.annotationImage:
+          if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
+            throw new errors.Http400('Just allow jpg and png files.');
+          }
+          break;
+        case FileType.annotationCSV:
+          if (file.getExtensionName() !== 'csv') {
+            throw new errors.Http400('Just allow csv files.');
+          }
+          break;
+        default:
       }
-      if (form.type === FileType.annotationImage) {
-        return Promise.all([
-          file,
-          CameraLocationModel.findById(form.cameraLocation)
-            .populate('project')
-            .populate('studyArea'),
-        ]);
+
+      switch (form.type) {
+        case FileType.annotationImage:
+          return Promise.all([
+            file,
+            null,
+            CameraLocationModel.findById(form.cameraLocation)
+              .populate('project')
+              .populate('studyArea'),
+          ]);
+        case FileType.annotationCSV:
+          return Promise.all([file, ProjectModel.findById(form.project)]);
+        default:
+          return Promise.all([file]);
       }
-      return Promise.all([file]);
     })
-    .then(([file, cameraLocation]) => {
+    .then(([file, project, cameraLocation]) => {
       /*
       - Check authorization of the project, study area, camera location.
       - Append a field `project` of the file.
       - Create an annotation.
       - Save a file.
       @param file {FileModel} This file didn't save. We should check the permission.
+      @param project {ProjectModel|null}
       @param cameraLocation {CameraLocationModel|null}
       @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
        */
-      if (form.type === FileType.annotationImage) {
-        if (
-          !cameraLocation ||
-          cameraLocation.state !== CameraLocationState.active
-        ) {
-          throw new errors.Http400(
-            `The camera location ${form.cameraLocation} is not found.`,
-          );
-        }
-        if (
-          !cameraLocation.studyArea ||
-          cameraLocation.studyArea.state !== StudyAreaState.active
-        ) {
-          throw new errors.Http404('Study area is not found.');
-        }
-        if (!cameraLocation.project || !cameraLocation.project.members) {
-          throw new errors.Http404('The project is not found.');
-        }
-        if (
-          req.user.permission !== UserPermission.administrator &&
-          !cameraLocation.project.members.find(
-            x => `${x.user._id}` === `${req.user._id}`,
-          )
-        ) {
-          throw new errors.Http403();
-        }
+      // Authorization
+      switch (form.type) {
+        case FileType.annotationImage:
+          if (
+            !cameraLocation ||
+            cameraLocation.state !== CameraLocationState.active
+          ) {
+            throw new errors.Http400(
+              `The camera location ${form.cameraLocation} is not found.`,
+            );
+          }
+          if (
+            !cameraLocation.studyArea ||
+            cameraLocation.studyArea.state !== StudyAreaState.active
+          ) {
+            throw new errors.Http404('Study area is not found.');
+          }
+          if (!cameraLocation.project || !cameraLocation.project.members) {
+            throw new errors.Http404('The project is not found.');
+          }
+          if (
+            req.user.permission !== UserPermission.administrator &&
+            !cameraLocation.project.members.find(
+              x => `${x.user._id}` === `${req.user._id}`,
+            )
+          ) {
+            throw new errors.Http403();
+          }
+          break;
+        case FileType.annotationCSV:
+          if (!project) {
+            throw new errors.Http404();
+          }
+          if (
+            req.user.permission !== UserPermission.administrator &&
+            !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+          ) {
+            throw new errors.Http403();
+          }
+          break;
+        default:
+      }
 
+      // Business logic
+      if (form.type === FileType.annotationImage) {
         file.project = cameraLocation.project;
         uploadSession = new UploadSessionModel({
           project: cameraLocation.project,
@@ -137,6 +176,9 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           annotation,
           uploadSession.save(),
         ]);
+      }
+      if (form.type === FileType.annotationCSV) {
+        throw new errors.Http500('not done');
       }
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
