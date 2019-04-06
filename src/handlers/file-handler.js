@@ -130,6 +130,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           cameraLocation,
           file,
           filename: file.originalFilename,
+          time: new Date(), // We should update this fake time.
         });
         return Promise.all([
           file.saveWithContent(req.file.buffer),
