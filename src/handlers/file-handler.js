@@ -179,15 +179,10 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       const tasks = [file];
       if (annotation) {
         if (duplicateAnnotation) {
-          if (duplicateAnnotation.file) {
-            // Delete the old file.
-            tasks.push(duplicateAnnotation.file.delete());
-          }
           // Replace the old file with a new one.
           duplicateAnnotation.file = file;
-          tasks.push(duplicateAnnotation.save());
+          tasks.push(duplicateAnnotation.saveAndAddRevision(req.user));
         } else {
-          // todo: 檢查檔名是否連續、相片時間是否合理
           tasks.push(annotation.saveAndAddRevision(req.user));
         }
         uploadSession.state = UploadSessionState.success;
