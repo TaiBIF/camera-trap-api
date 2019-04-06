@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const utils = require('../../common/utils');
 const UploadSessionState = require('../const/upload-session-state');
+const UploadSessionErrorType = require('../const/upload-session-error-type');
 
 const db = utils.getDatabaseConnection();
 const model = db.model(
@@ -11,6 +12,10 @@ const model = db.model(
         type: String,
         default: UploadSessionState.uploading,
         enum: UploadSessionState.all(),
+      },
+      errorType: {
+        type: String,
+        enum: UploadSessionErrorType.all(),
       },
       project: {
         type: Schema.ObjectId,
@@ -49,6 +54,7 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     state: this.state,
+    errorType: this.errorType,
     project:
       this.project && typeof this.project.dump === 'function'
         ? this.project.dump()

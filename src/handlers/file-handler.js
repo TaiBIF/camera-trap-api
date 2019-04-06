@@ -13,6 +13,7 @@ const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationModel = require('../models/data/annotation-model');
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
+const UploadSessionErrorType = require('../models/const/upload-session-error-type');
 
 const imageMulter = util.promisify(
   multer({
@@ -148,8 +149,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @returns {Promise<[{FileModel}, {AnnotationModel|null}, {AnnotationModel|null}]>}
        */
       if (annotation) {
-        if (file.exif) {
-          annotation.time = file.exif.dateTime;
+        if (!file.exif || !file.exif.dateTime) {
+          uploadSession.errorType = UploadSessionErrorType.lostExifTime;
+          throw new errors.Http400(
+            `Can't get the time information in the exif.`,
+          );
         }
         return Promise.all([
           file,
@@ -197,6 +201,8 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     .catch(error => {
       if (uploadSession) {
         uploadSession.state = UploadSessionState.failure;
+        uploadSession.errorType =
+          uploadSession.errorType || UploadSessionErrorType.others;
         uploadSession.save();
       }
       throw error;
