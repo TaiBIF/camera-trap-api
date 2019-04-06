@@ -174,7 +174,7 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
           this.resize(newSize.width, newSize.height, '!');
           this.gravity('Center');
           this.crop(width, height);
-          resolve({
+          return resolve({
             gm: this,
             width,
             height,
@@ -189,13 +189,19 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
         );
         if (newSize) {
           this.resize(newSize.width, newSize.height, '!');
-          resolve({
+          return resolve({
             gm: this,
             width: newSize.width,
             height: newSize.height,
           });
         }
       }
+      // Keep the original size.
+      resolve({
+        gm: this,
+        width: size.width,
+        height: size.height,
+      });
     });
   });
 
