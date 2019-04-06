@@ -50,6 +50,11 @@ const schema = utils.generateSchema(
   },
 );
 schema.post('remove', file => {
+  if (file.exif) {
+    ExchangeableImageFileModel.deleteOne({ _id: file.exif }).catch(error => {
+      utils.logError(error, file);
+    });
+  }
   switch (file.type) {
     case FileType.projectCoverImage:
       utils
@@ -57,7 +62,7 @@ schema.post('remove', file => {
           `${config.s3.folders.projectCovers}/${file.getFilename()}`,
         ])
         .catch(error => {
-          utils.logError(error, { file: file.dump() });
+          utils.logError(error, file);
         });
       break;
     case FileType.annotationImage:
@@ -67,11 +72,11 @@ schema.post('remove', file => {
           `${config.s3.folders.annotationOriginalImages}/${file.getFilename()}`,
         ])
         .catch(error => {
-          utils.logError(error, { file: file.dump() });
+          utils.logError(error, file);
         });
       break;
     default:
-      utils.logError(new Error('not implement'), { file: file.dump() });
+      utils.logError(new Error('not implement'), file);
       break;
   }
 });
