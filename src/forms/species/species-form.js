@@ -6,7 +6,6 @@ SpeciesForm.define({
     validators: [forms.validators.id()],
   }),
   title: new forms.fields.MultiLanguageField({
-    required: true,
     subField: new forms.fields.StringField({
       required: true,
       validators: [forms.validators.length({ max: 1024 })],

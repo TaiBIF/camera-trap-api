@@ -61,6 +61,9 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
     if (errorMessage) {
       throw new errors.Http400(errorMessage);
     }
+    if (!form.id && !form.title) {
+      throw new errors.Http400('Title is required');
+    }
     forms.push(form);
   }
 
@@ -82,17 +85,12 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
         throw new errors.Http403();
       }
 
-      const formIds = [];
-      forms.forEach(x => {
-        if (x.id) {
-          formIds.push(x.id);
-        }
-      });
       const tasks = [];
       speciesList.forEach(species => {
-        if (formIds.indexOf(`${species._id}`) < 0) {
-          // Delete this species. It was removed at forms.
-          tasks.push(species.delete());
+        // if (formIds.indexOf(`${species._id}`) < 0) {
+        if (!forms.find(x => x.id === `${species._id}`)) {
+          // Missing the species in forms.
+          throw new errors.Http400(`Missing ${species._id}.`);
         }
       });
       forms.forEach((form, index) => {
@@ -102,7 +100,7 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
           if (!species) {
             throw new errors.Http400(`Can't find species ${form.id}.`);
           }
-          Object.assign(species, { ...form, index });
+          species.index = index;
           tasks.push(species.save());
         } else {
           // Create a new species.
@@ -188,8 +186,7 @@ exports.updateProjectSpecies = auth(UserPermission.all(), (req, res) => {
         throw new errors.Http403();
       }
 
-      delete form.id;
-      Object.assign(species, form);
+      species.index = form.index;
       return species.save();
     })
     .then(species => {
