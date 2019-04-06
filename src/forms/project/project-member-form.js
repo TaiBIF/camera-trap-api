@@ -4,7 +4,7 @@ const ProjectRole = require('../../models/const/project-role');
 class ProjectMemberForm extends forms.Form {}
 ProjectMemberForm.define({
   user: new forms.fields.StringField({
-    required: true,
+    // orcid or email
     validators: [forms.validators.length({ max: 1024 })],
   }),
   role: new forms.fields.StringField({

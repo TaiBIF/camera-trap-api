@@ -252,6 +252,9 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
+  if (!form.user) {
+    throw new errors.Http400('user is required.');
+  }
 
   const userQuery = UserModel.find();
   if (form.user.indexOf('@')) {
@@ -301,6 +304,54 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.updateProjectMember = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/projects/:projectId/members/:userId
+   */
+  const form = new ProjectMemberForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return ProjectModel.findById(req.params.projectId)
+    .populate('members.user')
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+      const updateMember = project.members.find(
+        x => `${x.user._id}` === req.params.userId,
+      );
+      if (!updateMember) {
+        throw new errors.Http400(`User ${req.params.userId} is not exists.`);
+      }
+      if (
+        updateMember.role === ProjectRole.manager &&
+        form.role !== ProjectRole.manager
+      ) {
+        throw new errors.Http400('Can nat change the manager.');
+      } else if (form.role === ProjectRole.manager) {
+        throw new errors.Http400('Can not set more members as a manager.');
+      }
+
+      updateMember.role = form.role;
+      return project.save();
+    })
+    .then(project => {
+      res.json(project.dump().members);
+    });
+});
+
 exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
   /*
   DELETE /api/v1/projects/:projectId/members/:userId
@@ -319,7 +370,6 @@ exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
       ) {
         throw new errors.Http403();
       }
-
       const memberIndex = project.members.findIndex(
         x => `${x.user._id}` === req.params.userId,
       );
@@ -329,6 +379,7 @@ exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
       if (project.members[memberIndex].role === ProjectRole.manager) {
         throw new errors.Http400('Can nat delete the manager.');
       }
+
       project.members.splice(memberIndex, 1);
       return project.save();
     })
