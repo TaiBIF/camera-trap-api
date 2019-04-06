@@ -10,7 +10,7 @@ const model = db.model(
     {
       state: {
         type: String,
-        default: UploadSessionState.uploading,
+        default: UploadSessionState.processing,
         enum: UploadSessionState.all(),
       },
       errorType: {

@@ -1,8 +1,8 @@
 module.exports = {
-  uploading: 'uploading', // 正在上傳
+  processing: 'processing', // 處理中
   success: 'success', // 上傳成功
   failure: 'failure', // 上傳失敗
   all() {
-    return [this.uploading, this.success, this.failure];
+    return [this.processing, this.success, this.failure];
   },
 };
