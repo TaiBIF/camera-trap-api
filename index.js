@@ -1,5 +1,5 @@
 const optimist = require('optimist');
-const qLimit = require('qlimit');
+const pLimit = require('p-limit');
 
 const op = optimist
   .usage(
@@ -23,11 +23,11 @@ if (op.argv.createCollections) {
   const UserModel = require('./src/models/data/user-model');
   const CameraLocationModel = require('./src/models/data/camera-location-model');
   const CameraLocationState = require('./src/models/const/camera-location-state');
-  const limit = qLimit(1);
+  const limit = pLimit(1);
 
   Promise.all(
-    models.map(
-      limit(model => {
+    models.map(model =>
+      limit(() => {
         console.log(`Create: ${model.modelName}`);
         return model.createIndexes();
       }),
@@ -77,7 +77,7 @@ if (op.argv.createCollections) {
     });
 } else if (op.argv.insertData) {
   // Insert database default data.
-  const limit = qLimit(1);
+  const limit = pLimit(1);
   const DataFieldModel = require('./src/models/data/data-field-model');
   const DataFieldSystemCode = require('./src/models/const/data-field-system-code');
   const DataFieldWidgetType = require('./src/models/const/data-field-widget-type');
@@ -264,8 +264,8 @@ if (op.argv.createCollections) {
     }),
   ];
   Promise.all(
-    data.map(
-      limit(item =>
+    data.map(item =>
+      limit(() =>
         item.save().then(document => {
           console.log(
             `Inserted: ${document.constructor.modelName}(${document._id})`,
