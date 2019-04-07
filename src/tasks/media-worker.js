@@ -1,6 +1,8 @@
 const fs = require('fs');
+const path = require('path');
 const config = require('config');
 const extract = require('extract-zip');
+const pLimit = require('p-limit');
 const tmp = require('tmp');
 const utils = require('../common/utils');
 const errors = require('../models/errors');
@@ -104,6 +106,7 @@ module.exports = (job, done) => {
     .then(
       /*
       - Unzip the file from S3.
+      @returns {Promise<{DirSyncObject|null}>}
        */
       () =>
         new Promise((resolve, reject) => {
@@ -141,56 +144,105 @@ module.exports = (job, done) => {
     .then(tempDir => {
       /*
       - Upload files to S3.
-      @param tempDir {DirSyncObject}
+      - Create annotations without saving.
+      @param tempDir {DirSyncObject|null} The folder of the unzip files.
+      @returns {Promise<[{AnnotationModel}]>}
        */
-      if (!tempDir) {
-        return;
+      if (_file.type === FileType.annotationImage) {
+        const annotation = new AnnotationModel({
+          project: _project,
+          studyArea: _cameraLocation.studyArea,
+          cameraLocation: _cameraLocation,
+          file: _file,
+          filename: _file.originalFilename,
+          time: _file.exif.dateTime,
+        });
+        return [annotation];
       }
 
-      // todo: upload files at tempDir.name to S3.
-      fs.readdirSync(tempDir.name).forEach(file => {
-        console.log(typeof file, file); // debug
+      // FileType.annotationZIP
+      const limit = pLimit(4);
+      return Promise.all(
+        fs.readdirSync(tempDir.name).map(filename =>
+          limit(() => {
+            const file = new FileModel({
+              type: FileType.annotationImage,
+              project: _project,
+              user: _user,
+              originalFilename: filename,
+            });
+            if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
+              return;
+            }
+
+            return file
+              .saveWithContent(
+                fs.readFileSync(path.join(tempDir.name, filename)),
+              )
+              .then(() => {
+                fs.unlinkSync(path.join(tempDir.name, filename));
+                if (!file.exif || !file.exif.dateTime) {
+                  _uploadSession.errorType =
+                    UploadSessionErrorType.lostExifTime;
+                  throw new errors.Http400(
+                    `${file.originalFilename} lost exif.`,
+                  );
+                }
+                return new AnnotationModel({
+                  project: _project,
+                  studyArea: _cameraLocation.studyArea,
+                  cameraLocation: _cameraLocation,
+                  file,
+                  filename: file.originalFilename,
+                  time: file.exif.dateTime,
+                });
+              });
+          }),
+        ),
+      ).then(result => {
+        tempDir.removeCallback();
+        return result;
       });
     })
-    .then(() => {
+    .then((annotations = []) => {
+      /*
+      Filter empty items in the array.
+       */
+      const result = [];
+      annotations.forEach(annotation => {
+        if (annotation) {
+          result.push(annotation);
+        }
+      });
+      return result;
+    })
+    .then((annotations = []) => {
       /*
       - Find the duplicate annotation.
         使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
+      @param annotations {Promise<[{AnnotationModel}]>}
+      @returns {Promise<[{AnnotationModel}, {AnnotationModel}]>}
+        (new annotations, duplicate annotations)
        */
-      const annotations = [];
-      const statements = [];
+      const statements = annotations.map(annotation => ({
+        $and: [
+          { cameraLocation: annotation.cameraLocation._id },
+          { filename: annotation.filename },
+          { time: annotation.time },
+        ],
+      }));
 
-      switch (_file.type) {
-        case FileType.annotationImage:
-          annotations.push(
-            new AnnotationModel({
-              project: _project,
-              studyArea: _cameraLocation.studyArea,
-              cameraLocation: _cameraLocation,
-              file: _file,
-              filename: _file.originalFilename,
-              time: _file.exif.dateTime,
-            }),
-          );
-          statements.push({
-            $and: [
-              { cameraLocation: annotations[0].cameraLocation._id },
-              { filename: annotations[0].filename },
-              { time: annotations[0].time },
-            ],
-          });
-          break;
-        case FileType.annotationZIP:
-          // todo: Find the duplicate annotations.
-          break;
-        default:
-      }
       return Promise.all([
         annotations,
         AnnotationModel.find({ $or: statements }),
       ]);
     })
     .then(([annotations, duplicateAnnotations]) => {
+      /*
+      - If the duplicate annotation is exists then update the file of the duplicate one.
+      - If there is no duplicate annotation then save a new annotation.
+      @returns {Promise<[AnnotationModel]>}
+       */
       const tasks = [];
 
       annotations.forEach(annotation => {
@@ -213,6 +265,7 @@ module.exports = (job, done) => {
     .then(() => {
       /*
       Set the upload session as success and save it.
+      @returns {Promise<UploadSessionModel>}
        */
       if (_uploadSession) {
         _uploadSession.state = UploadSessionState.success;
