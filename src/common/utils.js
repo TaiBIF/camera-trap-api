@@ -266,6 +266,8 @@ exports.deleteS3Objects = (filenames = []) =>
     });
   });
 
+exports.getS3 = () => s3;
+
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
