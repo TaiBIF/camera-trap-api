@@ -140,7 +140,7 @@ model.prototype.saveWithContent = function(content) {
             true,
           ),
           utils.resizeImageAndUploadToS3({
-            content,
+            buffer: content,
             filename: `${
               config.s3.folders.annotationImages
             }/${this.getFilename()}`,
