@@ -29,7 +29,9 @@ const model = db.model(
         // 樣區名稱
         'zh-TW': {
           // 繁體中文
+          // This filed is index with "partialFilterExpression". Find the script at index.js.
           type: String,
+          required: true,
           index: {
             name: 'TitleZhTW',
           },

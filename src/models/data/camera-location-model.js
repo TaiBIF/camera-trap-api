@@ -33,6 +33,7 @@ const model = db.model(
       },
       name: {
         // 相機位置名稱
+        // This filed is index with "partialFilterExpression". Find the script at index.js.
         type: String,
         required: true,
         index: {
