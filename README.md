@@ -24,13 +24,19 @@ $ cd camera-trap-api
 $ npm install
 ```
 
-### 2. Install libraries
+### 2. Install redis server
+We use a [task queue](https://github.com/Automattic/kue) based on [redis](https://redis.io/).
+```bash
+$ brew install redis
+```
+
+### 3. Install libraries
 We use [gm](https://www.npmjs.com/package/gm), so that we need install [graphicsmagick](http://www.graphicsmagick.org/) or imagemagick.
 ```bash
 $ brew install graphicsmagick
 ```
 
-### 3. Running it locally
+### 4. Running it locally
 ```bash
 $ npm start
 ```
@@ -53,3 +59,7 @@ $ node . -i
 4. **issue-[issueID]**: issue working branch. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.
 5. **uat**: user acceptance testing branch. Will merge into _prod_ when ready.
 6. **prod**: production version.
+
+## Note
++ What is brew?  
+The missing package manager for macOS. [https://brew.sh](https://brew.sh)

@@ -3,6 +3,7 @@ const config = require('config');
 const multer = require('multer');
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
+const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const FileType = require('../models/const/file-type');
 const FileForm = require('../forms/file/file-form');
@@ -10,11 +11,12 @@ const FileModel = require('../models/data/file-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const StudyAreaState = require('../models/const/study-area-state');
-const AnnotationModel = require('../models/data/annotation-model');
 const ProjectModel = require('../models/data/project-model');
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
+const MediaWorkerData = require('../models/dto/media-worker-data');
+const TaskWorker = require('../models/const/task-worker');
 
 const imageMulter = util.promisify(
   multer({
@@ -50,7 +52,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     default:
   }
 
-  let uploadSession;
+  let _uploadSession;
   const multerTable = {};
   multerTable[FileType.projectCoverImage] = imageMulter;
   multerTable[FileType.annotationImage] = imageMulter;
@@ -104,12 +106,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       /*
       - Check authorization of the project, study area, camera location.
       - Append a field `project` of the file.
-      - Create an annotation.
       - Save a file.
       @param file {FileModel} This file didn't save. We should check the permission.
       @param project {ProjectModel|null}
       @param cameraLocation {CameraLocationModel|null}
-      @returns {Promise<[{FileModel}, {AnnotationModel|null}]>}
+      @returns {Promise<[{FileModel}]>}
        */
       // Authorization
       switch (form.type) {
@@ -157,24 +158,15 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       // Business logic
       if (form.type === FileType.annotationImage) {
         file.project = cameraLocation.project;
-        uploadSession = new UploadSessionModel({
+        _uploadSession = new UploadSessionModel({
           project: cameraLocation.project,
           user: req.user,
           file,
           cameraLocation,
         });
-        const annotation = new AnnotationModel({
-          project: cameraLocation.project,
-          studyArea: cameraLocation.studyArea,
-          cameraLocation,
-          file,
-          filename: file.originalFilename,
-          time: new Date(), // We will update this fake time.
-        });
         return Promise.all([
           file.saveWithContent(req.file.buffer),
-          annotation,
-          uploadSession.save(),
+          _uploadSession.save(),
         ]);
       }
       if (form.type === FileType.annotationCSV) {
@@ -182,65 +174,62 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       }
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
-    .then(([file, annotation]) => {
-      /*
-      - Append fields `file` and `time` of the annotation.
-      - Find the duplicate annotation.
-        使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話替換 annotation.file。
-      @param file {FileModel} This is saved.
-      @param annotation {AnnotationModel|null} This is didn't save. It is missing a field `time`.
-      @returns {Promise<[{FileModel}, {AnnotationModel|null}, {AnnotationModel|null}]>}
-       */
-      if (annotation) {
-        if (!file.exif || !file.exif.dateTime) {
-          uploadSession.errorType = UploadSessionErrorType.lostExifTime;
-          throw new errors.Http400(
-            `Can't get the time information in the exif.`,
-          );
-        }
-        return Promise.all([
-          file,
-          annotation,
-          AnnotationModel.where({ cameraLocation: annotation.cameraLocation })
-            .where({ filename: annotation.filename })
-            .where({ time: annotation.time })
-            .findOne(),
-        ]);
-      }
-      return Promise.all([file]);
-    })
-    .then(([file, annotation, duplicateAnnotation]) => {
-      /*
-      - Save annotation or duplicateAnnotation.
-      - Set uploadSession.state as success then save it.
-      @param file {FileModel}
-      @param annotation {AnnotationModel} This is didn't save.
-      @param duplicateAnnotation {AnnotationModel}
-      @returns {Promise<[{FileModel}]>}
-       */
-      const tasks = [file];
-      if (annotation) {
-        if (duplicateAnnotation) {
-          // Replace the old file with a new one.
-          duplicateAnnotation.file = file;
-          tasks.push(duplicateAnnotation.saveAndAddRevision(req.user));
-        } else {
-          tasks.push(annotation.saveAndAddRevision(req.user));
-        }
-        uploadSession.state = UploadSessionState.success;
-        tasks.push(uploadSession.save());
-      }
-      return Promise.all(tasks);
-    })
     .then(([file]) => {
+      /*
+      - Check the file has exif.
+      @param file {FileModel} This is saved.
+      @returns {Promise<FileModel>}
+       */
+      switch (file.type) {
+        case FileType.annotationImage:
+          if (!file.exif || !file.exif.dateTime) {
+            _uploadSession.errorType = UploadSessionErrorType.lostExifTime;
+            throw new errors.Http400(
+              `Can't get the time information in the exif.`,
+            );
+          }
+          break;
+        default:
+      }
+      return file;
+    })
+    .then(file => {
+      /*
+      - Push a job into the task queue.
+      @param file {FileModel}
+      @returns {Promise<FileModel>}
+       */
+      if (file.type === FileType.annotationImage) {
+        const job = utils.getTaskQueue().createJob(
+          TaskWorker.mediaWorker,
+          new MediaWorkerData({
+            userId: `${req.user._id}`,
+            projectId: `${file.project._id}`,
+            fileId: `${file._id}`,
+            uploadSessionId: `${_uploadSession._id}`,
+            cameraLocationId: form.cameraLocation,
+          }),
+        );
+        return new Promise((resolve, reject) => {
+          job.save(error => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(file);
+          });
+        });
+      }
+      return file;
+    })
+    .then(file => {
       res.json(file.dump());
     })
     .catch(error => {
-      if (uploadSession) {
-        uploadSession.state = UploadSessionState.failure;
-        uploadSession.errorType =
-          uploadSession.errorType || UploadSessionErrorType.others;
-        uploadSession.save();
+      if (_uploadSession) {
+        _uploadSession.state = UploadSessionState.failure;
+        _uploadSession.errorType =
+          _uploadSession.errorType || UploadSessionErrorType.others;
+        _uploadSession.save();
       }
       throw error;
     });

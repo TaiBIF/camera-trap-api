@@ -2,6 +2,7 @@ const os = require('os');
 const util = require('util');
 const AWS = require('aws-sdk');
 const config = require('config');
+const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
 const mongoose = require('mongoose');
@@ -70,6 +71,19 @@ exports.generateSchema = (model, options) => {
     next();
   });
   return schema;
+};
+
+let _queue;
+exports.getTaskQueue = () => {
+  /*
+  Get the task queue.
+  @return {Queue}
+   */
+  if (_queue) {
+    return _queue;
+  }
+  _queue = kue.createQueue(config.taskWorker);
+  return _queue;
 };
 
 exports.getFileUrl = (fileType, filename) => {
