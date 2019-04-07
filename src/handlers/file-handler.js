@@ -18,7 +18,7 @@ const UploadSessionErrorType = require('../models/const/upload-session-error-typ
 const MediaWorkerData = require('../models/dto/media-worker-data');
 const TaskWorker = require('../models/const/task-worker');
 
-const imageMulter = util.promisify(
+const memoryMulter = util.promisify(
   multer({
     storage: multer.memoryStorage(),
     limits: {
@@ -26,7 +26,7 @@ const imageMulter = util.promisify(
     },
   }).single('file'),
 );
-const zipMulter = util.promisify(
+const diskMulter = util.promisify(
   multer({
     storage: multer.diskStorage({}),
     limits: {
@@ -59,9 +59,10 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
 
   let _uploadSession;
   const multerTable = {};
-  multerTable[FileType.projectCoverImage] = imageMulter;
-  multerTable[FileType.annotationImage] = imageMulter;
-  multerTable[FileType.annotationZIP] = zipMulter;
+  multerTable[FileType.projectCoverImage] = memoryMulter;
+  multerTable[FileType.annotationImage] = memoryMulter;
+  multerTable[FileType.annotationCSV] = memoryMulter;
+  multerTable[FileType.annotationZIP] = diskMulter;
   return multerTable[form.type](req, res)
     .then(() => {
       /*
@@ -157,8 +158,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
 
       // Business logic
       if (
-        [FileType.annotationImage, FileType.annotationZIP].indexOf(form.type) >=
-        0
+        [
+          FileType.annotationImage,
+          FileType.annotationZIP,
+          FileType.annotationCSV,
+        ].indexOf(form.type) >= 0
       ) {
         file.project = cameraLocation.project;
         _uploadSession = new UploadSessionModel({
@@ -185,9 +189,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         }
         return Promise.all(tasks);
       }
-      if (form.type === FileType.annotationCSV) {
-        throw new errors.Http500('not done');
-      }
+
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
     .then(([file]) => {
@@ -196,16 +198,13 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @param file {FileModel} This is saved.
       @returns {Promise<FileModel>}
        */
-      switch (file.type) {
-        case FileType.annotationImage:
-          if (!file.exif || !file.exif.dateTime) {
-            _uploadSession.errorType = UploadSessionErrorType.lostExifTime;
-            throw new errors.Http400(
-              `Can't get the time information in the exif.`,
-            );
-          }
-          break;
-        default:
+      if (file.type === FileType.annotationImage) {
+        if (!file.exif || !file.exif.dateTime) {
+          _uploadSession.errorType = UploadSessionErrorType.lostExifTime;
+          throw new errors.Http400(
+            `Can't get the time information in the exif.`,
+          );
+        }
       }
       return file;
     })
@@ -216,8 +215,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @returns {Promise<FileModel>}
        */
       if (
-        [FileType.annotationImage, FileType.annotationZIP].indexOf(file.type) >=
-        0
+        [
+          FileType.annotationImage,
+          FileType.annotationCSV,
+          FileType.annotationZIP,
+        ].indexOf(file.type) >= 0
       ) {
         const job = utils.getTaskQueue().createJob(
           TaskWorker.mediaWorker,
