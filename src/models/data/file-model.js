@@ -75,6 +75,15 @@ schema.post('remove', file => {
           utils.logError(error, file);
         });
       break;
+    case FileType.annotationZIP:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.annotationZIPs}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, file);
+        });
+      break;
     default:
       utils.logError(new Error('not implement'), file);
       break;
@@ -96,19 +105,18 @@ model.prototype.getFilename = function() {
   return `${this._id}.${this.getExtensionName()}`;
 };
 
-model.prototype.saveWithContent = function(buffer) {
+model.prototype.saveWithContent = function(content) {
   /*
   Save the document with binary content.
-  @param buffer {Buffer}
+  @param content {Buffer|Stream} Set .size by yourself when it is stream.
   @returns {Promise<FileModel>}
    */
-  this.size = buffer.length;
   return this.save().then(() => {
     switch (this.type) {
       case FileType.projectCoverImage:
         return utils
           .resizeImageAndUploadToS3({
-            buffer,
+            content,
             filename: `${
               config.s3.folders.projectCovers
             }/${this.getFilename()}`,
@@ -125,14 +133,14 @@ model.prototype.saveWithContent = function(buffer) {
       case FileType.annotationImage:
         return Promise.all([
           utils.uploadToS3(
-            buffer,
+            content,
             `${
               config.s3.folders.annotationOriginalImages
             }/${this.getFilename()}`,
             true,
           ),
           utils.resizeImageAndUploadToS3({
-            buffer,
+            content,
             filename: `${
               config.s3.folders.annotationImages
             }/${this.getFilename()}`,
@@ -176,6 +184,14 @@ model.prototype.saveWithContent = function(buffer) {
             return exif.save();
           })
           .then(() => this.save());
+      case FileType.annotationZIP:
+        return utils
+          .uploadToS3(
+            content,
+            `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
+            false,
+          )
+          .then(() => this);
       default:
         throw new Error('error type');
     }

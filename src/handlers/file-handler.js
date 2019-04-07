@@ -1,3 +1,4 @@
+const fs = require('fs');
 const util = require('util');
 const config = require('config');
 const multer = require('multer');
@@ -11,7 +12,6 @@ const FileModel = require('../models/data/file-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const StudyAreaState = require('../models/const/study-area-state');
-const ProjectModel = require('../models/data/project-model');
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
@@ -23,6 +23,14 @@ const imageMulter = util.promisify(
     storage: multer.memoryStorage(),
     limits: {
       fileSize: config.limit.imageFileSize,
+    },
+  }).single('file'),
+);
+const zipMulter = util.promisify(
+  multer({
+    storage: multer.diskStorage({}),
+    limits: {
+      fileSize: config.limit.zipFileSize,
     },
   }).single('file'),
 );
@@ -40,13 +48,10 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   }
   switch (form.type) {
     case FileType.annotationImage:
+    case FileType.annotationZIP:
+    case FileType.annotationCSV:
       if (!form.cameraLocation) {
         throw new errors.Http400('The cameraLocation is required.');
-      }
-      break;
-    case FileType.annotationCSV:
-      if (!form.project) {
-        throw new errors.Http400('The project is required.');
       }
       break;
     default:
@@ -56,6 +61,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   const multerTable = {};
   multerTable[FileType.projectCoverImage] = imageMulter;
   multerTable[FileType.annotationImage] = imageMulter;
+  multerTable[FileType.annotationZIP] = zipMulter;
   return multerTable[form.type](req, res)
     .then(() => {
       /*
@@ -79,6 +85,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
             throw new errors.Http400('Just allow jpg and png files.');
           }
           break;
+        case FileType.annotationZIP:
+          if (file.getExtensionName() !== 'zip') {
+            throw new errors.Http400('Just allow zip files.');
+          }
+          break;
         case FileType.annotationCSV:
           if (file.getExtensionName() !== 'csv') {
             throw new errors.Http400('Just allow csv files.');
@@ -89,32 +100,32 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
 
       switch (form.type) {
         case FileType.annotationImage:
+        case FileType.annotationZIP:
+        case FileType.annotationCSV:
           return Promise.all([
             file,
-            null,
             CameraLocationModel.findById(form.cameraLocation)
               .populate('project')
               .populate('studyArea'),
           ]);
-        case FileType.annotationCSV:
-          return Promise.all([file, ProjectModel.findById(form.project)]);
         default:
           return Promise.all([file]);
       }
     })
-    .then(([file, project, cameraLocation]) => {
+    .then(([file, cameraLocation]) => {
       /*
       - Check authorization of the project, study area, camera location.
       - Append a field `project` of the file.
-      - Save a file.
+      - Save a file (upload to s3).
       @param file {FileModel} This file didn't save. We should check the permission.
-      @param project {ProjectModel|null}
       @param cameraLocation {CameraLocationModel|null}
       @returns {Promise<[{FileModel}]>}
        */
       // Authorization
       switch (form.type) {
         case FileType.annotationImage:
+        case FileType.annotationZIP:
+        case FileType.annotationCSV:
           if (
             !cameraLocation ||
             cameraLocation.state !== CameraLocationState.active
@@ -141,22 +152,14 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
             throw new errors.Http403();
           }
           break;
-        case FileType.annotationCSV:
-          if (!project) {
-            throw new errors.Http404();
-          }
-          if (
-            req.user.permission !== UserPermission.administrator &&
-            !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-          ) {
-            throw new errors.Http403();
-          }
-          break;
         default:
       }
 
       // Business logic
-      if (form.type === FileType.annotationImage) {
+      if (
+        [FileType.annotationImage, FileType.annotationZIP].indexOf(form.type) >=
+        0
+      ) {
         file.project = cameraLocation.project;
         _uploadSession = new UploadSessionModel({
           project: cameraLocation.project,
@@ -164,10 +167,23 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           file,
           cameraLocation,
         });
-        return Promise.all([
-          file.saveWithContent(req.file.buffer),
-          _uploadSession.save(),
-        ]);
+        const tasks = [_uploadSession.save()];
+        if (req.file.buffer) {
+          // memory storage
+          tasks.unshift(file.saveWithContent(req.file.buffer));
+        } else {
+          // disk storage
+          file.size = req.file.size;
+          const stream = fs.createReadStream(req.file.path);
+          tasks.unshift(
+            file.saveWithContent(stream).then(result => {
+              stream.close();
+              fs.unlinkSync(req.file.path);
+              return result;
+            }),
+          );
+        }
+        return Promise.all(tasks);
       }
       if (form.type === FileType.annotationCSV) {
         throw new errors.Http500('not done');
@@ -199,7 +215,10 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @param file {FileModel}
       @returns {Promise<FileModel>}
        */
-      if (file.type === FileType.annotationImage) {
+      if (
+        [FileType.annotationImage, FileType.annotationZIP].indexOf(file.type) >=
+        0
+      ) {
         const job = utils.getTaskQueue().createJob(
           TaskWorker.mediaWorker,
           new MediaWorkerData({

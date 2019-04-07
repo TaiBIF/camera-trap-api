@@ -10,8 +10,5 @@ FileForm.define({
   cameraLocation: new forms.fields.StringField({
     validators: [forms.validators.id()],
   }),
-  project: new forms.fields.StringField({
-    validators: [forms.validators.id()],
-  }),
 });
 module.exports = FileForm;

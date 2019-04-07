@@ -1,4 +1,7 @@
+const fs = require('fs');
 const config = require('config');
+const extract = require('extract-zip');
+const tmp = require('tmp');
 const utils = require('../common/utils');
 const errors = require('../models/errors');
 const MediaWorkerData = require('../models/dto/media-worker-data');
@@ -40,7 +43,7 @@ module.exports = (job, done) => {
   ])
     .then(([user, project, file, uploadSession, cameraLocation]) => {
       /*
-      - Export upload session.
+      - Export user, project, file, upload session, camera location.
       - Do authorization.
       - Do validations.
        */
@@ -98,6 +101,57 @@ module.exports = (job, done) => {
         default:
       }
     })
+    .then(
+      /*
+      - Unzip the file from S3.
+       */
+      () =>
+        new Promise((resolve, reject) => {
+          if (_file.type !== FileType.annotationZIP) {
+            return resolve();
+          }
+
+          const s3 = utils.getS3();
+          const tempFile = tmp.fileSync();
+          const tempDir = tmp.dirSync();
+          const file = fs.createWriteStream(tempFile.name);
+
+          file.on('close', () => {
+            extract(tempFile.name, { dir: tempDir.name }, error => {
+              if (error) {
+                return reject(error);
+              }
+              tempFile.removeCallback();
+              resolve(tempDir);
+            });
+          });
+          s3.getObject({
+            Bucket: config.s3.bucket,
+            Key: `${config.s3.folders.annotationZIPs}/${_file.getFilename()}`,
+          })
+            .createReadStream()
+            .on('error', error => {
+              tempFile.removeCallback();
+              tempDir.removeCallback();
+              reject(error);
+            })
+            .pipe(file);
+        }),
+    )
+    .then(tempDir => {
+      /*
+      - Upload files to S3.
+      @param tempDir {DirSyncObject}
+       */
+      if (!tempDir) {
+        return;
+      }
+
+      // todo: upload files at tempDir.name to S3.
+      fs.readdirSync(tempDir.name).forEach(file => {
+        console.log(typeof file, file); // debug
+      });
+    })
     .then(() => {
       /*
       - Find the duplicate annotation.
@@ -127,6 +181,7 @@ module.exports = (job, done) => {
           });
           break;
         case FileType.annotationZIP:
+          // todo: Find the duplicate annotations.
           break;
         default:
       }
