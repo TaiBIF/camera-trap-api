@@ -1,3 +1,4 @@
+const kue = require('kue');
 const utils = require('./common/utils');
 const mediaWorker = require('./tasks/media-worker');
 const TaskWorker = require('./models/const/task-worker');
@@ -14,6 +15,13 @@ const queue = utils.getTaskQueue();
 setTimeout(() => {
   console.log('task-worker is start.');
   queue.process(TaskWorker.mediaWorker, 1, mediaWorker);
+  queue.on('job complete', (id, result) => {
+    kue.Job.get(id, (error, job) => {
+      if (!error) {
+        job.remove(() => {});
+      }
+    });
+  });
 }, 10000);
 
 process.on('message', message => {
