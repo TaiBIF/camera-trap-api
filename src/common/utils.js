@@ -99,12 +99,13 @@ exports.getFileUrl = (fileType, filename) => {
   if (!filename) {
     return;
   }
+  if ([FileType.annotationCSV, FileType.annotationZIP].indexOf(fileType) >= 0) {
+    return;
+  }
   const mapping = {};
   mapping[FileType.projectCoverImage] = config.s3.folders.projectCovers;
   mapping[FileType.annotationImage] = config.s3.folders.annotationImages;
   mapping[FileType.annotationVideo] = config.s3.folders.annotationVideos;
-  mapping[FileType.annotationCSV] = config.s3.folders.annotationCSVs;
-  mapping[FileType.annotationZIP] = config.s3.folders.annotationZIPs;
   mapping[FileType.issueAttachment] = config.s3.folders.issueAttachments;
   return `${config.s3.urlPrefix}${mapping[fileType]}/${filename}`;
 };
