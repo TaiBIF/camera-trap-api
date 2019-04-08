@@ -148,61 +148,61 @@ module.exports = (job, done) => {
       @param tempDir {DirSyncObject|null} The folder of the unzip files.
       @returns {Promise<[{AnnotationModel}]>}
        */
-      if (_file.type === FileType.annotationImage) {
-        const annotation = new AnnotationModel({
-          project: _project,
-          studyArea: _cameraLocation.studyArea,
-          cameraLocation: _cameraLocation,
-          file: _file,
-          filename: _file.originalFilename,
-          time: _file.exif.dateTime,
+      if (_file.type === FileType.annotationZIP) {
+        const limit = pLimit(4);
+        return Promise.all(
+          fs.readdirSync(tempDir.name).map(filename =>
+            limit(() => {
+              const file = new FileModel({
+                type: FileType.annotationImage,
+                project: _project,
+                user: _user,
+                originalFilename: filename,
+              });
+              if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
+                return;
+              }
+
+              return file
+                .saveWithContent(
+                  fs.readFileSync(path.join(tempDir.name, filename)),
+                )
+                .then(() => {
+                  fs.unlinkSync(path.join(tempDir.name, filename));
+                  if (!file.exif || !file.exif.dateTime) {
+                    _uploadSession.errorType =
+                      UploadSessionErrorType.lostExifTime;
+                    throw new errors.Http400(
+                      `${file.originalFilename} lost exif.`,
+                    );
+                  }
+                  return new AnnotationModel({
+                    project: _project,
+                    studyArea: _cameraLocation.studyArea,
+                    cameraLocation: _cameraLocation,
+                    file,
+                    filename: file.originalFilename,
+                    time: file.exif.dateTime,
+                  });
+                });
+            }),
+          ),
+        ).then(result => {
+          tempDir.removeCallback();
+          return result;
         });
-        return [annotation];
       }
 
-      // FileType.annotationZIP
-      const limit = pLimit(4);
-      return Promise.all(
-        fs.readdirSync(tempDir.name).map(filename =>
-          limit(() => {
-            const file = new FileModel({
-              type: FileType.annotationImage,
-              project: _project,
-              user: _user,
-              originalFilename: filename,
-            });
-            if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
-              return;
-            }
-
-            return file
-              .saveWithContent(
-                fs.readFileSync(path.join(tempDir.name, filename)),
-              )
-              .then(() => {
-                fs.unlinkSync(path.join(tempDir.name, filename));
-                if (!file.exif || !file.exif.dateTime) {
-                  _uploadSession.errorType =
-                    UploadSessionErrorType.lostExifTime;
-                  throw new errors.Http400(
-                    `${file.originalFilename} lost exif.`,
-                  );
-                }
-                return new AnnotationModel({
-                  project: _project,
-                  studyArea: _cameraLocation.studyArea,
-                  cameraLocation: _cameraLocation,
-                  file,
-                  filename: file.originalFilename,
-                  time: file.exif.dateTime,
-                });
-              });
-          }),
-        ),
-      ).then(result => {
-        tempDir.removeCallback();
-        return result;
+      // _file.type === FileType.annotationImage
+      const annotation = new AnnotationModel({
+        project: _project,
+        studyArea: _cameraLocation.studyArea,
+        cameraLocation: _cameraLocation,
+        file: _file,
+        filename: _file.originalFilename,
+        time: _file.exif.dateTime,
       });
+      return [annotation];
     })
     .then((annotations = []) => {
       /*
