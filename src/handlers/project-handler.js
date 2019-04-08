@@ -1,6 +1,8 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
+const Mail = require('../common/mail');
+const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const ProjectRole = require('../models/const/project-role');
 const ProjectAreaModel = require('../models/data/project-area-model');
@@ -297,9 +299,15 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
         user,
         role: form.role,
       });
-      return project.save();
+      return Promise.all([user, project.save()]);
     })
-    .then(project => {
+    .then(([user, project]) => {
+      const mail = new Mail();
+      mail
+        .sendInviteMemberInToProjectNotification(user, project)
+        .catch(error => {
+          utils.logError(error, { user: user.dump(), project: project.dump() });
+        });
       res.json(project.dump().members);
     });
 });

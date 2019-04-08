@@ -20,7 +20,7 @@
   "dependencies": {
     "aws-sdk": "^2.427.0",
     "body-parser": "^1.18.3",
-    "camera-trap-credentials": "git+ssh://git@github.com/TaiBIF/camera-trap-credentials.git#b6441ce3e6315cb5ab5e189c1774e2a801371a6b",
+    "camera-trap-credentials": "git+ssh://git@github.com/TaiBIF/camera-trap-credentials.git#391c4a77dfc7d5e9d78cc2e0cbc62e5dec25a841",
     "config": "^3.0.1",
     "connect-mongo": "^2.0.3",
     "cookie-parser": "^1.4.4",
