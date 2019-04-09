@@ -62,9 +62,9 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
   const query = [ProjectModel.findById(req.params.projectId)];
   if (form.parent) {
     query.push(
-      StudyAreaModel.findById(form.parent).where({
-        state: StudyAreaState.active,
-      }),
+      StudyAreaModel.findById(form.parent)
+        .where({ project: req.params.projectId })
+        .where({ state: StudyAreaState.active }),
     );
   }
   return Promise.all(query)
