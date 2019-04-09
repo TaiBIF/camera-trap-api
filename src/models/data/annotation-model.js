@@ -89,14 +89,7 @@ const model = db.model(
       rawData: [
         // The original data from .csv.
         {
-          _id: false,
-          key: {
-            type: String,
-            required: true,
-          },
-          value: {
-            type: String,
-          },
+          type: String,
         },
       ],
     },
