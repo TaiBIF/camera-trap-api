@@ -267,6 +267,25 @@ exports.deleteS3Objects = (filenames = []) =>
     });
   });
 
+exports.getS3Object = filename =>
+  new Promise((resolve, reject) => {
+    if (!filename) {
+      return reject(new Error('Filename can not be empty.'));
+    }
+    s3.getObject(
+      {
+        Bucket: config.s3.bucket,
+        Key: filename,
+      },
+      (error, data) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(data);
+      },
+    );
+  });
+
 exports.getS3 = () => s3;
 
 exports.resizeImageAndUploadToS3 = (args = {}) => {
