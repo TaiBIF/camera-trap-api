@@ -366,6 +366,15 @@ exports.convertCsvToAnnotations = ({
   csvObject,
   timezone,
 }) => {
+  /*
+  @param project {ProjectModel}
+  @param studyAreas {Array<StudyAreaModel>} All study areas of this project.
+  @param dataFields {Array<DataFieldModel>} All data fields of this project.
+  @param cameraLocations {Array<CameraLocationModel>} All camera locations of this project.
+  @param species {Array<SpeciesModel>} All species of this project.
+  @param csvObject {Array<Array<string>>}
+  @param timezone {Number} minutes (480 -> GMT+8).
+   */
   const AnnotationModel = require('../models/data/annotation-model');
   const SpeciesModel = require('../models/data/species-model');
 
@@ -480,6 +489,18 @@ exports.convertCsvToAnnotations = ({
       !information.time
     ) {
       throw new Error(`Missing required fields at row ${row}.`);
+    }
+    if (
+      result.annotations.find(
+        x =>
+          `${x.studyArea._id}` === `${information.studyArea._id}` &&
+          `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
+          x.filename === information.filename &&
+          x.time.getTime() === information.time.getTime(),
+      )
+    ) {
+      // This annotation is duplicated.
+      return;
     }
     result.annotations.push(
       new AnnotationModel({
