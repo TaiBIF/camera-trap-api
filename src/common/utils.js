@@ -8,6 +8,8 @@ const mime = require('mime-types');
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 const FileType = require('../models/const/file-type');
+const DataFieldSystemCode = require('../models/const/data-field-system-code');
+const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 
 const s3 = new AWS.S3({
   accessKeyId: config.s3.key,
@@ -354,6 +356,159 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
 };
 
 exports.getAnonymous = () => ({ isLogin: () => false });
+
+exports.convertCsvToAnnotations = ({
+  project,
+  studyAreas,
+  dataFields,
+  cameraLocations,
+  species,
+  csvObject,
+  timezone,
+}) => {
+  const AnnotationModel = require('../models/data/annotation-model');
+  const SpeciesModel = require('../models/data/species-model');
+
+  const result = {
+    annotations: [],
+    newSpecies: [],
+  };
+  timezone = timezone == null ? config.defaultTimezone : timezone;
+  if (!Array.isArray(csvObject) || csvObject.length < 1) {
+    return result;
+  }
+
+  csvObject.forEach((items, row) => {
+    if (row === 0) {
+      return;
+    }
+
+    let dataOffset = 0;
+    const information = {
+      studyArea: null,
+      cameraLocation: null,
+      filename: null,
+      time: null,
+      species: null,
+      fields: [],
+    };
+    for (let index = 0; index < dataFields.length; index += 1) {
+      const data = (items[index + dataOffset] || '').trim();
+      let nextData;
+      switch (dataFields[index].systemCode) {
+        case DataFieldSystemCode.studyArea:
+          // This is study area data, we should process the next item it is sub study area.
+          nextData = (items[index + dataOffset + 1] || '').trim();
+          if (nextData) {
+            information.studyArea = studyAreas.find(
+              x => x.title['zh-TW'] === nextData,
+            );
+          } else {
+            information.studyArea = studyAreas.find(
+              x => x.title['zh-TW'] === data,
+            );
+          }
+          dataOffset = 1;
+          break;
+        case DataFieldSystemCode.cameraLocation:
+          information.cameraLocation = cameraLocations.find(
+            x => x.name === data,
+          );
+          break;
+        case DataFieldSystemCode.fileName:
+          information.filename = data;
+          break;
+        case DataFieldSystemCode.time:
+          information.time = exports.parseTimeFromCSV(data, timezone);
+          break;
+        case DataFieldSystemCode.species:
+          information.species = species.find(x => x.title['zh-TW'] === data);
+          if (!information.species && data) {
+            // find the species in the new items.
+            information.species = result.newSpecies.find(
+              x => x.title['zh-TW'] === data,
+            );
+          }
+          if (!information.species && data) {
+            // automatically create a new species.
+            result.newSpecies.push(
+              new SpeciesModel({
+                project,
+                title: {
+                  'zh-TW': data,
+                },
+                index: species.length + result.newSpecies.length,
+              }),
+            );
+            information.species =
+              result.newSpecies[result.newSpecies.length - 1];
+          }
+          break;
+        default:
+          if (dataFields.widgetType === DataFieldWidgetType.time) {
+            information.fields.push({
+              dataField: dataFields[index],
+              value: {
+                text: exports.parseTimeFromCSV(data, timezone),
+              },
+            });
+          } else if (dataFields.widgetType === DataFieldWidgetType.select) {
+            information.fields.push({
+              dataField: dataFields[index],
+              value: {
+                selectId: dataFields[index].options.find(
+                  x => x['zh-TW'] === data,
+                ),
+              },
+            });
+          } else {
+            // DataFieldWidgetType.text
+            information.fields.push({
+              dataField: dataFields[index],
+              value: {
+                text: data,
+              },
+            });
+          }
+      }
+    }
+
+    if (
+      !information.studyArea ||
+      !information.cameraLocation ||
+      !information.filename ||
+      !information.time
+    ) {
+      throw new Error(`Missing required fields at row ${row}.`);
+    }
+    result.annotations.push(
+      new AnnotationModel({
+        project,
+        studyArea: information.studyArea,
+        cameraLocation: information.cameraLocation,
+        filename: information.filename,
+        time: information.time,
+        species: information.species == null ? undefined : information.species,
+        customFields: information.fields,
+        rawData: items,
+      }),
+    );
+  });
+
+  return result;
+};
+
+exports.parseTimeFromCSV = (time, timezone) => {
+  /*
+  Parse the time from csv.
+  @param time {string} "2010-07-25 12:27:48"
+  @param timezone {Number} minutes (480 -> GMT+8)
+  @returns {Date}
+   */
+  const dateTime = new Date(`${time.replace(' ', 'T')}.000Z`);
+  dateTime.setUTCMinutes(dateTime.getUTCMinutes() - timezone);
+  return dateTime;
+};
 
 exports.logError = (error, extra) => {
   /*

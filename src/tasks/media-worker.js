@@ -1,6 +1,8 @@
 const fs = require('fs');
+const util = require('util');
 const path = require('path');
 const config = require('config');
+const csvParse = require('csv-parse');
 const extract = require('extract-zip');
 const pLimit = require('p-limit');
 const tmp = require('tmp');
@@ -16,10 +18,12 @@ const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
 const ProjectModel = require('../models/data/project-model');
+require('../models/data/data-field-model'); // for populate
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
-require('../models/data/study-area-model'); // for populate
+const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
+const SpeciesModel = require('../models/data/species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 
 module.exports = (job, done) => {
@@ -29,6 +33,9 @@ module.exports = (job, done) => {
   let _file;
   let _uploadSession;
   let _cameraLocation;
+  let _allStudyAreas; // only for zip or csv type.
+  let _allCameraLocations; // only for zip or csv type.
+  let _allSpecies; // only for zip or csv type.
 
   if (config.isDebug) {
     console.log(`media-worker job[${job.id}] start.`);
@@ -36,73 +43,129 @@ module.exports = (job, done) => {
   }
   Promise.all([
     UserModel.findById(workerData.userId),
-    ProjectModel.findById(workerData.projectId),
+    (() => {
+      const query = ProjectModel.findById(workerData.projectId);
+      if (
+        [FileType.annotationCSV, FileType.annotationZIP].indexOf(
+          workerData.fileType,
+        ) >= 0
+      ) {
+        // populate .dataFields for csv and zip file.
+        return query.populate('dataFields');
+      }
+      return query;
+    })(),
     FileModel.findById(workerData.fileId).populate('exif'),
     UploadSessionModel.findById(workerData.uploadSessionId),
     CameraLocationModel.findById(workerData.cameraLocationId).populate(
       'studyArea',
     ),
+    (() => {
+      if (
+        [FileType.annotationCSV, FileType.annotationZIP].indexOf(
+          workerData.fileType,
+        ) >= 0
+      ) {
+        return StudyAreaModel.where({ project: workerData.projectId })
+          .where({ state: StudyAreaState.active })
+          .find();
+      }
+    })(),
+    (() => {
+      if (
+        [FileType.annotationCSV, FileType.annotationZIP].indexOf(
+          workerData.fileType,
+        ) >= 0
+      ) {
+        return CameraLocationModel.where({ project: workerData.projectId })
+          .where({ state: CameraLocationState.active })
+          .find();
+      }
+    })(),
+    (() => {
+      if (
+        [FileType.annotationCSV, FileType.annotationZIP].indexOf(
+          workerData.fileType,
+        ) >= 0
+      ) {
+        return SpeciesModel.where({ project: workerData.projectId }).find();
+      }
+    })(),
   ])
-    .then(([user, project, file, uploadSession, cameraLocation]) => {
-      /*
-      - Export user, project, file, upload session, camera location.
-      - Do authorization.
-      - Do validations.
-       */
-      _user = user;
-      _project = project;
-      _file = file;
-      _uploadSession = uploadSession;
-      _cameraLocation = cameraLocation;
+    .then(
+      ([
+        user,
+        project,
+        file,
+        uploadSession,
+        cameraLocation,
+        allStudyAreas,
+        allCameraLocations,
+        allSpecies,
+      ]) => {
+        /*
+        - Export user, project, file, upload session, camera location.
+        - Do authorization.
+        - Do validations.
+         */
+        _user = user;
+        _project = project;
+        _file = file;
+        _uploadSession = uploadSession;
+        _cameraLocation = cameraLocation;
+        _allStudyAreas = allStudyAreas;
+        _allCameraLocations = allCameraLocations;
+        _allSpecies = allSpecies;
 
-      // Check user, project, file, uploadSession isn't null.
-      if (!user) {
-        throw new errors.Http400();
-      }
-      if (!project) {
-        throw new errors.Http400();
-      }
-      if (!file) {
-        throw new errors.Http400();
-      }
-      if (!uploadSession) {
-        throw new errors.Http400();
-      }
-      // Check reference.
-      if (
-        `${file.project._id}` !== `${project._id}` ||
-        `${uploadSession.file._id}` !== `${file._id}`
-      ) {
-        throw new errors.Http400();
-      }
-      // Check the user is a member of the project.
-      if (
-        user.permission !== UserPermission.administrator &&
-        !project.members.find(x => `${x.user._id}` === `${user._id}`)
-      ) {
-        _uploadSession.errorType = UploadSessionErrorType.permissionDenied;
-        throw new errors.Http403();
-      }
-      // Do validations for each the file type.
-      switch (file.type) {
-        case FileType.annotationImage:
-          if (
-            !cameraLocation ||
-            cameraLocation.state !== CameraLocationState.active
-          ) {
-            throw new errors.Http404('Camera location is not found.');
-          }
-          if (
-            !cameraLocation.studyArea ||
-            cameraLocation.studyArea.state !== StudyAreaState.active
-          ) {
-            throw new errors.Http404('Study area is not found.');
-          }
-          break;
-        case FileType.annotationZIP:
-        default:
-      }
-    })
+        // Check user, project, file, uploadSession isn't null.
+        if (!user) {
+          throw new errors.Http400();
+        }
+        if (!project) {
+          throw new errors.Http400();
+        }
+        if (!file) {
+          throw new errors.Http400();
+        }
+        if (!uploadSession) {
+          throw new errors.Http400();
+        }
+        // Check reference.
+        if (
+          `${file.project._id}` !== `${project._id}` ||
+          `${uploadSession.file._id}` !== `${file._id}`
+        ) {
+          throw new errors.Http400();
+        }
+        // Check the user is a member of the project.
+        if (
+          user.permission !== UserPermission.administrator &&
+          !project.members.find(x => `${x.user._id}` === `${user._id}`)
+        ) {
+          _uploadSession.errorType = UploadSessionErrorType.permissionDenied;
+          throw new errors.Http403();
+        }
+        // Do validations for each the file type.
+        switch (file.type) {
+          case FileType.annotationImage:
+            if (
+              !cameraLocation ||
+              cameraLocation.state !== CameraLocationState.active
+            ) {
+              throw new errors.Http404('Camera location is not found.');
+            }
+            if (
+              !cameraLocation.studyArea ||
+              cameraLocation.studyArea.state !== StudyAreaState.active
+            ) {
+              throw new errors.Http404('Study area is not found.');
+            }
+            break;
+          case FileType.annotationZIP:
+          default:
+        }
+      },
+    )
     .then(
       /*
       - Unzip the file from S3.
@@ -187,10 +250,46 @@ module.exports = (job, done) => {
                 });
             }),
           ),
-        ).then(result => {
+        ).then((annotations = []) => {
+          /*
+          - Remove temp dir.
+          - Filter empty items in the array. (some files are not jop or png.)
+           */
           tempDir.removeCallback();
+          const result = [];
+          annotations.forEach(annotation => {
+            if (annotation) {
+              result.push(annotation);
+            }
+          });
           return result;
         });
+      }
+
+      if (_file.type === FileType.annotationCSV) {
+        const csvParseAsync = util.promisify(csvParse);
+        let result;
+        return utils
+          .getS3Object(
+            `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
+          )
+          .then(data => csvParseAsync(data.Body))
+          .then(csvObject => {
+            const limit = pLimit(5);
+            result = utils.convertCsvToAnnotations({
+              project: _project,
+              studyAreas: _allStudyAreas,
+              dataFields: _project.dataFields,
+              cameraLocations: _allCameraLocations,
+              species: _allSpecies,
+              csvObject,
+            });
+            // Save new species.
+            return Promise.all(
+              result.newSpecies.map(x => limit(() => x.save())),
+            );
+          })
+          .then(() => result.annotations); // Annotations are missing .file.
       }
 
       // _file.type === FileType.annotationImage
@@ -206,21 +305,9 @@ module.exports = (job, done) => {
     })
     .then((annotations = []) => {
       /*
-      Filter empty items in the array.
-       */
-      const result = [];
-      annotations.forEach(annotation => {
-        if (annotation) {
-          result.push(annotation);
-        }
-      });
-      return result;
-    })
-    .then((annotations = []) => {
-      /*
       - Find the duplicate annotation.
         使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
-      @param annotations {Promise<[{AnnotationModel}]>}
+      @param annotations {Promise<[{AnnotationModel}]>} Not saved.
       @returns {Promise<[{AnnotationModel}, {AnnotationModel}]>}
         (new annotations, duplicate annotations)
        */
@@ -254,7 +341,20 @@ module.exports = (job, done) => {
         );
         if (duplicateAnnotation) {
           // Replace the old file with a new one.
-          duplicateAnnotation.file = _file;
+          if (
+            [FileType.annotationImage, FileType.annotationZIP].indexOf(
+              _file.type,
+            ) >= 0
+          ) {
+            // The user upload images so we should replace with a new file.
+            duplicateAnnotation.file = annotation.file;
+          } else {
+            // FileType.annotationCSV
+            // We should apply the information from csv to annotations.
+            duplicateAnnotation.species = annotation.species;
+            duplicateAnnotation.customFields = annotation.customFields;
+            duplicateAnnotation.rawData = annotation.rawData;
+          }
           tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
         } else {
           tasks.push(annotation.saveAndAddRevision(_user));
