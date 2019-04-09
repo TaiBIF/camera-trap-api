@@ -293,15 +293,16 @@ module.exports = (job, done) => {
       }
 
       // _file.type === FileType.annotationImage
-      const annotation = new AnnotationModel({
-        project: _project,
-        studyArea: _cameraLocation.studyArea,
-        cameraLocation: _cameraLocation,
-        file: _file,
-        filename: _file.originalFilename,
-        time: _file.exif.dateTime,
-      });
-      return [annotation];
+      return [
+        new AnnotationModel({
+          project: _project,
+          studyArea: _cameraLocation.studyArea,
+          cameraLocation: _cameraLocation,
+          file: _file,
+          filename: _file.originalFilename,
+          time: _file.exif.dateTime,
+        }),
+      ];
     })
     .then((annotations = []) => {
       /*
