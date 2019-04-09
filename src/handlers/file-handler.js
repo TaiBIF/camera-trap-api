@@ -224,6 +224,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         const job = utils.getTaskQueue().createJob(
           TaskWorker.mediaWorker,
           new MediaWorkerData({
+            fileType: file.type,
             userId: `${req.user._id}`,
             projectId: `${file.project._id}`,
             fileId: `${file._id}`,
