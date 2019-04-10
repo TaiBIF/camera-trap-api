@@ -152,6 +152,7 @@ module.exports = (job, done) => {
         // Do validations for each the file type.
         switch (file.type) {
           case FileType.annotationImage:
+          case FileType.annotationZIP:
             if (!cameraLocation) {
               throw new errors.Http404('Camera location is not found.');
             }
@@ -162,111 +163,120 @@ module.exports = (job, done) => {
               throw new errors.Http404('Study area is not found.');
             }
             break;
-          case FileType.annotationZIP:
+          // The csv file include camera location, so we don't validate the camera location.
+          case FileType.annotationCSV:
+            break;
           default:
         }
       },
     )
-    .then(
+    .then(() => {
       /*
-      - Unzip the file from S3.
-      @returns {Promise<{DirSyncObject|null}>}
+      - Unzip the file from S3 for FileType.annotationZIP.
+      - Upload all files in the zip file to S3 for FileType.annotationZIP.
+      @returns {Promise<[{FileModel}]>}
        */
-      () =>
-        new Promise((resolve, reject) => {
-          if (_file.type !== FileType.annotationZIP) {
-            return resolve();
-          }
+      if (_file.type !== FileType.annotationZIP) {
+        return [_file];
+      }
 
-          const s3 = utils.getS3();
-          const tempFile = tmp.fileSync();
-          const tempDir = tmp.dirSync();
-          const file = fs.createWriteStream(tempFile.name);
+      // _file.type === FileType.annotationZIP
+      const tempFile = tmp.fileSync();
+      const tempDir = tmp.dirSync();
+      return new Promise((resolve, reject) => {
+        /*
+        - Download the zip file from S3.
+        - Unzip the zip file to the local folder.
+        @returns {Promise<>}
+         */
+        const s3 = utils.getS3();
+        const file = fs.createWriteStream(tempFile.name);
 
-          file.on('close', () => {
-            extract(tempFile.name, { dir: tempDir.name }, error => {
-              if (error) {
-                return reject(error);
-              }
-              tempFile.removeCallback();
-              resolve(tempDir);
-            });
+        file.on('close', () => {
+          extract(tempFile.name, { dir: tempDir.name }, error => {
+            if (error) {
+              return reject(error);
+            }
+            resolve();
           });
-          s3.getObject({
-            Bucket: config.s3.bucket,
-            Key: `${config.s3.folders.annotationZIPs}/${_file.getFilename()}`,
+        });
+        s3.getObject({
+          Bucket: config.s3.bucket,
+          Key: `${config.s3.folders.annotationZIPs}/${_file.getFilename()}`,
+        })
+          .createReadStream()
+          .on('error', error => {
+            reject(error);
           })
-            .createReadStream()
-            .on('error', error => {
-              tempFile.removeCallback();
-              tempDir.removeCallback();
-              reject(error);
-            })
-            .pipe(file);
-        }),
-    )
-    .then(tempDir => {
-      /*
-      - Upload files to S3.
-      - Create annotations without saving.
-      @param tempDir {DirSyncObject|null} The folder of the unzip files.
-      @returns {Promise<[{AnnotationModel}]>}
-       */
-      if (_file.type === FileType.annotationZIP) {
-        const limit = pLimit(4);
-        return Promise.all(
-          fs.readdirSync(tempDir.name).map(filename =>
-            limit(() => {
-              const file = new FileModel({
-                type: FileType.annotationImage,
-                project: _project,
-                user: _user,
-                originalFilename: filename,
-              });
-              if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
-                return;
-              }
-
-              return file
-                .saveWithContent(
-                  fs.readFileSync(path.join(tempDir.name, filename)),
-                )
-                .then(() => {
-                  fs.unlinkSync(path.join(tempDir.name, filename));
-                  if (!file.exif || !file.exif.dateTime) {
-                    _uploadSession.errorType =
-                      UploadSessionErrorType.lostExifTime;
-                    throw new errors.Http400(
-                      `${file.originalFilename} lost exif.`,
-                    );
-                  }
-                  return new AnnotationModel({
-                    project: _project,
-                    studyArea: _cameraLocation.studyArea,
-                    cameraLocation: _cameraLocation,
-                    file,
-                    filename: file.originalFilename,
-                    time: file.exif.dateTime,
-                  });
-                });
-            }),
-          ),
-        ).then((annotations = []) => {
+          .pipe(file);
+      })
+        .then(() => {
           /*
-          - Remove temp dir.
-          - Filter empty items in the array. (some files are not jop or png.)
+          - Create instances of FileModel for the each file at tempDir.
+          - Upload unzip files at the tempDir to S3.
+          @returns {Promise<[{FileModel}]>}
            */
+          const limit = pLimit(5); // Upload 5 files to S3 in the same time.
+          return Promise.all(
+            fs.readdirSync(tempDir.name).map(filename =>
+              limit(() => {
+                const file = new FileModel({
+                  type: FileType.annotationImage,
+                  project: _project,
+                  user: _user,
+                  originalFilename: filename,
+                });
+                if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
+                  return;
+                }
+
+                return file
+                  .saveWithContent(
+                    fs.readFileSync(path.join(tempDir.name, filename)),
+                  )
+                  .then(() => {
+                    fs.unlinkSync(path.join(tempDir.name, filename));
+                    if (!file.exif || !file.exif.dateTime) {
+                      _uploadSession.errorType =
+                        UploadSessionErrorType.lostExifTime;
+                      throw new errors.Http400(
+                        `${file.originalFilename} lost exif.`,
+                      );
+                    }
+                    return file;
+                  });
+              }),
+            ),
+          );
+        })
+        .then(files => {
+          /*
+          - Remove temp files.
+          - Filter out empty items in files.
+          @param files {Array<FileModel>}
+           */
+          tempFile.removeCallback();
           tempDir.removeCallback();
           const result = [];
-          annotations.forEach(annotation => {
-            if (annotation) {
-              result.push(annotation);
+          files.forEach(file => {
+            if (file) {
+              result.push(file);
             }
           });
           return result;
+        })
+        .catch(error => {
+          tempFile.removeCallback();
+          tempDir.removeCallback();
+          throw error;
         });
-      }
-
+    })
+    .then(files => {
+      /*
+      - Create annotations without saving.
+      @param files {Array<FileModel>}
+      @returns {Promise<[{AnnotationModel}]>}
+       */
       if (_file.type === FileType.annotationCSV) {
         const csvParseAsync = util.promisify(csvParse);
         let result;
@@ -276,7 +286,7 @@ module.exports = (job, done) => {
           )
           .then(data => csvParseAsync(data.Body))
           .then(csvObject => {
-            const limit = pLimit(5);
+            const limit = pLimit(5); // Save 5 new species in the same time.
             result = utils.convertCsvToAnnotations({
               project: _project,
               studyAreas: _allStudyAreas,
@@ -294,18 +304,20 @@ module.exports = (job, done) => {
       }
 
       // _file.type === FileType.annotationImage
-      return [
-        new AnnotationModel({
-          project: _project,
-          studyArea: _cameraLocation.studyArea,
-          cameraLocation: _cameraLocation,
-          file: _file,
-          filename: _file.originalFilename,
-          time: _file.exif.dateTime,
-        }),
-      ];
+      // _file.type === FileType.annotationZIP
+      return files.map(
+        file =>
+          new AnnotationModel({
+            project: _project,
+            studyArea: _cameraLocation.studyArea,
+            cameraLocation: _cameraLocation,
+            file,
+            filename: file.originalFilename,
+            time: file.exif.dateTime,
+          }),
+      );
     })
-    .then((annotations = []) => {
+    .then(annotations => {
       /*
       - Find the duplicate annotation.
         使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
