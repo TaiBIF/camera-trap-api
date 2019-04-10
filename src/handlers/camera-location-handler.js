@@ -14,6 +14,7 @@ const CameraLocationsSearchForm = require('../forms/camera-location/camera-locat
 exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/projects/:projectId/camera-locations
+  提供新增相機位置時檢查相機位置名稱是否使用
    */
   const form = new CameraLocationsSearchForm(req.query);
   const errorMessage = form.validate();
@@ -27,12 +28,30 @@ exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
   if (form.name) {
     query.where({ name: form.name });
   }
-  return CameraLocationModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    CameraLocationModel.paginate(query, {
+      offset: form.index * form.size,
+      limit: form.size,
+    }),
+  ]).then(([project, cameraLocations]) => {
+    if (!project) {
+      throw new errors.Http404();
+    }
+    if (
+      req.user.permission !== UserPermission.administrator &&
+      !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+    ) {
+      throw new errors.Http403();
+    }
+
     res.json(
-      new PageList(form.index, form.size, result.totalDocs, result.docs),
+      new PageList(
+        form.index,
+        form.size,
+        cameraLocations.totalDocs,
+        cameraLocations.docs,
+      ),
     );
   });
 });
