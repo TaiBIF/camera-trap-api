@@ -82,7 +82,9 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
   return Promise.all([
     DataFieldModel.where({ systemCode: { $exists: true } }),
     ProjectAreaModel.find({ _id: { $in: form.areas } }),
-    FileModel.findById(form.coverImageFile),
+    FileModel.findById(form.coverImageFile).where({
+      type: FileType.projectCoverImage,
+    }),
   ])
     .then(([dataFields, projectAreas, coverImageFile]) => {
       /*
@@ -95,10 +97,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
       @param coverImageFile {FileModel}
       @returns {Promise<[{ProjectModel}, {FileModel}]>}
        */
-      if (
-        form.coverImageFile &&
-        (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
-      ) {
+      if (form.coverImageFile && !coverImageFile) {
         throw new errors.Http400('The cover image file is not found.');
       }
 
@@ -184,7 +183,9 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     ProjectModel.findById(req.params.projectId).populate('dataFields'),
-    FileModel.findById(form.coverImageFile),
+    FileModel.findById(form.coverImageFile).where({
+      type: FileType.projectCoverImage,
+    }),
     DataFieldModel.find({ _id: { $in: form.dataFields } }),
   ])
     .then(([project, coverImageFile, dataFields]) => {
@@ -212,10 +213,7 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
       ) {
         throw new errors.Http403();
       }
-      if (
-        form.coverImageFile &&
-        (!coverImageFile || coverImageFile.type !== FileType.projectCoverImage)
-      ) {
+      if (form.coverImageFile && !coverImageFile) {
         throw new errors.Http400('The cover image file is not found.');
       }
       if (dataFields.length !== form.dataFields.length) {

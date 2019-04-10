@@ -106,6 +106,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           return Promise.all([
             file,
             CameraLocationModel.findById(form.cameraLocation)
+              .where({ state: CameraLocationState.active })
               .populate('project')
               .populate('studyArea'),
           ]);
@@ -127,10 +128,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         case FileType.annotationImage:
         case FileType.annotationZIP:
         case FileType.annotationCSV:
-          if (
-            !cameraLocation ||
-            cameraLocation.state !== CameraLocationState.active
-          ) {
+          if (!cameraLocation) {
             throw new errors.Http400(
               `The camera location ${form.cameraLocation} is not found.`,
             );
@@ -140,9 +138,6 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
             cameraLocation.studyArea.state !== StudyAreaState.active
           ) {
             throw new errors.Http404('Study area is not found.');
-          }
-          if (!cameraLocation.project || !cameraLocation.project.members) {
-            throw new errors.Http404('The project is not found.');
           }
           if (
             req.user.permission !== UserPermission.administrator &&

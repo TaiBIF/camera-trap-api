@@ -68,20 +68,18 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    StudyAreaModel.findById(req.params.studyAreaId),
-    StudyAreaModel.where({ state: StudyAreaState.active }).where({
-      parent: req.params.studyAreaId,
-    }),
+    StudyAreaModel.findById(req.params.studyAreaId)
+      .where({ state: StudyAreaState.active })
+      .where({ project: req.params.projectId }),
+    StudyAreaModel.where({ state: StudyAreaState.active })
+      .where({ parent: req.params.studyAreaId })
+      .where({ project: req.params.projectId }),
   ])
     .then(([project, studyArea, subStudyAreas]) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (
-        !studyArea ||
-        studyArea.state !== StudyAreaState.active ||
-        `${studyArea.project._id}` !== `${project._id}`
-      ) {
+      if (!studyArea) {
         throw new errors.Http404();
       }
       if (
@@ -92,9 +90,7 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
       }
 
       const studyAreaIds = [`${studyArea._id}`];
-      if (subStudyAreas.length) {
-        subStudyAreas.forEach(x => studyAreaIds.push(`${x._id}`));
-      }
+      subStudyAreas.forEach(x => studyAreaIds.push(`${x._id}`));
       const query = CameraLocationModel.where({
         state: CameraLocationState.active,
       }).where({ studyArea: { $in: studyAreaIds } });
@@ -122,17 +118,15 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    StudyAreaModel.findById(req.params.studyAreaId),
+    StudyAreaModel.findById(req.params.studyAreaId)
+      .where({ project: req.params.projectId })
+      .where({ state: StudyAreaState.active }),
   ])
     .then(([project, studyArea]) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (
-        !studyArea ||
-        studyArea.state !== StudyAreaState.active ||
-        `${studyArea.project._id}` !== `${project._id}`
-      ) {
+      if (!studyArea) {
         throw new errors.Http404();
       }
       const member = project.members.find(
@@ -169,19 +163,16 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    CameraLocationModel.findById(req.params.cameraLocationId).populate(
-      'studyArea',
-    ),
+    CameraLocationModel.findById(req.params.cameraLocationId)
+      .where({ project: req.params.projectId })
+      .where({ state: CameraLocationState.active })
+      .populate('studyArea'),
   ])
     .then(([project, cameraLocation]) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (
-        !cameraLocation ||
-        `${cameraLocation.project._id}` !== `${project._id}` ||
-        cameraLocation.state === CameraLocationState.removed
-      ) {
+      if (!cameraLocation) {
         throw new errors.Http404();
       }
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {
@@ -211,19 +202,16 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
    */
   Promise.all([
     ProjectModel.findById(req.params.projectId),
-    CameraLocationModel.findById(req.params.cameraLocationId).populate(
-      'studyArea',
-    ),
+    CameraLocationModel.findById(req.params.cameraLocationId)
+      .where({ project: req.params.projectId })
+      .where({ state: CameraLocationState.active })
+      .populate('studyArea'),
   ])
     .then(([project, cameraLocation]) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (
-        !cameraLocation ||
-        `${cameraLocation.project._id}` !== `${project._id}` ||
-        cameraLocation.state === CameraLocationState.removed
-      ) {
+      if (!cameraLocation) {
         throw new errors.Http404();
       }
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {

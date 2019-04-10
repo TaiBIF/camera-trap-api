@@ -55,11 +55,16 @@ module.exports = (job, done) => {
       }
       return query;
     })(),
-    FileModel.findById(workerData.fileId).populate('exif'),
-    UploadSessionModel.findById(workerData.uploadSessionId),
-    CameraLocationModel.findById(workerData.cameraLocationId).populate(
-      'studyArea',
-    ),
+    FileModel.findById(workerData.fileId)
+      .where({ project: workerData.projectId })
+      .populate('exif'),
+    UploadSessionModel.findById(workerData.uploadSessionId)
+      .where({ project: workerData.projectId })
+      .where({ file: workerData.fileId }),
+    CameraLocationModel.findById(workerData.cameraLocationId)
+      .where({ project: workerData.projectId })
+      .where({ state: CameraLocationState.active })
+      .populate('studyArea'),
     (() => {
       if (
         [FileType.annotationCSV, FileType.annotationZIP].indexOf(
@@ -130,13 +135,6 @@ module.exports = (job, done) => {
         if (!uploadSession) {
           throw new errors.Http400();
         }
-        // Check reference.
-        if (
-          `${file.project._id}` !== `${project._id}` ||
-          `${uploadSession.file._id}` !== `${file._id}`
-        ) {
-          throw new errors.Http400();
-        }
         // Check the user is a member of the project.
         if (
           user.permission !== UserPermission.administrator &&
@@ -148,10 +146,7 @@ module.exports = (job, done) => {
         // Do validations for each the file type.
         switch (file.type) {
           case FileType.annotationImage:
-            if (
-              !cameraLocation ||
-              cameraLocation.state !== CameraLocationState.active
-            ) {
+            if (!cameraLocation) {
               throw new errors.Http404('Camera location is not found.');
             }
             if (

@@ -15,7 +15,7 @@ exports.getProjectAreas = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = ProjectAreaModel.find().sort(form.sort);
+  const query = ProjectAreaModel.where().sort(form.sort);
   return ProjectAreaModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,

@@ -18,33 +18,35 @@ exports.getProjectSpecies = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  return ProjectModel.findById(req.params.projectId)
-    .then(project => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-      ) {
-        throw new errors.Http403();
-      }
-      return project;
-    })
-    .then(project => {
-      const query = SpeciesModel.where({ project: project._id }).sort(
-        form.sort,
-      );
-      return SpeciesModel.paginate(query, {
-        offset: form.index * form.size,
-        limit: form.size,
-      });
-    })
-    .then(result => {
-      res.json(
-        new PageList(form.index, form.size, result.totalDocs, result.docs),
-      );
-    });
+  const query = SpeciesModel.where({ project: req.params.projectId }).sort(
+    form.sort,
+  );
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    SpeciesModel.paginate(query, {
+      offset: form.index * form.size,
+      limit: form.size,
+    }),
+  ]).then(([project, speciesList]) => {
+    if (!project) {
+      throw new errors.Http404();
+    }
+    if (
+      req.user.permission !== UserPermission.administrator &&
+      !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+    ) {
+      throw new errors.Http403();
+    }
+
+    res.json(
+      new PageList(
+        form.index,
+        form.size,
+        speciesList.totalDocs,
+        speciesList.docs,
+      ),
+    );
+  });
 });
 
 exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
@@ -166,14 +168,15 @@ exports.updateProjectSpecies = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    SpeciesModel.findById(req.params.speciesId),
+    SpeciesModel.findById(req.params.speciesId).where({
+      project: req.params.projectId,
+    }),
   ])
     .then(([project, species]) => {
-      if (
-        !project ||
-        !species ||
-        `${species.project._id}` !== `${project._id}`
-      ) {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!species) {
         throw new errors.Http404();
       }
       const member = project.members.find(

@@ -63,14 +63,16 @@ exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
   });
 });
 
-exports.getDataField = auth(UserPermission.all(), (req, res) => {
+exports.getPublishedDataField = auth(UserPermission.all(), (req, res) =>
   /*
   GET /api/v1/data-fields/:dataFieldId
    */
-  return DataFieldModel.findById(req.params.dataFieldId).then(dataField => {
-    if (!dataField) {
-      throw new errors.Http404();
-    }
-    res.json(dataField.dump());
-  });
-});
+  DataFieldModel.findById(req.params.dataFieldId)
+    .where({ state: DataFieldState.approved })
+    .then(dataField => {
+      if (!dataField) {
+        throw new errors.Http404();
+      }
+      res.json(dataField.dump());
+    }),
+);
