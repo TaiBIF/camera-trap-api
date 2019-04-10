@@ -59,15 +59,15 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = [ProjectModel.findById(req.params.projectId)];
+  const tasks = [ProjectModel.findById(req.params.projectId)];
   if (form.parent) {
-    query.push(
+    tasks.push(
       StudyAreaModel.findById(form.parent)
         .where({ project: req.params.projectId })
         .where({ state: StudyAreaState.active }),
     );
   }
-  return Promise.all(query)
+  return Promise.all(tasks)
     .then(([project, parent]) => {
       if (!project) {
         throw new errors.Http404();

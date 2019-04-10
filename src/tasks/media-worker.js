@@ -65,6 +65,8 @@ module.exports = (job, done) => {
       .where({ project: workerData.projectId })
       .where({ state: CameraLocationState.active })
       .populate('studyArea'),
+
+    // Fetch all study areas of the project for csv data.
     (() => {
       if (
         [FileType.annotationCSV, FileType.annotationZIP].indexOf(
@@ -76,6 +78,8 @@ module.exports = (job, done) => {
           .find();
       }
     })(),
+
+    // Fetch all camera locations of the project for csv data.
     (() => {
       if (
         [FileType.annotationCSV, FileType.annotationZIP].indexOf(
@@ -87,13 +91,15 @@ module.exports = (job, done) => {
           .find();
       }
     })(),
+
+    // Fetch all species of the project for csv data.
     (() => {
       if (
         [FileType.annotationCSV, FileType.annotationZIP].indexOf(
           workerData.fileType,
         ) >= 0
       ) {
-        return SpeciesModel.where({ project: workerData.projectId }).find();
+        return SpeciesModel.where({ project: workerData.projectId });
       }
     })(),
   ])
