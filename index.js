@@ -19,12 +19,6 @@ Usage: node . -c`,
 if (op.argv.createCollections) {
   // Create collections and indexes of all models.
   const models = require('./src/models/data').allModels;
-  const DataFieldModel = require('./src/models/data/data-field-model');
-  const UserModel = require('./src/models/data/user-model');
-  const CameraLocationModel = require('./src/models/data/camera-location-model');
-  const CameraLocationState = require('./src/models/const/camera-location-state');
-  const StudyAreaModel = require('./src/models/data/study-area-model');
-  const StudyAreaState = require('./src/models/const/study-area-state');
   const limit = pLimit(1);
 
   Promise.all(
@@ -34,62 +28,9 @@ if (op.argv.createCollections) {
         return model.createIndexes();
       }),
     ),
-  )
-    .then(() =>
-      DataFieldModel.collection.createIndex(
-        { systemCode: 1 },
-        {
-          name: 'SystemCode',
-          background: true,
-          unique: true,
-          partialFilterExpression: {
-            systemCode: { $exists: true },
-          },
-        },
-      ),
-    )
-    .then(() =>
-      UserModel.collection.createIndex(
-        { email: 1 },
-        {
-          name: 'Email',
-          background: true,
-          unique: true,
-          partialFilterExpression: {
-            email: { $exists: true },
-          },
-        },
-      ),
-    )
-    .then(() =>
-      CameraLocationModel.collection.createIndex(
-        { project: 1, name: 1 },
-        {
-          name: 'UniqueName',
-          background: true,
-          unique: true,
-          partialFilterExpression: {
-            state: CameraLocationState.active,
-          },
-        },
-      ),
-    )
-    .then(() =>
-      StudyAreaModel.collection.createIndex(
-        { project: 1, 'title.zh-TW': 1 },
-        {
-          name: 'UniqueTitle',
-          background: true,
-          unique: true,
-          partialFilterExpression: {
-            state: StudyAreaState.active,
-          },
-        },
-      ),
-    )
-    .then(() => {
-      process.exit(0);
-    });
+  ).then(() => {
+    process.exit(0);
+  });
 } else if (op.argv.insertData) {
   // Insert database default data.
   const limit = pLimit(1);

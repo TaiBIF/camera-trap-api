@@ -3,51 +3,60 @@ const utils = require('../../common/utils');
 const StudyAreaState = require('../const/study-area-state');
 
 const db = utils.getDatabaseConnection();
-const model = db.model(
-  'StudyAreaModel',
-  utils.generateSchema(
-    {
-      project: {
-        type: Schema.ObjectId,
-        ref: 'ProjectModel',
+const schema = utils.generateSchema(
+  {
+    project: {
+      type: Schema.ObjectId,
+      ref: 'ProjectModel',
+      required: true,
+      index: {
+        name: 'Project',
+      },
+    },
+    state: {
+      // 狀態
+      // 因相機使用軟刪除，樣區也必須使用軟刪除
+      type: String,
+      default: StudyAreaState.active,
+      enum: StudyAreaState.all(),
+      index: {
+        name: 'State',
+      },
+    },
+    title: {
+      // 樣區名稱
+      'zh-TW': {
+        // 繁體中文
+        // index: UniqueTitle
+        type: String,
         required: true,
         index: {
-          name: 'Project',
+          name: 'TitleZhTW',
         },
-      },
-      state: {
-        // 狀態
-        // 因相機使用軟刪除，樣區也必須使用軟刪除
-        type: String,
-        default: StudyAreaState.active,
-        enum: StudyAreaState.all(),
-        index: {
-          name: 'State',
-        },
-      },
-      title: {
-        // 樣區名稱
-        'zh-TW': {
-          // 繁體中文
-          // This filed is index with "partialFilterExpression". Find the script at index.js.
-          type: String,
-          required: true,
-          index: {
-            name: 'TitleZhTW',
-          },
-        },
-      },
-      parent: {
-        // 子樣區的話會有上層的 id
-        type: Schema.ObjectId,
-        ref: 'StudyAreaModel',
       },
     },
-    {
-      collection: 'StudyAreas',
+    parent: {
+      // 子樣區的話會有上層的 id
+      type: Schema.ObjectId,
+      ref: 'StudyAreaModel',
     },
-  ),
+  },
+  {
+    collection: 'StudyAreas',
+  },
 );
+schema.index(
+  { project: 1, 'title.zh-TW': 1 },
+  {
+    name: 'UniqueTitle',
+    background: true,
+    unique: true,
+    partialFilterExpression: {
+      state: StudyAreaState.active,
+    },
+  },
+);
+const model = db.model('StudyAreaModel', schema);
 
 model.prototype.dump = function() {
   return {
