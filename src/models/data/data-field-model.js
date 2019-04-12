@@ -26,6 +26,9 @@ const schema = utils.generateSchema(
       type: String,
       default: DataFieldState.waitForReview,
       enum: DataFieldState.all(),
+      index: {
+        name: 'State',
+      },
     },
     title: {
       // 欄位名稱
