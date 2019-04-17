@@ -1,5 +1,4 @@
 # camera-trap-api
-Using LoopBack to develop RESTful API
 
 <p>
   <a href="https://github.com/TaiBIF/camera-trap-api/releases">
