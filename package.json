@@ -48,6 +48,7 @@
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
     "concurrently": "^4.1.0",
     "eslint-plugin-mocha": "^5.3.0",
+    "mongoose-profiler": "^0.1.0",
     "nodemon": "^1.18.10"
   },
   "lint-staged": {
