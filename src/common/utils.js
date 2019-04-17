@@ -11,7 +11,7 @@ const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 
-const s3 = new AWS.S3({
+const _s3 = new AWS.S3({
   accessKeyId: config.s3.key,
   secretAccessKey: config.s3.secret,
   region: config.s3.region,
@@ -251,7 +251,7 @@ exports.uploadToS3 = (buffer, filename, isPublic) =>
       ContentType: mime.lookup(filename),
       CacheControl: 'max-age=31536000', // 365days
     };
-    s3.upload(params, error_ => {
+    _s3.upload(params, error_ => {
       if (error_) {
         return reject(error_);
       }
@@ -272,7 +272,7 @@ exports.deleteS3Objects = (filenames = []) =>
         Objects: filenames.map(filename => ({ Key: filename })),
       },
     };
-    s3.deleteObjects(params, (error, result) => {
+    _s3.deleteObjects(params, (error, result) => {
       if (error) {
         return reject(error);
       }
@@ -285,7 +285,7 @@ exports.getS3Object = filename =>
     if (!filename) {
       return reject(new Error('Filename can not be empty.'));
     }
-    s3.getObject(
+    _s3.getObject(
       {
         Bucket: config.s3.bucket,
         Key: filename,
@@ -299,7 +299,7 @@ exports.getS3Object = filename =>
     );
   });
 
-exports.getS3 = () => s3;
+exports.getS3 = () => _s3;
 
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
