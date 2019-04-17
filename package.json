@@ -18,29 +18,29 @@
   },
   "homepage": "https://github.com/TaiBIF/camera-trap-api#readme",
   "dependencies": {
-    "aws-sdk": "^2.427.0",
+    "aws-sdk": "^2.438.0",
     "body-parser": "^1.18.3",
     "camera-trap-credentials": "git+ssh://git@github.com/TaiBIF/camera-trap-credentials.git#391c4a77dfc7d5e9d78cc2e0cbc62e5dec25a841",
-    "config": "^3.0.1",
+    "config": "^3.1.0",
     "connect-mongo": "^2.0.3",
     "cookie-parser": "^1.4.4",
     "cors": "^2.8.5",
     "csv-parse": "^4.4.0",
     "express": "^4.16.4",
-    "express-session": "^1.15.6",
+    "express-session": "^1.16.1",
     "extract-zip": "^1.6.7",
     "gm": "^1.23.1",
     "got": "^9.6.0",
     "kue": "^0.11.6",
     "left-pad": "^1.3.0",
     "mime-types": "^2.1.22",
-    "mongoose": "^5.4.19",
+    "mongoose": "^5.5.2",
     "mongoose-paginate-v2": "^1.0.24",
     "multer": "^1.4.1",
     "nocache": "^2.0.0",
     "optimist": "^0.6.1",
     "p-limit": "^2.2.0",
-    "query-string": "^6.4.0",
+    "query-string": "^6.4.2",
     "string-template": "^1.0.0",
     "tmp": "^0.1.0"
   },
@@ -49,7 +49,7 @@
     "concurrently": "^4.1.0",
     "eslint-plugin-mocha": "^5.3.0",
     "mongoose-profiler": "^0.1.0",
-    "nodemon": "^1.18.10"
+    "nodemon": "^1.18.11"
   },
   "lint-staged": {
     "*.{js}": [
