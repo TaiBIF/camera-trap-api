@@ -1,8 +1,9 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const CameraLocationState = require('../const/camera-location-state');
 
-const db = utils.getDatabaseConnection();
+const { Schema } = mongoose;
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     project: {
@@ -80,7 +81,7 @@ schema.index(
     },
   },
 );
-const model = db.model('CameraLocationModel', schema);
+const model = mongoose.model('CameraLocationModel', schema);
 
 model.prototype.dump = function() {
   return {

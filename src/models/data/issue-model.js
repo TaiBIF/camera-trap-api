@@ -1,11 +1,12 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const IssueType = require('../const/issue-type');
 const IssueCategory = require('../const/issue-category');
 const FileType = require('../const/file-type');
 
-const db = utils.getDatabaseConnection();
-const model = db.model(
+const { Schema } = mongoose;
+utils.connectDatabase();
+const model = mongoose.model(
   'IssueModel',
   utils.generateSchema(
     {

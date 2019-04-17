@@ -1,9 +1,10 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const SpeciesCode = require('../const/species-code');
 
-const db = utils.getDatabaseConnection();
-const model = db.model(
+const { Schema } = mongoose;
+utils.connectDatabase();
+const model = mongoose.model(
   'SpeciesModel',
   utils.generateSchema(
     {

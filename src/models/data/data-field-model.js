@@ -1,10 +1,11 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const DataFieldSystemCode = require('../const/data-field-system-code');
 const DataFieldWidgetType = require('../const/data-field-widget-type');
 const DataFieldState = require('../const/data-field-state');
 
-const db = utils.getDatabaseConnection();
+const { Schema } = mongoose;
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     systemCode: {
@@ -88,7 +89,7 @@ schema.index(
     },
   },
 );
-const model = db.model('DataFieldModel', schema);
+const model = mongoose.model('DataFieldModel', schema);
 
 model.prototype.dump = function() {
   return {

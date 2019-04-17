@@ -1,7 +1,8 @@
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 
-const db = utils.getDatabaseConnection();
-const model = db.model(
+utils.connectDatabase();
+const model = mongoose.model(
   'ProjectAreaModel',
   utils.generateSchema(
     {

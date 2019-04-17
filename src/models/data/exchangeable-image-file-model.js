@@ -1,6 +1,7 @@
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 
-const db = utils.getDatabaseConnection();
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     make: {
@@ -23,7 +24,7 @@ const schema = utils.generateSchema(
     collection: 'ExchangeableImageFiles',
   },
 );
-const model = db.model('ExchangeableImageFileModel', schema);
+const model = mongoose.model('ExchangeableImageFileModel', schema);
 
 model.prototype.dump = function() {
   return {

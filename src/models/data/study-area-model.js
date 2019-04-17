@@ -1,8 +1,9 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const StudyAreaState = require('../const/study-area-state');
 
-const db = utils.getDatabaseConnection();
+const { Schema } = mongoose;
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     project: {
@@ -56,7 +57,7 @@ schema.index(
     },
   },
 );
-const model = db.model('StudyAreaModel', schema);
+const model = mongoose.model('StudyAreaModel', schema);
 
 model.prototype.dump = function() {
   return {

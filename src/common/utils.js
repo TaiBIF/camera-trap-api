@@ -17,22 +17,33 @@ const s3 = new AWS.S3({
   region: config.s3.region,
 });
 
-let _db;
-exports.getDatabaseConnection = (autoIndex = false) => {
+let _isRegisterHandlers;
+let _isConnectionLocked;
+exports.connectDatabase = (autoIndex = false) => {
   /*
-  Get database connection.
-  example: https://github.com/Automattic/mongoose/tree/master/examples/express
+  Connect to database.
   @params autoIndex {bool}
-  @returns {Connection}
    */
-  if (_db) {
-    return _db;
+  if (_isConnectionLocked) {
+    return;
   }
-  _db = mongoose.createConnection(config.database.url, {
+  _isConnectionLocked = true;
+  if (!_isRegisterHandlers) {
+    _isRegisterHandlers = true;
+    mongoose.connection.on('error', error => {
+      console.error('Mongoose default connection error: ', error);
+    });
+    mongoose.connection.on('disconnected', () => {
+      console.error('Mongoose default connection disconnected.');
+    });
+  }
+  mongoose.connect(config.database.url, {
     useNewUrlParser: true,
+    connectTimeoutMS: 1000,
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 500,
     autoIndex,
   });
-  return _db;
 };
 
 exports.generateSchema = (model, options) => {

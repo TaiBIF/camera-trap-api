@@ -1,10 +1,11 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
 
-const db = utils.getDatabaseConnection();
-const model = db.model(
+const { Schema } = mongoose;
+utils.connectDatabase();
+const model = mongoose.model(
   'ProjectModel',
   utils.generateSchema(
     {

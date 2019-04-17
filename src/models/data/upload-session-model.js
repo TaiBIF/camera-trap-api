@@ -1,10 +1,11 @@
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const UploadSessionState = require('../const/upload-session-state');
 const UploadSessionErrorType = require('../const/upload-session-error-type');
 
-const db = utils.getDatabaseConnection();
-const model = db.model(
+const { Schema } = mongoose;
+utils.connectDatabase();
+const model = mongoose.model(
   'UploadSessionModel',
   utils.generateSchema(
     {

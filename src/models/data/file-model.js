@@ -1,11 +1,12 @@
 const path = require('path');
 const config = require('config');
-const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
 const ExchangeableImageFileModel = require('./exchangeable-image-file-model');
 
-const db = utils.getDatabaseConnection();
+const { Schema } = mongoose;
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     type: {
@@ -98,7 +99,7 @@ schema.post('remove', file => {
       break;
   }
 });
-const model = db.model('FileModel', schema);
+const model = mongoose.model('FileModel', schema);
 
 model.prototype.getExtensionName = function() {
   return path

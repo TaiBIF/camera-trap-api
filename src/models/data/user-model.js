@@ -1,7 +1,8 @@
+const mongoose = require('mongoose');
 const UserPermission = require('../const/user-permission');
 const utils = require('../../common/utils');
 
-const db = utils.getDatabaseConnection();
+utils.connectDatabase();
 const schema = utils.generateSchema(
   {
     orcId: {
@@ -43,7 +44,7 @@ schema.index(
     },
   },
 );
-const model = db.model('UserModel', schema);
+const model = mongoose.model('UserModel', schema);
 
 model.prototype.isLogin = function() {
   return this.isNew === false;
