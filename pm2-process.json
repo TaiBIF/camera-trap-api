@@ -1,0 +1,28 @@
+[
+  {
+    "name": "camera-trap-api",
+    "script": "src/web.js",
+    "error_file": "/tmp/camera-trap-api.error.log",
+    "out_file": "/tmp/camera-trap-api.log",
+    "instances": 2,
+    "watch": false,
+    "merge_logs": true,
+    "autorestart": true,
+    "env": {
+      "NODE_ENV": "staging"
+    }
+  },
+  {
+    "name": "camera-trap-worker",
+    "script": "src/task-worker.js",
+    "error_file": "/tmp/camera-trap-worker.error.log",
+    "out_file": "/tmp/camera-trap-worker.log",
+    "instances": 1,
+    "watch": false,
+    "merge_logs": true,
+    "autorestart": true,
+    "env": {
+      "NODE_ENV": "staging"
+    }
+  }
+]
