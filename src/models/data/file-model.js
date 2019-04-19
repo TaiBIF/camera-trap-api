@@ -126,7 +126,7 @@ model.prototype.saveWithContent = function(content) {
       case FileType.projectCoverImage:
         return utils
           .resizeImageAndUploadToS3({
-            content,
+            buffer: content,
             filename: `${
               config.s3.folders.projectCovers
             }/${this.getFilename()}`,

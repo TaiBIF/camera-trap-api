@@ -185,6 +185,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         return Promise.all(tasks);
       }
 
+      // FileType.projectCoverImage
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
     .then(([file]) => {
