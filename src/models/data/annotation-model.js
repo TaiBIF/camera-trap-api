@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
+const AnnotationFailureType = require('../const/annotation-failure-type');
+const AnnotationState = require('../const/annotation-state');
 const AnnotationRevisionModel = require('./annotation-revision-model');
 
 const { Schema } = mongoose;
@@ -34,6 +36,33 @@ const model = mongoose.model(
           name: 'CameraLocation',
         },
       },
+      uploadSession: {
+        type: Schema.ObjectId,
+        ref: 'UploadSessionModel',
+        required: true,
+        index: {
+          name: 'UploadSession',
+        },
+      },
+      state: {
+        type: String,
+        required: true,
+        enum: AnnotationState.all(),
+        index: {
+          name: 'State',
+        },
+      },
+      failures: [
+        // 錯誤提示
+        {
+          type: String,
+          required: true,
+          enum: AnnotationFailureType.all(),
+          index: {
+            name: 'Failures',
+          },
+        },
+      ],
       filename: {
         // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）
         type: String,
@@ -158,6 +187,7 @@ model.prototype.dump = function() {
       this.cameraLocation && typeof this.cameraLocation.dump
         ? this.cameraLocation.dump()
         : this.cameraLocation,
+    failures: this.failures,
     filename: this.filename,
     file:
       this.file && typeof this.file.dump === 'function'
