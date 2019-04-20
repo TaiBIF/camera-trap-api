@@ -11,6 +11,7 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
+const AnnotationFailureType = require('../models/const/annotation-failure-type');
 
 const _s3 = new AWS.S3({
   accessKeyId: config.s3.key,
@@ -389,6 +390,9 @@ exports.convertCsvToAnnotations = ({
   @param species {Array<SpeciesModel>} All species of this project.
   @param csvObject {Array<Array<string>>}
   @param timezone {Number} minutes (480 -> GMT+8).
+  @returns {Object}
+    annotations: {Array<AnnotationModel>}
+    newSpecies: {Array<SpeciesModel>}
    */
   const AnnotationModel = require('../models/data/annotation-model');
   const SpeciesModel = require('../models/data/species-model');
@@ -415,6 +419,7 @@ exports.convertCsvToAnnotations = ({
       time: null,
       species: null,
       fields: [],
+      failures: [],
     };
     for (let index = 0; index < dataFields.length; index += 1) {
       const data = (items[index + dataOffset] || '').trim();
@@ -448,6 +453,8 @@ exports.convertCsvToAnnotations = ({
         case DataFieldSystemCode.species:
           information.species = species.find(x => x.title['zh-TW'] === data);
           if (!information.species && data) {
+            // mark this annotation use a automatically created species.
+            information.failures.push(AnnotationFailureType.newSpecies);
             // find the species in the new items.
             information.species = result.newSpecies.find(
               x => x.title['zh-TW'] === data,
@@ -522,6 +529,7 @@ exports.convertCsvToAnnotations = ({
         project,
         studyArea: information.studyArea,
         cameraLocation: information.cameraLocation,
+        failures: information.failures,
         filename: information.filename,
         time: information.time,
         species: information.species == null ? undefined : information.species,
