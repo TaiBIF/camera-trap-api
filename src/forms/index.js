@@ -290,7 +290,7 @@ class ArrayField extends Field {
   readValue(values = []) {
     if (!Array.isArray(values)) {
       // The validator will return an error message.
-      return values;
+      return this.filter(values);
     }
     return this.filter(values.map(value => this.subField.readValue(value)));
   }
