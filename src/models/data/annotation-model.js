@@ -168,23 +168,12 @@ model.prototype.saveAndAddRevision = function(user) {
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
-    studyArea: (() => {
-      if (typeof this.studyArea === 'string') {
-        return this.studyArea;
-      }
-      const result = {
-        'zh-TW': this.studyArea.title['zh-TW'],
-      };
-      if (this.studyArea.parent) {
-        result['zh-TW'] = [
-          this.studyArea.parent.title['zh-TW'],
-          result['zh-TW'],
-        ].join('-');
-      }
-      return result;
-    })(),
+    studyArea:
+      this.studyArea && typeof this.studyArea.dump === 'function'
+        ? this.studyArea.dump()
+        : this.studyArea,
     cameraLocation:
-      this.cameraLocation && typeof this.cameraLocation.dump
+      this.cameraLocation && typeof this.cameraLocation.dump === 'function'
         ? this.cameraLocation.dump()
         : this.cameraLocation,
     failures: this.failures,
