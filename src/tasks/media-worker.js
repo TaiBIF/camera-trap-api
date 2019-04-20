@@ -153,6 +153,7 @@ module.exports = (job, done) => {
         switch (file.type) {
           case FileType.annotationImage:
           case FileType.annotationZIP:
+          case FileType.annotationCSV:
             if (!cameraLocation) {
               throw new errors.Http404('Camera location is not found.');
             }
@@ -162,9 +163,6 @@ module.exports = (job, done) => {
             ) {
               throw new errors.Http404('Study area is not found.');
             }
-            break;
-          // The csv file include camera location, so we don't validate the camera location.
-          case FileType.annotationCSV:
             break;
           default:
         }
