@@ -378,6 +378,7 @@ exports.convertCsvToAnnotations = ({
   studyAreas,
   dataFields,
   cameraLocations,
+  uploadSession,
   species,
   csvObject,
   timezone,
@@ -387,6 +388,7 @@ exports.convertCsvToAnnotations = ({
   @param studyAreas {Array<StudyAreaModel>} All study areas of this project.
   @param dataFields {Array<DataFieldModel>} All data fields of this project.
   @param cameraLocations {Array<CameraLocationModel>} All camera locations of this project.
+  @param uploadSession {UploadSessionModel}
   @param species {Array<SpeciesModel>} All species of this project.
   @param csvObject {Array<Array<string>>}
   @param timezone {Number} minutes (480 -> GMT+8).
@@ -529,6 +531,7 @@ exports.convertCsvToAnnotations = ({
         project,
         studyArea: information.studyArea,
         cameraLocation: information.cameraLocation,
+        uploadSession,
         failures: information.failures,
         filename: information.filename,
         time: information.time,

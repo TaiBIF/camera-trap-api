@@ -25,6 +25,7 @@ const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const SpeciesModel = require('../models/data/species-model');
 const AnnotationModel = require('../models/data/annotation-model');
+const AnnotationState = require('../models/const/annotation-state');
 
 module.exports = (job, done) => {
   const workerData = new MediaWorkerData(job.data);
@@ -290,6 +291,7 @@ module.exports = (job, done) => {
               studyAreas: _allStudyAreas,
               dataFields: _project.dataFields,
               cameraLocations: _allCameraLocations,
+              uploadSession: _uploadSession,
               species: _allSpecies,
               csvObject,
             });
@@ -309,6 +311,7 @@ module.exports = (job, done) => {
             project: _project,
             studyArea: _cameraLocation.studyArea,
             cameraLocation: _cameraLocation,
+            uploadSession: _uploadSession,
             file,
             filename: file.originalFilename,
             time: file.exif.dateTime,
@@ -325,6 +328,7 @@ module.exports = (job, done) => {
        */
       const statements = annotations.map(annotation => ({
         $and: [
+          { state: AnnotationState.active },
           { cameraLocation: annotation.cameraLocation._id },
           { filename: annotation.filename },
           { time: annotation.time },
@@ -340,50 +344,77 @@ module.exports = (job, done) => {
       /*
       - If the duplicate annotation is exists then update the file of the duplicate one.
       - If there is no duplicate annotation then save a new annotation.
+      @param annotations {Array<AnnotationModel>} Not saved.
+      @param duplicateAnnotations {Array<AnnotationModel>} From database.
       @returns {Promise<[AnnotationModel]>}
        */
       const tasks = [];
 
-      annotations.forEach(annotation => {
-        const duplicateAnnotation = duplicateAnnotations.find(
-          x =>
-            `${x.cameraLocation._id}` === `${annotation.cameraLocation._id}` &&
-            x.filename === annotation.filename &&
-            x.time.getTime() === annotation.time.getTime(),
-        );
-        if (duplicateAnnotation) {
-          // Replace the old file with a new one.
-          if (
-            [FileType.annotationImage, FileType.annotationZIP].indexOf(
-              _file.type,
-            ) >= 0
-          ) {
+      if (_file.type === FileType.annotationImage) {
+        annotations.forEach(annotation => {
+          const duplicateAnnotation = duplicateAnnotations.find(
+            x =>
+              `${x.cameraLocation._id}` ===
+                `${annotation.cameraLocation._id}` &&
+              x.filename === annotation.filename &&
+              x.time.getTime() === annotation.time.getTime(),
+          );
+          if (duplicateAnnotation) {
             // The user upload images so we should replace with a new file.
             duplicateAnnotation.file = annotation.file;
+            tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
           } else {
-            // FileType.annotationCSV
-            // We should apply the information from csv to annotations.
-            duplicateAnnotation.species = annotation.species;
-            duplicateAnnotation.customFields = annotation.customFields;
-            duplicateAnnotation.rawData = annotation.rawData;
+            annotation.state = AnnotationState.active;
+            tasks.push(annotation.saveAndAddRevision(_user));
           }
-          tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+        });
+        _uploadSession.state = UploadSessionState.success;
+      } else if (_file.type === FileType.annotationZIP) {
+        // todo: support csv int the zip.
+        annotations.forEach(annotation => {
+          const duplicateAnnotation = duplicateAnnotations.find(
+            x =>
+              `${x.cameraLocation._id}` ===
+                `${annotation.cameraLocation._id}` &&
+              x.filename === annotation.filename &&
+              x.time.getTime() === annotation.time.getTime(),
+          );
+          if (duplicateAnnotation) {
+            // The user upload images so we should replace with a new file.
+            duplicateAnnotation.file = annotation.file;
+            tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+          } else {
+            annotation.state = AnnotationState.active;
+            tasks.push(annotation.saveAndAddRevision(_user));
+          }
+        });
+        _uploadSession.state = UploadSessionState.success;
+      } else if (_file.type === FileType.annotationCSV) {
+        if (duplicateAnnotations.length) {
+          // The user will chosen overwrite or not.
+          annotations.forEach(annotation => {
+            annotation.state = AnnotationState.waitForReview;
+            tasks.push(annotation.save());
+          });
+          _uploadSession.state = UploadSessionState.waitForReview;
         } else {
-          tasks.push(annotation.saveAndAddRevision(_user));
+          annotations.forEach(annotation => {
+            annotation.state = AnnotationState.active;
+            tasks.push(annotation.saveAndAddRevision(_user));
+          });
+          _uploadSession.state = UploadSessionState.success;
         }
-      });
+      }
       return Promise.all(tasks);
     })
-    .then(() => {
+    .then(() =>
       /*
       Set the upload session as success and save it.
       @returns {Promise<UploadSessionModel>}
        */
-      if (_uploadSession) {
-        _uploadSession.state = UploadSessionState.success;
-        return _uploadSession.save();
-      }
-    })
+      // todo: send notification when the state is wait for review.
+      _uploadSession.save(),
+    )
     .then(() => {
       if (config.isDebug) {
         console.log(`media-worker job[${job.id}] done.`);
