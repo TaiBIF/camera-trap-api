@@ -1,80 +1,730 @@
 FORMAT: 1A
-HOST: http://polls.apiblueprint.org/
+HOST: https://api.camera-trap.tw/v1
 
-# cameratraptw
+# api.camera-trap.tw
 
-Polls is a simple API allowing consumers to view polls and vote in them.
+CameraTrap.TW is the repository for automatic biodiversity monitoring.
 
-## Questions Collection [/questions]
+Current development base URI: http://52.192.70.91/api/v1
 
-### List All Questions [GET]
+# Group System
+
+## System configuration [GET /config]
+
+Get system config.
+
+No permission required.
 
 + Response 200 (application/json)
 
-        [
+    + Body
+    
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
+              "languages": {
+                "zh-TW": {
+                "title": "繁體中文"
+                }
+              },
+              "oauthUrl": "https://orcid.org/oauth/authorize?client_id=APP-J9YGHZ0YL4KAMGKV&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback%2Forcid%2Fauth&response_type=code&scope=%2Fauthenticate"
             }
-        ]
+            
 
-### Create a New Question [POST]
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "language": {
+                  "type": "object",
+                  "description": "目前支援的語系"
+                },
+                "oauthUrl": {
+                  "type": "string",
+                  "description": "登入網址，前端將瀏覽器轉跳到此網址讓使用者進行登入程序。登入完成後使用者會導回前端網址，前端網址在 [camera-trap-credentials](https://github.com/TaiBIF/camera-trap-credentials/blob/master/default.js#L1) 設定"
+                }
+              }
+            }
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+## System notification [GET /system-notifications]
 
-+ Request (application/json)
+No permission required.
+To be implemented.
 
-        {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
-            ]
-        }
++ Response 200 (application/json)
 
-+ Response 201 (application/json)
+# Group Account
 
-    + Headers
+## Account information [GET /me]
 
-            Location: /questions/2
+Get my profile.
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "name": "Your Name",
+              "email": "email@example.com",
+              "permission": ["general-account"]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "permission": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["administrator", "general-account"]
+                  }
+                }
+              }
+            }
+
+## Account notification [GET /me/notifications]
+
+取得該帳號收到的通知。
+
++ Response 200 (application/json)
+
+## Account upload sessions [GET /me/upload-sessions]
+
+取得上傳紀錄。
+
++ Response 200 (application/json)
+
+## Log out [POST /logout]
+
+Log out。
+
++ Response 204 (application/json)
+
+# Group Project area
+
+## List project areas [GET /project-areas{?index,size,sort}]
+
+取得計畫地區列表。
+The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + index: `0` (number) ... The page index.
+    + size: `100` (number) ... The size of the result set.
+    + sort: `title.zh-TW` (enum[string], optional) ...
+        + Default: `title.zh-TW`
+        + Members
+            + `title.zh-TW`
+            + `title.en-US`
+
++ Response 200 (application/json)
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
+              "index": 0,
+              "size": 100,
+              "total": 22,
+              "items": [
+                {
+                  "id": "5c9af16a4ee1b606477f9242",
+                  "title": {
+                    "zh-TW": "南投縣",
+                    "en-US": "Nantou County"
+                  }
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f9239",
+                  "title": {
+                    "zh-TW": "台中市",
+                    "en-US": "Taichung City"
+                  }
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f9236",
+                  "title": {
+                    "zh-TW": "台北市",
+                    "en-US": "Taipei City"
+                  }
+                }
+              ]
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "number",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "object"
+                      }
                     }
-                ]
+                  }
+                }
+              }
+            }
+
+# Group Projects
+
+## List projects [GET /projects{?index,size,sort}]
+
+取得計畫列表。
+The user's permission should be 'administrator' or 'general-account'.  
+The administrator gets all projects.  
+The general-account gets the project who joined.
+
++ Parameters
+    + index: `0` (number) ... The page index.
+    + size: `124` (number) ... The size of the result set.
+    + sort: `oldestAnnotationTime` (enum[string], optional) ...
+        + Default: `oldestAnnotationTime`
+        + Members
+            + `oldestAnnotationTime`
+            + `latestAnnotationTime`
+            + `funder`
+            + `title`
+
++ Response 200
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 24,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c99e565fa899867c32377cf",
+                  "title": "計畫名稱",
+                  "shortTitle": "計畫簡稱",
+                  "funder": "委辦單位",
+                  "code": "計畫編號",
+                  "principalInvestigator": "計畫主持人",
+                  "startTime": "2019-01-01T00:00:00.000Z",
+                  "endTime": "2029-01-01T00:00:00.000Z",
+                  "areas": [
+                    "5c9af16a4ee1b606477f9236"
+                  ],
+                  "description": "計畫摘要",
+                  "note": "備註",
+                  "coverImageFile": {
+                    "id": "5c9b1dfafc43be12b823b7b2",
+                    "type": "project-cover-image",
+                    "originalFilename": "432x324c.jpg",
+                    "filename": "5c9b1dfafc43be12b823b7b2.jpg",
+                    "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9b1dfafc43be12b823b7b2.jpg",
+                    "size": 26172
+                  },
+                  "publishTime": "2029-01-01T00:00:00.000Z",
+                  "interpretiveDataLicense": "cc0",
+                  "identificationInformationLicense": "by",
+                  "videoMaterialLicense": "by",
+                  "members": [
+                    {
+                      "user": "5c949bbbe5d5377f98c81ab0",
+                      "role": "manager"
+                    }
+                  ],
+                  "dataFields": ["5c99bece337ea758248ffd5b"],
+                  "dailyTestTime": "13:00:00",
+                  "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
+                  "oldestAnnotationTime": "2019-01-01T00:00:00.000Z"
+                }
+              ]
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "number",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "object",
+                        "description": "計畫名稱"
+                      },
+                      "shortTitle": {
+                        "type": "string",
+                        "description": "計畫簡稱"
+                      },
+                      "funder": {
+                        "type": "string",
+                        "description": "委辦單位"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "計畫編號"
+                      },
+                      "principalInvestigator": {
+                        "type": "string",
+                        "description": "計畫主持人"
+                      },
+                      "startTime": {
+                        "type": "Date",
+                        "description": "計畫時間（開始）"
+                      },
+                      "endTime": {
+                        "type": "Date",
+                        "description": "計畫時間（結束）"
+                      },
+                      "areas": {
+                        "type": "array",
+                        "description": "計畫地區",
+                        "item": {
+                          "title": "id",
+                          "type": "string"
+                        }
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "計畫摘要"
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "備註"
+                      },
+                      "coverImageFile": {
+                        "type": "Object",
+                        "description": "計畫封面圖片檔案 FileModel"
+                      },
+                      "publishTime": {
+                        "type": "Date",
+                        "description": "公開日期"
+                      },
+                      "interpretiveDataLicense": {
+                        "type": "string",
+                        "description": "詮釋資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "identificationInformationLicense": {
+                        "type": "string",
+                        "description": "鑑定資訊創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "videoMaterialLicense": {
+                        "type": "string",
+                        "description": "影像資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "members": {
+                        "type": "array",
+                        "description": "計畫成員",
+                        "item": {
+                          "type": "object",
+                          "properties": {
+                            "user": {
+                              "type": "string",
+                              "description": "成員 ID"
+                            },
+                            "role": {
+                              "type": "string",
+                              "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                              "enum": ["manager", "researcher", "executor"]
+                            }
+                          },
+                          "dataFields": {
+                            "type": "array",
+                            "description": "資料欄位",
+                            "item": {
+                              "type": "string",
+                              "description": "欄位名稱"
+                            }
+                          },
+                          "dailyTestTime": {
+                            "type": "string",
+                            "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                            "enum": ["null", ""]
+                          },
+                          "latestAnnotationTime": {
+                            "type": "date",
+                            "description": "資料最後更新時間"
+                          },
+                          "oldestAnnotationTime": {
+                            "type": "date",
+                            "description": "資料起始年份"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+## Create a project [POST /projects]
+
+新增計畫
+The user's permission should be 'administrator' or 'general-account'.  
+
++ Request Create Project (application/json)
+
+    + Body
+    
+            {
+              "title": "計畫名稱",
+              "shortTitle": "計畫簡稱",
+              "funder": "委辦單位",
+              "code": "計畫編號",
+              "principalInvestigator": "計畫主持人",
+              "startTime": "2019-01-01T00:00:00.000Z",
+              "endTime": "2029-01-01T00:00:00.000Z",
+              "areas": [
+                "5c9af16a4ee1b606477f9236"
+              ],
+              "description": "計畫摘要",
+              "note": "備註",
+              "coverImageFile": "5c9b1dfafc43be12b823b7b2",
+              "publishTime": "2029-01-01T00:00:00.000Z",
+              "interpretiveDataLicense": "cc0",
+              "identificationInformationLicense": "by",
+              "videoMaterialLicense": "by"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "計畫名稱"
+                },
+                "shortTitle": {
+                  "type": "string",
+                  "description": "計畫簡稱"
+                },
+                "funder": {
+                  "type": "string",
+                  "description": "委辦單位"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "計畫編號"
+                },
+                "principalInvestigator": {
+                  "type": "string",
+                  "description": "計畫主持人"
+                },
+                "startTime" : {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "計畫時間（開始）"
+                },
+                "endTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "計畫時間（結束）"
+                },
+                "areas": {
+                  "type": "array",
+                  "item": {
+                    "type": "string",
+                    "description": "計畫地區 ProjectAreaModel 的 id"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "description": "計畫摘要"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "備註"
+                },
+                "coverImageFile": {
+                  "type": "string",
+                  "description": "計畫封面圖片檔案 id 內容為 FileModel 的 id"
+                },
+                "publishTime": {
+                  "type": "string",
+                  "format": "data-time",
+                  "description": "公開日期"
+                },
+                "interpretiveDataLicense": {
+                  "type": "string",
+                  "description": "詮釋資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": ["cc0", "by", "by-nc"],
+                  "additionalItems": false
+                },
+                "identificationInformationLicense": {
+                  "type": "string",
+                  "description": "鑑定資訊創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": ["cc0", "by", "by-nc"],
+                  "additionalItems": false
+                },
+                "videoMaterialLicense": {
+                  "type": "string",
+                  "description": "影像資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": ["cc0", "by", "by-nc"],
+                  "additionalItems": false
+                }
+              },
+              "required": ["title", "shortTitle", "funder", "code", "principalInvestigator", "startTime", "endTime"]
+            }
+
++ Response 200
+
+    + Body
+    
+            {
+              "id": "5c99e565fa899867c32377cf",
+              "title": "計畫名稱",
+              "shortTitle": "計畫簡稱",
+              "funder": "委辦單位",
+              "code": "計畫編號",
+              "principalInvestigator": "計畫主持人",
+              "startTime": "2019-01-01T00:00:00.000Z",
+              "endTime": "2029-01-01T00:00:00.000Z",
+              "areas": [
+                {
+                  "id": "5c9af16a4ee1b606477f9236",
+                  "title": {
+                    "zh-TW": "台北市",
+                    "en-US": "Taipei City"
+                  }
+                }
+              ],
+              "description": "計畫摘要",
+              "note": "備註",
+              "coverImageFile": {
+                "id": "5c9b1dfafc43be12b823b7b2",
+                "type": "project-cover-image",
+                "originalFilename": "432x324c.jpg",
+                "filename": "5c9b1dfafc43be12b823b7b2.jpg",
+                "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9b1dfafc43be12b823b7b2.jpg",
+                "size": 26172
+              },
+              "publishTime": "2029-01-01T00:00:00.000Z",
+              "interpretiveDataLicense": "cc0",
+              "identificationInformationLicense": "by",
+              "videoMaterialLicense": "by",
+              "members": [
+                {
+                  "user": {
+                    "id": "5c949bbbe5d5377f98c81ab0",
+                    "name": "測試",
+                    "email": "email@example.com",
+                    "permission": "general-account"
+                  },
+                  "role": "manager"
+                }
+              ],
+              "dataFields": [
+                {
+                  "id": "5c99bece337ea758248ffd5b",
+                  "systemCode": "study-area",
+                  "title": {
+                    "zh-TW": "樣區"
+                  },
+                  "widgetType": "select",
+                  "description": {
+                    "zh-TW": "樣區-子樣區"
+                  },
+                  "options": [
+                  ]
+                }
+              ],
+              "dailyTestTime": "13:00:00",
+              "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
+              "oldestAnnotationTime": "2019-01-01T00:00:00.000Z"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "計畫名稱"
+                },
+                "shortTitle": {
+                  "type": "string",
+                  "description": "計畫簡稱"
+                },
+                "funder": {
+                  "type": "string",
+                  "description": "委辦單位"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "計畫編號"
+                },
+                "principalInvestigator": {
+                  "type": "string",
+                  "description": "計畫主持人"
+                },
+                "startTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "計畫時間（開始）"
+                },
+                "endTime": {
+                  "type": "string",
+                  "format": "data-time",
+                  "description": "計畫時間（結束）"
+                },
+                "areas": {
+                  "type": "array",
+                  "item": {
+                    "type": "string",
+                    "description": "計畫地區 ProjectAreaModel 的 id"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "description": "計畫摘要"
+                },
+                "note": {
+                  "type": "string",
+                  "description": "備註"
+                },
+                "coverImageFile": {
+                  "type": "string",
+                  "description": "計畫封面圖片檔案 id 內容為 FileModel 的 id"
+                },
+                "publishTime": {
+                  "type": "string",
+                  "format": "data-time",
+                  "description": "公開日期"
+                },
+                "interpretiveDataLicense": {
+                  "type": "string",
+                  "description": "詮釋資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": [
+                    "cc0",
+                    "by",
+                    "by-nc"
+                  ],
+                  "additionalItems": false
+                },
+                "identificationInformationLicense": {
+                  "type": "string",
+                  "description": "鑑定資訊創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": [
+                    "cc0",
+                    "by",
+                    "by-nc"
+                  ],
+                  "additionalItems": false
+                },
+                "videoMaterialLicense": {
+                  "type": "string",
+                  "description": "影像資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                  "enum": [
+                    "cc0",
+                    "by",
+                    "by-nc"
+                  ],
+                  "additionalItems": false
+                },
+                "members": {
+                  "type": "array",
+                  "description": "計畫成員",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "type": "string",
+                        "description": "成員 ID"
+                      },
+                      "role": {
+                        "type": "string",
+                        "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                        "enum": [
+                          "manager",
+                          "researcher",
+                          "executor"
+                        ]
+                      },
+                      "dataFields": {
+                        "type": "array",
+                        "description": "資料欄位",
+                        "item": {
+                          "type": "string",
+                          "description": "欄位名稱"
+                        }
+                      },
+                      "dailyTestTime": {
+                        "type": "string",
+                        "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                        "enum": [
+                          "null",
+                          ""
+                        ]
+                      },
+                      "latestAnnotationTime": {
+                        "type": "date",
+                        "description": "資料最後更新時間"
+                      },
+                      "oldestAnnotationTime": {
+                        "type": "date",
+                        "description": "資料起始年份"
+                      }
+                    }
+                  }
+                }
+              }
             }
