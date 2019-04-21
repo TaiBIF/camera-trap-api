@@ -91,6 +91,7 @@ model.prototype.dump = function() {
         ? this.user.dump()
         : this.user,
     isCurrent: this.isCurrent,
+    createTime: this.createTime,
   };
 };
 
