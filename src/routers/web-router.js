@@ -84,6 +84,10 @@ apiRouter.post(
   projectHandler.addProjectMember,
 );
 apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/members',
+  projectHandler.updateProjectMembers,
+);
+apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/members/:userId([a-f\\d]{24})',
   projectHandler.updateProjectMember,
 );

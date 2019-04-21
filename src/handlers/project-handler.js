@@ -9,6 +9,7 @@ const ProjectAreaModel = require('../models/data/project-area-model');
 const ProjectModel = require('../models/data/project-model');
 const ProjectsSearchForm = require('../forms/project/projects-search-form');
 const ProjectMemberForm = require('../forms/project/project-member-form');
+const ProjectMembersForm = require('../forms/project/project-members-form');
 const ProjectForm = require('../forms/project/project-form');
 const UserModel = require('../models/data/user-model');
 const DataFieldModel = require('../models/data/data-field-model');
@@ -336,6 +337,62 @@ exports.updateProjectMember = auth(UserPermission.all(), (req, res) => {
       }
 
       updateMember.role = form.role;
+      return project.save();
+    })
+    .then(project => {
+      res.json(project.dump().members);
+    });
+});
+
+exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/projects/:projectId/members
+   */
+  // const form = new ProjectMembersForm(req.body);
+  // const errorMessage = form.validate();
+  // if (errorMessage) {
+  //   throw new errors.Http400(errorMessage);
+  // }
+
+  const membersDTO = req.body.members;
+  if (!membersDTO || !Array.isArray(membersDTO)) {
+    throw new errors.Http400('members: This field is required.');
+  }
+  membersDTO.forEach(member => {
+    const form = new ProjectMemberForm(member);
+    const errorMessage = form.validate();
+    if (errorMessage) {
+      throw new errors.Http400(errorMessage);
+    }
+  });
+
+  return ProjectModel.findById(req.params.projectId)
+    .populate('members.user')
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      const member = project.members.find(
+        item => `${item.user._id}` === `${req.user._id}`,
+      );
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        (!member || member.role !== ProjectRole.manager)
+      ) {
+        throw new errors.Http403();
+      }
+
+      // update each
+      membersDTO.forEach((updateMemberDTO) => {
+        const updateMember = project.members.find(
+          x => `${x.user._id}` === updateMemberDTO.user,
+        );
+
+        if (!updateMember) {
+          throw new errors.Http400(`User ${updateMemberDTO.user} is not exists.`);
+        }
+        updateMember.role = updateMemberDTO.role;
+      });
       return project.save();
     })
     .then(project => {
