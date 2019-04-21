@@ -2012,6 +2012,162 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 204 (application/json)
 
+## Study areas [/projects/{projectId}/study-areas]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+
+## List study areas [GET]    
+取得專案啟用的所有樣區。
+
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+
++ Response 200 (application/json)
+
+    + Body
+    
+            [
+              {
+                "id": "5c9d9428e7462d3d989cb69b",
+                "title": {
+                  "zh-TW": "台北"
+                },
+                "children": [
+                  {
+                    "id": "5c9d9456e7462d3d989cb69c",
+                    "title": {
+                      "zh-TW": "內湖站"
+                    }
+                  },
+                  {
+                    "id": "5c9d95acea5c9b4036d97c88",
+                    "title": {
+                      "zh-TW": "大安站"
+                    }
+                  }
+                ]
+              }
+            ]
+            
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "item": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                          "zh-TW": {
+                            "type": "Study area name in Traditional Chinese."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "children": {
+                    "type": "array",
+                    "item": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "object",
+                          "properties": {
+                            "zh-TW": {
+                              "type": "string",
+                              "description": "Study area name in Traditional Chinese."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+## Add a study area [POST]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined and who is a project manager.
+
++ Request (application/json)
+
+    + Body
+    
+            {
+              "title": {
+                "zh-TW": "台北"
+              },
+              "parent": "5c9d9428e7462d3d989cb69b"
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                },
+                "parent": {
+                  "type": "string",
+                  "description": "母樣區 id，新增子樣區時使用。"
+                }
+              }
+            }
+
++ Response 200 (applition/json)
+
+    + Body
+    
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "title": {
+                "zh-TW": "台北"
+              }
+            }
+    
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "本樣區 id。"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                }
+              }
+            }
+
+
 # Group Areas
 ## List areas [GET /project-areas{?index,size,sort}]
 取得地區列表。
