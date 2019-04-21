@@ -65,6 +65,10 @@ apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
+apiRouter.put(
+  '/annotations/:annotationId([a-f\\d]{24})',
+  annotationHandler.updateAnnotation,
+);
 apiRouter.get('/project-areas', projectAreaHandler.getProjectAreas);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);

@@ -6,7 +6,9 @@ const CameraLocationModel = require('../models/data/camera-location-model');
 require('../models/data/project-model'); // for populate
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
+const SpeciesModel = require('../models/data/species-model');
 const AnnotationsSearchForm = require('../forms/annotation/annotations-search-form');
+const AnnotationForm = require('../forms/annotation/annotation-form');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 
@@ -104,5 +106,52 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       res.json(
         new PageList(form.index, form.size, result.totalDocs, result.docs),
       );
+    });
+});
+
+exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/annotations/:annotationId
+   */
+  const form = new AnnotationForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return Promise.all([
+    AnnotationModel.findById(req.params.annotationId)
+      .where({ state: AnnotationState.active })
+      .populate('project'),
+    SpeciesModel.findById(form.species),
+  ])
+    .then(([annotation, species]) => {
+      if (!annotation) {
+        throw new errors.Http404();
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !annotation.project.members.find(
+          x => `${x.user._id}` === `${req.user._id}`,
+        )
+      ) {
+        throw new errors.Http403();
+      }
+      if (form.species) {
+        if (!species) {
+          throw new errors.Http404();
+        }
+        if (`${species.project._id}` !== `${annotation.project._id}`) {
+          throw new errors.Http400(
+            'The project of species and the project of the annotation are different.',
+          );
+        }
+      }
+
+      annotation.species = species;
+      return annotation.saveAndAddRevision(req.user);
+    })
+    .then(annotation => {
+      res.json(annotation.dump());
     });
 });
