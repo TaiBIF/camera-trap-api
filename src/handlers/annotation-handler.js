@@ -3,6 +3,7 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const CameraLocationModel = require('../models/data/camera-location-model');
+const CameraLocationState = require('../models/const/camera-location-state');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const ProjectModel = require('../models/data/project-model');
 const StudyAreaModel = require('../models/data/study-area-model');
@@ -38,18 +39,18 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       StudyAreaModel.where({ parent: form.studyArea }).where({
         state: StudyAreaState.active,
       }),
-      CameraLocationModel.where({
-        _id: { $in: form.cameraLocations },
-      }).populate('project'),
+      CameraLocationModel.where({ _id: { $in: form.cameraLocations } })
+        .where({ state: CameraLocationState.active })
+        .populate('project'),
     ];
   } else {
     // cameraLocations
     tasks = [
       null,
       null,
-      CameraLocationModel.where({
-        _id: { $in: form.cameraLocations },
-      }).populate('project'),
+      CameraLocationModel.where({ _id: { $in: form.cameraLocations } })
+        .where({ state: CameraLocationState.active })
+        .populate('project'),
     ];
   }
   return Promise.all(tasks)
