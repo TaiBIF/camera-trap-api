@@ -54,7 +54,7 @@ const model = mongoose.model(
         type: Schema.ObjectId,
         ref: 'SpeciesModel',
       },
-      customFields: [
+      fields: [
         // 儲存非系統預設欄位的資料
         // 將系統預設欄位儲於上層物件是為了方便搜尋
         {

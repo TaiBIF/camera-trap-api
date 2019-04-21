@@ -536,7 +536,7 @@ exports.convertCsvToAnnotations = ({
         filename: information.filename,
         time: information.time,
         species: information.species == null ? undefined : information.species,
-        customFields: information.fields,
+        fields: information.fields,
         rawData: items,
       }),
     );

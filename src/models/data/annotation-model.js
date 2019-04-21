@@ -93,7 +93,7 @@ const model = mongoose.model(
           name: 'Species',
         },
       },
-      customFields: [
+      fields: [
         // 儲存非系統預設欄位的資料
         // 將系統預設欄位儲於上層物件是為了方便搜尋
         {
@@ -156,7 +156,7 @@ model.prototype.saveAndAddRevision = function(user) {
         file: annotation.file,
         time: annotation.time,
         species: annotation.species,
-        customFields: annotation.customFields,
+        fields: annotation.fields,
       });
       tasks.unshift(annotation);
       tasks.push(revision.save());
@@ -187,8 +187,11 @@ model.prototype.dump = function() {
       this.species && typeof this.species.dump === 'function'
         ? this.species.dump()
         : this.species,
-    customFields: this.customFields.map(field => ({
-      dataFieldId: field.dataField._id || field.dataField,
+    fields: this.fields.map(field => ({
+      dataField:
+        field.dataField && typeof field.dataField.dump === 'function'
+          ? field.dataField.dump()
+          : field.dataField,
       value: field.value.selectId || field.value.text || field.value.time,
     })),
   };
