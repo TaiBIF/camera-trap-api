@@ -85,6 +85,12 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         .populate('file')
         .populate('species')
         .sort(form.sort);
+      if (form.startTime) {
+        query.where({ time: { $gte: form.startTime } });
+      }
+      if (form.endTime) {
+        query.where({ time: { $lte: form.startTime } });
+      }
       if (studyArea) {
         const studyAreaIds = [`${studyArea._id}`];
         childStudyAreas.forEach(childStudyArea => {

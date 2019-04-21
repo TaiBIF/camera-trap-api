@@ -12,6 +12,8 @@ AnnotationsSearchForm.define({
       validators: [forms.validators.id()],
     }),
   }),
+  startTime: new forms.fields.DateField(),
+  endTime: new forms.fields.DateField(),
   index: new forms.fields.IntegerField({
     filter: value => {
       const result = forms.filters.integer(0)(value);
