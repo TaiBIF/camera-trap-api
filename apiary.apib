@@ -1508,7 +1508,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
-+ Request
++ Request (application/json)
 
     + Body
     
@@ -1562,7 +1562,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-+ Response 200
++ Response 200 (application/json)
 
     + Body
     
@@ -1682,7 +1682,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
     
-+ Request
++ Request (application/json)
 
     + Body
     
@@ -1715,7 +1715,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     
-+ Response 200
++ Response 200 (application/json)
 
     + Body
     
@@ -1760,7 +1760,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
     + speciesId: `5c949bbbe5d5377f98c81ab0` (string) ... The species ID.
 
-+ Request
++ Request (application/json)
 
     + Body
     
@@ -1817,7 +1817,200 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Members [/projects/{projectId}/members]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
+## Add a member [POST /projects/{projectId}/members]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.
+- The general-account gets the project who joined and who is a project manager.
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "user": "name@example.com",
+              "role": "manager"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "string",
+                  "description": "使用者的 ORCiD 或 email."
+                },
+                "role": {
+                  "type": "string",
+                  "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
+                  "enum": ["manager", "researcher", "executor"]
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+    
+            [
+              {
+                "user": {
+                  "id": "5c949bbbe5d5377f98c81ab0",
+                  "name": "測試",
+                  "email": "name@example.com",
+                  "permission": "general-account"
+                },
+                "role": "manager"
+              }
+            ]
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Full name of the member."
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "idn-email"
+                      },
+                      "permission": {
+                        "type": "string",
+                        "enum": ["administrator", "general-account"]
+                      }
+                    }
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
+                    "enum": ["manager", "researcher", "executor"]
+                  }
+                }
+              }
+            }
+
+## Update a member [PUT /projects/{projectId}/members/{userId}]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + userId: `5c949bbbe5d5377f98c81ab0` (string) ... The user ID.
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "role": "researcher"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
+                  "enum": ["manager", "researcher", "executor"]
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+              {
+                "user": {
+                  "id": "5c949bbbe5d5377f98c81ab0",
+                  "name": "測試",
+                  "email": "name@example.com",
+                  "permission": "general-account"
+                },
+                "role": "manager"
+              },
+              {
+                "user": {
+                  "id": "5c949bbbe5d5377f98c81ab1",
+                  "name": "測試2",
+                  "email": "name2@example.com",
+                  "permission": "general-account"
+                },
+                "role": "researcher"
+              }
+            ]
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "item": {
+                "type": "object",
+                "properties": {
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Full name of the member."
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "idn-email"
+                      },
+                      "permission": {
+                        "type": "string",
+                        "enum": ["administrator", "general-account"]
+                      }
+                    }
+                  },
+                  "role": {
+                    "type": "string",
+                    "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
+                    "enum": ["manager", "researcher", "executor"]
+                  }
+                }
+              }
+            }
+
+## Delete a member [DELETE /projects/{projectId}/members/{userId}]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + userId: `5c949bbbe5d5377f98c81ab0` (string) ... The user ID.
+
++ Response 204 (application/json)
 
 # Group Areas
 ## List areas [GET /project-areas{?index,size,sort}]
