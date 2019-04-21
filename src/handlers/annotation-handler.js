@@ -81,6 +81,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
 
       const query = AnnotationModel.where({ state: AnnotationState.active })
         .populate('file')
+        .populate('species')
         .sort(form.sort);
       if (studyArea) {
         const studyAreaIds = [`${studyArea._id}`];
