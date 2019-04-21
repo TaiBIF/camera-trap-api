@@ -63,6 +63,10 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     title: this.title,
+    parent:
+      this.parent && typeof this.parent.dump === 'function'
+        ? this.parent.dump()
+        : this.parent,
   };
 };
 
