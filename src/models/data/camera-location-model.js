@@ -86,6 +86,10 @@ const model = mongoose.model('CameraLocationModel', schema);
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    studyArea:
+      this.studyArea && typeof this.studyArea.dump === 'function'
+        ? this.studyArea.dump()
+        : this.studyArea,
     name: this.name,
     settingTime: this.settingTime,
     latitude: this.latitude,
