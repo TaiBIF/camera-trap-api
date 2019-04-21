@@ -1398,6 +1398,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 - The general-account gets the project who joined.
 
 + Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
     + index: `0` (number) ... The page index.
     + size: `9007199254740991` (number) ``` To check with Kelp.
     + sort: `index` (enum[string], optional) ...
@@ -1503,6 +1504,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.
 - The general-account gets the project who joined and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
 + Request
 
@@ -1666,6 +1670,83 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       }
                     }
                   ]
+                }
+              }
+            }
+
+## Add new project species [POST /projects/{projectId}/species]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    
++ Request
+
+    + Body
+    
+            {
+              "title": {
+                "zh-TW": "山羌"
+              },
+              "index": 2
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Vernacular name of the species. 物種的普通名。"
+                    }
+                  }
+                },
+                "index": {
+                  "type": "integer"
+                }
+              }
+            }
+
+    
++ Response 200
+
+    + Body
+    
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "title": {
+                "zh-TW": "山羌"
+              },
+              "index": 2
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Vernacular name of the species. 物種的普通名。"
+                    }
+                  }
+                },
+                "index": {
+                  "type": "integer"
                 }
               }
             }
