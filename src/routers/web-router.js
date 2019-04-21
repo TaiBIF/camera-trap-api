@@ -11,6 +11,7 @@ const projectHandler = require('../handlers/project-handler');
 const speciesHandler = require('../handlers/species-handler');
 const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
+const uploadSessionHandler = require('../handlers/upload-session-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -63,6 +64,7 @@ const apiRouter = new CustomRouter(exports.api);
 apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
+apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.put(
