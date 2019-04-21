@@ -6,8 +6,8 @@ HOST: http://52.192.70.91/api/v1
 CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group System
-## System configuration [/config]
-## Retrieve system config [GET]
+## Configuration [/config]
+## Retrieve configuration [GET]
 - Auth: No permission required.
 
 + Response 200 (application/json)
@@ -51,7 +51,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## System notification [/system-notifications]
+## Notifications [/system-notifications]
 - Auth: No permission required.
 - Note: To be implemented.
 
@@ -60,8 +60,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200 (application/json)
 
 # Group Account
-## Account information [/me]
-## Retrieve account [GET]
+## Profile [/me]
+## Retrieve profile [GET]
 
 + Response 200 (application/json)
 
@@ -99,7 +99,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update account [PUT]
+## Update profile [PUT]
 
 - Auth: The user's permission should be 'administrator' or 'general-account'.
 
@@ -162,7 +162,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Account notification [/me/notifications]
+## Notifications [/me/notifications]
 ## Retrieve notification [GET]
 取得該帳號收到的通知。
 
@@ -172,8 +172,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
             { "messsage": "to be implemented/documented" }
 
-## Account upload sessions [/me/upload-sessions]
-## Retrieve account upload sessions [GET]
+## Upload sessions [/me/upload-sessions]
+## Retrieve upload sessions [GET]
 取得上傳紀錄。
 
 + Response 200 (application/json)
@@ -195,7 +195,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 204 (application/json)
 
 # Group Projects
-## Projects [/projects]
+## Overview [/projects]
 ## List projects [GET /projects{?index,size,sort}]
 取得計畫列表。
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
@@ -780,11 +780,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Project metadata [/projects/{projectId}]
+## Metadata [/projects/{projectId}]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
-## Retrieve project metadata [GET]
+## Retrieve metadata [GET]
 
 + Response 200 (application/json)
 
@@ -1009,7 +1009,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update project metadata [PUT]
+## Update metadata [PUT]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
 - The general-account gets the project who joined and who is a project manager.
@@ -1388,11 +1388,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "required": ["title", "shortTitle", "funder", "code", "principalInvestigator", "startTime", "endTime"]
             }
 
-## Project species [/projects/{projectId}/species]
+## Species [/projects/{projectId}/species]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
-## Retrieve project species [GET /projects/{projectId}/species{?index,size,sort}]
+## Retrieve species [GET /projects/{projectId}/species{?index,size,sort}]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
 - The general-account gets the project who joined.
@@ -1499,7 +1499,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update project species [PUT /projects/{projectId}/species]
+## Update species [PUT /projects/{projectId}/species]
 批次新增、更新物種。
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.
@@ -1674,7 +1674,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Add new project species [POST /projects/{projectId}/species]
+## Add new species [POST /projects/{projectId}/species]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
 - The general-account gets the project who joined and who is a project manager.
@@ -1751,10 +1751,77 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Update a species [PUT /projects/{projectId}/species/{speciesId}]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined and who is a project manager.
 
-# Group Project area
-## List project areas [GET /project-areas{?index,size,sort}]
-取得計畫地區列表。
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + speciesId: `5c949bbbe5d5377f98c81ab0` (string) ... The species ID.
+
++ Request
+
+    + Body
+    
+            {
+              "index": 2
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            }
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "title": {
+                "zh-TW": "山羌"
+              },
+              "index": 2
+            }
+    
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Vernacular name of the species. 物種的普通名。"
+                    }
+                  }
+                },
+                "index": {
+                  "type": "integer"
+                }
+              }
+            }
+
+
+
+# Group Areas
+## List areas [GET /project-areas{?index,size,sort}]
+取得地區列表。
 - Auth: The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
