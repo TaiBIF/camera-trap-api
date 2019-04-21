@@ -144,7 +144,7 @@ model.prototype.saveAndAddRevision = function(user) {
   return Promise.all([this.save(), revisionQuery])
     .then(([annotation, oldRevisions]) => {
       const tasks = oldRevisions.map(revision => {
-        revision.isCurrency = false;
+        revision.isCurrent = false;
         return revision.save();
       });
       const revision = new AnnotationRevisionModel({
