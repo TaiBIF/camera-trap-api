@@ -1387,7 +1387,290 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               },
               "required": ["title", "shortTitle", "funder", "code", "principalInvestigator", "startTime", "endTime"]
             }
+
+## Project species [/projects/{projectId}/species]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+
+## Retrieve project species [GET /projects/{projectId}/species{?index,size,sort}]
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets the project who joined.
+
++ Parameters
+    + index: `0` (number) ... The page index.
+    + size: `9007199254740991` (number) ``` To check with Kelp.
+    + sort: `index` (enum[string], optional) ...
+        + Default: `index`
+        + Members
+            + `index`
             
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 100,
+              "total": 4,
+              "items": [
+                {
+                  "id": "5c99e565fa899867c32377d0",
+                  "title": {
+                    "zh-TW": "空拍"
+                  },
+                  "index": 0,
+                  "code": "empty-shot"
+                },
+                {
+                  "id": "5c99e565fa899867c32377d1",
+                  "title": {
+                    "zh-TW": "測試"
+                  },
+                  "index": 1,
+                  "code": "test"
+                },
+                {
+                  "id": "5c99e565fa899867c32377d2",
+                  "title": {
+                    "zh-TW": "人"
+                  },
+                  "index": 2,
+                  "code": "people"
+                },
+                {
+                  "id": "5c99e9f772033c68e65592fb",
+                  "title": {
+                    "zh-TW": "test"
+                  },
+                  "index": 3
+                }
+              ]
+            }
+            
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "number",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "object",
+                        "description": "名稱",
+                        "properties": {
+                          "zh-TW": {
+                            "type": "string",
+                            "description": "Naming in Traditional Chinese."
+                          }
+                        }
+                      },
+                      "index": {
+                        "type": "integer"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "Machine code for internal referencing."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+## Update project species [PUT /projects/{projectId}/species]
+批次新增、更新物種。
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.
+- The general-account gets the project who joined and who is a project manager.
+
++ Request
+
+    + Body
+    
+            [
+              {
+                "id": "5c9af1d2403d37067adadbc6"
+              },
+              {
+                "id": "5c9af1d2403d37067adadbc7"
+              },
+              {
+                "id": "5c9af1d2403d37067adadbc8"
+              },
+              {
+                "title": {
+                  "zh-TW": "Create this one."
+                }
+              }
+            ]
+            
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                          "zh-TW": {
+                            "type": "string",
+                            "description": "Message in Traditional Chinese."  
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+
++ Response 200
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 9007199254740991,
+              "total": 4,
+              "items": [
+                {
+                  "id": "5c9af1d2403d37067adadbc6",
+                  "title": {
+                    "zh-TW": "空拍"
+                  },
+                  "index": 0,
+                  "code": "empty-shot"
+                },
+                {
+                  "id": "5c9af1d2403d37067adadbc7",
+                  "title": {
+                    "zh-TW": "測試"
+                  },
+                  "index": 1,
+                  "code": "test"
+                },
+                {
+                  "id": "5c9af1d2403d37067adadbc8",
+                  "title": {
+                    "zh-TW": "人"
+                  },
+                  "index": 2,
+                  "code": "people"
+                },
+                {
+                  "id": "5ca74924b92468b3ef96fcfd",
+                  "title": {
+                    "zh-TW": "Create this one."
+                  },
+                  "index": 3
+                }
+              ]
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "object",
+                          "properties": {
+                            "zh-TW": {
+                              "type": "string",
+                              "description": "Title in Traditional Chinese."
+                            }
+                          }
+                        },
+                        "index": {
+                          "type": "integer"
+                        },
+                        "code": {
+                          "type": "string",
+                          "description": "Machine code for internal reference."
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "object",
+                          "properties": {
+                            "zh-TW": {
+                              "type": "string",
+                              "description": "Message in Traditional Chinese."
+                            }
+                          }
+                        },
+                        "index": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+
+
 # Group Project area
 ## List project areas [GET /project-areas{?index,size,sort}]
 取得計畫地區列表。
