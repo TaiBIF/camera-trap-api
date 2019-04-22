@@ -2402,7 +2402,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 204 (application/json)
 
-## Camera locations in study areas
 ## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -2807,29 +2806,254 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Apply for a new data field [POST /data-fields]
+申請新欄位。
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "title": {
+                "zh-TW": "title"
+              },
+              "widgetType": "select",
+              "description": {
+                "zh-TW": "description"
+              },
+              "options": [
+                {"zh-TW": "xx"}
+              ]
+            }
+            
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "id": "5c9f31037ef1509d50d2911f",
+              "title": {
+                "zh-TW": "title"
+              },
+              "widgetType": "select",
+              "description": {
+                "zh-TW": "description"
+              },
+              "options": [
+                {
+                  "id": "5c9f31037ef1509d50d29120",
+                  "zh-TW": "xx"
+                }
+              ]
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+
+## Retrieve data field information [GET /data-fields/{dataFieldId}]
+取得欄位詳細資料。
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + dataFieldId: `5c9af16a4ee1b606477f922e` (number) ... The data field ID.
+    
++ Response 200 (application/json)
 
 
+    + Body
+    
+
+            {
+              "id": "5c9af16a4ee1b606477f922e",
+              "state": "approved",
+              "title": {
+                "zh-TW": "性別"
+              },
+              "widgetType": "select",
+              "description": {
+                "zh-TW": "公、母"
+              },
+              "options": [
+                {
+                  "id": "5c9af16a4ee1b606477f9230",
+                  "zh-TW": "公"
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922f",
+                  "zh-TW": "母"
+                }
+              ]
+            }
+            
+
+    + Schema
+
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The data field ID."
+                },
+                "state": {
+                  "type": "string",
+                  "description": "The status of this field."
+                  "enum": ["approved", "pending", "rejected"]
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文欄位名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select", "text", "datePicker"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文欄位說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "欄位項目編碼"
+                      },
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
+            
 
 # Group Annotations
 ## Search annotations [GET /annotations]
 跨計畫搜尋標註。
 
-+ Parameters
-
-+ Response 200
++ Response 200  (application/json)
 
     + Body
 
 ## Retrieve project annotations [GET /projects/{projectId}/annotations]
 取得計畫的標註資料。
 
++ Response 200 (application/json)
+
 ## Update project annotations [PUT /projects/{projectId}/annotations/{annotationId}]
 更新標註資料。
 
-
-
-
-
++ Response 200 (application/json)
 
 
 
@@ -2922,6 +3146,76 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       }
                     }
                   }
+                }
+              }
+            }
+
+# Group Files
+## Upload files [POST /files{?type}]
+上傳檔案。
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+
++ Parameters
+    + type: `project-cover-image` (string) ... File type/purpose.
+    
++ Request
+
+        The input name is "file" of the form.
+
+    + Headers
+
+            Accept-Charset: utf-8
+            Connection: keep-alive
+            Content-Type: multipart/form-data
+    
+
++ Response 200 (application/json)
+
+
+    + Body
+
+    
+            {
+              "id": "5c9afa256c59080852644719",
+              "type": "project-cover-image",
+              "originalFilename": "432x324c.jpg",
+              "filename": "5c9afa256c59080852644719.jpg",
+              "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9afa256c59080852644719.jpg",
+              "size": 26172
+            }
+    
+
+    + Schema
+    
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The file ID."
+                },
+                "type": {
+                  "type": "string",
+                  "description": "檔案類別",
+                  "enum": ["project-cover-image"]
+                },
+                "originalFilename": {
+                  "type": "string",
+                  "description": "原始檔名"
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "儲存於 S3 的檔名"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "File size in byte."
                 }
               }
             }
