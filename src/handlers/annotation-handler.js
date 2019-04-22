@@ -129,9 +129,9 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
   }
 
   return Promise.all([
-    AnnotationModel.findById(req.params.annotationId).where({
-      state: AnnotationState.active,
-    }),
+    AnnotationModel.findById(req.params.annotationId)
+      .where({ state: AnnotationState.active })
+      .populate('file'),
     SpeciesModel.findById(form.species),
   ])
     .then(([annotation, species]) =>
