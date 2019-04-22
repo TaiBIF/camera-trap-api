@@ -2237,7 +2237,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string"
                       },
                       "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "相機位置名稱"
                       },
                       "settingTime": {
                         "type": "string",
@@ -2246,11 +2247,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       },
                       "latitude": {
                         "type": "number",
-                        "description": "緯度 (WGS84)"
+                        "description": "十進位緯度 (WGS84)"
                       },
                       "longitude": {
                         "type": "number",
-                        "description": "經度 (WGS84)"
+                        "description": "十進位經度 (WGS84)"
                       },
                       "altitude": {
                         "type": "number",
@@ -2278,7 +2279,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + cameraLocationId: `` (string) ... The camera location ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) ... The camera location ID.
 
 + Request (application/json)
 
@@ -2301,7 +2302,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "type": "object",
               "properties": {
                 "name": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "相機位置名稱"
                 },
                 "settingTime": {
                   "type": "string",
@@ -2310,11 +2312,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 },
                 "latitude": {
                   "type": "number",
-                  "description": "緯度 (WGS84)"
+                  "description": "十進位緯度 (WGS84)"
                 },
                 "longitude": {
                   "type": "number",
-                  "description": "經度 (WGS84)"
+                  "description": "十進位經度 (WGS84)"
                 },
                 "altitude": {
                   "type": "number",
@@ -2357,7 +2359,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string"
                 },
                 "name": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "相機位置名稱"
                 },
                 "settingTime": {
                   "type": "string",
@@ -2366,11 +2369,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 },
                 "latitude": {
                   "type": "number",
-                  "description": "緯度 (WGS84)"
+                  "description": "十進位緯度 (WGS84)"
                 },
                 "longitude": {
                   "type": "number",
-                  "description": "經度 (WGS84)"
+                  "description": "十進位經度 (WGS84)"
                 },
                 "altitude": {
                   "type": "number",
@@ -2386,6 +2389,449 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
+
+## Delete a camera location [DELETE /projects/{projectId}/camera-locations/{cameraLocationId}]
+刪除相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) ... The camera location ID.
+
++ Response 204 (application/json)
+
+## Camera locations in study areas
+## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + studyAreaId: `` (string) ... The study area ID.
+
+## Retrieve camera locations in a study area [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations{?index,size,sort,name}]
+取得樣區底下啟用的相機位置。
+如果指定的樣區是母樣區時會連子樣區的相機位置一起取得。
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + studyAreaId: `` (string) ... The study area ID.
+    + index: `0` (number) ... The page index.
+    + size: `100` (number) ``` To check with Kelp.
+    + sort: `name` (enum[string], optional) ...
+        + Default: `name`
+        + Members
+            + `name`
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 100,
+              "total": 2,
+              "items": [
+                {
+                  "id": "5c9f268cd8605e99862339ff",
+                  "name": "pT03B",
+                  "latitude": 25.014051,
+                  "longitude": 121.462417
+                },
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "PT02A",
+                  "settingTime": "2019-01-01T00:00:00.000Z",
+                  "latitude": 58.28,
+                  "longitude": 121.462417,
+                  "altitude": 100,
+                  "vegetation": "植被",
+                  "landCover": "土地覆蓋類型"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機位置名稱"
+                      },
+                      "settingTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "架設日期(ISO-8601)"
+                      },
+                      "latitude": {
+                        "type": "number",
+                        "description": "十進位緯度 (WGS84)"
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "description": "十進位經度 (WGS84)"
+                      },
+                      "altitude": {
+                        "type": "number",
+                        "description": "海拔（公尺）"
+                      },
+                      "vegetation": {
+                        "type": "string",
+                        "description": "植被"
+                      },
+                      "landCover": {
+                        "type": "string",
+                        "description": "土地覆蓋類型"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
+## Add a camera location in a specified study area [POST]
+在指定的樣區新增相機位置。
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined and who is a project manager.
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "name": "PT02A",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被",
+              "landCover": "土地覆蓋類型"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "相機位置名稱"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "十進位緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "十進位經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "name": "PT02A",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "相機位置名稱"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "十進位緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "十進位經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                }
+              }
+            }
+
+
+## Data fields [/data-fields]
+## Retrieve data fields [GET /data-fields{?index,size,sort,filter}]
+- Auth: The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + index: `0` (number) ... The page index.
+    + size: `100` (number) ``` To check with Kelp.
+    + sort: `name` (enum[string], optional) ...
+        + Default: `name`
+        + Members
+            + `name`
+    + filter: `system` (enum[string], optional) ...
+        + Members
+            + `system`
+            + `custom`
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 100,
+              "total": 7,
+              "items": [
+                {
+                  "id": "5c9af16a4ee1b606477f9229",
+                  "systemCode": "study-area",
+                  "title": {
+                    "zh-TW": "樣區"
+                  },
+                  "widgetType": "select",
+                  "description": {
+                    "zh-TW": "樣區-子樣區"
+                  },
+                  "options": []
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922a",
+                  "systemCode": "camera-location",
+                  "title": {
+                    "zh-TW": "相機位置"
+                  },
+                  "widgetType": "select",
+                  "description": {
+                    "zh-TW": "相機位置名稱"
+                  },
+                  "options": []
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922b",
+                  "systemCode": "file-name",
+                  "title": {
+                    "zh-TW": "檔名"
+                  },
+                  "widgetType": "text",
+                  "description": {
+                    "zh-TW": "01234.jpg"
+                  },
+                  "options": []
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922c",
+                  "systemCode": "time",
+                  "title": {
+                    "zh-TW": "日期時間"
+                  },
+                  "widgetType": "time",
+                  "description": {
+                    "zh-TW": "YY/MM/DD hh:mm"
+                  },
+                  "options": []
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922d",
+                  "systemCode": "species",
+                  "title": {
+                    "zh-TW": "物種"
+                  },
+                  "widgetType": "select",
+                  "description": {
+                    "zh-TW": ""
+                  },
+                  "options": []
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f922e",
+                  "title": {
+                    "zh-TW": "性別"
+                  },
+                  "widgetType": "select",
+                  "description": {
+                    "zh-TW": "公、母"
+                  },
+                  "options": [
+                    {
+                      "id": "5c9af16a4ee1b606477f9230",
+                      "zh-TW": "公"
+                    },
+                    {
+                      "id": "5c9af16a4ee1b606477f922f",
+                      "zh-TW": "母"
+                    }
+                  ]
+                },
+                {
+                  "id": "5c9af16a4ee1b606477f9235",
+                  "title": {
+                    "zh-TW": "備註"
+                  },
+                  "widgetType": "text",
+                  "description": {
+                    "zh-TW": ""
+                  },
+                  "options": []
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "systemCode": {
+                        "type": "string",
+                        "description": "樣區"
+                      },
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                          "zh-TW": "string",
+                          "description": "繁體中文樣區名稱"
+                        }
+                      },
+                      "widgetType": {
+                        "type": "string",
+                        "enum": ["select"]
+                      },
+                      "description": {
+                        "type": "object",
+                        "properties": {
+                          "zh-TW": {
+                            "type": "string",
+                            "description": "繁體中文相機位置名稱"
+                          }
+                        }
+                      },
+                      "options": {
+                        "type": "array"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
+
+
+# Group Annotations
+## Search annotations [GET /annotations]
+跨計畫搜尋標註。
+
++ Parameters
+
++ Response 200
+
+    + Body
+
+## Retrieve project annotations [GET /projects/{projectId}/annotations]
+取得計畫的標註資料。
+
+## Update project annotations [PUT /projects/{projectId}/annotations/{annotationId}]
+更新標註資料。
+
+
+
+
+
+
+
 
 # Group Areas
 ## List areas [GET /project-areas{?index,size,sort}]
