@@ -200,7 +200,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 取得計畫列表。
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined.
+- The general-account gets affiliated projects.
 
 + Parameters
     + index: `0` (number) ... The page index.
@@ -1012,7 +1012,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Update metadata [PUT]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Request (application/json)
 
@@ -1395,7 +1395,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Retrieve species [GET /projects/{projectId}/species{?index,size,sort}]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined.
+- The general-account gets affiliated projects.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -1503,7 +1503,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 批次新增、更新物種。
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -1677,7 +1677,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Add new species [POST /projects/{projectId}/species]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -1754,7 +1754,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Update a species [PUT /projects/{projectId}/species/{speciesId}]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -1824,7 +1824,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Add a member [POST /projects/{projectId}/members]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
 
@@ -1911,7 +1911,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Update a member [PUT /projects/{projectId}/members/{userId}]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -2004,7 +2004,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Delete a member [DELETE /projects/{projectId}/members/{userId}]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
@@ -2099,7 +2099,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Add a study area [POST]
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
-- The general-account gets the project who joined and who is a project manager.
+- The general-account gets affiliated projects and who is a project manager.
 
 + Request (application/json)
 
@@ -2167,6 +2167,225 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Camera Locations [/projects/{projectId}/camera-locations]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+
+## Retrieve camera locations [GET /projects/{projectId}/camera-locations{?index,size,sort,name}]
+檢查相機位置名稱是否已被使用。  
+同一計畫底下相機位置名稱不可重複，新增或修改相機位置前請先檢查是否有重複。
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets affiliated projects.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + index: `0` (number) ... The page index.
+    + size: `9007199254740991` (number) ``` To check with Kelp.
+    + sort: `name` (enum[string], optional) ...
+        + Default: `name`
+        + Members
+            + `name`
+    + name: `PL01A` (string) ... 使用相機名稱搜尋
+            
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 100,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "PT02A",
+                  "settingTime": "2019-01-01T00:00:00.000Z",
+                  "latitude": 58.28,
+                  "longitude": 121.462417,
+                  "altitude": 100,
+                  "vegetation": "植被",
+                  "landCover": "土地覆蓋類型"
+                }
+              ]
+            }
+    
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "settingTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "架設日期(ISO-8601)"
+                      },
+                      "latitude": {
+                        "type": "number",
+                        "description": "緯度 (WGS84)"
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "description": "經度 (WGS84)"
+                      },
+                      "altitude": {
+                        "type": "number",
+                        "description": "海拔（公尺）"
+                      },
+                      "vegetation": {
+                        "type": "string",
+                        "description": "植被"
+                      },
+                      "landCover": {
+                        "type": "string",
+                        "description": "土地覆蓋類型"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+## Update camera locations [PUT /projects/{projectId}/camera-locations/{cameraLocationId}]
+更新相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
+- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The administrator gets all projects.  
+- The general-account gets affiliated projects.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + cameraLocationId: `` (string) ... The camera location ID.
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "name": "PT02A",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被",
+              "landCover": "土地覆蓋類型"
+            }
+            
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                }
+              }
+            }
+    
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "name": "PT02A",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被",
+              "landCover": "土地覆蓋類型"
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                }
+              }
+            }
 
 # Group Areas
 ## List areas [GET /project-areas{?index,size,sort}]
