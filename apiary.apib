@@ -71,7 +71,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
               "email": "email@example.com",
-              "permission": ["general-account"]
+              "permission": "general-account"
             }
 
     + Schema
@@ -90,11 +90,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string"
                 },
                 "permission": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "enum": ["administrator", "general-account"]
-                  }
+                  "type": "string",
+                  "enum": ["administrator", "general-account"]
                 }
               }
             }
