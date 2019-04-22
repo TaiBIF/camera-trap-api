@@ -23,7 +23,7 @@ UploadSessionsSearchForm.define({
     },
   }),
   sort: new forms.fields.StringField({
-    filter: value => value || 'createTime',
+    filter: value => value || '-createTime',
     validators: [forms.validators.regexp(/^-?(createTime)$/)],
   }),
 });
