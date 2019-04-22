@@ -4023,15 +4023,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `annotation-csv`
             + `annotation-zip`
             
-+ Request
++ Request (multipart/form-data; boundary=------FormBoundaryShouldDifferAtRuntime)
 
-    + Headers
+        ------FormBoundaryShouldDifferAtRuntime
+        Content-Disposition: form-data; name="file"; filename=""
+        Content-Type: application/octet-stream
 
-            Accept-Charset: utf-8
-            Connection: keep-alive
-            Content-Type: multipart/form-data, boundary=------FormBoundaryShouldDifferAtRuntime
-    
-    + Body
+        ------FormBoundaryShouldDifferAtRuntime
 
 + Response 200 (application/json)
 
