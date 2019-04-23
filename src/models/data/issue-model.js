@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const IssueType = require('../const/issue-type');
 const IssueCategory = require('../const/issue-category');
-const FileType = require('../const/file-type');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -37,8 +36,9 @@ const model = mongoose.model(
         type: String,
         required: true,
       },
-      attachmentFileName: {
-        type: String,
+      attachmentFile: {
+        type: Schema.ObjectId,
+        ref: 'FileModel',
       },
     },
     {
@@ -54,11 +54,10 @@ model.prototype.dump = function() {
     category: this.category,
     description: this.description,
     email: this.email,
-    attachmentFileName: this.attachmentFileName,
-    attachmentUrl: utils.getFileUrl(
-      FileType.issueAttachment,
-      this.attachmentFileName,
-    ),
+    attachmentFile:
+      this.attachmentFile && typeof this.attachmentFile === 'function'
+        ? this.attachmentFile.dump()
+        : this.attachmentFile,
   };
 };
 
