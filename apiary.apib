@@ -2228,34 +2228,59 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update a member [PUT /projects/{projectId}/members/{userId}]
+## Update members [PUT /projects/{projectId}/members]
+批次更新/刪除計畫成員。  
+上傳的資料不包含某成員代表刪除，不支援批次新增成員。
+
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
 - The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + userId: `5c949bbbe5d5377f98c81ab0` (string) ... The user ID.
 
 + Request (application/json)
 
     + Body
 
-            {
-              "role": "researcher"
-            }
+            [
+              {
+                "user": "5c949bbbe5d5377f98c81ab0",
+                "role": "manager"
+              },
+              {
+                "user": "5ca570886ee6391d81fd773e",
+                "role": "researcher"
+              }
+            ]
+
 
     + Schema
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "role": {
-                  "type": "string",
-                  "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
-                  "enum": ["manager", "researcher", "executor"]
-                }
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "description": "manager (計畫管理員), researcher (計畫研究員), executor (計畫執行者)",
+                        "enum": ["manager", "researcher", "executor"]
+                      }
+                    }
+                  }
+                ]
               }
             }
 
@@ -2321,16 +2346,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Delete a member [DELETE /projects/{projectId}/members/{userId}]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
-- The general-account gets affiliated projects and who is a project manager.
-
-+ Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + userId: `5c949bbbe5d5377f98c81ab0` (string) ... The user ID.
-
-+ Response 204 (application/json)
 
 ## Study areas [/projects/{projectId}/study-areas]
 + Parameters
