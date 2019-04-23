@@ -89,7 +89,6 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
 
       const tasks = [];
       speciesList.forEach(species => {
-        // if (formIds.indexOf(`${species._id}`) < 0) {
         if (!forms.find(x => x.id === `${species._id}`)) {
           // Missing the species in forms.
           throw new errors.Http400(`Missing ${species._id}.`);
