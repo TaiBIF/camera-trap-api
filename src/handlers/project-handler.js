@@ -257,7 +257,7 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
   }
 
   const userQuery = UserModel.find();
-  if (form.user.indexOf('@')) {
+  if (form.user.indexOf('@') >= 0) {
     userQuery.where({ email: form.user });
   } else {
     userQuery.where({ orcId: form.user });
