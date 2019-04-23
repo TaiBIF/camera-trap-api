@@ -92,14 +92,6 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/members',
   projectHandler.updateProjectMembers,
 );
-apiRouter.put(
-  '/projects/:projectId([a-f\\d]{24})/members/:userId([a-f\\d]{24})',
-  projectHandler.updateProjectMember,
-);
-apiRouter.delete(
-  '/projects/:projectId([a-f\\d]{24})/members/:userId([a-f\\d]{24})',
-  projectHandler.deleteProjectMember,
-);
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.getProjectSpecies,

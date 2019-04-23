@@ -303,53 +303,17 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
     });
 });
 
-exports.updateProjectMember = auth(UserPermission.all(), (req, res) => {
-  /*
-  PUT /api/v1/projects/:projectId/members/:userId
-   */
-  const form = new ProjectMemberForm(req.body);
-  const errorMessage = form.validate();
-  if (errorMessage) {
-    throw new errors.Http400(errorMessage);
-  }
-
-  return ProjectModel.findById(req.params.projectId)
-    .populate('members.user')
-    .then(project => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
-        throw new errors.Http403();
-      }
-      const updateMember = project.members.find(
-        x => `${x.user._id}` === req.params.userId,
-      );
-      if (!updateMember) {
-        throw new errors.Http400(`User ${req.params.userId} is not exists.`);
-      }
-
-      updateMember.role = form.role;
-      return project.save();
-    })
-    .then(project => {
-      res.json(project.dump().members);
-    });
-});
-
 exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
   /*
   PUT /api/v1/projects/:projectId/members
+  Support update and delete, not create.
    */
-  const membersDTO = req.body.members;
+  const membersDTO = req.body;
   if (!membersDTO || !Array.isArray(membersDTO)) {
     throw new errors.Http400('members: This field is required.');
+  }
+  if (!membersDTO.length) {
+    throw new errors.Http400(`Can't delete all members.`);
   }
   membersDTO.forEach(member => {
     const form = new ProjectMemberForm(member);
@@ -358,6 +322,9 @@ exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
       throw new errors.Http400(errorMessage);
     }
   });
+  if (!membersDTO.find(x => x.role === ProjectRole.manager)) {
+    throw new errors.Http400('Require at least one manager.');
+  }
 
   return ProjectModel.findById(req.params.projectId)
     .populate('members.user')
@@ -376,6 +343,7 @@ exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
       }
 
       // update each
+      const newMembers = [];
       membersDTO.forEach(updateMemberDTO => {
         const updateMember = project.members.find(
           x => `${x.user._id}` === updateMemberDTO.user,
@@ -387,43 +355,12 @@ exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
           );
         }
         updateMember.role = updateMemberDTO.role;
+        newMembers.push(updateMember);
       });
+      project.members = newMembers; // We delete members that are not in the request.
       return project.save();
     })
     .then(project => {
       res.json(project.dump().members);
     });
 });
-
-exports.deleteProjectMember = auth(UserPermission.all(), (req, res) =>
-  /*
-  DELETE /api/v1/projects/:projectId/members/:userId
-   */
-  ProjectModel.findById(req.params.projectId)
-    .then(project => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
-        throw new errors.Http403();
-      }
-      const memberIndex = project.members.findIndex(
-        x => `${x.user._id}` === req.params.userId,
-      );
-      if (memberIndex < 0) {
-        throw new errors.Http400(`User ${req.params.userId} is not exists.`);
-      }
-
-      project.members.splice(memberIndex, 1);
-      return project.save();
-    })
-    .then(() => {
-      res.status(204).send();
-    }),
-);
