@@ -7,7 +7,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group System
 ## Configuration [/config]
-## Retrieve configuration [GET]
+### Retrieve configuration [GET]
 - Auth: No permission required.
 
 + Response 200 (application/json)
@@ -499,22 +499,24 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     
 
 ## Logout [/logout]
-## Log out [POST /logout]
+### Log out [POST /logout]
 - Auth: The user's permission should be 'administrator' or 'general-account'.
 
 + Response 204
 
 # Group Projects
 ## Overview [/projects]
-## List projects [GET /projects{?index,size,sort}]
+### List projects [GET /projects{?index,size,sort}]
 取得計畫列表。
 - Auth: The user's permission should be 'administrator' or 'general-account'.  
 - The administrator gets all projects.  
 - The general-account gets affiliated projects.
 
 + Parameters
-    + index: `0` (number) ... The page index.
-    + size: `124` (number) ... The size of the result set.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
     + sort: `oldestAnnotationTime` (enum[string], optional) ...
         + Default: `oldestAnnotationTime`
         + Members
