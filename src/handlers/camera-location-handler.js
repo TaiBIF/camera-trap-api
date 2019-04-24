@@ -129,13 +129,7 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
       if (!studyArea) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -178,13 +172,7 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -217,13 +205,7 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 

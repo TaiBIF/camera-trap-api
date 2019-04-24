@@ -2,149 +2,167 @@ const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
+const UserPermission = require('../../models/const/user-permission');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
-const model = mongoose.model(
-  'ProjectModel',
-  utils.generateSchema(
-    {
-      title: {
-        // 計畫名稱
-        type: String,
-        required: true,
-      },
-      shortTitle: {
-        // 計畫簡稱
-        type: String,
-        required: true,
-      },
-      funder: {
-        // 委辦單位
-        type: String,
-        required: true,
-      },
-      code: {
-        // 計畫編號
-        type: String,
-        required: true,
-      },
-      principalInvestigator: {
-        // 計畫主持人
-        type: String,
-        required: true,
-      },
-      startTime: {
-        // 計畫時間（開始）
-        type: Date,
-        required: true,
-      },
-      endTime: {
-        // 計畫時間（結束）
-        type: Date,
-        required: true,
-      },
-      areas: [
-        // 計畫地區
-        {
-          type: Schema.ObjectId,
-          ref: 'ProjectAreaModel',
-          required: true,
-        },
-      ],
-      description: {
-        // 計畫摘要
-        type: String,
-      },
-      note: {
-        // 備註
-        type: String,
-      },
-      coverImageFile: {
-        // 計畫封面圖片
+
+const schema = utils.generateSchema(
+  {
+    title: {
+      // 計畫名稱
+      type: String,
+      required: true,
+    },
+    shortTitle: {
+      // 計畫簡稱
+      type: String,
+      required: true,
+    },
+    funder: {
+      // 委辦單位
+      type: String,
+      required: true,
+    },
+    code: {
+      // 計畫編號
+      type: String,
+      required: true,
+    },
+    principalInvestigator: {
+      // 計畫主持人
+      type: String,
+      required: true,
+    },
+    startTime: {
+      // 計畫時間（開始）
+      type: Date,
+      required: true,
+    },
+    endTime: {
+      // 計畫時間（結束）
+      type: Date,
+      required: true,
+    },
+    areas: [
+      // 計畫地區
+      {
         type: Schema.ObjectId,
-        ref: 'FileModel',
+        ref: 'ProjectAreaModel',
+        required: true,
       },
-      publishTime: {
-        // 公開日期
-        type: Date,
-      },
-      interpretiveDataLicense: {
-        // 詮釋資料 創用CC授權許可
-        type: String,
-        enum: [
-          ProjectLicense.publicDomain,
-          ProjectLicense.attributionOnly,
-          ProjectLicense.attributionAndNoncommercial,
-        ],
-      },
-      identificationInformationLicense: {
-        // 鑑定資訊 創用CC授權許可
-        type: String,
-        enum: [ProjectLicense.attributionOnly],
-      },
-      videoMaterialLicense: {
-        // 影像資料 創用CC授權許可
-        type: String,
-        enum: [
-          ProjectLicense.publicDomain,
-          ProjectLicense.attributionOnly,
-          ProjectLicense.attributionAndNoncommercial,
-        ],
-      },
-      members: [
-        // 計畫成員
-        {
-          _id: false,
-          user: {
-            type: Schema.ObjectId,
-            ref: 'UserModel',
-            required: true,
-            index: {
-              name: 'MembersUser',
-            },
-          },
-          role: {
-            type: String,
-            required: true,
-            enum: ProjectRole.all(),
-          },
-        },
+    ],
+    description: {
+      // 計畫摘要
+      type: String,
+    },
+    note: {
+      // 備註
+      type: String,
+    },
+    coverImageFile: {
+      // 計畫封面圖片
+      type: Schema.ObjectId,
+      ref: 'FileModel',
+    },
+    publishTime: {
+      // 公開日期
+      type: Date,
+    },
+    interpretiveDataLicense: {
+      // 詮釋資料 創用CC授權許可
+      type: String,
+      enum: [
+        ProjectLicense.publicDomain,
+        ProjectLicense.attributionOnly,
+        ProjectLicense.attributionAndNoncommercial,
       ],
-      dataFields: [
-        // 資料欄位
-        {
+    },
+    identificationInformationLicense: {
+      // 鑑定資訊 創用CC授權許可
+      type: String,
+      enum: [ProjectLicense.attributionOnly],
+    },
+    videoMaterialLicense: {
+      // 影像資料 創用CC授權許可
+      type: String,
+      enum: [
+        ProjectLicense.publicDomain,
+        ProjectLicense.attributionOnly,
+        ProjectLicense.attributionAndNoncommercial,
+      ],
+    },
+    members: [
+      // 計畫成員
+      {
+        _id: false,
+        user: {
           type: Schema.ObjectId,
-          ref: 'DataFieldModel',
+          ref: 'UserModel',
           required: true,
+          index: {
+            name: 'MembersUser',
+          },
         },
-      ],
-      dailyTestTime: {
-        // 每日測試照片拍攝時間
-        // null 或空字串代表關閉此功能。ex: 13:00:00
-        // 此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。
-        type: String,
-      },
-      latestAnnotationTime: {
-        // 資料最後更新時間
-        type: Date,
-        index: {
-          name: 'LatestAnnotationTime',
+        role: {
+          type: String,
+          required: true,
+          enum: ProjectRole.all(),
         },
       },
-      oldestAnnotationTime: {
-        // 資料起始年份
-        type: Date,
-        index: {
-          name: 'OldestAnnotationTime',
-        },
+    ],
+    dataFields: [
+      // 資料欄位
+      {
+        type: Schema.ObjectId,
+        ref: 'DataFieldModel',
+        required: true,
+      },
+    ],
+    dailyTestTime: {
+      // 每日測試照片拍攝時間
+      // null 或空字串代表關閉此功能。ex: 13:00:00
+      // 此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。
+      type: String,
+    },
+    latestAnnotationTime: {
+      // 資料最後更新時間
+      type: Date,
+      index: {
+        name: 'LatestAnnotationTime',
       },
     },
-    {
-      collection: 'Projects',
+    oldestAnnotationTime: {
+      // 資料起始年份
+      type: Date,
+      index: {
+        name: 'OldestAnnotationTime',
+      },
     },
-  ),
+  },
+  {
+    collection: 'Projects',
+  },
 );
+
+const canManageBy = function(currentUser) {
+  if (!currentUser || !currentUser._id || !currentUser.permission) {
+    return false;
+  }
+
+  const member = this.members.find(
+    item => `${item.user._id}` === `${currentUser._id}`,
+  );
+
+  return (
+    currentUser.permission === UserPermission.administrator ||
+    (member && member.role === ProjectRole.manager)
+  );
+};
+schema.method('canManageBy', canManageBy);
+
+//
+const model = mongoose.model('ProjectModel', schema);
 
 model.prototype.dump = function() {
   return {

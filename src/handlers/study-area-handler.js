@@ -78,13 +78,7 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
       if (parent && parent.parent) {
         throw new errors.Http400('Can not add the three-tier study-area.');
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
