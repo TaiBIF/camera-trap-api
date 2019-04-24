@@ -194,7 +194,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "items": [
                 {
                   "id": "5ca996477242134e2593331d",
-                  "state": "success",
+                  "state": "failure",
+                  "errorType": "lost-exif-time",
                   "project": {
                     "id": "5c9af1d2403d37067adadbc5",
                     "title": "計畫名稱",
@@ -297,6 +298,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                           "wait-for-review",
                           "success",
                           "failure"
+                        ]
+                      },
+                      "errorType": {
+                        "type": "string",
+                        "enum": [
+                          "lost-exif-time",
+                          "permission-denied",
+                          "others"
                         ]
                       },
                       "project": {
