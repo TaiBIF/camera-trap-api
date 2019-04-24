@@ -7,13 +7,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group System
 ## Configuration [/config]
-### Retrieve configuration [GET]
-- Auth: No permission required.
+### Retrieve configuration [GET /config]
+- No permission required.
+
++ Request Get system configuration (application/json)
 
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "languages": {
                 "zh-TW": {
@@ -24,7 +26,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -52,10 +54,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Notifications [/system-notifications]
-- Auth: No permission required.
+- No permission required.
 - Note: To be implemented.
 
-## Retrieve notification [GET]
+### Retrieve notification [GET /system-notifications]
 取得該帳號收到的通知。
 
 + Response 200 (application/json)
@@ -63,12 +65,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group Account
 ## Profile [/me]
-## Retrieve profile [GET]
+### Retrieve profile [GET /me]
+
++ Request Get my profile (application/json)
 
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
@@ -100,12 +104,12 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 ## Update profile [PUT]
 
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 
-+ Request (application/json)
++ Request Update my profile (application/json)
 
     + Body
-    
+
             {
               "name": "Your Name",
               "email": "email@example.com"
@@ -130,7 +134,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
@@ -139,7 +143,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -162,17 +166,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Upload sessions [/me/upload-sessions]
-## Retrieve upload sessions [GET /me/upload-sessions{?index,size,sort}]
+### Retrieve upload sessions [GET /me/upload-sessions{?index,size,sort}]
 取得上傳紀錄。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
-    + index: `0` (number) ... The index number.
-    + size: `100` (number) ... The size of the response.
+    + index: `0` (number, optional) - The index number.
+        + Default 0
+    + size: `100` (number, optional) - The size of the response (1~100).
+        + Default 100
     + sort: `createTime` (enum[string], optional) ...
         + Default `createTime`
         + Members
             + `createTime`
+
++ Request Get upload sessions (application/json)
 
 + Response 200 (application/json)
 
@@ -253,10 +261,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
 
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -496,11 +502,12 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-    
 
 ## Logout [/logout]
 ### Log out [POST /logout]
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Request Logout (application/json)
 
 + Response 204
 
@@ -508,15 +515,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Overview [/projects]
 ### List projects [GET /projects{?index,size,sort}]
 取得計畫列表。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects.
 
 + Parameters
     + index: `0` (number, optional) - The page index.
         + Default: 0
     + size: `100` (number, optional) - The size of the result set (1~100).
-        + Default: 100
+        + Default: 24
     + sort: `oldestAnnotationTime` (enum[string], optional) ...
         + Default: `oldestAnnotationTime`
         + Members
@@ -525,10 +532,12 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `funder`
             + `title`
 
++ Request Get projects (application/json)
+
 + Response 200
 
     + Body
-    
+
             {
               "index": 0,
               "size": 24,
@@ -574,9 +583,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               ]
             }
 
-
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -749,15 +756,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Create a project [POST]
-新增計畫
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
+## Create a project [POST /projects]
+新增計畫。
+- The user's permission should be 'administrator' or 'general-account'.
 
-+ Request Create Project (application/json)
-
++ Request Create a project (application/json)
 
     + Body
-    
 
             {
               "title": "計畫名稱",
@@ -864,7 +869,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200
 
     + Body
-    
+
             {
               "id": "5c99e565fa899867c32377cf",
               "title": "計畫名稱",
@@ -1096,16 +1101,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Metadata [/projects/{projectId}]
-+ Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+### Get a project [GET /projects/{projectId}]
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets study areas of all projects.
+- The general-account gets the project who joined.
 
-## Retrieve metadata [GET]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+
++ Request Get a project (application/json)
 
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "id": "5c99e565fa899867c32377cf",
               "title": "計畫名稱",
@@ -1168,9 +1177,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
               "oldestAnnotationTime": "2019-01-01T00:00:00.000Z"
             }
-            
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -1325,15 +1334,18 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update metadata [PUT]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+### Update the project [PUT /projects/{projectId}]
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 
-+ Request (application/json)
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+
++ Request Update the project (application/json)
 
     + Body
-    
+
             {
               "title": "計畫名稱",
               "shortTitle": "計畫簡稱",
@@ -1361,9 +1373,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               ],
               "dailyTestTime": "13:00:00"
             }
-    
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -1468,11 +1480,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               },
               "required": ["title", "shortTitle", "funder", "code", "principalInvestigator", "startTime", "endTime"]
             }
-            
+
 + Response 200 (application/json)
-    
+
     + Body
-        
+
             {
               "id": "5c99e565fa899867c32377cf",
               "title": "計畫名稱",
@@ -1537,7 +1549,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -1706,26 +1718,31 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 ## Species [/projects/{projectId}/species]
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-## Retrieve species [GET /projects/{projectId}/species{?index,size,sort}]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+### Retrieve species [GET /projects/{projectId}/species{?index,size,sort}]
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + index: `0` (number) ... The page index.
-    + size: `9007199254740991` (number) ``` To check with Kelp.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `9007199254740991` (number, optional) - The size of the result set (1~9007199254740991).
+        + Default: 9007199254740991
     + sort: `index` (enum[string], optional) ...
         + Default: `index`
         + Members
             + `index`
-            
+            + `-index`
+
++ Request Get species list of the project (application/json)
+
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "index": 0,
               "size": 100,
@@ -1764,9 +1781,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -1816,18 +1833,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Update species [PUT /projects/{projectId}/species]
-批次新增、更新物種。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
+批次新增、更新物種。  
+已存在物種僅可更改順序，不可更改標題且不可刪除。  
+新增的物種標題為必填。
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-+ Request (application/json)
++ Request Update species of the project (application/json)
 
     + Body
-    
+
             [
               {
                 "id": "5c9af1d2403d37067adadbc6"
@@ -1844,9 +1863,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             ]
-            
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "array",
@@ -1868,7 +1887,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "properties": {
                           "zh-TW": {
                             "type": "string",
-                            "description": "Message in Traditional Chinese."  
+                            "description": "Message in Traditional Chinese."
                           }
                         }
                       }
@@ -1881,7 +1900,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "index": 0,
               "size": 9007199254740991,
@@ -1922,7 +1941,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -1990,161 +2009,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Add new species [POST /projects/{projectId}/species]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
-- The general-account gets affiliated projects and who is a project manager.
-
-+ Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    
-+ Request (application/json)
-
-    + Body
-    
-            {
-              "title": {
-                "zh-TW": "山羌"
-              },
-              "index": 2
-            }
-            
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "object",
-                  "properties": {
-                    "zh-TW": {
-                      "type": "string",
-                      "description": "Vernacular name of the species. 物種的普通名。"
-                    }
-                  }
-                },
-                "index": {
-                  "type": "integer"
-                }
-              }
-            }
-
-    
-+ Response 200 (application/json)
-
-    + Body
-    
-            {
-              "id": "5c949bbbe5d5377f98c81ab0",
-              "title": {
-                "zh-TW": "山羌"
-              },
-              "index": 2
-            }
-            
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "object",
-                  "properties": {
-                    "zh-TW": {
-                      "type": "string",
-                      "description": "Vernacular name of the species. 物種的普通名。"
-                    }
-                  }
-                },
-                "index": {
-                  "type": "integer"
-                }
-              }
-            }
-
-## Update a species [PUT /projects/{projectId}/species/{speciesId}]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
-- The general-account gets affiliated projects and who is a project manager.
-
-+ Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + speciesId: `5c949bbbe5d5377f98c81ab0` (string) ... The species ID.
-
-+ Request (application/json)
-
-    + Body
-    
-            {
-              "index": 2
-            }
-
-    + Schema
-    
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "5c949bbbe5d5377f98c81ab0",
-              "title": {
-                "zh-TW": "山羌"
-              },
-              "index": 2
-            }
-    
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "object",
-                  "properties": {
-                    "zh-TW": {
-                      "type": "string",
-                      "description": "Vernacular name of the species. 物種的普通名。"
-                    }
-                  }
-                },
-                "index": {
-                  "type": "integer"
-                }
-              }
-            }
-
 ## Members [/projects/{projectId}/members]
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-## Add a member [POST /projects/{projectId}/members]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
+### Add a member [POST /projects/{projectId}/members]
+新增成員於指定計畫中。  
+新增前必須檢查帳號是否存在。
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-+ Request (application/json)
++ Request Add a member into the project (application/json)
 
     + Body
 
@@ -2174,7 +2052,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200 (application/json)
 
     + Body
-    
+
             [
               {
                 "user": {
@@ -2228,14 +2106,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 批次更新/刪除計畫成員。  
 上傳的資料不包含某成員代表刪除，不支援批次新增成員。
 
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-+ Request (application/json)
++ Request Update members of the project (application/json)
 
     + Body
 
@@ -2347,17 +2225,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-### List study areas [GET]    
+### List study areas [GET /projects/{projectId}/study-areas]
 取得專案啟用的所有樣區。
 
 - The user's permission should be 'administrator' or 'general-account'.
-- The administrator gets study areas of all projects.  
+- The administrator gets study areas of all projects.
 - The general-account gets the project who joined.
+
++ Request Get study areas of the project (application/json)
 
 + Response 200 (application/json)
 
     + Body
-    
+
             [
               {
                 "id": "5c9d9428e7462d3d989cb69b",
@@ -2382,9 +2262,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 ]
               }
             ]
-            
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "array",
@@ -2434,22 +2314,23 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Add a study area [POST]
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+## Add a study area [POST /projects/{projectId}/study-areas]
+新增樣區。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 
-+ Request (application/json)
++ Request Create a study area of the project (application/json)
 
     + Body
-    
+
             {
               "title": {
                 "zh-TW": "台北"
               },
               "parent": "5c9d9428e7462d3d989cb69b"
             }
-            
+
     + Schema
 
             {
@@ -2475,16 +2356,16 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Response 200 (applition/json)
 
     + Body
-    
+
             {
               "id": "5c949bbbe5d5377f98c81ab0",
               "title": {
                 "zh-TW": "台北"
               }
             }
-    
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -2507,30 +2388,32 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 ## Camera Locations [/projects/{projectId}/camera-locations]
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-## Retrieve camera locations [GET /projects/{projectId}/camera-locations{?index,size,sort,name}]
+### Retrieve camera locations [GET /projects/{projectId}/camera-locations{?index,size,sort,name}]
 檢查相機位置名稱是否已被使用。  
 同一計畫底下相機位置名稱不可重複，新增或修改相機位置前請先檢查是否有重複。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + index: `0` (number) ... The page index.
-    + size: `9007199254740991` (number) ``` To check with Kelp.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
     + sort: `name` (enum[string], optional) ...
         + Default: `name`
         + Members
             + `name`
-    + name: `PL01A` (string) ... 使用相機名稱搜尋
-            
+    + name: `PL01A` (string) - 使用相機名稱搜尋
+
++ Request Search camera locations by name (application/json)
+
 + Response 200 (application/json)
 
-
     + Body
-    
 
             {
               "index": 0,
@@ -2550,10 +2433,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-    
 
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -2618,17 +2499,17 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update camera locations [PUT /projects/{projectId}/camera-locations/{cameraLocationId}]
+### Update camera locations [PUT /projects/{projectId}/camera-locations/{cameraLocationId}]
 更新相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets affiliated projects.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) ... The camera location ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) - The camera location ID.
 
-+ Request (application/json)
++ Request Update the camera location (application/json)
 
     + Body
 
@@ -2641,10 +2522,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "vegetation": "植被",
               "landCover": "土地覆蓋類型"
             }
-            
 
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -2681,12 +2560,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-    
 
 + Response 200 (application/json)
 
     + Body
-    
 
             {
               "id": "5c9f28070d9cee99f8a11a12",
@@ -2705,9 +2582,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "landCover": "土地覆蓋類型"
             }
 
-
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -2767,39 +2642,46 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Delete a camera location [DELETE /projects/{projectId}/camera-locations/{cameraLocationId}]
+### Delete a camera location [DELETE /projects/{projectId}/camera-locations/{cameraLocationId}]
 刪除相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) ... The camera location ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) - The camera location ID.
+
++ Request Delete a camera location (application/json)
 
 + Response 204 (application/json)
 
 ## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + studyAreaId: `` (string) ... The study area ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + studyAreaId: `` (string) - The study area ID.
 
-## Retrieve camera locations in a study area [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations{?index,size,sort}]
+### Retrieve camera locations in a study area [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations{?index,size,sort}]
 取得樣區底下啟用的相機位置。  
 如果指定的樣區是母樣區時會連子樣區的相機位置一起取得。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects.
 
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
-    + studyAreaId: `` (string) ... The study area ID.
-    + index: `0` (number) ... The page index.
-    + size: `100` (number) ``` To check with Kelp.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + studyAreaId: `` (string) - The study area ID.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
     + sort: `name` (enum[string], optional) ...
         + Default: `name`
         + Members
             + `name`
+            + `-name`
+
++ Request Get camera locations of the study area (application/json)
 
 + Response 200 (application/json)
 
@@ -2897,13 +2779,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
-## Add a camera location in a specified study area [POST]
+### Create a camera location in a specified study area [POST /projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 在指定的樣區新增相機位置。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets the project who joined and who is a project manager.
 
-+ Request (application/json)
++ Request Create a camera location to a study area (application/json)
 
     + Body
 
@@ -3004,7 +2886,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         }
                       }
                     }
-                    
                   }
                 },
                 "settingTime": {
@@ -3036,22 +2917,27 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+# Group Data Fields
 
-## Data fields [/data-fields]
-## Retrieve data fields [GET /data-fields{?index,size,sort,filter}]
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+## Retrieve data fields[/data-fields]
+### Retrieve data fields [GET /data-fields{?index,size,sort,filter}]
+- The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
-    + index: `0` (number) ... The page index.
-    + size: `100` (number) ``` To check with Kelp.
-    + sort: `name` (enum[string], optional) ...
-        + Default: `name`
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
+    + sort: `createTime` (enum[string], optional) ...
+        + Default: `createTime`
         + Members
-            + `name`
+            + `createTime`
     + filter: `system` (enum[string], optional) ...
         + Members
             + `system`
             + `custom`
+
++ Request Get data fields (application/json)
 
 + Response 200 (application/json)
 
@@ -3215,11 +3101,12 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Apply for a new data field [POST /data-fields]
+## Apply for a new data field [/data-fields]
+### Apply for a new data field [POST /data-fields]
 申請新欄位。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 
-+ Request (application/json)
++ Request Create a data field (application/json)
 
     + Body
 
@@ -3235,9 +3122,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 {"zh-TW": "xx"}
               ]
             }
-            
+
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -3278,11 +3165,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-            
+
 + Response 200 (application/json)
 
     + Body
-    
+
             {
               "id": "5c9f31037ef1509d50d2911f",
               "title": {
@@ -3301,7 +3188,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
     + Schema
-    
+
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -3348,20 +3235,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-            
 
-## Retrieve data field information [GET /data-fields/{dataFieldId}]
+## Retrieve data field information [/data-fields/{dataFieldId}]
+### Retrieve data field information [GET /data-fields/{dataFieldId}]
 取得欄位詳細資料。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
-    + dataFieldId: `5c9af16a4ee1b606477f922e` (number) ... The data field ID.
-    
+    + dataFieldId: `5c9af16a4ee1b606477f922e` (number) - The data field ID.
+
++ Request Get a data field (application/json)
+
 + Response 200 (application/json)
 
-
     + Body
-    
 
             {
               "id": "5c9af16a4ee1b606477f922e",
@@ -3384,10 +3271,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
 
     + Schema
-
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -3444,25 +3329,29 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
-            
-
 # Group Annotations
-## Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort}]
 搜尋標註。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
-- The administrator gets all projects.  
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
 - The general-account gets the project who joined.
 
 + Parameters
-    + studyArea: `5c9d95acea5c9b4036d97c88` (string, optional) ... 使用樣區 id 搜尋標註，回傳結果包含子樣區資料。
-    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) ... 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13 。
-    + startTime: `2017-11-09T03:48:46.000Z` (string, required) ... 開始時間
-    + endTime: `2017-11-09T03:48:46.000Z` (string, required) ... 結束時間
-    + index: 0 (number) ... The page index.
-    + size: 100 (number) ... The page size.
-    + sort: `name` (enum[string])
+    + studyArea: `5c9d95acea5c9b4036d97c88` (string, optional) - 使用樣區 id 搜尋標註，回傳結果包含子樣區資料。
+    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13 。
+    + startTime: `2017-11-09T03:48:46.000Z` (string, optional) - 開始時間
+    + endTime: `2017-11-09T03:48:46.000Z` (string, optional) - 結束時間
+    + index: 0 (number, optional) - The page index.
+        + Default: 0
+    + size: 100 (number, optional) - The page size (1~1,500).
+        + Default: 100
+    + sort: `cameraLocation time filename` (enum[string], optional)
+        + Default: `cameraLocation time filename`
         + Members
-            + `name`
+            + `cameraLocation time filename`
+            + `time filename cameraLocation`
+
++ Request Get annotations (application/json)
 
 + Response 200  (application/json)
 
@@ -3517,11 +3406,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
 
     + Schema
 
-    
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -3651,21 +3538,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 
-## Update annotations [PUT /annotations/{annotationId}]
+## Update annotation [PUT /annotations/{annotationId}]
 更新標註。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets the project who joined.
 
 + Parameters
-    + annotationId: `` (string) ... The annotation ID.
-    
-+ Request 200 (application/json)
+    + annotationId: `` (string) - The annotation ID.
 
++ Request Update an annotation (application/json)
 
     + Body
 
-    
             {
               "species": "5c9af1d2403d37067adadbc7",
               "fields": [
@@ -3675,10 +3560,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
-            
+
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -3710,9 +3593,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 200 (application/json)
 
-
     + Body
-    
 
             {
               "id": "5cbabb2c84bf6a8dc5ccf960",
@@ -3769,10 +3650,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               ]
             }
-            
 
     + Schema
-
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
@@ -3926,23 +3805,23 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 
-    
-    
-
-
-# Group Areas
-## List areas [GET /project-areas{?index,size,sort}]
+# Group Project Areas
+## List project areas [GET /project-areas{?index,size,sort}]
 取得地區列表。
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
-    + index: `0` (number) ... The page index.
-    + size: `100` (number) ... The size of the result set.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set.
+        + Default: 100
     + sort: `title.zh-TW` (enum[string], optional) ...
         + Default: `title.zh-TW`
         + Members
             + `title.zh-TW`
             + `title.en-US`
+
++ Request Get project areas (application/json)
 
 + Response 200 (application/json)
 
@@ -3977,10 +3856,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               ]
             }
 
-
     + Schema
 
-    
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
@@ -4028,20 +3905,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 # Group Files
 ## Upload files [POST /files{?type,cameraLocation}]
 上傳檔案。
-- Auth: The user's permission should be 'administrator' or 'general-account'.  
+- The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
-    + type: `project-cover-image` (enum[string]) ... File type/purpose.
-    
+    + type: `project-cover-image` (enum[string]) - File type/purpose.
+
         project-cover-image, annotation-image (上傳單一圖片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)<br/>目前 zip 檔不支援 csv。
-    
+
         + Members
             + `project-cover-image`
             + `annotation-image`
             + `annotation-csv`
             + `annotation-zip`
-            
-+ Request (multipart/form-data; boundary=------FormBoundaryShouldDifferAtRuntime)
+    + cameraLocation: `5c9af16a4ee1b606477f922f` (string, optional) - 上傳 annotation 相關檔案時必須包含相機位置
+
++ Request Upload file (multipart/form-data; boundary=------FormBoundaryShouldDifferAtRuntime)
 
         ------FormBoundaryShouldDifferAtRuntime
         Content-Disposition: form-data; name="file"; filename=""
@@ -4054,7 +3932,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
     + Body
 
-    
             {
               "id": "5c9afa256c59080852644719",
               "type": "project-cover-image",
@@ -4063,10 +3940,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9afa256c59080852644719.jpg",
               "size": 26172
             }
-    
 
     + Schema
-    
 
             {
               "$schema": "http://json-schema.org/draft-04/schema#",
