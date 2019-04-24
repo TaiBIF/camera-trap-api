@@ -2343,14 +2343,16 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
-## Study areas [/projects/{projectId}/study-areas]
+## Study Areas [/projects/{projectId}/study-areas]
 + Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) ... The project ID.
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-## List study areas [GET]    
+### List study areas [GET]    
 取得專案啟用的所有樣區。
 
-- Auth: The user's permission should be 'administrator' or 'general-account'.
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets study areas of all projects.  
+- The general-account gets the project who joined.
 
 + Response 200 (application/json)
 
@@ -2367,13 +2369,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "id": "5c9d9456e7462d3d989cb69c",
                     "title": {
                       "zh-TW": "內湖站"
-                    }
+                    },
+                    "parent": "5c9d9428e7462d3d989cb69b"
                   },
                   {
                     "id": "5c9d95acea5c9b4036d97c88",
                     "title": {
                       "zh-TW": "大安站"
-                    }
+                    },
+                    "parent": "5c9d9428e7462d3d989cb69b"
                   }
                 ]
               }
@@ -2419,6 +2423,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                               "description": "Study area name in Traditional Chinese."
                             }
                           }
+                        },
+                        "parent": {
+                          "type": "string"
                         }
                       }
                     }
