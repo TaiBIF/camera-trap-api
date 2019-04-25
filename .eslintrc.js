@@ -1,5 +1,8 @@
 module.exports = {
   extends: ['@tbif/base'],
+  env: {
+    mocha: true,
+  },
   settings: {
     'import/resolver': {
       node: {
