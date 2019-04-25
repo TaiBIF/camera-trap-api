@@ -3,7 +3,6 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const CameraLocationModel = require('../models/data/camera-location-model');

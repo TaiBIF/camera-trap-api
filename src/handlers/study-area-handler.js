@@ -2,7 +2,6 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const StudyAreaForm = require('../forms/study-area/study-area-form');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');

@@ -3,7 +3,6 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
