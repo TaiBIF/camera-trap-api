@@ -3,7 +3,6 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const CameraLocationModel = require('../models/data/camera-location-model');
@@ -129,13 +128,7 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
       if (!studyArea) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -178,13 +171,7 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -217,13 +204,7 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
       if (cameraLocation.studyArea.state !== StudyAreaState.active) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 

@@ -2,7 +2,6 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const StudyAreaForm = require('../forms/study-area/study-area-form');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
@@ -78,13 +77,7 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
       if (parent && parent.parent) {
         throw new errors.Http400('Can not add the three-tier study-area.');
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 

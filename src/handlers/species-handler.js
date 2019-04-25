@@ -3,7 +3,6 @@ const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const ProjectRole = require('../models/const/project-role');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
@@ -77,13 +76,7 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -133,13 +126,7 @@ exports.addProjectSpecies = auth(UserPermission.all(), (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -178,13 +165,7 @@ exports.updateProjectSpecies = auth(UserPermission.all(), (req, res) => {
       if (!species) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 

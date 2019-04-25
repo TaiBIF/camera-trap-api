@@ -204,13 +204,7 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
       if (form.coverImageFile && !coverImageFile) {
@@ -273,13 +267,7 @@ exports.addProjectMember = auth(UserPermission.all(), (req, res) => {
       if (!user) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
       if (project.members.find(x => `${x.user._id}` === `${user._id}`)) {
@@ -332,13 +320,8 @@ exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      const member = project.members.find(
-        item => `${item.user._id}` === `${req.user._id}`,
-      );
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        (!member || member.role !== ProjectRole.manager)
-      ) {
+
+      if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
 
