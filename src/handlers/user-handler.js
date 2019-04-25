@@ -16,20 +16,17 @@ exports.getUsers = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = UserModel.where();
-  if (form.email) {
-    query.where({ email: form.email });
-  }
-  if (form.orcId) {
-    query.where({ orcId: form.orcId });
+  const userQuery = UserModel.find();
+  if (form.user.indexOf('@') >= 0) {
+    userQuery.where({ email: form.user });
+  } else {
+    userQuery.where({ orcId: form.user });
   }
 
-  return Promise.all([
-    UserModel.paginate(query, {
-      offset: form.index * form.size,
-      limit: form.size,
-    }),
-  ]).then(([users]) => {
+  return UserModel.paginate(userQuery, {
+    offset: form.index * form.size,
+    limit: form.size,
+  }).then(users => {
     res.json(new PageList(form.index, form.size, users.totalDocs, users.docs));
   });
 });

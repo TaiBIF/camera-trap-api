@@ -22,14 +22,10 @@ UsersSearchForm.define({
       return result;
     },
   }),
-  orcId: new forms.fields.StringField({
-    validators: [forms.validators.length({ max: 19 })],
-  }),
-  email: new forms.fields.StringField({
-    validators: [
-      forms.validators.email(),
-      forms.validators.length({ max: 1024 }),
-    ],
+  user: new forms.fields.StringField({
+    // orcid or email
+    required: true,
+    validators: [forms.validators.length({ max: 1024 })],
   }),
 });
 module.exports = UsersSearchForm;
