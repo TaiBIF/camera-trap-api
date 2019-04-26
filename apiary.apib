@@ -521,6 +521,82 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 204
 
+
+# Group Users
+## Search users [/users]
+### Search users [GET /users{?name}]
+檢查帳號是否存在。
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + name: `email@example.com` (string) - 使用帳號 orcid 或 email 搜尋
+    
++ Request Get users (application/json)
+
++ Response 200
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 100,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "user name",
+                  "email": "email@example.com",
+                  "permission": "general-account"
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "名稱"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "電子信箱"
+                      },
+                      "permission": {
+                        "type": "string",
+                        "description": "權限",
+                        "enum": ["administrator", "general-account"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
 # Group Projects
 ## Overview [/projects]
 ### List projects [GET /projects{?index,size,sort}]

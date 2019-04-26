@@ -1,6 +1,7 @@
 const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
+const userHandler = require('../handlers/user-handler');
 const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
 const callbackHandler = require('../handlers/callback-handler');
@@ -136,6 +137,7 @@ apiRouter.delete(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.deleteCameraLocation,
 );
+apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
 apiRouter.get(
