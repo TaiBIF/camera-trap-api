@@ -97,6 +97,7 @@ model.prototype.dump = function() {
     altitude: this.altitude,
     vegetation: this.vegetation,
     landCover: this.landCover,
+    canTrash: !!this.canTrash,
   };
 };
 

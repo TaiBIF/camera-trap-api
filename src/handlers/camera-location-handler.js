@@ -1,8 +1,10 @@
+const _ = require('lodash');
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
+const AnnotationModel = require('../models/data/annotation-model');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const CameraLocationModel = require('../models/data/camera-location-model');
@@ -99,6 +101,21 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
       });
     })
     .then(result => {
+      const cameraLocationIds = _.map(result.docs, '_id');
+      return Promise.all([
+        Promise.resolve(result),
+        AnnotationModel.find()
+          .where('cameraLocation')
+          .in(cameraLocationIds),
+      ]);
+    })
+    .then(([result, annotations]) => {
+      result.docs = result.docs.map(cameraLocation => {
+        cameraLocation.canTrash = !!_.find(annotations, {
+          cameraLocation: cameraLocation._id,
+        });
+        return cameraLocation;
+      });
       res.json(
         new PageList(form.index, form.size, result.totalDocs, result.docs),
       );
