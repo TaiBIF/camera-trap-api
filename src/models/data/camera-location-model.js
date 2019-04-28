@@ -110,7 +110,10 @@ schema.static('checkCanTrash', async docs => {
       },
     },
     {
-      $addFields: { canTrash: { $toBool: { $size: '$canTrash' } } },
+      $addFields: {
+        failures: { $size: { $concatArrays: ['$canTrash.failures'] } },
+        canTrash: { $toBool: { $size: '$canTrash' } },
+      },
     },
   ]);
 
