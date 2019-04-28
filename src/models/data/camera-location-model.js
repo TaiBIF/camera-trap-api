@@ -1,6 +1,9 @@
+const _ = require('lodash');
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
+const AnnotationState = require('../const/annotation-state');
 const CameraLocationState = require('../const/camera-location-state');
+const AnnotationModel = require('./annotation-model');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -81,6 +84,22 @@ schema.index(
     },
   },
 );
+
+schema.static('checkCanTrash', async docs => {
+  const cameraLocationIds = _.map(docs, '_id');
+  const notRemovedAnnotation = { state: { $ne: AnnotationState.removed } };
+  const annotations = await AnnotationModel.find(notRemovedAnnotation)
+    .where('cameraLocation')
+    .in(cameraLocationIds);
+
+  return docs.map(cameraLocation => {
+    cameraLocation.canTrash = !!_.find(annotations, {
+      cameraLocation: cameraLocation._id,
+    });
+    return cameraLocation;
+  });
+});
+
 const model = mongoose.model('CameraLocationModel', schema);
 
 model.prototype.dump = function() {
