@@ -101,7 +101,7 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
     .then(result =>
       Promise.all([
         Promise.resolve(result.totalDocs),
-        CameraLocationModel.checkCanTrash(result.docs),
+        CameraLocationModel.joinFailuresAndCanTrash(result.docs),
       ]),
     )
     .then(([totalDocs, cameraLocations]) => {

@@ -84,9 +84,9 @@ schema.index(
   },
 );
 
-schema.static('checkCanTrash', async docs => {
+schema.static('joinFailuresAndCanTrash', async docs => {
   const cameraLocationIds = _.map(docs, '_id');
-  const result = await mongoose.model('CameraLocationModel').aggregate([
+  let result = await mongoose.model('CameraLocationModel').aggregate([
     {
       $match: { _id: { $in: cameraLocationIds } },
     },
@@ -110,20 +110,27 @@ schema.static('checkCanTrash', async docs => {
       },
     },
     {
-      $addFields: {
+      $project: {
+        _id: 1,
         failures: { $size: { $concatArrays: ['$canTrash.failures'] } },
         canTrash: { $toBool: { $size: '$canTrash' } },
       },
     },
   ]);
 
-  return result;
+  result = _.keyBy(result, '_id');
+
+  return docs.map(doc => {
+    doc.failures = result[doc._id].failures;
+    doc.canTrash = result[doc._id].canTrash;
+    return doc;
+  });
 });
 
 const model = mongoose.model('CameraLocationModel', schema);
 
 model.prototype.dump = function() {
-  return {
+  const doc = {
     id: `${this._id}`,
     studyArea:
       this.studyArea && typeof this.studyArea.dump === 'function'
@@ -136,8 +143,15 @@ model.prototype.dump = function() {
     altitude: this.altitude,
     vegetation: this.vegetation,
     landCover: this.landCover,
-    canTrash: !!this.canTrash,
   };
+
+  if (this.failures !== undefined) {
+    doc.failures = this.failures;
+  }
+  if (this.canTrash !== undefined) {
+    doc.canTrash = this.canTrash;
+  }
+  return doc;
 };
 
 module.exports = model;
