@@ -92,7 +92,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         query.where({ time: { $gte: form.startTime } });
       }
       if (form.endTime) {
-        query.where({ time: { $lte: form.startTime } });
+        query.where({ time: { $lte: form.endTime } });
       }
       if (studyArea) {
         const studyAreaIds = [`${studyArea._id}`];
