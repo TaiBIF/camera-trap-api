@@ -87,17 +87,35 @@ schema.index(
 
 schema.static('checkCanTrash', async docs => {
   const cameraLocationIds = _.map(docs, '_id');
-  const notRemovedAnnotation = { state: { $ne: AnnotationState.removed } };
-  const annotations = await AnnotationModel.find(notRemovedAnnotation)
-    .where('cameraLocation')
-    .in(cameraLocationIds);
+  const result = await mongoose.model('CameraLocationModel').aggregate([
+    {
+      $match: { _id: { $in: cameraLocationIds } },
+    },
+    {
+      $lookup: {
+        from: 'Annotations',
+        localField: '_id',
+        foreignField: 'cameraLocation',
+        as: 'canTrash',
+      },
+    },
+    {
+      $addFields: {
+        canTrash: {
+          $filter: {
+            input: '$canTrash',
+            as: 'annotations',
+            cond: { $ne: ['$$annotations.state', AnnotationState.removed] },
+          },
+        },
+      },
+    },
+    {
+      $addFields: { canTrash: { $toBool: { $size: '$canTrash' } } },
+    },
+  ]);
 
-  return docs.map(cameraLocation => {
-    cameraLocation.canTrash = !!_.find(annotations, {
-      cameraLocation: cameraLocation._id,
-    });
-    return cameraLocation;
-  });
+  return result;
 });
 
 const model = mongoose.model('CameraLocationModel', schema);
