@@ -9,6 +9,11 @@ jobs:
     working_directory: ~/camera-trap-api
     docker:
       - image: node:10.15.0
+      - image: circleci/mongo:4.1.9
+      - image: circleci/redis:5.0.4
+    environment:
+      - MONGO_URL: "mongodb://localhost:27017/cameraTrap_test"
+      - REDIS_URL: "redis://localhost:6379/2"
     steps:
       - checkout
       - restore_cache: # special step to restore the dependency cache
@@ -24,4 +29,6 @@ jobs:
       - run: # run lint
           name: lint
           command: npm run lint
-
+      - run: # run db init
+          name: DatabaseInit
+          command: npm run db:init

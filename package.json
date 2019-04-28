@@ -6,6 +6,7 @@
   "scripts": {
     "start": "concurrently --kill-others \"./node_modules/nodemon/bin/nodemon.js src/web-starter.js --watch src\" \"./node_modules/nodemon/bin/nodemon.js src/task-worker.js --watch src\"",
     "lint": "eslint src/",
+    "db:init": "NODE_ENV=test node . -c; NODE_ENV=test node . -i",
     "test": "NODE_ENV=test ./node_modules/.bin/mocha test",
     "ncu": "./node_modules/npm-check-updates/bin/ncu"
   },
