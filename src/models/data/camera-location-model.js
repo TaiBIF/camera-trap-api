@@ -86,34 +86,18 @@ schema.index(
 
 schema.static('joinFailuresAndCanTrash', async docs => {
   const cameraLocationIds = _.map(docs, '_id');
-  let result = await mongoose.model('CameraLocationModel').aggregate([
+  let result = await mongoose.model('AnnotationModel').aggregate([
     {
-      $match: { _id: { $in: cameraLocationIds } },
-    },
-    {
-      $lookup: {
-        from: 'Annotations',
-        localField: '_id',
-        foreignField: 'cameraLocation',
-        as: 'canTrash',
+      $match: {
+        cameraLocation: { $in: cameraLocationIds },
+        state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
       },
     },
     {
-      $addFields: {
-        canTrash: {
-          $filter: {
-            input: '$canTrash',
-            as: 'annotations',
-            cond: { $ne: ['$$annotations.state', AnnotationState.removed] },
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        failures: { $size: { $concatArrays: ['$canTrash.failures'] } },
-        canTrash: { $toBool: { $size: '$canTrash' } },
+      $group: {
+        _id: '$cameraLocation',
+        count: { $sum: 1 },
+        failures: { $sum: { $size: '$failures' } },
       },
     },
   ]);
@@ -121,8 +105,8 @@ schema.static('joinFailuresAndCanTrash', async docs => {
   result = _.keyBy(result, '_id');
 
   return docs.map(doc => {
-    doc.failures = result[doc._id].failures;
-    doc.canTrash = result[doc._id].canTrash;
+    doc.canTrash = result[doc._id] ? result[doc._id].count === 0 : true;
+    doc.failures = result[doc._id] ? result[doc._id].failures : 0;
     return doc;
   });
 });
