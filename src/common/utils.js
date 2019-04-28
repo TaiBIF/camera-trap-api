@@ -478,14 +478,16 @@ exports.convertCsvToAnnotations = ({
           }
           break;
         default:
-          if (dataFields.widgetType === DataFieldWidgetType.time) {
+          if (dataFields[index].widgetType === DataFieldWidgetType.time) {
             information.fields.push({
               dataField: dataFields[index],
               value: {
                 text: exports.parseTimeFromCSV(data, timezone),
               },
             });
-          } else if (dataFields.widgetType === DataFieldWidgetType.select) {
+          } else if (
+            dataFields[index].widgetType === DataFieldWidgetType.select
+          ) {
             information.fields.push({
               dataField: dataFields[index],
               value: {
