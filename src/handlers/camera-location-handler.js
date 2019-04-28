@@ -104,7 +104,7 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
       const cameraLocationIds = _.map(result.docs, '_id');
       return Promise.all([
         Promise.resolve(result),
-        AnnotationModel.find()
+        AnnotationModel.find({ state: { $ne: 'removed' } })
           .where('cameraLocation')
           .in(cameraLocationIds),
       ]);
