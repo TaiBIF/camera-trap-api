@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const AnnotationState = require('../const/annotation-state');
 const CameraLocationState = require('../const/camera-location-state');
-const AnnotationModel = require('./annotation-model');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
