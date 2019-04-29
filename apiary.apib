@@ -2756,7 +2756,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
-    + studyAreaId: `` (string) - The study area ID.
+    + studyAreaId: `5c9d95acea5c9b4036d97c88` (string) - The study area ID.
     + index: `0` (number, optional) - The page index.
         + Default: 0
     + size: `100` (number, optional) - The size of the result set (1~100).
@@ -2783,7 +2783,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "name": "pT03B",
                   "studyArea": "5c9d95acea5c9b4036d97c88",
                   "latitude": 25.014051,
-                  "longitude": 121.462417
+                  "longitude": 121.462417,
+                  "failures": 0,
+                  "canTrash": false
                 },
                 {
                   "id": "5c9f28070d9cee99f8a11a12",
@@ -2794,7 +2796,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "longitude": 121.462417,
                   "altitude": 100,
                   "vegetation": "植被",
-                  "landCover": "土地覆蓋類型"
+                  "landCover": "土地覆蓋類型",
+                  "failures": 0,
+                  "canTrash": false
                 }
               ]
             }
@@ -2857,6 +2861,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "landCover": {
                         "type": "string",
                         "description": "土地覆蓋類型"
+                      },
+                      "failures": {
+                        "type": "number",
+                        "description": "wf 4.17 錯誤提示：供相機位置顯示 annotation 錯誤數量"
+                      },
+                      "canTrash": {
+                        "type": "boolean",
+                        "description": "wf 3.4 計畫管理：供判斷該相機位置是否能刪除"
                       }
                     }
                   }
