@@ -1,11 +1,23 @@
 FROM mhart/alpine-node:10
 LABEL maintainer="rwu823@gmail.com"
 
-RUN apk --update upgrade && \
-    apk add curl ca-certificates && \
-    update-ca-certificates && \
-    rm -rf /var/cache/apk/*
+WORKDIR /camera-trap-api
 
-COPY out/ /etc/nginx/
-COPY default.conf /etc/nginx/conf.d/
-COPY entrypoint.sh /
+RUN apk add --update --no-cache \
+    graphicsmagick \
+    openssh \
+    git \
+    bash
+
+COPY package.json package-lock.json ./
+
+RUN npm i --production && \
+  rm -rf ~/.npm
+
+COPY src ./src
+COPY config ./config
+
+ENV NODE_ENV="production"
+ENV PORT 80
+
+EXPOSE 80
