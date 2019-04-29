@@ -32,3 +32,6 @@ jobs:
       - run: # run db init
           name: DatabaseInit
           command: npm run db:init
+      - run: # run test
+          name: test
+          command: npm run test
