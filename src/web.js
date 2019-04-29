@@ -1,4 +1,3 @@
-const http = require('http');
 const os = require('os');
 const util = require('util');
 const config = require('config');
@@ -16,7 +15,6 @@ const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
 
 const app = express();
-const server = http.createServer(app);
 
 // hide x-powered-by
 app.locals.settings['x-powered-by'] = false;
@@ -128,8 +126,4 @@ app.use((error, req, res, next) => {
   });
 });
 
-// launch server
-server.listen(config.server.port, config.server.host, () => {
-  const { address, port } = server.address();
-  console.log(`Server listening at http://${address}:${port}`);
-});
+module.exports = app;
