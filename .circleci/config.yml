@@ -1,7 +1,50 @@
-version: 2.0
+version: 2.1
+
+vars:
+  setup_docker: &setup_docker
+    setup_remote_docker:
+      docker_layer_caching: true
+
+  branch_is_deploy: &branch_is_deploy
+    filters:
+      branches:
+        only: master
+
+orbs:
+  node:
+    executors:
+      default:
+        environment:
+          - TZ: Asia/Taipei
+        docker:
+          - image: circleci/node:10
+    commands:
+      checkout_install:
+        description: Checkout sources and install node_modules
+        steps:
+          - checkout
+          - restore_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+          - run: npm i
+          - save_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+              paths:
+                - node_modules
+          - run:
+              name: Set Env
+              command: |
+                echo "$(node scripts/export-env)" >> $BASH_ENV
+                source $BASH_ENV
+    jobs:
+      lint:
+        executor: default
+        steps:
+          - checkout_install
+          - run: npm run lint
+
 workflows:
   version: 2
-  build:
+  Test & Lint & Build:
     jobs:
       - node10
 jobs:
