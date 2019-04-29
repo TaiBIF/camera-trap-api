@@ -98,10 +98,14 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
         limit: form.size,
       });
     })
-    .then(result => {
-      res.json(
-        new PageList(form.index, form.size, result.totalDocs, result.docs),
-      );
+    .then(result =>
+      Promise.all([
+        Promise.resolve(result.totalDocs),
+        CameraLocationModel.joinFailuresAndCanTrash(result.docs),
+      ]),
+    )
+    .then(([totalDocs, cameraLocations]) => {
+      res.json(new PageList(form.index, form.size, totalDocs, cameraLocations));
     });
 });
 

@@ -1,5 +1,7 @@
+const _ = require('lodash');
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
+const AnnotationState = require('../const/annotation-state');
 const CameraLocationState = require('../const/camera-location-state');
 
 const { Schema } = mongoose;
@@ -81,10 +83,38 @@ schema.index(
     },
   },
 );
+
+schema.static('joinFailuresAndCanTrash', async docs => {
+  const cameraLocationIds = _.map(docs, '_id');
+  let result = await mongoose.model('AnnotationModel').aggregate([
+    {
+      $match: {
+        cameraLocation: { $in: cameraLocationIds },
+        state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+      },
+    },
+    {
+      $group: {
+        _id: '$cameraLocation',
+        count: { $sum: 1 },
+        failures: { $sum: { $size: '$failures' } },
+      },
+    },
+  ]);
+
+  result = _.keyBy(result, '_id');
+
+  return docs.map(doc => {
+    doc.canTrash = result[doc._id] ? result[doc._id].count === 0 : true;
+    doc.failures = result[doc._id] ? result[doc._id].failures : 0;
+    return doc;
+  });
+});
+
 const model = mongoose.model('CameraLocationModel', schema);
 
 model.prototype.dump = function() {
-  return {
+  const doc = {
     id: `${this._id}`,
     studyArea:
       this.studyArea && typeof this.studyArea.dump === 'function'
@@ -98,6 +128,14 @@ model.prototype.dump = function() {
     vegetation: this.vegetation,
     landCover: this.landCover,
   };
+
+  if (this.failures !== undefined) {
+    doc.failures = this.failures;
+  }
+  if (this.canTrash !== undefined) {
+    doc.canTrash = this.canTrash;
+  }
+  return doc;
 };
 
 module.exports = model;
