@@ -12,6 +12,8 @@ vars:
 
 orbs:
   node:
+    orbs:
+      aws-ecr: circleci/aws-ecr@4.0.1
     executors:
       default:
         environment:
@@ -36,6 +38,14 @@ orbs:
                 echo "$(node scripts/export-env)" >> $BASH_ENV
                 source $BASH_ENV
     jobs:
+      build:
+        executor: default
+          steps:
+            - checkout_install
+            - aws-ecr/build_and_push_image:
+                tag: $CIRCLE_SHA1
+
+
       lint:
         executor: default
         steps:
@@ -46,7 +56,9 @@ workflows:
   version: 2
   Test & Lint & Build:
     jobs:
-      - node10
+      - node/lint
+      - node/build
+
 jobs:
   node10:
     working_directory: ~/camera-trap-api

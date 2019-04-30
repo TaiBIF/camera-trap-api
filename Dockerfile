@@ -10,9 +10,10 @@ RUN apk add --update --no-cache \
     bash
 
 COPY package.json package-lock.json ./
+COPY node_modules/camera-trap-credentials ./node_modules/camera-trap-credentials
 
 RUN npm i --production && \
-  rm -rf ~/.npm
+  rm -rf ~/.npm package-lock.json
 
 COPY src ./src
 COPY config ./config
@@ -21,3 +22,5 @@ ENV NODE_ENV="production"
 ENV PORT 80
 
 EXPOSE 80
+
+CMD ["node", "src/web-starter"]
