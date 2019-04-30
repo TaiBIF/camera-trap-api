@@ -28,7 +28,12 @@ exports.addIssue = auth(UserPermission.all(), (req, res) => {
     .then(([issue]) => {
       const mail = new Mail();
       mail
-        .sendIssueToUser(user, project)
+        .sendIssueToUser(issue)
+        .catch(error => {
+          utils.logError(error, { issue: issue.dump() });
+        });
+      mail
+        .sendIssueToSystemAdmin(issue)
         .catch(error => {
           utils.logError(error, { issue: issue.dump() });
         });

@@ -93,4 +93,35 @@ module.exports = class Mail {
       body: template.body,
     });
   }
+  sendIssueToSystemAdmin(issue) {
+    /*
+    @param form {IssueModel}
+    */
+    // send to system admin
+    const template = templates[this.languageCode].IssueToSystemAdmin(
+      issue
+    );
+    return this.sendEmail({
+      to: [config.systemAdmin.email],
+      subject: template.subject,
+      body: template.body,
+    });
+    // send to system admin
+  }
+
+  sendIssueToUser(issue) {
+    /*
+    @param form {IssueModel}
+    */
+    // send to user
+    const template = templates[this.languageCode].IssueToUser(
+      issue
+    );
+    return this.sendEmail({
+      to: [issue.email],
+      subject: template.subject,
+      body: template.body,
+    });
+    // send to system admin
+  }
 };
