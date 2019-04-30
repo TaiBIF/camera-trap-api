@@ -1,11 +1,12 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
-//const PageList = require('../models/page-list');
+const PageList = require('../models/page-list');
+const Mail = require('../common/mail');
 const UserPermission = require('../models/const/user-permission');
-const IssueForm = require('forms/issue/issue-form');
-const IssueModel = require('model/data/issue/issue-model');
+const IssueForm = require('../forms/issue/issue-form');
+const IssueModel = require('../models/data/issue-model');
 
-exports.getUsers = auth(UserPermission.all(), (req, res) => {
+exports.addIssue = auth(UserPermission.all(), (req, res) => {
   /*
     GET /api/v1/issues
     聯絡我們, 讓使用者上傳附件
@@ -16,21 +17,21 @@ exports.getUsers = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  /*const userQuery = UserModel.find();
-  if (form.user.indexOf('@') >= 0) {
-    userQuery.where({ email: form.user });
-  } else {
-    userQuery.where({ orcId: form.user });
-  }*/
 
-  /*
-  return UserModel.paginate(userQuery, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(users => {
-    res.json(new PageList(form.index, form.size, users.totalDocs, users.docs));
+  const issue = new IssueModel({
+    ...form
   });
-  */
 
-  return res.json({foo:'bra'});
+  return Promise.all([
+    issue.save()
+  ])
+    .then(([issue]) => {
+      const mail = new Mail();
+      mail
+        .sendIssueToUser(user, project)
+        .catch(error => {
+          utils.logError(error, { issue: issue.dump() });
+        });
+      res.json(issue.dump());
+    });
 });
