@@ -19,8 +19,7 @@ COPY src ./src
 COPY config ./config
 
 ENV NODE_ENV="production"
-ENV PORT 80
 
-EXPOSE 80
+EXPOSE 3000
 
 CMD ["node", "src/web-starter"]
