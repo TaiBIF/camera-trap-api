@@ -15,6 +15,7 @@ orbs:
     orbs:
       aws-ecr: circleci/aws-ecr@4.0.1
       aws-cli: circleci/aws-cli@0.1.13
+      aws-ecs: circleci/aws-ecs@0.0.8
     executors:
       aws:
         environment:
@@ -38,10 +39,12 @@ orbs:
           - run:
               name: Use Node v<< parameters.v >>
               command: |
-                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o ~/node.tar.xz
-                tar xf ~/node.tar.xz -C ~
+                TAR=~/node.tar.xz
+                NODE_PATH=~/node
+                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o $TAR
+                mkdir $NODE_PATH && tar xf $TAR -C $NODE_PATH --strip-components 1
 
-                echo 'export PATH=~/node-v<< parameters.v >>-linux-x64/bin:$PATH' >> $BASH_ENV
+                echo "export PATH=$NODE_PATH/bin:\$PATH" >> $BASH_ENV
                 source $BASH_ENV
 
       docker-build-push:
@@ -83,15 +86,19 @@ orbs:
                 echo "$(node scripts/export-env)" >> $BASH_ENV
                 source $BASH_ENV
     jobs:
-      build:
+      build_and_deploy:
         executor: aws
         steps:
           - use-node
           - run: node -v
           - checkout-install
           - aws-ecr/build-and-push-image:
-              repo: camera-trap-api-staging
+              repo: $AWS_APP_PREFIX
               tag: $CIRCLE_SHA1
+          - aws-ecs/update-service:
+              family: $AWS_APP_PREFIX-service
+              cluster-name: $AWS_APP_PREFIX-cluster
+              container-image-name-updates: 'container=$AWS_APP_PREFIX-service,image-and-tag=$IMAGE'
 
       lint:
         executor: default
@@ -104,7 +111,7 @@ workflows:
   Test & Lint & Build:
     jobs:
       - node/lint
-      - node/build
+      - node/build_and_deploy
 
 jobs:
   node10:
