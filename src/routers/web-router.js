@@ -14,6 +14,7 @@ const speciesHandler = require('../handlers/species-handler');
 const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
+const issueHandler = require('../handlers/issue-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -144,6 +145,7 @@ apiRouter.get(
   '/data-fields/:dataFieldId([a-f\\d]{24})',
   dataFieldHandler.getPublishedDataField,
 );
+apiRouter.post('/issues', issueHandler.addIssue);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
 
