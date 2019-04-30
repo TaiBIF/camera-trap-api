@@ -25,6 +25,6 @@ IssueForm.define({
   }),
   attachmentFile: new forms.fields.StringField({
     validators: [forms.validators.id()],
-  })
+  }),
 });
 module.exports = IssueForm;

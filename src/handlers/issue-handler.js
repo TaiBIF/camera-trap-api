@@ -1,6 +1,7 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
-const PageList = require('../models/page-list');
+// const PageList = require('../models/page-list');
+const utils = require('../common/utils');
 const Mail = require('../common/mail');
 const UserPermission = require('../models/const/user-permission');
 const IssueForm = require('../forms/issue/issue-form');
@@ -17,26 +18,18 @@ exports.addIssue = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-
-  const issue = new IssueModel({
-    ...form
-  });
-
-  return Promise.all([
-    issue.save()
-  ])
-    .then(([issue]) => {
-      const mail = new Mail();
-      mail
-        .sendIssueToUser(issue)
-        .catch(error => {
-          utils.logError(error, { issue: issue.dump() });
-        });
-      mail
-        .sendIssueToSystemAdmin(issue)
-        .catch(error => {
-          utils.logError(error, { issue: issue.dump() });
-        });
-      res.json(issue.dump());
+  return new Promise(() => {
+    const issue = new IssueModel({
+      ...form,
     });
+    issue.save();
+    const mail = new Mail();
+    mail.sendIssueToUser(issue).catch(error => {
+      utils.logError(error, { issue: issue.dump() });
+    });
+    mail.sendIssueToSystemAdmin(issue).catch(error => {
+      utils.logError(error, { issue: issue.dump() });
+    });
+    return res.json(issue.dump());
+  });
 });

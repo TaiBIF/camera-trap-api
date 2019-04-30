@@ -20,7 +20,7 @@ exports.inviteMemberInToProject = (user, project) =>
       <p>Camera Trap.</p>`,
   });
 
-exports.IssueToSystemAdmin = (issue) =>
+exports.IssueToSystemAdmin = issue =>
   /*
   Send an email to sysadmin when user add an issue
   @param issue {IssueModel}
@@ -41,7 +41,7 @@ exports.IssueToSystemAdmin = (issue) =>
       <p>--</p>`,
   });
 
-exports.IssueToUser = (issue) =>
+exports.IssueToUser = issue =>
   /*
   Send an email when someone send a issue
   @param issue {IssueModel}
