@@ -2330,19 +2330,33 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "title": {
                   "zh-TW": "台北"
                 },
+                "failures": 1,
                 "children": [
                   {
                     "id": "5c9d9456e7462d3d989cb69c",
                     "title": {
                       "zh-TW": "內湖站"
                     },
-                    "parent": "5c9d9428e7462d3d989cb69b"
+                    "failures": 1,
+                    "parent": "5c9d9428e7462d3d989cb69b",
+                    "cameraLocation": {
+                      "id": "5c9f28070d9cee99f8a11a12",
+                      "studyArea": "5c9d95acea5c9b4036d97c88",
+                      "name": "PT02A",
+                      "settingTime": "2019-01-01T00:00:00.000Z",
+                      "latitude": 58.28,
+                      "longitude": 121.462417,
+                      "altitude": 100,
+                      "vegetation": "植被",
+                      "landCover": "土地覆蓋類型"
+                    }
                   },
                   {
                     "id": "5c9d95acea5c9b4036d97c88",
                     "title": {
                       "zh-TW": "大安站"
                     },
+                    "failures": 0,
                     "parent": "5c9d9428e7462d3d989cb69b"
                   }
                 ]
@@ -2373,6 +2387,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       }
                     }
                   },
+                  "failures": {
+                    "type": "number",
+                    "description": "The total of annotations of the study area (include children)."
+                  },
                   "children": {
                     "type": "array",
                     "item": {
@@ -2390,9 +2408,97 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                             }
                           }
                         },
+                        "failures": {
+                          "type": "number",
+                          "description": "The total of annotations of the study area (include children)."
+                        },
+                        "cameraLocation": {
+                          "type": "object",
+                          "description": "樣區的其中一個相機位置，供繪製樣區地圖。",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "相機位置名稱"
+                            },
+                            "studyArea": {
+                              "type": "string",
+                              "description": "樣區 ID。"
+                            },
+                            "settingTime": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "架設日期(ISO-8601)"
+                            },
+                            "latitude": {
+                              "type": "number",
+                              "description": "十進位緯度 (WGS84)"
+                            },
+                            "longitude": {
+                              "type": "number",
+                              "description": "十進位經度 (WGS84)"
+                            },
+                            "altitude": {
+                              "type": "number",
+                              "description": "海拔（公尺）"
+                            },
+                            "vegetation": {
+                              "type": "string",
+                              "description": "植被"
+                            },
+                            "landCover": {
+                              "type": "string",
+                              "description": "土地覆蓋類型"
+                            }
+                          }
+                        },
                         "parent": {
                           "type": "string"
                         }
+                      }
+                    }
+                  },
+                  "cameraLocation": {
+                    "type": "object",
+                    "description": "樣區的其中一個相機位置，供繪製樣區地圖。",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機位置名稱"
+                      },
+                      "studyArea": {
+                        "type": "string",
+                        "description": "樣區 ID。"
+                      },
+                      "settingTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "架設日期(ISO-8601)"
+                      },
+                      "latitude": {
+                        "type": "number",
+                        "description": "十進位緯度 (WGS84)"
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "description": "十進位經度 (WGS84)"
+                      },
+                      "altitude": {
+                        "type": "number",
+                        "description": "海拔（公尺）"
+                      },
+                      "vegetation": {
+                        "type": "string",
+                        "description": "植被"
+                      },
+                      "landCover": {
+                        "type": "string",
+                        "description": "土地覆蓋類型"
                       }
                     }
                   }
