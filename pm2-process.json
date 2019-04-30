@@ -1,7 +1,7 @@
 [
   {
     "name": "camera-trap-api",
-    "script": "src/web.js",
+    "script": "src/web-starter.js",
     "error_file": "/tmp/camera-trap-api.error.log",
     "out_file": "/tmp/camera-trap-api.log",
     "instances": 2,

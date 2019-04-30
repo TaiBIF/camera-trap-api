@@ -1,13 +1,25 @@
-FROM node:12
+FROM mhart/alpine-node:10
+LABEL maintainer="rwu823@gmail.com"
 
-ENV GITHUB_TOKEN ${GITHUB_TOKEN}
+WORKDIR /camera-trap-api
 
-WORKDIR /app-src
-ADD . /app-src
-# RUN npm install
+RUN apk add --update --no-cache \
+    graphicsmagick \
+    openssh \
+    git \
+    bash
 
-RUN mkdir node_modules
-RUN git clone https://${GITHUB_TOKEN}@github.com/TaiBIF/camera-trap-credentials.git node_modules/camera-trap-credentials
+COPY package.json package-lock.json ./
+COPY node_modules/camera-trap-credentials ./node_modules/camera-trap-credentials
+
+RUN npm i --production && \
+  rm -rf ~/.npm package-lock.json
+
+COPY src ./src
+COPY config ./config
+
+ENV NODE_ENV="production"
 
 EXPOSE 3000
-CMD node demo-app.js
+
+CMD ["node", "src/web-starter"]

@@ -6,7 +6,6 @@ const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
 const mongoose = require('mongoose');
-const mongooseProfiler = require('mongoose-profiler');
 const mongoosePaginate = require('mongoose-paginate-v2');
 const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
@@ -81,7 +80,7 @@ exports.generateSchema = (model, options) => {
   );
   schema.plugin(mongoosePaginate);
   if (config.isDebug) {
-    schema.plugin(mongooseProfiler());
+    schema.plugin(require('mongoose-profiler')());
   }
   schema.pre('save', function(next) {
     this.increment();

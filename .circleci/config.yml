@@ -1,35 +1,115 @@
 version: 2.1
+
+vars:
+  setup_docker: &setup_docker
+    setup_remote_docker:
+      docker_layer_caching: true
+
+  branch_is_deploy: &branch_is_deploy
+    filters:
+      branches:
+        only: master
+
 orbs:
-  aws-ecr: circleci/aws-ecr@4.0.1
-  aws-ecs: circleci/aws-ecs@0.0.8
-workflows:
-  build-and-deploy:
+  node:
+    orbs:
+      aws-ecr: circleci/aws-ecr@4.0.1
+      aws-cli: circleci/aws-cli@0.1.13
+      aws-ecs: circleci/aws-ecs@0.0.8
+    executors:
+      aws:
+        environment:
+          - TZ: Asia/Taipei
+          - NVM_DIR: /opt/circleci/.nvm
+        machine:
+          docker_layer_caching: true
+      default:
+        environment:
+          - TZ: Asia/Taipei
+        docker:
+          - image: circleci/node:10
+    commands:
+      use-node:
+        description: Install Node
+        parameters:
+          v:
+            type: string
+            default: 10.15.3
+        steps:
+          - run:
+              name: Use Node v<< parameters.v >>
+              command: |
+                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o ~/node.tar.xz
+                tar xf ~/node.tar.xz -C ~
+
+                echo 'export PATH=~/node-v<< parameters.v >>-linux-x64/bin:$PATH' >> $BASH_ENV
+                source $BASH_ENV
+
+      docker-build-push:
+        description: Docker build
+        parameters:
+          repo:
+            type: string
+            default: repo-name
+          url:
+            type: string
+            default: dkr.ecr.ap-northeast-1.amazonaws.com
+          tag:
+            type: string
+            default: $CIRCLE_SHA1
+        steps:
+          - *setup_docker
+          - run:
+              name: Build Docker Image
+              command: |
+                IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
+                docker build . -t $IMAGE
+                docker images $IMAGE
+                docker push $IMAGE
+
+      checkout-install:
+        description: Checkout sources and install node_modules
+        steps:
+          - checkout
+          - restore_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+          - run: npm i
+          - save_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+              paths:
+                - node_modules
+          - run:
+              name: Set Env
+              command: |
+                echo "$(node scripts/export-env)" >> $BASH_ENV
+                source $BASH_ENV
     jobs:
-      - node10
-      - aws-ecr/build_and_push_image:
-          requires:
-            - node10
-          account-url: "AWS_ECR_ACCOUNT_URL"
-          repo: "${AWS_RESOURCE_NAME_PREFIX}"
-          region: "AWS_DEFAULT_REGION"
-          tag: "${CIRCLE_SHA1}"
-          extra-build-args: "--build-arg GITHUB_TOKEN=${GITHUB_TOKEN}"
-      - aws-ecs/deploy-service-update:
-          requires:
-            - aws-ecr/build_and_push_image
-          aws-region: ${AWS_DEFAULT_REGION}
-          family: "${AWS_RESOURCE_NAME_PREFIX}-service"
-          cluster-name: "${AWS_RESOURCE_NAME_PREFIX}-cluster"
-          container-image-name-updates: "container=${AWS_RESOURCE_NAME_PREFIX}-service,image-and-tag=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_RESOURCE_NAME_PREFIX}:${CIRCLE_SHA1}"
-          verify-revision-is-deployed: true
-          # post-steps:
-          #   - run:
-          #       name: Test the deployment
-          #       command: |
-          #         TARGET_GROUP_ARN=$(aws ecs describe-services --cluster ${AWS_RESOURCE_NAME_PREFIX}-cluster --services ${AWS_RESOURCE_NAME_PREFIX}-service | jq -r '.services[0].loadBalancers[0].targetGroupArn')
-          #         ELB_ARN=$(aws elbv2 describe-target-groups --target-group-arns $TARGET_GROUP_ARN | jq -r '.TargetGroups[0].LoadBalancerArns[0]')
-          #         ELB_DNS_NAME=$(aws elbv2 describe-load-balancers --load-balancer-arns $ELB_ARN | jq -r '.LoadBalancers[0].DNSName')
-          #         curl -s --retry 10 http://$ELB_DNS_NAME | grep "Welcome to nginx!"
+      build_and_deploy:
+        executor: aws
+        steps:
+          - use-node
+          - run: node -v
+          - checkout-install
+          - aws-ecr/build-and-push-image:
+              repo: $AWS_APP_PREFIX
+              tag: $CIRCLE_SHA1
+          - aws-ecs/update-service:
+              family: $AWS_APP_PREFIX-service
+              cluster-name: $AWS_APP_PREFIX-cluster
+              container-image-name-updates: 'container=$AWS_APP_PREFIX-service,image-and-tag=$IMAGE'
+
+      lint:
+        executor: default
+        steps:
+          - checkout-install
+          - run: npm run lint
+
+workflows:
+  version: 2
+  Test & Lint & Build:
+    jobs:
+      - node/lint
+      - node/build_and_deploy
 
 jobs:
   node10:

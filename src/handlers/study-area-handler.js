@@ -7,6 +7,8 @@ const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const CameraLocationModel = require('../models/data/camera-location-model');
+const CameraLocationState = require('../models/const/camera-location-state');
 
 exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
   /*
@@ -29,12 +31,13 @@ exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
         throw new errors.Http403();
       }
 
+      const studyAreaIds = studyAreas.map(x => x._id);
       return Promise.all([
         studyAreas,
         AnnotationModel.aggregate([
           {
             $match: {
-              studyArea: { $in: studyAreas.map(x => x._id) },
+              studyArea: { $in: studyAreaIds },
               state: {
                 $in: [AnnotationState.active, AnnotationState.waitForReview],
               },
@@ -48,17 +51,40 @@ exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
             },
           },
         ]),
+        CameraLocationModel.aggregate([
+          {
+            $match: {
+              studyArea: { $in: studyAreaIds },
+              state: CameraLocationState.active,
+            },
+          },
+          {
+            $group: {
+              _id: '$studyArea',
+              cameraLocation: { $first: '$$ROOT' },
+            },
+          },
+        ]),
       ]);
     })
-    .then(([studyAreas, failures]) => {
+    .then(([studyAreas, failures, groupedCameraLocations]) => {
       // Step 1. generate parents.
       const rootStudyAreas = [];
       studyAreas.forEach(studyArea => {
         if (!studyArea.parent) {
-          const failure = failures.find(x => `${x._id}` === `${studyArea._id}`);
           const studyAreaInformation = studyArea.dump();
+          const failure = failures.find(x => `${x._id}` === `${studyArea._id}`);
+          const groupedCameraLocation = groupedCameraLocations.find(
+            x => `${x._id}` === `${studyArea._id}`,
+          );
+
           studyAreaInformation.children = [];
           studyAreaInformation.failures = failure ? failure.count : 0;
+          if (groupedCameraLocation) {
+            studyAreaInformation.cameraLocation = new CameraLocationModel(
+              groupedCameraLocation.cameraLocation,
+            ).dump();
+          }
           rootStudyAreas.push(studyAreaInformation);
         }
       });
@@ -66,12 +92,21 @@ exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
       // Step 2. generate children for the each parent.
       studyAreas.forEach(studyArea => {
         if (studyArea.parent) {
-          const failure = failures.find(x => `${x._id}` === `${studyArea._id}`);
+          const studyAreaInformation = studyArea.dump();
           const parent = rootStudyAreas.find(
             rootStudyArea => rootStudyArea.id === `${studyArea.parent}`,
           );
-          const studyAreaInformation = studyArea.dump();
+          const failure = failures.find(x => `${x._id}` === `${studyArea._id}`);
+          const groupedCameraLocation = groupedCameraLocations.find(
+            x => `${x._id}` === `${studyArea._id}`,
+          );
+
           studyAreaInformation.failures = failure ? failure.count : 0;
+          if (groupedCameraLocation) {
+            studyAreaInformation.cameraLocation = new CameraLocationModel(
+              groupedCameraLocation.cameraLocation,
+            ).dump();
+          }
           if (parent) {
             parent.failures += studyAreaInformation.failures;
             parent.children.push(studyAreaInformation);

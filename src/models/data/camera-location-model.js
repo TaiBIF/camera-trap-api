@@ -97,7 +97,9 @@ schema.static('joinFailuresAndCanTrash', async docs => {
       $group: {
         _id: '$cameraLocation',
         count: { $sum: 1 },
-        failures: { $sum: { $size: '$failures' } },
+        failures: {
+          $sum: { $cond: [{ $size: '$failures' }, 1, 0] },
+        },
       },
     },
   ]);
