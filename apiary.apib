@@ -304,6 +304,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string",
                         "enum": [
                           "lost-exif-time",
+                          "inconsistent-quantity",
+                          "images-and-csv-not-match",
                           "permission-denied",
                           "others"
                         ]
@@ -4118,7 +4120,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + type: `project-cover-image` (enum[string]) - File type/purpose.
 
-        project-cover-image, annotation-image (上傳單一圖片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)<br/>目前 zip 檔不支援 csv。
+        project-cover-image, annotation-image (上傳單一圖片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)
 
         + Members
             + `project-cover-image`
