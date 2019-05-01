@@ -19,7 +19,7 @@ exports.getMyUploadSession = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = UploadSessionModel.where({ user: `${req.user._id}` })
+  const query = UploadSessionModel.where({ user: req.user._id })
     .sort(form.sort)
     .populate('project')
     .populate('cameraLocation')
