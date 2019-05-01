@@ -5,6 +5,9 @@ const UserPermission = require('../models/const/user-permission');
 const NotificationModel = require('../models/data/notification-model');
 const NotificationsSearchForm = require('../forms/notification/notifications-search-form');
 const NotificationType = require('../models/const/notification-type');
+const ProjectModel = require('../models/data/project-model');
+const StudyAreaModel = require('../models/data/study-area-model');
+const CameraLocationModel = require('../models/data/camera-location-model');
 require('../models/data/issue-model'); // for populate. todo: remove it after crated issue handler.
 
 exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
@@ -30,11 +33,31 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
   return NotificationModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,
-  }).then(result => {
-    res.json(
-      new PageList(form.index, form.size, result.totalDocs, result.docs),
-    );
-  });
+  })
+    .then(result =>
+      Promise.all([
+        result,
+        ProjectModel.populate(result.docs, 'uploadSession.project'),
+        CameraLocationModel.populate(
+          result.docs,
+          'uploadSession.cameraLocation',
+        ),
+      ]),
+    )
+    .then(([result]) =>
+      Promise.all([
+        result,
+        StudyAreaModel.populate(
+          result.docs,
+          'uploadSession.cameraLocation.studyArea',
+        ),
+      ]),
+    )
+    .then(([result]) => {
+      res.json(
+        new PageList(form.index, form.size, result.totalDocs, result.docs),
+      );
+    });
 });
 
 exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) =>
