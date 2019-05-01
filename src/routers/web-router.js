@@ -68,6 +68,10 @@ apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
+apiRouter.post(
+  '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})/_cancel',
+  uploadSessionHandler.cancelUploadSession,
+);
 apiRouter.get('/me/notifications', notificationHandler.getMyNotifications);
 apiRouter.post(
   '/me/notifications/_read',
