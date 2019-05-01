@@ -39,10 +39,12 @@ orbs:
           - run:
               name: Use Node v<< parameters.v >>
               command: |
-                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o ~/node.tar.xz
-                tar xf ~/node.tar.xz -C ~
+                TAR=~/node.tar.xz
+                NODE_PATH=~/node
+                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o $TAR
+                mkdir $NODE_PATH && tar xf $TAR -C $NODE_PATH --strip-components 1
 
-                echo 'export PATH=~/node-v<< parameters.v >>-linux-x64/bin:$PATH' >> $BASH_ENV
+                echo "export PATH=$NODE_PATH/bin:\$PATH" >> $BASH_ENV
                 source $BASH_ENV
 
       docker-build-push:
