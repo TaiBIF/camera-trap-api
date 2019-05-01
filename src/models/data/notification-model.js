@@ -8,6 +8,11 @@ const model = mongoose.model(
   'NotificationModel',
   utils.generateSchema(
     {
+      sender: {
+        // Who sends this notification. null: from system.
+        type: Schema.ObjectId,
+        ref: 'UserModel',
+      },
       user: {
         // recipient
         type: Schema.ObjectId,
@@ -69,6 +74,10 @@ model.prototype.dump = function() {
       this.issue && typeof this.issue.dump === 'function'
         ? this.issue.dump()
         : this.issue,
+    sender:
+      this.sender && typeof this.sender.dump === 'function'
+        ? this.sender.dump()
+        : this.sender,
     createTime: this.createTime,
   };
 };

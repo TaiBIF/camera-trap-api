@@ -1,12 +1,15 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
+const UserModel = require('../models/data/user-model');
 const UserPermission = require('../models/const/user-permission');
 const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldForm = require('../forms/data-field/data-field-form');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const DataFieldState = require('../models/const/data-field-state');
 const DataFieldsSearchForm = require('../forms/data-field/data-fields-search-form');
+const NotificationModel = require('../models/data/notification-model');
+const NotificationType = require('../models/const/notification-type');
 
 exports.addDataField = auth(UserPermission.all(), (req, res) => {
   /*
@@ -26,13 +29,27 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     );
   }
 
-  const dataField = new DataFieldModel({
-    ...form,
-    user: req.user,
-  });
-  return dataField.save(() => {
-    res.json(dataField.dump());
-  });
+  return UserModel.where({ permission: UserPermission.administrator })
+    .then(administrators => {
+      const dataField = new DataFieldModel({
+        ...form,
+        user: req.user,
+      });
+      const tasks = [dataField.save()];
+      administrators.forEach(administrator => {
+        const notification = new NotificationModel({
+          sender: req.user,
+          user: administrator,
+          type: NotificationType.dataFieldApplication,
+          dataField,
+        });
+        tasks.push(notification.save());
+      });
+      return Promise.all(tasks);
+    })
+    .then(([dataField]) => {
+      res.json(dataField.dump());
+    });
 });
 
 exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
