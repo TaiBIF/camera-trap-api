@@ -53,6 +53,15 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
         ),
       ]),
     )
+    .then(([result]) =>
+      Promise.all([
+        result,
+        StudyAreaModel.populate(
+          result.docs,
+          'uploadSession.cameraLocation.studyArea.parent',
+        ),
+      ]),
+    )
     .then(([result]) => {
       res.json(
         new PageList(form.index, form.size, result.totalDocs, result.docs),
