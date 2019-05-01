@@ -71,7 +71,10 @@ exports.cancelUploadSession = auth(UserPermission.all(), (req, res) =>
             uploadSession: uploadSession._id,
             state: AnnotationState.waitForReview,
           },
-          { state: AnnotationState.cancel },
+          {
+            state: AnnotationState.cancel,
+            updateTime: new Date(),
+          },
           { multi: true },
         ),
       ]);
