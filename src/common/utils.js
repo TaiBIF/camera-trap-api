@@ -32,10 +32,12 @@ exports.connectDatabase = (autoIndex = false) => {
   if (!_isRegisterHandlers) {
     _isRegisterHandlers = true;
     mongoose.connection.on('error', error => {
-      console.error('Mongoose default connection error: ', error);
+      console.error('Mongoose default connection error.');
+      console.error(error);
     });
     mongoose.connection.on('disconnected', () => {
       console.error('Mongoose default connection disconnected.');
+      console.error(config.database.url);
     });
   }
   mongoose.connect(config.database.url, {
