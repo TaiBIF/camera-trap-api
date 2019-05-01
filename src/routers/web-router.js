@@ -1,19 +1,20 @@
 const express = require('express');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
-const userHandler = require('../handlers/user-handler');
 const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
+const notificationHandler = require('../handlers/notification-handler');
 const projectAreaHandler = require('../handlers/project-area-handler');
 const projectHandler = require('../handlers/project-handler');
 const speciesHandler = require('../handlers/species-handler');
 const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
+const userHandler = require('../handlers/user-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -67,6 +68,7 @@ apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
+apiRouter.get('/me/notifications', notificationHandler.getMyNotifications);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.put(
