@@ -18,7 +18,7 @@ RUN npm i --production && \
 COPY src ./src
 COPY config ./config
 
-ENV NODE_ENV="production"
+ENV NODE_ENV="staging"
 
 EXPOSE 3000
 
