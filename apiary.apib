@@ -1802,11 +1802,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "required": ["title", "shortTitle", "funder", "code", "principalInvestigator", "startTime", "endTime"]
             }
 
-## Species [/projects/{projectId}/species]
+## Species Preset [/projects/{projectId}/species]
+維䕶隨計畫而定的預設物種清單。
+
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
 
-### Retrieve species [GET /projects/{projectId}/species{?index,size,sort}]
+### Retrieve species preset [GET /projects/{projectId}/species{?index,size,sort}]
+取得計畫預設物種清單。
+
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects.
@@ -1918,8 +1922,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update species [PUT /projects/{projectId}/species]
-批次新增、更新物種。  
+## Update species preset [PUT /projects/{projectId}/species]
+批次新增、更新物種清單。  
 已存在物種僅可更改順序，不可更改標題且不可刪除。  
 新增的物種標題為必填。
 - The user's permission should be 'administrator' or 'general-account'.
