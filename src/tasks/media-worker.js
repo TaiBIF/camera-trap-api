@@ -26,6 +26,8 @@ const StudyAreaState = require('../models/const/study-area-state');
 const SpeciesModel = require('../models/data/species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const NotificationModel = require('../models/data/notification-model');
+const NotificationType = require('../models/const/notification-type');
 
 module.exports = (job, done) => {
   const workerData = new MediaWorkerData(job.data);
@@ -419,6 +421,7 @@ module.exports = (job, done) => {
       /*
       - If the duplicate annotation is exists then update the file of the duplicate one.
       - If there is no duplicate annotation then save a new annotation.
+      - Set upload session state.
       @param annotations {Array<AnnotationModel>} Not saved.
       @param duplicateAnnotations {Array<AnnotationModel>} From database.
       @returns {Promise<[AnnotationModel]>}
@@ -500,14 +503,26 @@ module.exports = (job, done) => {
       }
       return Promise.all(tasks);
     })
-    .then(() =>
+    .then(() => {
       /*
-      Set the upload session as success and save it.
+      - Save upload session.
       @returns {Promise<UploadSessionModel>}
        */
-      // todo: send notification when the state is wait for review.
-      _uploadSession.save(),
-    )
+      const notificationTypeTable = {};
+      notificationTypeTable[UploadSessionState.success] =
+        NotificationType.uploadSuccess;
+      notificationTypeTable[UploadSessionState.failure] =
+        NotificationType.uploadFailure;
+      notificationTypeTable[UploadSessionState.waitForReview] =
+        NotificationType.waitForOverwrite;
+      const notification = new NotificationModel({
+        user: _user,
+        type: notificationTypeTable[_uploadSession.state],
+        uploadSession: _uploadSession,
+      });
+
+      return Promise.all([_uploadSession.save(), notification.save()]);
+    })
     .then(() => {
       if (config.isDebug) {
         console.log(`media-worker job[${job.id}] done.`);
@@ -515,13 +530,20 @@ module.exports = (job, done) => {
       done();
     })
     .catch(error => {
+      utils.logError(error, job.data);
+      done(error);
+
       if (_uploadSession) {
         _uploadSession.state = UploadSessionState.failure;
         _uploadSession.errorType =
           _uploadSession.errorType || UploadSessionErrorType.others;
         _uploadSession.save();
       }
-      utils.logError(error, job.data);
-      done(error);
+      const notification = new NotificationModel({
+        user: _user,
+        type: NotificationType.uploadFailure,
+        uploadSession: _uploadSession,
+      });
+      notification.save();
     });
 };
