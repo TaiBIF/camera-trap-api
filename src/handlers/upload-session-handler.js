@@ -64,8 +64,9 @@ exports.cancelUploadSession = auth(UserPermission.all(), (req, res) =>
         throw new errors.Http403();
       }
 
+      uploadSession.state = UploadSessionState.cancel;
       return Promise.all([
-        uploadSession,
+        uploadSession.save(),
         AnnotationModel.update(
           {
             uploadSession: uploadSession._id,
@@ -80,10 +81,6 @@ exports.cancelUploadSession = auth(UserPermission.all(), (req, res) =>
       ]);
     })
     .then(([uploadSession]) => {
-      uploadSession.state = UploadSessionState.cancel;
-      return uploadSession.save();
-    })
-    .then(uploadSession => {
       res.json(uploadSession.dump());
     }),
 );
