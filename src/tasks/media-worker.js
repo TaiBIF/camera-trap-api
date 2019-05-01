@@ -276,9 +276,9 @@ module.exports = (job, done) => {
       @param files {Array<FileModel>}
       @returns {Promise<[{AnnotationModel}]>}
        */
+      const csvParseAsync = util.promisify(csvParse);
+
       if (_file.type === FileType.annotationCSV) {
-        const csvParseAsync = util.promisify(csvParse);
-        let result;
         return utils
           .getS3Object(
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
@@ -286,7 +286,7 @@ module.exports = (job, done) => {
           .then(data => csvParseAsync(data.Body))
           .then(csvObject => {
             const limit = pLimit(5); // Save 5 new species in the same time.
-            result = utils.convertCsvToAnnotations({
+            const result = utils.convertCsvToAnnotations({
               project: _project,
               studyAreas: _allStudyAreas,
               dataFields: _project.dataFields,
@@ -296,11 +296,11 @@ module.exports = (job, done) => {
               csvObject,
             });
             // Save new species.
-            return Promise.all(
-              result.newSpecies.map(x => limit(() => x.save())),
-            );
+            const tasks = result.newSpecies.map(x => limit(() => x.save()));
+            tasks.unshift(result);
+            return Promise.all(tasks);
           })
-          .then(() => result.annotations); // Annotations are missing .file.
+          .then(([result]) => result.annotations); // Annotations are missing .file.
       }
 
       // _file.type === FileType.annotationImage
