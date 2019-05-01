@@ -66,7 +66,7 @@ model.prototype.dump = function() {
         ? this.uploadSession.dump()
         : this.uploadSession,
     issue:
-      this.issue && typeof typeof this.issue.dump === 'function'
+      this.issue && typeof this.issue.dump === 'function'
         ? this.issue.dump()
         : this.issue,
     createTime: this.createTime,
