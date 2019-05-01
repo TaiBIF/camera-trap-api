@@ -69,6 +69,10 @@ apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
 apiRouter.get('/me/notifications', notificationHandler.getMyNotifications);
+apiRouter.post(
+  '/me/notifications/_read',
+  notificationHandler.readAllMyNotifications,
+);
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.put(

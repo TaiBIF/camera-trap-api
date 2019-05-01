@@ -34,3 +34,21 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
     );
   });
 });
+
+exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) => {
+  /*
+  POST /api/v1/me/notifications/_read
+   */
+  return NotificationModel.where({ user: req.user._id, isRead: false })
+    .then(notifications =>
+      Promise.all(
+        notifications.map(notification => {
+          notification.isRead = true;
+          return notification.save();
+        }),
+      ),
+    )
+    .then(() => {
+      res.status(204).send();
+    });
+});
