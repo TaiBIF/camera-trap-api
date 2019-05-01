@@ -4,6 +4,7 @@ const PageList = require('../models/page-list');
 const UserPermission = require('../models/const/user-permission');
 const NotificationModel = require('../models/data/notification-model');
 const NotificationsSearchForm = require('../forms/notification/notifications-search-form');
+const NotificationType = require('../models/const/notification-type');
 require('../models/data/issue-model'); // for populate. todo: remove it after crated issue handler.
 
 exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
@@ -17,6 +18,7 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
   }
 
   const query = NotificationModel.where({ user: req.user._id })
+    .where({ type: { $ne: NotificationType.system } })
     .sort(form.sort)
     .populate('dataField')
     .populate('uploadSession')
@@ -35,11 +37,12 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
   });
 });
 
-exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) => {
+exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) =>
   /*
   POST /api/v1/me/notifications/_read
    */
-  return NotificationModel.where({ user: req.user._id, isRead: false })
+  NotificationModel.where({ user: req.user._id, isRead: false })
+    .where({ type: { $ne: NotificationType.system } })
     .then(notifications =>
       Promise.all(
         notifications.map(notification => {
@@ -50,5 +53,5 @@ exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) => {
     )
     .then(() => {
       res.status(204).send();
-    });
-});
+    }),
+);
