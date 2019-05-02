@@ -4402,6 +4402,124 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+## Annotation revision [/annotations/{annotationId}/revisions]
+### Get revisions of the annotation [GET /annotations/{annotationId}/revisions{?index,size,sort}]
+取得標註的版本紀錄。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + annotationId: `5cca59e6466788f1848edac7` (string) - The annotation ID.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `5` (number, optional) - The size of the result set.
+        + Default: 5
+    + sort: `-createTime` (enum[string], optional) ...
+        + Default: `-createTime`
+        + Members
+            + `createTime`
+            + `-createTime`
+
++ Request Get revisions of the annotation (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 5,
+              "total": 2,
+              "items": [
+                {
+                  "id": "5cca59f567af9ef185bd5ed6",
+                  "user": {
+                    "id": "5c949bbbe5d5377f98c81ab0",
+                    "name": "測試",
+                    "email": "email@example.com",
+                    "permission": "administrator"
+                  },
+                  "isCurrent": true,
+                  "createTime": "2019-05-02T02:46:13.768Z"
+                },
+                {
+                  "id": "5cca594f67af9ef185bd5ed3",
+                  "user": {
+                    "id": "5c949bbbe5d5377f98c81ab0",
+                    "name": "測試",
+                    "email": "email@example.com",
+                    "permission": "administrator"
+                  },
+                  "isCurrent": false,
+                  "createTime": "2019-05-02T02:43:27.021Z"
+                }
+              ]
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "Full name of the member."
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "idn-email"
+                            },
+                            "permission": {
+                              "type": "string",
+                              "enum": ["administrator", "general-account"]
+                            }
+                          }
+                        }
+                      },
+                      "isCurrent": {
+                        "type": "boolean",
+                        "description": "Is this revision current?"
+                      },
+                      "createTime": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
 
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
