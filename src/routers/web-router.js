@@ -83,8 +83,8 @@ apiRouter.post(
 );
 apiRouter.post('/logout', accountHandler.logout);
 apiRouter.get(
-  '/system-notifications',
-  notificationHandler.getSystemNotifications,
+  '/system-announcements',
+  notificationHandler.getSystemAnnouncements,
 );
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.put(

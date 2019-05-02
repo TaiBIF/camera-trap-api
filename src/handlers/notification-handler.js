@@ -88,9 +88,9 @@ exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) =>
     }),
 );
 
-exports.getSystemNotifications = (req, res) => {
+exports.getSystemAnnouncements = (req, res) => {
   /*
-  GET /api/v1/system-notifications
+  GET /api/v1/system-announcements
   */
   const form = new NotificationsSearchForm(req.query);
   const errorMessage = form.validate();
