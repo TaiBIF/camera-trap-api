@@ -515,6 +515,129 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
+            
+### Cancel the upload session [POST /me/upload-sessions/{uploadSessionId}/_cancel]
+取消等待確認是否複寫標註的上傳紀錄。
+- The user's permission should be 'administrator' or 'general-account'.
+- The user should be the creator of this upload session.
+
++ Parameters
+    + uploadSessionId: `5cc932399628d9ac0c1aa3a4` (string) - The upload session id.
+
++ Request Cancel the upload session (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5cc9a4d4b69a35e2043dbb02",
+              "state": "cancel",
+              "project": "5c9af1d2403d37067adadbc5",
+              "cameraLocation": "5cbc125b431eb3db39702744",
+              "file": "5cc9a4d4b69a35e2043dbb01",
+              "createTime": "2019-05-01T13:53:24.269Z"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The upload session id."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "wait-for-review",
+                    "cancel",
+                    "success",
+                    "failure"
+                  ]
+                },
+                "project": {
+                  "type": "string",
+                  "description": "The project id."
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "The camera location id."
+                },
+                "file": {
+                  "type": "string",
+                  "description": "The file id."
+                },
+                "createTime": {
+                  "type": "string"
+                }
+              }
+            }
+
+### Overwrite annotations of the upload session [POST /me/upload-sessions/{uploadSessionId}/_overwrite]
+確認複寫上傳紀錄的標註。
+- The user's permission should be 'administrator' or 'general-account'.
+- The user should be the creator of this upload session.
+
++ Parameters
+    + uploadSessionId: `5cc932399628d9ac0c1aa3a4` (string) - The upload session id.
+
++ Request Overwrite annotations of the upload session (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5cc9a4d4b69a35e2043dbb02",
+              "state": "success",
+              "project": "5c9af1d2403d37067adadbc5",
+              "cameraLocation": "5cbc125b431eb3db39702744",
+              "file": "5cc9a4d4b69a35e2043dbb01",
+              "createTime": "2019-05-01T13:53:24.269Z"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The upload session id."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "wait-for-review",
+                    "cancel",
+                    "success",
+                    "failure"
+                  ]
+                },
+                "project": {
+                  "type": "string",
+                  "description": "The project id."
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "The camera location id."
+                },
+                "file": {
+                  "type": "string",
+                  "description": "The file id."
+                },
+                "createTime": {
+                  "type": "string"
+                }
+              }
+            }
+
 
 ## Notifications [/me/notifications]
 ### Retrieve my notification [GET /me/notifications{?index,size,sort,isRead}]
