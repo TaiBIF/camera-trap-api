@@ -82,6 +82,10 @@ apiRouter.post(
   notificationHandler.readAllMyNotifications,
 );
 apiRouter.post('/logout', accountHandler.logout);
+apiRouter.get(
+  '/system-notifications',
+  notificationHandler.getSystemNotifications,
+);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.put(
   '/annotations/:annotationId([a-f\\d]{24})',

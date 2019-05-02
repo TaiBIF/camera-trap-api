@@ -87,3 +87,27 @@ exports.readAllMyNotifications = auth(UserPermission.all(), (req, res) =>
       res.status(204).send();
     }),
 );
+
+exports.getSystemNotifications = (req, res) => {
+  /*
+  GET /api/v1/system-notifications
+  */
+  const form = new NotificationsSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const query = NotificationModel.where({
+    type: NotificationType.system,
+  }).where({ expiredTime: { $gte: Date.now() } });
+
+  return NotificationModel.paginate(query, {
+    offset: form.index * form.size,
+    limit: form.size,
+  }).then(result => {
+    res.json(
+      new PageList(form.index, form.size, result.totalDocs, result.docs),
+    );
+  });
+};
