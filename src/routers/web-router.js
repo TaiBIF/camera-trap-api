@@ -69,6 +69,10 @@ apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
 apiRouter.post(
+  '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})/_overwrite',
+  uploadSessionHandler.overwriteUploadSession,
+);
+apiRouter.post(
   '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})/_cancel',
   uploadSessionHandler.cancelUploadSession,
 );
