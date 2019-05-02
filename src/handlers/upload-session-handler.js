@@ -71,7 +71,6 @@ exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
         $and: [
           { state: AnnotationState.active },
           { cameraLocation: annotation.cameraLocation._id },
-          { filename: annotation.filename },
           { time: annotation.time },
         ],
       }));
@@ -88,12 +87,12 @@ exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
         const targetAnnotation = targetAnnotations.find(
           x =>
             `${x.cameraLocation._id}` === `${annotation.cameraLocation._id}` &&
-            x.filename === annotation.filename &&
             x.time.getTime() === annotation.time.getTime(),
         );
         if (targetAnnotation) {
           // Overwrite the old annotation.
           targetAnnotation.failures = annotation.failures;
+          targetAnnotation.filename = annotation.filename;
           targetAnnotation.file = annotation.file;
           targetAnnotation.species = annotation.species;
           targetAnnotation.fields = annotation.fields;
