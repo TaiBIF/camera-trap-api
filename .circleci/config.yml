@@ -107,16 +107,13 @@ orbs:
           - run: node -v
           - checkout-install
           - aws-ecr/build-and-push-image:
-              repo: $AWS_APP_PREFIX
-              tag: $CIRCLE_SHA1
-          - aws-ecr/build-and-push-image:
               repo: $AWS_TASK_PREFIX
               tag: $CIRCLE_SHA1
               dockerfile: scripts/task-worker/Dockerfile
           - aws-ecs/update-service:
-              family: $AWS_APP_PREFIX-service
-              cluster-name: $AWS_APP_PREFIX-cluster
-              container-image-name-updates: 'container=$AWS_APP_PREFIX-service,image-and-tag=$IMAGE'
+              family: $AWS_TASK_PREFIX-service
+              cluster-name: $AWS_TASK_PREFIX-cluster
+              container-image-name-updates: 'container=$AWS_TASK_PREFIX-service,image-and-tag=$IMAGE'
 
       lint:
         executor: default
