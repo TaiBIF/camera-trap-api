@@ -2928,6 +2928,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "zh-TW": "台北"
                 },
                 "failures": 1,
+                "isLockedAllCameraLocation": false,
                 "children": [
                   {
                     "id": "5c9d9456e7462d3d989cb69c",
@@ -2935,6 +2936,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "zh-TW": "內湖站"
                     },
                     "failures": 1,
+                    "isLockedAllCameraLocation": true,
                     "parent": "5c9d9428e7462d3d989cb69b",
                     "cameraLocation": {
                       "id": "5c9f28070d9cee99f8a11a12",
@@ -2954,6 +2956,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "zh-TW": "大安站"
                     },
                     "failures": 0,
+                    "isLockedAllCameraLocation": false,
                     "parent": "5c9d9428e7462d3d989cb69b"
                   }
                 ]
@@ -2988,6 +2991,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "type": "number",
                     "description": "The total of annotations of the study area (include children)."
                   },
+                  "isLockedAllCameraLocation": {
+                    "type": "boolean",
+                    "description": "該樣區底下是否所有相機位置被鎖定。（不包含子樣區）"
+                  },
                   "children": {
                     "type": "array",
                     "item": {
@@ -3008,6 +3015,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "failures": {
                           "type": "number",
                           "description": "The total of annotations of the study area (include children)."
+                        },
+                        "isLockedAllCameraLocation": {
+                          "type": "boolean",
+                          "description": "該樣區底下是否所有相機位置被鎖定。（不包含子樣區）"
                         },
                         "cameraLocation": {
                           "type": "object",
