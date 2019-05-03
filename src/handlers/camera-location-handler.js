@@ -92,7 +92,8 @@ exports.getStudyAreaCameraLocations = auth(UserPermission.all(), (req, res) => {
       subStudyAreas.forEach(x => studyAreaIds.push(`${x._id}`));
       const query = CameraLocationModel.where({
         state: CameraLocationState.active,
-      }).where({ studyArea: { $in: studyAreaIds } });
+        studyArea: { $in: studyAreaIds },
+      }).populate('lockUser');
       return CameraLocationModel.paginate(query, {
         offset: form.index * form.size,
         limit: form.size,
