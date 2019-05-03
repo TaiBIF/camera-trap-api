@@ -155,6 +155,10 @@ apiRouter.delete(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.deleteCameraLocation,
 );
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_lock',
+  cameraLocationHandler.lockCameraLocation,
+);
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);

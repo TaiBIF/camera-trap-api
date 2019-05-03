@@ -219,3 +219,46 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
       res.status(204).send();
     }),
 );
+
+exports.lockCameraLocation = auth(UserPermission.all(), (req, res) =>
+  /*
+  POST /api/v1/projects/:projectId/camera-locations/:cameraLocationId/_lock
+  Lock the camera location for edit mode.
+   */
+  Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    CameraLocationModel.findById(req.params.cameraLocationId)
+      .where({ project: req.params.projectId })
+      .where({ state: CameraLocationState.active }),
+  ])
+    .then(([project, cameraLocation]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!cameraLocation) {
+        throw new errors.Http404();
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+      ) {
+        throw new errors.Http403();
+      }
+      if (
+        cameraLocation.isLocked() &&
+        `${cameraLocation.lockUser._id}` !== `${req.user._id}`
+      ) {
+        throw new errors.Http400('It already locked by others.');
+      }
+
+      cameraLocation.lockExpiredTime = new Date();
+      cameraLocation.lockExpiredTime.setMinutes(
+        cameraLocation.lockExpiredTime.getMinutes() + 30,
+      );
+      cameraLocation.lockUser = req.user;
+      return cameraLocation.save();
+    })
+    .then(cameraLocation => {
+      res.json(cameraLocation.dump());
+    }),
+);
