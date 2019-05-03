@@ -159,6 +159,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_lock',
   cameraLocationHandler.lockCameraLocation,
 );
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_unlock',
+  cameraLocationHandler.unlockCameraLocation,
+);
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
