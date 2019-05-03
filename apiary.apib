@@ -4961,6 +4961,51 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+### Rollback the annotation with the revision [POST /annotations/{annotationId}/revisions/{revisionId}/_rollback]
+回復標註為指定的版本紀錄。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + annotationId: `5cca59e6466788f1848edac7` (string) - The annotation ID.
+    + revisionId: `5cca59f567af9ef185bd5ed6` (string) - The revision ID.
+
++ Request Rollback the annotation with the revision (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5cca59f567af9ef185bd5ed6",
+              "user": "5c949bbbe5d5377f98c81ab0",
+              "isCurrent": true,
+              "createTime": "2019-05-02T02:46:13.768Z"
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                },
+                "isCurrent": {
+                  "type": "boolean",
+                  "description": "Is this revision current?"
+                },
+                "createTime": {
+                  "type": "string"
+                }
+              }
+            }
+
 
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
