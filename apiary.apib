@@ -3458,6 +3458,202 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 204 (application/json)
 
+
+### Lock the camera location [POST /projects/{projectId}/camera-locations/{cameraLocationId}/_lock]
+鎖定相機位置，進入編輯模式。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The user is joined the the project.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) - The camera location ID.
+
++ Request Lock the camera location (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "name": "PT02A",
+              "studyArea": "5c9d95acea5c9b4036d97c88",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被",
+              "landCover": "土地覆蓋類型",
+              "isLocked": true,
+              "lockUser": {
+                "id": "5c949bbbe5d5377f98c81ab0",
+                "name": "測試",
+                "email": "email@example.com",
+                "permission": "administrator"
+              }
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "相機位置名稱"
+                },
+                "studyArea": {
+                  "type": "string"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "十進位緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "十進位經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                },
+                "isLocked": {
+                  "type": "boolean",
+                  "description": "是否已鎖定進入編輯模式"
+                },
+                "lockUser": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "permission": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+
+### Unlock the camera location [POST /projects/{projectId}/camera-locations/{cameraLocationId}/_unlock]
+解除鎖定相機位置，離開編輯模式。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The user is joined the the project.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraLocationId: `5c9f28070d9cee99f8a11a12` (string) - The camera location ID.
+
++ Request Unlock the camera location (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "name": "PT02A",
+              "studyArea": "5c9d95acea5c9b4036d97c88",
+              "settingTime": "2019-01-01T00:00:00.000Z",
+              "latitude": 58.28,
+              "longitude": 121.462417,
+              "altitude": 100,
+              "vegetation": "植被",
+              "landCover": "土地覆蓋類型",
+              "isLocked": false
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "相機位置名稱"
+                },
+                "studyArea": {
+                  "type": "string"
+                },
+                "settingTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "架設日期(ISO-8601)"
+                },
+                "latitude": {
+                  "type": "number",
+                  "description": "十進位緯度 (WGS84)"
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "十進位經度 (WGS84)"
+                },
+                "altitude": {
+                  "type": "number",
+                  "description": "海拔（公尺）"
+                },
+                "vegetation": {
+                  "type": "string",
+                  "description": "植被"
+                },
+                "landCover": {
+                  "type": "string",
+                  "description": "土地覆蓋類型"
+                },
+                "isLocked": {
+                  "type": "boolean",
+                  "description": "是否已鎖定進入編輯模式"
+                },
+                "lockUser": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "permission": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+
+
 ## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
