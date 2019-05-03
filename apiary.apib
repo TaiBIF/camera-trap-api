@@ -55,13 +55,373 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 ## Announcements [/system-announcements]
 - No permission required.
-- Note: Documentation needed.
 
-### Retrieve notification [GET /system-announcements]
+### Retrieve announcements [GET /system-announcements]
 取得該帳號收到的通知。
+
++ Request Get announcements (application/json)
 
 + Response 200 (application/json)
 
+    + Body
+
+            {
+              "index": 0,
+              "size": 20,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5cc9468f75ad8cb7e8eea934",
+                  "type": "data-field-application",
+                  "isRead": true,
+                  "dataField": {
+                    "id": "5cc9468f75ad8cb7e8eea933",
+                    "state": "wait-for-review",
+                    "title": {
+                      "zh-TW": "for testing notifications"
+                    },
+                    "widgetType": "text",
+                    "description": {
+                    },
+                    "options": [
+                    ]
+                  },
+                  "sender": {
+                    "id": "5c949bbbe5d5377f98c81ab0",
+                    "name": "測試",
+                    "email": "email@example.com",
+                    "permission": "administrator"
+                  },
+                  "createTime": "2019-05-01T07:11:11.552Z"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The notification ID."
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "upload-success",
+                          "upload-failure'",
+                          "data-field-application",
+                          "data-field-approved",
+                          "new-issue",
+                          "new-suggestion"
+                        ]
+                      },
+                      "isRead": {
+                        "type": "boolean"
+                      },
+                      "dataField": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "systemCode": {
+                            "type": "string",
+                            "description": "樣區"
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": "string",
+                              "description": "繁體中文樣區名稱"
+                            }
+                          },
+                          "widgetType": {
+                            "type": "string",
+                            "enum": [
+                              "select"
+                            ]
+                          },
+                          "description": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文相機位置名稱"
+                              }
+                            }
+                          },
+                          "options": {
+                            "type": "array"
+                          }
+                        }
+                      },
+                      "issue": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The issue ID."
+                          }
+                        }
+                      },
+                      "uploadSession": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The upload session ID."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "processing",
+                              "wait-for-review",
+                              "cancel",
+                              "success",
+                              "failure"
+                            ]
+                          },
+                          "errorType": {
+                            "type": "string",
+                            "enum": [
+                              "lost-exif-time",
+                              "inconsistent-quantity",
+                              "images-and-csv-not-match",
+                              "permission-denied",
+                              "others"
+                            ]
+                          },
+                          "project": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": "object",
+                                "description": "計畫名稱"
+                              },
+                              "shortTitle": {
+                                "type": "string",
+                                "description": "計畫簡稱"
+                              },
+                              "funder": {
+                                "type": "string",
+                                "description": "委辦單位"
+                              },
+                              "code": {
+                                "type": "string",
+                                "description": "計畫編號"
+                              },
+                              "principalInvestigator": {
+                                "type": "string",
+                                "description": "計畫主持人"
+                              },
+                              "startTime": {
+                                "type": "Date",
+                                "description": "計畫時間（開始）"
+                              },
+                              "endTime": {
+                                "type": "Date",
+                                "description": "計畫時間（結束）"
+                              },
+                              "areas": {
+                                "type": "array",
+                                "description": "計畫地區",
+                                "item": {
+                                  "title": "id",
+                                  "type": "string"
+                                }
+                              },
+                              "coverImageFile": {
+                                "type": "string",
+                                "description": "封面檔案 ID"
+                              },
+                              "members": {
+                                "type": "array",
+                                "description": "計畫成員",
+                                "item": {
+                                  "type": "object",
+                                  "properties": {
+                                    "user": {
+                                      "type": "string",
+                                      "description": "成員 ID"
+                                    },
+                                    "role": {
+                                      "type": "string",
+                                      "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                                      "enum": [
+                                        "manager",
+                                        "researcher",
+                                        "executor"
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "dataFields": {
+                                "type": "array",
+                                "description": "資料欄位",
+                                "item": {
+                                  "type": "string",
+                                  "description": "欄位名稱"
+                                }
+                              },
+                              "dailyTestTime": {
+                                "type": "string",
+                                "format": "time",
+                                "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                                "enum": [
+                                  "null",
+                                  ""
+                                ]
+                              }
+                            }
+                          },
+                          "cameraLocation": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "The camera location ID."
+                              },
+                              "studyArea": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The study area ID."
+                                  },
+                                  "title": {
+                                    "type": "object",
+                                    "properties": {
+                                      "zh-TW": {
+                                        "type": "string",
+                                        "description": "The study area title in Traditional Chinese."
+                                      }
+                                    }
+                                  },
+                                  "parent": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "description": "The affiliating study area ID."
+                                      },
+                                      "title": {
+                                        "type": "object",
+                                        "properties": {
+                                          "zh-TW": {
+                                            "type": "string",
+                                            "description": "The affiliating study area title in Traditional Chinese."
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "相機位置編號如 PT02A。"
+                              },
+                              "settingTime": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "架設日期(ISO-8601)"
+                              },
+                              "latitude": {
+                                "type": "number",
+                                "description": "十進位緯度 (WGS84)"
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "description": "十進位經度 (WGS84)"
+                              },
+                              "altitude": {
+                                "type": "number",
+                                "description": "海拔（公尺）"
+                              },
+                              "vegetation": {
+                                "type": "string",
+                                "description": "植被"
+                              },
+                              "landCover": {
+                                "type": "string",
+                                "description": "土地覆蓋類型"
+                              }
+                            }
+                          },
+                          "file": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "The file ID."
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "檔案類別",
+                                "enum": [
+                                  "project-cover-image",
+                                  "annotation-image"
+                                ]
+                              },
+                              "originalFilename": {
+                                "type": "string",
+                                "description": "原始檔名"
+                              },
+                              "filename": {
+                                "type": "string",
+                                "description": "儲存於 S3 的檔名"
+                              },
+                              "url": {
+                                "type": "string",
+                                "format": "uri"
+                              },
+                              "size": {
+                                "type": "integer",
+                                "description": "File size in byte."
+                              }
+                            }
+                          },
+                          "createTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Session create time."
+                          },
+                          "expiredTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Expired time for system announcements"
+                          }                          
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
 
 # Group Account
 ## Profile [/me]
