@@ -48,3 +48,52 @@ exports.getAnnotationRevisions = auth(UserPermission.all(), (req, res) => {
     );
   });
 });
+
+exports.rollbackAnnotation = auth(UserPermission.all(), (req, res) =>
+  /*
+  POST /api/v1/annotations/:annotationId/revisions/:revisionId/_rollback
+   */
+  Promise.all([
+    AnnotationModel.findById(req.params.annotationId)
+      .where({ state: AnnotationState.active })
+      .populate('project'),
+    AnnotationRevisionModel.findById(req.params.revisionId),
+    AnnotationRevisionModel.where({
+      annotation: req.params.annotationId,
+      isCurrent: true,
+    }),
+  ])
+    .then(([annotation, annotationRevision, currentAnnotationRevisions]) => {
+      if (!annotation) {
+        throw new errors.Http404();
+      }
+      if (!annotationRevision) {
+        throw new errors.Http404();
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !annotation.project.members.find(
+          x => `${x.user._id}` === `${req.user._id}`,
+        )
+      ) {
+        throw new errors.Http403();
+      }
+
+      const tasks = currentAnnotationRevisions.map(x => {
+        x.isCurrent = false;
+        return x.save();
+      });
+      annotationRevision.isCurrent = true;
+      annotation.filename = annotationRevision.filename;
+      annotation.file = annotationRevision.file;
+      annotation.time = annotationRevision.time;
+      annotation.species = annotationRevision.species;
+      annotation.fields = annotationRevision.fields;
+      tasks.unshift(annotationRevision.save());
+      tasks.push(annotation.save());
+      return Promise.all(tasks);
+    })
+    .then(([annotationRevision]) => {
+      res.json(annotationRevision.dump());
+    }),
+);
