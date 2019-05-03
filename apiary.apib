@@ -3289,7 +3289,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ### Update camera locations [PUT /projects/{projectId}/camera-locations/{cameraLocationId}]
-更新相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
+更新相機位置。  
+（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects.
@@ -3432,7 +3433,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ### Delete a camera location [DELETE /projects/{projectId}/camera-locations/{cameraLocationId}]
-刪除相機位置。（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
+刪除相機位置。  
+（因為操作相機位置時前端有可能不知道關聯的樣區所以省略指定樣區）
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets affiliated projects and who is a project manager.
@@ -3487,6 +3489,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "studyArea": "5c9d95acea5c9b4036d97c88",
                   "latitude": 25.014051,
                   "longitude": 121.462417,
+                  "isLocked": false,
                   "failures": 0,
                   "canTrash": false
                 },
@@ -3500,6 +3503,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "altitude": 100,
                   "vegetation": "植被",
                   "landCover": "土地覆蓋類型",
+                  "isLocked": true,
+                  "lockUser": {
+                    "id": "5c949bbbe5d5377f98c81ab0",
+                    "name": "測試",
+                    "email": "email@example",
+                    "permission": "administrator"
+                  },
                   "failures": 0,
                   "canTrash": false
                 }
@@ -3564,6 +3574,27 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "landCover": {
                         "type": "string",
                         "description": "土地覆蓋類型"
+                      },
+                      "isLocked": {
+                        "type": "boolean",
+                        "description": "是否已鎖定進入編輯模式"
+                      },
+                      "lockUser": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "permission": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "failures": {
                         "type": "number",
