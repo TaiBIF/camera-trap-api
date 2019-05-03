@@ -17,10 +17,21 @@ exports.getUsers = auth(UserPermission.all(), (req, res) => {
   }
 
   const userQuery = UserModel.find();
-  if (form.user.indexOf('@') >= 0) {
-    userQuery.where({ email: form.user });
-  } else {
-    userQuery.where({ orcId: form.user });
+  if (form.name !== undefined) {
+    userQuery.where({ name: form.name });
+  }
+  if (form.orcid !== undefined) {
+    userQuery.where({ orcId: form.orcid });
+  }
+  if (form.email !== undefined) {
+    userQuery.where({ email: form.email });
+  }
+  if (
+    form.name === undefined &&
+    form.orcid === undefined &&
+    form.email === undefined
+  ) {
+    throw new errors.Http400(errorMessage);
   }
 
   return UserModel.paginate(userQuery, {
