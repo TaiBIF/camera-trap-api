@@ -26,6 +26,8 @@ const StudyAreaState = require('../models/const/study-area-state');
 const SpeciesModel = require('../models/data/species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const NotificationModel = require('../models/data/notification-model');
+const NotificationType = require('../models/const/notification-type');
 
 module.exports = (job, done) => {
   const workerData = new MediaWorkerData(job.data);
@@ -37,6 +39,7 @@ module.exports = (job, done) => {
   let _allStudyAreas; // only for zip or csv type.
   let _allCameraLocations; // only for zip or csv type.
   let _allSpecies; // only for zip or csv type.
+  let _isZipWithCsv; // The user upload a zip file include images and a csv.
 
   if (config.isDebug) {
     console.log(`media-worker job[${job.id}] start.`);
@@ -213,6 +216,7 @@ module.exports = (job, done) => {
           /*
           - Create instances of FileModel for the each file at tempDir.
           - Upload unzip files at the tempDir to S3.
+          - Check image files have exif.
           @returns {Promise<[{FileModel}]>}
            */
           const limit = pLimit(5); // Upload 5 files to S3 in the same time.
@@ -225,25 +229,34 @@ module.exports = (job, done) => {
                   user: _user,
                   originalFilename: filename,
                 });
-                if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
+                const fileExtensionName = file.getExtensionName();
+                if (['jpg', 'png', 'csv'].indexOf(fileExtensionName) < 0) {
+                  fs.unlinkSync(path.join(tempDir.name, filename));
                   return;
                 }
+                const content = fs.readFileSync(
+                  path.join(tempDir.name, filename),
+                );
+                if (fileExtensionName === 'csv') {
+                  // Fix file.type
+                  file.type = FileType.annotationCSV;
+                  file.content = content; // The binary content will be used for convert to annotations.
+                }
 
-                return file
-                  .saveWithContent(
-                    fs.readFileSync(path.join(tempDir.name, filename)),
-                  )
-                  .then(() => {
-                    fs.unlinkSync(path.join(tempDir.name, filename));
-                    if (!file.exif || !file.exif.dateTime) {
-                      _uploadSession.errorType =
-                        UploadSessionErrorType.lostExifTime;
-                      throw new errors.Http400(
-                        `${file.originalFilename} lost exif.`,
-                      );
-                    }
-                    return file;
-                  });
+                return file.saveWithContent(content).then(() => {
+                  fs.unlinkSync(path.join(tempDir.name, filename));
+                  if (
+                    file.type === FileType.annotationImage &&
+                    (!file.exif || !file.exif.dateTime)
+                  ) {
+                    _uploadSession.errorType =
+                      UploadSessionErrorType.lostExifTime;
+                    throw new errors.Http400(
+                      `${file.originalFilename} lost exif.`,
+                    );
+                  }
+                  return file;
+                });
               }),
             ),
           );
@@ -272,13 +285,14 @@ module.exports = (job, done) => {
     })
     .then(files => {
       /*
+      - Validate image files and the csv are mapping for the file type is annotationZIP with csv.
       - Create annotations without saving.
       @param files {Array<FileModel>}
       @returns {Promise<[{AnnotationModel}]>}
        */
+      const csvParseAsync = util.promisify(csvParse);
+
       if (_file.type === FileType.annotationCSV) {
-        const csvParseAsync = util.promisify(csvParse);
-        let result;
         return utils
           .getS3Object(
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
@@ -286,7 +300,7 @@ module.exports = (job, done) => {
           .then(data => csvParseAsync(data.Body))
           .then(csvObject => {
             const limit = pLimit(5); // Save 5 new species in the same time.
-            result = utils.convertCsvToAnnotations({
+            const result = utils.convertCsvToAnnotations({
               project: _project,
               studyAreas: _allStudyAreas,
               dataFields: _project.dataFields,
@@ -296,16 +310,38 @@ module.exports = (job, done) => {
               csvObject,
             });
             // Save new species.
-            return Promise.all(
-              result.newSpecies.map(x => limit(() => x.save())),
-            );
+            const tasks = result.newSpecies.map(x => limit(() => x.save()));
+            tasks.unshift(result);
+            return Promise.all(tasks);
           })
-          .then(() => result.annotations); // Annotations are missing .file.
+          .then(([result]) => result.annotations); // Annotations are missing .file.
       }
 
       // _file.type === FileType.annotationImage
       // _file.type === FileType.annotationZIP
-      return files.map(
+      const csvFileIndex = files.findIndex(
+        x => x.type === FileType.annotationCSV,
+      );
+      if (csvFileIndex < 0) {
+        // There is no csv file in the zip file.
+        return files.map(
+          file =>
+            new AnnotationModel({
+              project: _project,
+              studyArea: _cameraLocation.studyArea,
+              cameraLocation: _cameraLocation,
+              uploadSession: _uploadSession,
+              file,
+              filename: file.originalFilename,
+              time: file.exif.dateTime,
+            }),
+        );
+      }
+
+      // _file.type === FileType.annotationZIP with csv
+      _isZipWithCsv = true;
+      const [csvFile] = files.splice(csvFileIndex, 1);
+      const imageAnnotations = files.map(
         file =>
           new AnnotationModel({
             project: _project,
@@ -317,11 +353,52 @@ module.exports = (job, done) => {
             time: file.exif.dateTime,
           }),
       );
+      return csvParseAsync(csvFile.content)
+        .then(csvObject => {
+          const limit = pLimit(5); // Save 5 new species in the same time.
+          const result = utils.convertCsvToAnnotations({
+            project: _project,
+            studyAreas: _allStudyAreas,
+            dataFields: _project.dataFields,
+            cameraLocations: _allCameraLocations,
+            uploadSession: _uploadSession,
+            species: _allSpecies,
+            csvObject,
+          });
+          // Validate annotations
+          if (imageAnnotations.length !== result.annotations.length) {
+            _uploadSession.errorType =
+              UploadSessionErrorType.inconsistentQuantity;
+            throw new Error(
+              'The quantity of images and the csv file are not equal.',
+            );
+          }
+          const csvAnnotations = [];
+          imageAnnotations.forEach(imageAnnotation => {
+            const csvAnnotation = result.annotations.find(
+              x =>
+                x.filename === imageAnnotation.filename &&
+                x.time.getTime() === imageAnnotation.time.getTime(),
+            );
+            if (!csvAnnotation) {
+              _uploadSession.errorType =
+                UploadSessionErrorType.imagesAndCsvNotMatch;
+              throw new Error('Images and csv file are not match.');
+            }
+            csvAnnotation.file = imageAnnotation.file;
+            csvAnnotations.push(csvAnnotation);
+          });
+          // Save new species.
+          const tasks = result.newSpecies.map(x => limit(() => x.save()));
+          tasks.unshift(csvAnnotations);
+          return Promise.all(tasks);
+        })
+        .then(([annotations]) => annotations);
     })
     .then(annotations => {
       /*
       - Find the duplicate annotation.
-        使用樣區、相機位置、檔名、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
+        使用樣區、相機位置、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
       @param annotations {Promise<[{AnnotationModel}]>} Not saved.
       @returns {Promise<[{AnnotationModel}, {AnnotationModel}]>}
         (new annotations, duplicate annotations)
@@ -330,7 +407,6 @@ module.exports = (job, done) => {
         $and: [
           { state: AnnotationState.active },
           { cameraLocation: annotation.cameraLocation._id },
-          { filename: annotation.filename },
           { time: annotation.time },
         ],
       }));
@@ -344,6 +420,7 @@ module.exports = (job, done) => {
       /*
       - If the duplicate annotation is exists then update the file of the duplicate one.
       - If there is no duplicate annotation then save a new annotation.
+      - Set upload session state.
       @param annotations {Array<AnnotationModel>} Not saved.
       @param duplicateAnnotations {Array<AnnotationModel>} From database.
       @returns {Promise<[AnnotationModel]>}
@@ -356,11 +433,11 @@ module.exports = (job, done) => {
             x =>
               `${x.cameraLocation._id}` ===
                 `${annotation.cameraLocation._id}` &&
-              x.filename === annotation.filename &&
               x.time.getTime() === annotation.time.getTime(),
           );
           if (duplicateAnnotation) {
             // The user upload images so we should replace with a new file.
+            duplicateAnnotation.filename = annotation.filename;
             duplicateAnnotation.file = annotation.file;
             tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
           } else {
@@ -370,25 +447,43 @@ module.exports = (job, done) => {
         });
         _uploadSession.state = UploadSessionState.success;
       } else if (_file.type === FileType.annotationZIP) {
-        // todo: support csv int the zip.
-        annotations.forEach(annotation => {
-          const duplicateAnnotation = duplicateAnnotations.find(
-            x =>
-              `${x.cameraLocation._id}` ===
-                `${annotation.cameraLocation._id}` &&
-              x.filename === annotation.filename &&
-              x.time.getTime() === annotation.time.getTime(),
-          );
-          if (duplicateAnnotation) {
-            // The user upload images so we should replace with a new file.
-            duplicateAnnotation.file = annotation.file;
-            tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+        if (_isZipWithCsv) {
+          // This zip file include a csv file.
+          if (duplicateAnnotations.length) {
+            // The user will chosen overwrite or not.
+            annotations.forEach(annotation => {
+              annotation.state = AnnotationState.waitForReview;
+              tasks.push(annotation.save());
+            });
+            _uploadSession.state = UploadSessionState.waitForReview;
           } else {
-            annotation.state = AnnotationState.active;
-            tasks.push(annotation.saveAndAddRevision(_user));
+            annotations.forEach(annotation => {
+              annotation.state = AnnotationState.active;
+              tasks.push(annotation.saveAndAddRevision(_user));
+            });
+            _uploadSession.state = UploadSessionState.success;
           }
-        });
-        _uploadSession.state = UploadSessionState.success;
+        } else {
+          // Just images are in this zip file.
+          annotations.forEach(annotation => {
+            const duplicateAnnotation = duplicateAnnotations.find(
+              x =>
+                `${x.cameraLocation._id}` ===
+                  `${annotation.cameraLocation._id}` &&
+                x.time.getTime() === annotation.time.getTime(),
+            );
+            if (duplicateAnnotation) {
+              // The user upload images so we should replace with a new file.
+              duplicateAnnotation.filename = annotation.filename;
+              duplicateAnnotation.file = annotation.file;
+              tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+            } else {
+              annotation.state = AnnotationState.active;
+              tasks.push(annotation.saveAndAddRevision(_user));
+            }
+          });
+          _uploadSession.state = UploadSessionState.success;
+        }
       } else if (_file.type === FileType.annotationCSV) {
         if (duplicateAnnotations.length) {
           // The user will chosen overwrite or not.
@@ -407,14 +502,26 @@ module.exports = (job, done) => {
       }
       return Promise.all(tasks);
     })
-    .then(() =>
+    .then(() => {
       /*
-      Set the upload session as success and save it.
+      - Save upload session.
       @returns {Promise<UploadSessionModel>}
        */
-      // todo: send notification when the state is wait for review.
-      _uploadSession.save(),
-    )
+      const notificationTypeTable = {};
+      notificationTypeTable[UploadSessionState.success] =
+        NotificationType.uploadSuccess;
+      notificationTypeTable[UploadSessionState.failure] =
+        NotificationType.uploadFailure;
+      notificationTypeTable[UploadSessionState.waitForReview] =
+        NotificationType.waitForOverwrite;
+      const notification = new NotificationModel({
+        user: _user,
+        type: notificationTypeTable[_uploadSession.state],
+        uploadSession: _uploadSession,
+      });
+
+      return Promise.all([_uploadSession.save(), notification.save()]);
+    })
     .then(() => {
       if (config.isDebug) {
         console.log(`media-worker job[${job.id}] done.`);
@@ -422,13 +529,20 @@ module.exports = (job, done) => {
       done();
     })
     .catch(error => {
+      utils.logError(error, job.data);
+      done(error);
+
       if (_uploadSession) {
         _uploadSession.state = UploadSessionState.failure;
         _uploadSession.errorType =
           _uploadSession.errorType || UploadSessionErrorType.others;
         _uploadSession.save();
       }
-      utils.logError(error, job.data);
-      done(error);
+      const notification = new NotificationModel({
+        user: _user,
+        type: NotificationType.uploadFailure,
+        uploadSession: _uploadSession,
+      });
+      notification.save();
     });
 };

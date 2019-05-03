@@ -117,7 +117,7 @@ model.prototype.getFilename = function() {
 
 model.prototype.saveWithContent = function(content) {
   /*
-  Save the document with binary content.
+  Save the document and update the binary content to S3.
   @param content {Buffer|Stream} Set .size by yourself when it is stream.
   @returns {Promise<FileModel>}
    */

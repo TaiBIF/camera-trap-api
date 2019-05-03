@@ -8,6 +8,11 @@ const model = mongoose.model(
   'NotificationModel',
   utils.generateSchema(
     {
+      sender: {
+        // Who sends this notification. null: from system.
+        type: Schema.ObjectId,
+        ref: 'UserModel',
+      },
       user: {
         // recipient
         type: Schema.ObjectId,
@@ -38,6 +43,13 @@ const model = mongoose.model(
         type: Schema.ObjectId,
         ref: 'IssueModel',
       },
+      message: {
+        'zh-TW': {
+          // 繁體中文
+          type: String,
+          required: true,
+        },
+      },
       expiredTime: {
         // 超過時間後不顯示，用於系統公告
         type: Date,
@@ -66,9 +78,14 @@ model.prototype.dump = function() {
         ? this.uploadSession.dump()
         : this.uploadSession,
     issue:
-      this.issue && typeof typeof this.issue.dump === 'function'
+      this.issue && typeof this.issue.dump === 'function'
         ? this.issue.dump()
         : this.issue,
+    sender:
+      this.sender && typeof this.sender.dump === 'function'
+        ? this.sender.dump()
+        : this.sender,
+    message: this.message,
     createTime: this.createTime,
   };
 };

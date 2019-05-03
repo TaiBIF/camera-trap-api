@@ -67,6 +67,18 @@ const schema = utils.generateSchema(
       // 土地覆蓋類型
       type: String,
     },
+    lockExpiredTime: {
+      // 編輯鎖定結束時間
+      type: Date,
+      index: {
+        name: 'LockExpiredTime',
+      },
+    },
+    lockUser: {
+      // 進入編輯模式的使用者
+      type: Schema.ObjectId,
+      ref: 'UserModel',
+    },
   },
   {
     collection: 'CameraLocations',
@@ -83,6 +95,14 @@ schema.index(
     },
   },
 );
+
+schema.method('isLocked', function() {
+  /*
+  Is this camera location locked?
+  @returns {Boolean}
+   */
+  return !!(this.lockExpiredTime && this.lockExpiredTime > new Date());
+});
 
 schema.static('joinFailuresAndCanTrash', async docs => {
   const cameraLocationIds = _.map(docs, '_id');
@@ -116,6 +136,14 @@ schema.static('joinFailuresAndCanTrash', async docs => {
 const model = mongoose.model('CameraLocationModel', schema);
 
 model.prototype.dump = function() {
+  const isLocked = this.isLocked();
+  let lockUser;
+  if (isLocked) {
+    lockUser =
+      this.lockUser && typeof this.lockUser.dump === 'function'
+        ? this.lockUser.dump()
+        : this.lockUser;
+  }
   const doc = {
     id: `${this._id}`,
     studyArea:
@@ -129,6 +157,8 @@ model.prototype.dump = function() {
     altitude: this.altitude,
     vegetation: this.vegetation,
     landCover: this.landCover,
+    isLocked,
+    lockUser,
   };
 
   if (this.failures !== undefined) {

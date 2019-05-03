@@ -1,9 +1,118 @@
-version: 2.0
+version: 2.1
+
+vars:
+  setup_docker: &setup_docker
+    setup_remote_docker:
+      docker_layer_caching: true
+
+  branch_is_deploy: &branch_is_deploy
+    filters:
+      branches:
+        only: master
+
+orbs:
+  node:
+    orbs:
+      aws-ecr: circleci/aws-ecr@4.0.1
+      aws-cli: circleci/aws-cli@0.1.13
+      aws-ecs: circleci/aws-ecs@0.0.8
+    executors:
+      aws:
+        environment:
+          - TZ: Asia/Taipei
+          - NVM_DIR: /opt/circleci/.nvm
+        machine:
+          docker_layer_caching: true
+      default:
+        environment:
+          - TZ: Asia/Taipei
+        docker:
+          - image: circleci/node:10
+    commands:
+      use-node:
+        description: Install Node
+        parameters:
+          v:
+            type: string
+            default: 10.15.3
+        steps:
+          - run:
+              name: Use Node v<< parameters.v >>
+              command: |
+                TAR=~/node.tar.xz
+                NODE_PATH=~/node
+                curl https://nodejs.org/dist/v<< parameters.v >>/node-v<< parameters.v >>-linux-x64.tar.xz -o $TAR
+                mkdir $NODE_PATH && tar xf $TAR -C $NODE_PATH --strip-components 1
+
+                echo "export PATH=$NODE_PATH/bin:\$PATH" >> $BASH_ENV
+                source $BASH_ENV
+
+      docker-build-push:
+        description: Docker build
+        parameters:
+          repo:
+            type: string
+            default: repo-name
+          url:
+            type: string
+            default: dkr.ecr.ap-northeast-1.amazonaws.com
+          tag:
+            type: string
+            default: $CIRCLE_SHA1
+        steps:
+          - *setup_docker
+          - run:
+              name: Build Docker Image
+              command: |
+                IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
+                docker build . -t $IMAGE
+                docker images $IMAGE
+                docker push $IMAGE
+
+      checkout-install:
+        description: Checkout sources and install node_modules
+        steps:
+          - checkout
+          - restore_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+          - run: npm i
+          - save_cache:
+              key: node_modules#{{ checksum "package-lock.json" }}
+              paths:
+                - node_modules
+          - run:
+              name: Set Env
+              command: |
+                echo "$(node scripts/export-env)" >> $BASH_ENV
+                source $BASH_ENV
+    jobs:
+      build_and_deploy:
+        executor: aws
+        steps:
+          - use-node
+          - run: node -v
+          - checkout-install
+          - aws-ecr/build-and-push-image:
+              repo: $AWS_APP_PREFIX
+              tag: $CIRCLE_SHA1
+          - aws-ecs/update-service:
+              family: $AWS_APP_PREFIX-service
+              cluster-name: $AWS_APP_PREFIX-cluster
+              container-image-name-updates: 'container=$AWS_APP_PREFIX-service,image-and-tag=$IMAGE'
+
+      lint:
+        executor: default
+        steps:
+          - checkout-install
+          - run: npm run lint
+
 workflows:
   version: 2
-  build:
+  Test & Lint & Build:
     jobs:
-      - node10
+      - node/lint
+      - node/build_and_deploy
+
 jobs:
   node10:
     working_directory: ~/camera-trap-api
