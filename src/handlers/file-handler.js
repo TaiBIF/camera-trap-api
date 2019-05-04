@@ -121,7 +121,8 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     .then(([file, cameraLocation]) => {
       /*
       - Check authorization of the project, study area, camera location.
-      - Append a field `project` of the file.
+      - Append a field `project` of the file. (annotations)
+      - Save upload session. (annotations)
       - Save a file (upload to s3).
       @param file {FileModel} This file didn't save. We should check the permission.
       @param cameraLocation {CameraLocationModel|null}
@@ -163,6 +164,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           FileType.annotationCSV,
         ].indexOf(form.type) >= 0
       ) {
+        // The file for annotations.
         file.project = cameraLocation.project;
         _uploadSession = new UploadSessionModel({
           project: cameraLocation.project,
@@ -171,6 +173,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           cameraLocation,
         });
         const tasks = [_uploadSession.save()];
+
         if (req.file.buffer) {
           // memory storage
           tasks.unshift(file.saveWithContent(req.file.buffer));
@@ -194,8 +197,9 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     })
     .then(([file]) => {
       /*
-      - Check the file has exif.
-      @param file {FileModel} This is saved.
+      - Check the file has exif. (for FileType.annotationImage)
+      - Push a job into the task queue. (for annotations)
+      @param file {FileModel}
       @returns {Promise<FileModel>}
        */
       if (file.type === FileType.annotationImage) {
@@ -206,14 +210,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           );
         }
       }
-      return file;
-    })
-    .then(file => {
-      /*
-      - Push a job into the task queue.
-      @param file {FileModel}
-      @returns {Promise<FileModel>}
-       */
+
       if (
         [
           FileType.annotationImage,
