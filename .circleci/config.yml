@@ -86,7 +86,7 @@ orbs:
                 echo "$(node scripts/export-env)" >> $BASH_ENV
                 source $BASH_ENV
     jobs:
-      build_and_deploy:
+      build_api_and_deploy:
         executor: aws
         steps:
           - use-node
@@ -100,6 +100,21 @@ orbs:
               cluster-name: $AWS_APP_PREFIX-cluster
               container-image-name-updates: 'container=$AWS_APP_PREFIX-service,image-and-tag=$IMAGE'
 
+      build_task_and_deploy:
+        executor: aws
+        steps:
+          - use-node
+          - run: node -v
+          - checkout-install
+          - aws-ecr/build-and-push-image:
+              repo: $AWS_TASK_PREFIX
+              tag: $CIRCLE_SHA1
+              dockerfile: scripts/task-worker/Dockerfile
+          - aws-ecs/update-service:
+              family: $AWS_TASK_PREFIX-service
+              cluster-name: $AWS_APP_PREFIX-cluster
+              container-image-name-updates: 'container=$AWS_TASK_PREFIX-service,image-and-tag=$TASK_IMAGE'
+
       lint:
         executor: default
         steps:
@@ -111,36 +126,15 @@ workflows:
   Test & Lint & Build:
     jobs:
       - node/lint
-      - node/build_and_deploy
-
-jobs:
-  node10:
-    working_directory: ~/camera-trap-api
-    docker:
-      - image: node:10.15.0
-      - image: circleci/mongo:4.1.9
-      - image: circleci/redis:5.0.4
-    environment:
-      - MONGO_URL: "mongodb://localhost:27017/cameraTrap_test"
-      - REDIS_URL: "redis://localhost:6379/2"
-    steps:
-      - checkout
-      - restore_cache: # special step to restore the dependency cache
-          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: install-packages
-          command: npm install
-      - save_cache: # special step to save the dependency cache
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run: # run lint
-          name: lint
-          command: npm run lint
-      - run: # run db init
-          name: DatabaseInit
-          command: npm run db:init
-      - run: # run test
-          name: test
-          command: npm run test
+      - node/build_api_and_deploy:
+          filters:
+            branches:
+              only: /^(prod|dev|ci)$/
+          requires:
+            - node/lint
+      - node/build_task_and_deploy:
+          filters:
+            branches:
+              only: /^(prod|dev|ci)$/
+          requires:
+            - node/lint
