@@ -8,7 +8,6 @@ const NotificationType = require('../models/const/notification-type');
 const ProjectModel = require('../models/data/project-model');
 const StudyAreaModel = require('../models/data/study-area-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
-require('../models/data/issue-model'); // for populate. todo: remove it after crated issue handler.
 
 exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
   /*
