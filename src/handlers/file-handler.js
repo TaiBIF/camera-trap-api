@@ -18,22 +18,26 @@ const UploadSessionErrorType = require('../models/const/upload-session-error-typ
 const MediaWorkerData = require('../models/dto/media-worker-data');
 const TaskWorker = require('../models/const/task-worker');
 
-const memoryMulter = util.promisify(
-  multer({
-    storage: multer.memoryStorage(),
-    limits: {
-      fileSize: config.limit.imageFileSize,
-    },
-  }).single('file'),
-);
-const diskMulter = util.promisify(
-  multer({
-    storage: multer.diskStorage({}),
-    limits: {
-      fileSize: config.limit.zipFileSize,
-    },
-  }).single('file'),
-);
+const multers = {
+  image: util.promisify(
+    multer({
+      storage: multer.memoryStorage(),
+      limits: { fileSize: config.limit.imageFileSize },
+    }).single('file'),
+  ),
+  csv: util.promisify(
+    multer({
+      storage: multer.diskStorage({}),
+      limits: { fileSize: config.limit.csvFileSize },
+    }).single('file'),
+  ),
+  zip: util.promisify(
+    multer({
+      storage: multer.diskStorage({}),
+      limits: { fileSize: config.limit.zipFileSize },
+    }).single('file'),
+  ),
+};
 
 exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   /*
@@ -59,10 +63,10 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
 
   let _uploadSession;
   const multerTable = {};
-  multerTable[FileType.projectCoverImage] = memoryMulter;
-  multerTable[FileType.annotationImage] = memoryMulter;
-  multerTable[FileType.annotationCSV] = memoryMulter;
-  multerTable[FileType.annotationZIP] = diskMulter;
+  multerTable[FileType.projectCoverImage] = multers.image;
+  multerTable[FileType.annotationImage] = multers.image;
+  multerTable[FileType.annotationCSV] = multers.csv;
+  multerTable[FileType.annotationZIP] = multers.zip;
   return multerTable[form.type](req, res)
     .then(() => {
       /*
