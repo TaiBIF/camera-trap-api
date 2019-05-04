@@ -94,6 +94,15 @@ schema.post('remove', file => {
           utils.logError(error, file);
         });
       break;
+    case FileType.issueAttachment:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.issueAttachments}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, file);
+        });
+      break;
     default:
       utils.logError(new Error('not implement'), file);
       break;
@@ -208,6 +217,14 @@ model.prototype.saveWithContent = function(content) {
             content,
             `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
             false,
+          )
+          .then(() => this);
+      case FileType.issueAttachment:
+        return utils
+          .uploadToS3(
+            content,
+            `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
+            true,
           )
           .then(() => this);
       default:
