@@ -121,42 +121,34 @@ orbs:
           - checkout-install
           - run: npm run lint
 
+      run_test:
+        executor: default
+        steps:
+          - checkout-install
+          - run: # run db init
+            name: DatabaseInit
+            command: npm run db:init
+          - run: # run test
+            name: test
+            command: npm run 
+
 workflows:
   version: 2
   Test & Lint & Build:
     jobs:
       - node/lint
+      - node/run_test
       - node/build_api_and_deploy
+        filters:
+          branches:
+            only: /^(prod|dev|ci)$/
+        requires:
+          - node/lint
+          - node/run_test
       - node/build_task_and_deploy
-
-jobs:
-  node10:
-    working_directory: ~/camera-trap-api
-    docker:
-      - image: node:10.15.0
-      - image: circleci/mongo:4.1.9
-      - image: circleci/redis:5.0.4
-    environment:
-      - MONGO_URL: "mongodb://localhost:27017/cameraTrap_test"
-      - REDIS_URL: "redis://localhost:6379/2"
-    steps:
-      - checkout
-      - restore_cache: # special step to restore the dependency cache
-          # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run:
-          name: install-packages
-          command: npm install
-      - save_cache: # special step to save the dependency cache
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - ./node_modules
-      - run: # run lint
-          name: lint
-          command: npm run lint
-      - run: # run db init
-          name: DatabaseInit
-          command: npm run db:init
-      - run: # run test
-          name: test
-          command: npm run test
+        filters:
+          branches:
+            only: /^(prod|dev|ci)$/
+        requires:
+          - node/lint
+          - node/run_test
