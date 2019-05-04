@@ -96,31 +96,19 @@ module.exports = class Mail {
     });
   }
 
-  sendIssueToSystemAdmin(issue) {
+  sendIssueToSystemAdmin(issue, administrators) {
     /*
-    @param form {IssueModel}
+    @param issue {IssueModel}
+    @param administrators {Array<UserModel>}
     */
-    // send to system admin
-    const template = templates[this.languageCode].IssueToSystemAdmin(issue);
+    const template = templates[this.languageCode].notifyAdministratorGotIssue(
+      issue,
+    );
     return this.sendEmail({
-      to: [config.systemAdmin.email],
+      to: administrators.map(user => user.email),
+      replyTo: issue.email,
       subject: template.subject,
       body: template.body,
     });
-    // send to system admin
-  }
-
-  sendIssueToUser(issue) {
-    /*
-    @param form {IssueModel}
-    */
-    // send to user
-    const template = templates[this.languageCode].IssueToUser(issue);
-    return this.sendEmail({
-      to: [issue.email],
-      subject: template.subject,
-      body: template.body,
-    });
-    // send to system admin
   }
 };

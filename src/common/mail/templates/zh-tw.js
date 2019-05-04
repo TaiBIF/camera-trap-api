@@ -1,4 +1,6 @@
 const config = require('config');
+const IssueType = require('../../../models/const/issue-type');
+const IssueCategory = require('../../../models/const/issue-category');
 
 exports.inviteMemberInToProject = (user, project) =>
   /*
@@ -20,7 +22,7 @@ exports.inviteMemberInToProject = (user, project) =>
       <p>Camera Trap.</p>`,
   });
 
-exports.IssueToSystemAdmin = issue =>
+exports.notifyAdministratorGotIssue = issue =>
   /*
   Send an email to sysadmin when user add an issue
   @param issue {IssueModel}
@@ -29,36 +31,21 @@ exports.IssueToSystemAdmin = issue =>
     body: {string}
    */
   ({
-    subject: `[Camera Trap] 聯絡我們`,
+    subject: `[Camera Trap] 聯絡我們-使用者提出問題`,
     body: `
       <p>系統管理員：</p>
       <p>
-        回報類型：${issue.type}<br/>
-        問題/意見類型：${issue.category}<br/>
-        問題/意見描述：${issue.description}<br/>
-        電子郵件: ${issue.email}
+        回報類型：${IssueType.dict(issue.type)}<br/>
+        問題/意見類型：${IssueCategory.dict(issue.category)}<br/>
+        電子郵件：${issue.email}<br/>
+        ${
+          issue.attachmentFile
+            ? `附件：<a href="${issue.attachmentFile.getUrl()}">${issue.attachmentFile.getUrl()}</a>`
+            : ''
+        }
       </p>
-      <p>--</p>`,
-  });
-
-exports.IssueToUser = issue =>
-  /*
-  Send an email when someone send a issue
-  @param issue {IssueModel}
-  @returns {Object}
-    subject: {string}
-    body: {string}
-   */
-  ({
-    subject: `[Camera Trap] 聯絡我們`,
-    body: `
-      <p>Camera Trap 使用者您好：</p>
-      <p>系統已經收到您的問題/意見回報，請耐心等候我們的回信，感謝！</p>
       <p>
-        回報類型：${issue.type}<br/>
-        問題/意見類型：${issue.category}<br/>
-        問題/意見描述：${issue.description}<br/>
-        電子郵件: ${issue.email}
+        <pre>${issue.description}</pre>
       </p>
-      <p>Camera Trap</p>`,
+      <p>Camera Trap.</p>`,
   });

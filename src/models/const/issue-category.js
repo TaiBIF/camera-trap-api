@@ -17,4 +17,23 @@ module.exports = {
       this.others,
     ];
   },
+  dict(issueCategory) {
+    switch (issueCategory) {
+      case this.system:
+        return '系統操作';
+      case this.account:
+        return '帳號相關';
+      case this.projectManagement:
+        return '計畫管理';
+      case this.fileUpload:
+        return '檔案上傳';
+      case this.dataEdit:
+        return '資料編輯';
+      case this.searchAndDownload:
+        return '篩選及下載';
+      case this.others:
+        return '其他問題';
+      default:
+    }
+  },
 };
