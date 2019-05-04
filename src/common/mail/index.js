@@ -26,6 +26,7 @@ module.exports = class Mail {
       to: {Array<string>}
       cc: {Array<string>}
       bcc: {Array<string>}
+      replyTo: {string}
       subject: {string}
       body: {string} The html content.
      */
@@ -58,6 +59,7 @@ module.exports = class Mail {
           CcAddresses: args.cc,
           BccAddresses: args.bcc,
         },
+        ReplyToAddresses: [args.replyTo],
         Message: {
           Subject: {
             Data: args.subject,
@@ -89,6 +91,22 @@ module.exports = class Mail {
     );
     return this.sendEmail({
       to: [user.email],
+      subject: template.subject,
+      body: template.body,
+    });
+  }
+
+  sendIssueToSystemAdmin(issue, administrators) {
+    /*
+    @param issue {IssueModel}
+    @param administrators {Array<UserModel>}
+    */
+    const template = templates[this.languageCode].notifyAdministratorGotIssue(
+      issue,
+    );
+    return this.sendEmail({
+      to: administrators.map(user => user.email),
+      replyTo: issue.email,
       subject: template.subject,
       body: template.body,
     });

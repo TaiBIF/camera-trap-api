@@ -37,6 +37,12 @@ const multers = {
       limits: { fileSize: config.limit.zipFileSize },
     }).single('file'),
   ),
+  issueAttachment: util.promisify(
+    multer({
+      storage: multer.memoryStorage(),
+      limits: { fileSize: config.limit.issueAttachmentSize },
+    }).single('file'),
+  ),
 };
 
 exports.uploadFile = auth(UserPermission.all(), (req, res) => {
@@ -67,6 +73,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   multerTable[FileType.annotationImage] = multers.image;
   multerTable[FileType.annotationCSV] = multers.csv;
   multerTable[FileType.annotationZIP] = multers.zip;
+  multerTable[FileType.issueAttachment] = multers.issueAttachment;
   return multerTable[form.type](req, res)
     .then(() => {
       /*
@@ -98,6 +105,29 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         case FileType.annotationCSV:
           if (file.getExtensionName() !== 'csv') {
             throw new errors.Http400('Just allow csv files.');
+          }
+          break;
+        case FileType.issueAttachment:
+          if (
+            [
+              'csv',
+              'tsv',
+              'tab',
+              'txt',
+              'xls',
+              'xlsx',
+              'jpg',
+              'png',
+              'mp4',
+              'avi',
+              'mov',
+              'mpg',
+              'mpeg',
+            ].indexOf(file.getExtensionName()) < 0
+          ) {
+            throw new errors.Http400(
+              'Just allow csv, tsv, tab, txt, xls, xlsx, jpg, png, mp4, avi, mov, mpg and mpeg files.',
+            );
           }
           break;
         default:
@@ -192,7 +222,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         return Promise.all(tasks);
       }
 
-      // FileType.projectCoverImage
+      // FileType.projectCoverImage, FileType.issueAttachment
       return Promise.all([file.saveWithContent(req.file.buffer)]);
     })
     .then(([file]) => {

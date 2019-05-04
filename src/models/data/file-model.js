@@ -94,11 +94,25 @@ schema.post('remove', file => {
           utils.logError(error, file);
         });
       break;
+    case FileType.issueAttachment:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.issueAttachments}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, file);
+        });
+      break;
     default:
       utils.logError(new Error('not implement'), file);
       break;
   }
 });
+
+schema.method('getUrl', function() {
+  return utils.getFileUrl(this.type, this.getFilename());
+});
+
 const model = mongoose.model('FileModel', schema);
 
 model.prototype.getExtensionName = function() {
@@ -210,6 +224,14 @@ model.prototype.saveWithContent = function(content) {
             false,
           )
           .then(() => this);
+      case FileType.issueAttachment:
+        return utils
+          .uploadToS3(
+            content,
+            `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
+            true,
+          )
+          .then(() => this);
       default:
         throw new Error('error type');
     }
@@ -222,7 +244,7 @@ model.prototype.dump = function() {
     type: this.type,
     originalFilename: this.originalFilename,
     filename: this.getFilename(),
-    url: utils.getFileUrl(this.type, this.getFilename()),
+    url: this.getUrl(),
     size: this.size,
   };
 };

@@ -7,6 +7,7 @@ const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
+const issueHandler = require('../handlers/issue-handler');
 const notificationHandler = require('../handlers/notification-handler');
 const projectAreaHandler = require('../handlers/project-area-handler');
 const projectHandler = require('../handlers/project-handler');
@@ -174,6 +175,7 @@ apiRouter.get(
   '/data-fields/:dataFieldId([a-f\\d]{24})',
   dataFieldHandler.getPublishedDataField,
 );
+apiRouter.post('/issues', issueHandler.addIssue);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
 
