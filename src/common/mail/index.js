@@ -26,6 +26,7 @@ module.exports = class Mail {
       to: {Array<string>}
       cc: {Array<string>}
       bcc: {Array<string>}
+      replyTo: {string}
       subject: {string}
       body: {string} The html content.
      */
@@ -58,6 +59,7 @@ module.exports = class Mail {
           CcAddresses: args.cc,
           BccAddresses: args.bcc,
         },
+        ReplyToAddresses: [args.replyTo],
         Message: {
           Subject: {
             Data: args.subject,
