@@ -47,7 +47,6 @@ const model = mongoose.model(
         'zh-TW': {
           // 繁體中文
           type: String,
-          required: true,
         },
       },
       expiredTime: {
