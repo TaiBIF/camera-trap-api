@@ -55,7 +55,7 @@ model.prototype.dump = function() {
     description: this.description,
     email: this.email,
     attachmentFile:
-      this.attachmentFile && typeof this.attachmentFile === 'function'
+      this.attachmentFile && typeof this.attachmentFile.dump === 'function'
         ? this.attachmentFile.dump()
         : this.attachmentFile,
   };

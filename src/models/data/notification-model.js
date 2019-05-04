@@ -73,7 +73,7 @@ model.prototype.dump = function() {
         ? this.dataField.dump()
         : this.dataField,
     uploadSession:
-      this.uploadSession && typeof this.uploadSession.sump === 'function'
+      this.uploadSession && typeof this.uploadSession.dump === 'function'
         ? this.uploadSession.dump()
         : this.uploadSession,
     issue:
