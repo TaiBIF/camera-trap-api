@@ -137,18 +137,18 @@ workflows:
   Test & Lint & Build:
     jobs:
       - node/lint
-      - node/run_test
+      - node/run_test:
+          requires:
+            - node/lint
       - node/build_api_and_deploy:
-        filters:
-          branches:
-            only: /^(prod|dev|ci)$/
-        requires:
-          - node/lint
-          - node/run_test
+          filters:
+            branches:
+              only: /^(prod|dev|ci)$/
+          requires:
+            - node/run_test
       - node/build_task_and_deploy:
-        filters:
-          branches:
-            only: /^(prod|dev|ci)$/
-        requires:
-          - node/lint
-          - node/run_test
+          filters:
+            branches:
+              only: /^(prod|dev|ci)$/
+          requires:
+            - node/run_test
