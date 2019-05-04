@@ -108,6 +108,11 @@ schema.post('remove', file => {
       break;
   }
 });
+
+schema.method('getUrl', function() {
+  return utils.getFileUrl(this.type, this.getFilename());
+});
+
 const model = mongoose.model('FileModel', schema);
 
 model.prototype.getExtensionName = function() {
@@ -239,7 +244,7 @@ model.prototype.dump = function() {
     type: this.type,
     originalFilename: this.originalFilename,
     filename: this.getFilename(),
-    url: utils.getFileUrl(this.type, this.getFilename()),
+    url: this.getUrl(),
     size: this.size,
   };
 };
