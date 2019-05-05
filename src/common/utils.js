@@ -2,6 +2,7 @@ const os = require('os');
 const util = require('util');
 const AWS = require('aws-sdk');
 const config = require('config');
+const csvStringify = require('csv-stringify');
 const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
@@ -565,7 +566,7 @@ exports.stringifyTimeToCSV = (time, timezone) => {
   Stringify the time to csv.
   @param time {Date}
   @param timezone {Number} minutes (480 -> GMT+8)
-  @return {string} "2010-07-25 12:27:48"
+  @returns {string} "2010-07-25 12:27:48"
    */
   const dateTime = new Date(time);
   dateTime.setUTCMinutes(dateTime.getUTCMinutes() + timezone);
@@ -574,6 +575,20 @@ exports.stringifyTimeToCSV = (time, timezone) => {
     .substr(0, 19)
     .replace('T', ' ');
 };
+
+exports.csvStringifyAsync = data =>
+  /*
+  @param data {Array<Array<any>>}
+  @returns {Promise<string>}
+   */
+  new Promise((resolve, reject) => {
+    csvStringify(data, (error, output) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(output);
+    });
+  });
 
 exports.logError = (error, extra) => {
   /*

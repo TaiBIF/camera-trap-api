@@ -1,5 +1,4 @@
 const config = require('config');
-const csvStringify = require('csv-stringify');
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
@@ -462,19 +461,11 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
             }
         }
       });
-      return new Promise((resolve, reject) => {
-        csvStringify(data, (error, output) => {
-          if (error) {
-            return reject(error);
-          }
-          res.setHeader(
-            'Content-disposition',
-            'attachment; filename=example.csv',
-          );
-          res.contentType('csv');
-          res.write(output);
-          res.end();
-        });
-      });
+      return utils.csvStringifyAsync(data);
+    })
+    .then(csv => {
+      res.setHeader('Content-disposition', 'attachment; filename=example.csv');
+      res.contentType('csv');
+      res.send(csv);
     }),
 );
