@@ -560,6 +560,21 @@ exports.parseTimeFromCSV = (time, timezone) => {
   return dateTime;
 };
 
+exports.stringifyTimeToCSV = (time, timezone) => {
+  /*
+  Stringify the time to csv.
+  @param time {Date}
+  @param timezone {Number} minutes (480 -> GMT+8)
+  @return {string} "2010-07-25 12:27:48"
+   */
+  const dateTime = new Date(time);
+  dateTime.setUTCMinutes(dateTime.getUTCMinutes() + timezone);
+  return dateTime
+    .toISOString()
+    .substr(0, 19)
+    .replace('T', ' ');
+};
+
 exports.logError = (error, extra) => {
   /*
   @param error {Error}
