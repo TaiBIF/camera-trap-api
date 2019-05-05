@@ -1,10 +1,14 @@
+const config = require('config');
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
+const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
+const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
+const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const ProjectModel = require('../models/data/project-model');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
@@ -18,6 +22,7 @@ const AnnotationFailureType = require('../models/const/annotation-failure-type')
 exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/annotations
+  GET /api/v1/annotations.csv
    */
   const form = new AnnotationsSearchForm(req.query);
   const errorMessage = form.validate();
@@ -53,8 +58,8 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         .populate('project'),
     ];
   }
-  return Promise.all(tasks)
-    .then(([studyArea, childStudyAreas, cameraLocations]) => {
+  return Promise.all(tasks).then(
+    ([studyArea, childStudyAreas, cameraLocations]) => {
       if (form.studyArea) {
         if (!studyArea) {
           throw new errors.Http404();
@@ -106,16 +111,159 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           cameraLocation: { $in: cameraLocations.map(x => x._id) },
         });
       }
-      return AnnotationModel.paginate(query, {
-        offset: form.index * form.size,
-        limit: form.size,
-      });
-    })
-    .then(result => {
-      res.json(
-        new PageList(form.index, form.size, result.totalDocs, result.docs),
-      );
-    });
+
+      if (!/\.csv$/i.test(req.path)) {
+        // return json
+        return AnnotationModel.paginate(query, {
+          offset: form.index * form.size,
+          limit: form.size,
+        }).then(result => {
+          res.json(
+            new PageList(form.index, form.size, result.totalDocs, result.docs),
+          );
+        });
+      }
+
+      // download csv
+      let writePromise;
+      return Promise.all([
+        DataFieldModel.populate(cameraLocations, 'project.dataFields'),
+        StudyAreaModel.populate(cameraLocations, 'studyArea'),
+      ])
+        .then(() =>
+          StudyAreaModel.populate(cameraLocations, 'studyArea.parent'),
+        )
+        .then(() => {
+          const headRow = [[]];
+          cameraLocations[0].project.dataFields.forEach(dataField => {
+            headRow[0].push(dataField.title['zh-TW']);
+            if (dataField.systemCode === DataFieldSystemCode.studyArea) {
+              headRow[0].push('子樣區');
+            }
+          });
+
+          return new Promise((resolve, reject) => {
+            query
+              .cursor()
+              .on('error', error => {
+                reject(error);
+              })
+              .on('close', () => {
+                if (writePromise) {
+                  writePromise.then(() => {
+                    res.end();
+                    resolve();
+                  });
+                } else {
+                  res.end();
+                  resolve();
+                }
+              })
+              .on('data', annotation => {
+                const cameraLocation = cameraLocations.find(
+                  x => `${x._id}` === `${annotation.cameraLocation._id}`,
+                );
+                const row = [[]];
+                cameraLocation.project.dataFields.forEach(dataField => {
+                  let annotationField;
+                  switch (dataField.systemCode) {
+                    case DataFieldSystemCode.studyArea:
+                      if (cameraLocation.studyArea.parent) {
+                        row[0].push(
+                          cameraLocation.studyArea.parent.title['zh-TW'],
+                        );
+                        row[0].push(cameraLocation.studyArea.title['zh-TW']);
+                      } else {
+                        row[0].push(cameraLocation.studyArea.title['zh-TW']);
+                        row[0].push('');
+                      }
+                      break;
+                    case DataFieldSystemCode.cameraLocation:
+                      row[0].push(cameraLocation.name);
+                      break;
+                    case DataFieldSystemCode.fileName:
+                      row[0].push(annotation.filename);
+                      break;
+                    case DataFieldSystemCode.time:
+                      row[0].push(
+                        utils.stringifyTimeToCSV(
+                          annotation.time,
+                          config.defaultTimezone,
+                        ),
+                      );
+                      break;
+                    case DataFieldSystemCode.species:
+                      row[0].push(
+                        annotation.species
+                          ? annotation.species.title['zh-TW']
+                          : '',
+                      );
+                      break;
+                    default:
+                      // custom fields
+                      annotationField = annotation.fields.find(
+                        x => `${x.dataField._id}` === `${dataField._id}`,
+                      );
+                      switch (dataField.widgetType) {
+                        case DataFieldWidgetType.select:
+                          if (annotationField) {
+                            row[0].push(
+                              dataField.options.find(
+                                x =>
+                                  `${x._id}` ===
+                                  `${annotationField.value.selectId}`,
+                              )['zh-TW'],
+                            );
+                          } else {
+                            row[0].push('');
+                          }
+                          break;
+                        case DataFieldWidgetType.time:
+                          row[0].push(
+                            annotationField
+                              ? utils.stringifyTimeToCSV(
+                                  annotationField.value.time,
+                                  config.defaultTimezone,
+                                )
+                              : '',
+                          );
+                          break;
+                        case DataFieldWidgetType.text:
+                        default:
+                          row[0].push(
+                            annotationField ? annotationField.value.text : '',
+                          );
+                      }
+                  }
+                });
+
+                if (writePromise) {
+                  writePromise = writePromise
+                    .then(() => utils.csvStringifyAsync(row))
+                    .then(data => {
+                      res.write(data);
+                    });
+                } else {
+                  writePromise = utils
+                    .csvStringifyAsync(headRow)
+                    .then(data => {
+                      res.setHeader(
+                        'Content-disposition',
+                        'attachment; filename=export.csv',
+                      );
+                      res.contentType('csv');
+                      res.write(data);
+                      return utils.csvStringifyAsync(row);
+                    })
+                    .then(data => {
+                      res.write(data);
+                    });
+                }
+              });
+          });
+        });
+    },
+  );
 });
 
 exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {

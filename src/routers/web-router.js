@@ -88,6 +88,7 @@ apiRouter.get(
   notificationHandler.getSystemAnnouncements,
 );
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
+apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.put(
   '/annotations/:annotationId([a-f\\d]{24})',
   annotationHandler.updateAnnotation,
