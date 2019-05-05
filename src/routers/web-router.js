@@ -108,6 +108,10 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})',
   projectHandler.updateProject,
 );
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/example.csv',
+  projectHandler.getProjectExampleCsv,
+);
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/members',
   projectHandler.addProjectMember,
