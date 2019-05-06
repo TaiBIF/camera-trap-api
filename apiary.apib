@@ -3956,6 +3956,26 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+## Download example csv [/projects/{projectId}/example.csv]
+### Download the example csv file [GET /projects/{projectId}/example.csv]
+下載計畫的範例 CSV 檔，直接將瀏覽器網址改成匯出網址後瀏覽器會開始下載。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + projectId: `5c9af1d2403d37067adadbc5` (string) - 計畫 id。
+
++ Request Download the example csv file (application/json)
+
++ Response 200 (text/csv)
+
+    + Body
+
+            樣區,子樣區,相機位置,檔名,日期時間,物種,年齡
+            title,titleX,PT02A,IMG_0001.jpg,2019-05-06 11:02:40,空拍,成體
+
+
 # Group Data Fields
 
 ## Retrieve data fields[/data-fields]
@@ -5006,6 +5026,37 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Export annotations [/annotations.csv]
+### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort}]
+匯出標註為 CSV 檔，直接將瀏覽器網址改成匯出網址後瀏覽器會開始下載。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + studyArea: `5c9d95acea5c9b4036d97c88` (string, optional) - 使用樣區 id 搜尋標註，回傳結果包含子樣區資料。
+    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13 。
+    + startTime: `2017-11-09T03:48:46.000Z` (string, optional) - 開始時間
+    + endTime: `2017-11-09T03:48:46.000Z` (string, optional) - 結束時間
+    + sort: `cameraLocation time filename` (enum[string], optional)
+        + Default: `cameraLocation time filename`
+        + Members
+            + `cameraLocation time filename`
+            + `time filename cameraLocation`
+
++ Request Export annotations to .csv (application/json)
+
++ Response 200 (text/csv)
+
+    + Body
+
+            樣區,子樣區,相機位置,檔名,日期時間,物種,年齡
+            title,titleX,PT02A,IMG_7191.JPG,2010-07-25 12:27:48,測試,成體
+            title,titleX,PT02A,IMG_7191.JPG,2017-11-09 11:48:46,,
+            title,titleX,PT02A,IMG_4378.JPG,2019-03-06 10:34:56,,
+            title,titleX,PT02A,IMG_6635.JPG,2019-03-06 10:39:45,,
+            title,titleX,PT02A,IMG_4380.JPG,2019-03-06 10:46:51,,
+
 
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
@@ -5103,6 +5154,117 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
+
+
+# Group Issues
+## Create an issue [POST /issues]
+聯絡我們 - 新增問題回報/意見反饋。
+
++ Request Create an issue (application/json)
+
+    + Body
+    
+            {
+              "type": "issue",
+              "category": "system",
+              "description": "hello",
+              "email": "email@example.com",
+              "attachmentFile": "5ccd2c3feb8a98a70489c322"
+            }
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "問題回報, 意見反饋",
+                  "enum": ["issue", "suggestion"]
+                },
+                "category": {
+                  "type": "string",
+                  "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
+                  "enum": [
+                    "system",
+                    "account",
+                    "project-management",
+                    "file-upload",
+                    "data-edit",
+                    "search-and-download",
+                    "others"
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "description": "問題描述"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "attachmentFile": {
+                  "type": "string",
+                  "description": "附件檔案 id，上傳 `type` 為 `issue-attachment` 檔案。"
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5ccfa6d1657c6220127b048b",
+              "type": "issue",
+              "category": "system",
+              "description": "hello",
+              "email": "email@example.com",
+              "attachmentFile": {
+                "id": "5ccd2c3feb8a98a70489c322",
+                "type": "issue-attachment",
+                "originalFilename": "IMG_4378.JPG",
+                "filename": "5ccd2c3feb8a98a70489c322.jpg",
+                "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/issue-attachments/5ccd2c3feb8a98a70489c322.jpg"
+              }
+            }
+
+
+    + Schema
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "attachmentFile": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+
 
 # Group Files
 ## Upload files [POST /files{?type,cameraLocation}]
