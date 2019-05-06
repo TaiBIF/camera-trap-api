@@ -14,6 +14,11 @@ const schema = utils.generateSchema(
       type: String,
       enum: DataFieldSystemCode.all(),
     },
+    project: {
+      // 提出審核時的計畫，僅用於通知時顯示使用者在哪個計畫提出
+      type: Schema.ObjectId,
+      ref: 'ProjectModel',
+    },
     user: {
       // 提出審核的使用者
       type: Schema.ObjectId,
@@ -95,6 +100,10 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     systemCode: this.systemCode,
+    project:
+      this.project && typeof this.project.dump === 'function'
+        ? this.project.dump()
+        : this.project,
     state: this.state,
     title: this.title,
     widgetType: this.widgetType,

@@ -36,6 +36,7 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
     .then(result =>
       Promise.all([
         result,
+        ProjectModel.populate(result.docs, 'dataField.project'),
         ProjectModel.populate(result.docs, 'uploadSession.project'),
         CameraLocationModel.populate(
           result.docs,
