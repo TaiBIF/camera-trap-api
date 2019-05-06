@@ -9,7 +9,7 @@ const StudyAreaModel = require('../models/data/study-area-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 
-exports.getMyUploadSession = auth(UserPermission.all(), (req, res) => {
+exports.getMyUploadSessions = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/me/upload-sessions
    */

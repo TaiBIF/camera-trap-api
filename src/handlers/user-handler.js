@@ -7,8 +7,8 @@ const UsersSearchForm = require('../forms/user/users-search-form');
 
 exports.getUsers = auth(UserPermission.all(), (req, res) => {
   /*
-    GET /api/v1/users
-    提供加入計畫成員前檢查帳號是否存在
+  GET /api/v1/users
+  提供加入計畫成員前檢查帳號是否存在
   */
   const form = new UsersSearchForm(req.query);
   const errorMessage = form.validate();
