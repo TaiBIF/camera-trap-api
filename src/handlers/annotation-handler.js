@@ -90,7 +90,6 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       }
 
       const query = AnnotationModel.where({ state: AnnotationState.active })
-        .populate('file')
         .populate('species')
         .sort(form.sort);
       if (form.startTime) {
@@ -114,6 +113,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
 
       if (!/\.csv$/i.test(req.path)) {
         // return json
+        query.populate('file');
         return AnnotationModel.paginate(query, {
           offset: form.index * form.size,
           limit: form.size,
@@ -131,15 +131,46 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         StudyAreaModel.populate(cameraLocations, 'studyArea'),
       ])
         .then(() =>
+          /*
+          - Populate cameraLocations.studyArea.parent.
+           */
           StudyAreaModel.populate(cameraLocations, 'studyArea.parent'),
         )
         .then(() => {
-          const headRow = [[]];
-          cameraLocations[0].project.dataFields.forEach(dataField => {
-            headRow[0].push(dataField.title['zh-TW']);
-            if (dataField.systemCode === DataFieldSystemCode.studyArea) {
-              headRow[0].push('子樣區');
+          // 樣區, 子樣區, 相機位置, 檔名, 日期時間, 物種, ...
+          let systemRowQuantity = 0;
+          const headRow = [];
+          const customDataFieldIds = [];
+          // For system default fields.
+          for (
+            let index = 0;
+            index < cameraLocations[0].project.dataFields.length;
+            index += 1
+          ) {
+            const dataField = cameraLocations[0].project.dataFields[index];
+            if (!dataField.systemCode) {
+              break;
             }
+            headRow.push(dataField.title['zh-TW']);
+            systemRowQuantity += 1;
+            if (dataField.systemCode === DataFieldSystemCode.studyArea) {
+              headRow.push('子樣區');
+              systemRowQuantity += 1;
+            }
+          }
+
+          // For custom data fields
+          cameraLocations.forEach(cameraLocation => {
+            cameraLocation.project.dataFields.forEach(dataField => {
+              if (dataField.systemCode) {
+                return;
+              }
+              if (customDataFieldIds.indexOf(`${dataField._id}`) >= 0) {
+                return;
+              }
+              customDataFieldIds.push(`${dataField._id}`);
+              headRow.push(dataField.title['zh-TW']);
+            });
           });
 
           return new Promise((resolve, reject) => {
@@ -163,89 +194,103 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                 const cameraLocation = cameraLocations.find(
                   x => `${x._id}` === `${annotation.cameraLocation._id}`,
                 );
-                const row = [[]];
+                const row = new Array(
+                  systemRowQuantity + customDataFieldIds.length,
+                );
                 cameraLocation.project.dataFields.forEach(dataField => {
                   let annotationField;
                   switch (dataField.systemCode) {
                     case DataFieldSystemCode.studyArea:
                       if (cameraLocation.studyArea.parent) {
-                        row[0].push(
-                          cameraLocation.studyArea.parent.title['zh-TW'],
-                        );
-                        row[0].push(cameraLocation.studyArea.title['zh-TW']);
+                        row[0] = cameraLocation.studyArea.parent.title['zh-TW'];
+                        row[1] = cameraLocation.studyArea.title['zh-TW'];
                       } else {
-                        row[0].push(cameraLocation.studyArea.title['zh-TW']);
-                        row[0].push('');
+                        row[0] = cameraLocation.studyArea.title['zh-TW'];
+                        row[1] = '';
                       }
                       break;
                     case DataFieldSystemCode.cameraLocation:
-                      row[0].push(cameraLocation.name);
+                      row[2] = cameraLocation.name;
                       break;
                     case DataFieldSystemCode.fileName:
-                      row[0].push(annotation.filename);
+                      row[3] = annotation.filename;
                       break;
                     case DataFieldSystemCode.time:
-                      row[0].push(
-                        utils.stringifyTimeToCSV(
-                          annotation.time,
-                          config.defaultTimezone,
-                        ),
+                      row[4] = utils.stringifyTimeToCSV(
+                        annotation.time,
+                        config.defaultTimezone,
                       );
                       break;
                     case DataFieldSystemCode.species:
-                      row[0].push(
-                        annotation.species
-                          ? annotation.species.title['zh-TW']
-                          : '',
-                      );
+                      row[5] = annotation.species
+                        ? annotation.species.title['zh-TW']
+                        : '';
                       break;
                     default:
                       // custom fields
                       annotationField = annotation.fields.find(
                         x => `${x.dataField._id}` === `${dataField._id}`,
                       );
+                      if (!annotationField) {
+                        return;
+                      }
+
                       switch (dataField.widgetType) {
                         case DataFieldWidgetType.select:
                           if (annotationField) {
-                            row[0].push(
-                              dataField.options.find(
-                                x =>
-                                  `${x._id}` ===
-                                  `${annotationField.value.selectId}`,
-                              )['zh-TW'],
-                            );
+                            row[
+                              systemRowQuantity +
+                                customDataFieldIds.indexOf(
+                                  `${annotationField.dataField._id}`,
+                                )
+                            ] = dataField.options.find(
+                              x =>
+                                `${x._id}` ===
+                                `${annotationField.value.selectId}`,
+                            )['zh-TW'];
                           } else {
-                            row[0].push('');
+                            row[
+                              systemRowQuantity +
+                                customDataFieldIds.indexOf(
+                                  `${annotationField.dataField._id}`,
+                                )
+                            ] = '';
                           }
                           break;
                         case DataFieldWidgetType.time:
-                          row[0].push(
-                            annotationField
-                              ? utils.stringifyTimeToCSV(
-                                  annotationField.value.time,
-                                  config.defaultTimezone,
-                                )
-                              : '',
-                          );
+                          row[
+                            systemRowQuantity +
+                              customDataFieldIds.indexOf(
+                                `${annotationField.dataField._id}`,
+                              )
+                          ] = annotationField
+                            ? utils.stringifyTimeToCSV(
+                                annotationField.value.time,
+                                config.defaultTimezone,
+                              )
+                            : '';
                           break;
                         case DataFieldWidgetType.text:
                         default:
-                          row[0].push(
-                            annotationField ? annotationField.value.text : '',
-                          );
+                          row[
+                            systemRowQuantity +
+                              customDataFieldIds.indexOf(
+                                `${annotationField.dataField._id}`,
+                              )
+                          ] = annotationField ? annotationField.value.text : '';
                       }
                   }
                 });
 
                 if (writePromise) {
                   writePromise = writePromise
-                    .then(() => utils.csvStringifyAsync(row))
+                    .then(() => utils.csvStringifyAsync([row]))
                     .then(data => {
                       res.write(data);
                     });
                 } else {
                   writePromise = utils
-                    .csvStringifyAsync(headRow)
+                    .csvStringifyAsync([headRow])
                     .then(data => {
                       res.setHeader(
                         'Content-disposition',
@@ -253,7 +298,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                       );
                       res.contentType('csv');
                       res.write(data);
-                      return utils.csvStringifyAsync(row);
+                      return utils.csvStringifyAsync([row]);
                     })
                     .then(data => {
                       res.write(data);
