@@ -6,6 +6,7 @@ const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const nocache = require('nocache');
@@ -15,6 +16,9 @@ const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
 
 const app = express();
+
+// compress all responses
+app.use(compression());
 
 // hide x-powered-by
 app.locals.settings['x-powered-by'] = false;
