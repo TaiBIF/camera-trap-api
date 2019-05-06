@@ -47,6 +47,24 @@ exports.getMyUploadSessions = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.getMyUploadSession = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/me/upload-sessions/:uploadSessionId
+   */
+  UploadSessionModel.findById(req.params.uploadSessionId)
+    .where({ user: req.user._id })
+    .populate('project')
+    .populate('cameraLocation')
+    .populate('file')
+    .then(uploadSession => {
+      if (!uploadSession) {
+        throw new errors.Http404();
+      }
+
+      res.json(uploadSession.dump());
+    }),
+);
+
 exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
   /*
   POST /api/v1/me/upload-session/:uploadSessionId/_overwrite

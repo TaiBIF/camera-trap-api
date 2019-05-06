@@ -69,6 +69,10 @@ apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
 apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSessions);
+apiRouter.get(
+  '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})',
+  uploadSessionHandler.getMyUploadSession,
+);
 apiRouter.post(
   '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})/_overwrite',
   uploadSessionHandler.overwriteUploadSession,
