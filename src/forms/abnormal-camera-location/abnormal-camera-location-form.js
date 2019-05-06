@@ -1,4 +1,5 @@
 const forms = require('../');
+const AbnormalType = require('../../models/const/abnormal-camera-location');
 
 class AbnormalCameraLocationForm extends forms.Form {}
 
@@ -17,6 +18,9 @@ AbnormalCameraLocationForm.define({
   }),
   abnormalStartDate: new forms.fields.DateField(),
   abnormalEndDate: new forms.fields.DateField(),
+  abnormalType: new forms.fields.StringField({
+    validators: [forms.validators.anyOf(AbnormalType.all())],
+  }),
   remarks: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
