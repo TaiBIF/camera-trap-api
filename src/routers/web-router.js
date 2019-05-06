@@ -89,6 +89,10 @@ apiRouter.get(
 );
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
+apiRouter.get(
+  '/annotations/:annotationId([a-f\\d]{24})',
+  annotationHandler.getAnnotation,
+);
 apiRouter.put(
   '/annotations/:annotationId([a-f\\d]{24})',
   annotationHandler.updateAnnotation,

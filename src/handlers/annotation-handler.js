@@ -372,3 +372,38 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
       res.json(annotation.dump());
     });
 });
+
+exports.getAnnotation = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/annotations/:annotationId
+   */
+  AnnotationModel.findById(req.params.annotationId)
+    .where({ state: AnnotationState.active })
+    .populate('project')
+    .populate('studyArea')
+    .populate('cameraLocation')
+    .populate('file')
+    .populate('species')
+    .populate('fields.dataField')
+    .then(annotation => {
+      if (!annotation) {
+        throw new errors.Http404();
+      }
+      if (annotation.cameraLocation.state !== CameraLocationState.active) {
+        throw new errors.Http404();
+      }
+      if (annotation.studyArea.state !== StudyAreaState.active) {
+        throw new errors.Http404();
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !annotation.project.members.find(
+          x => `${x.user._id}` === `${req.user._id}`,
+        )
+      ) {
+        throw new errors.Http403();
+      }
+
+      res.json(annotation.dump());
+    }),
+);
