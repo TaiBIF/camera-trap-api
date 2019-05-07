@@ -23,7 +23,7 @@ exports.getMyProfile = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/me
    */
-  res.json(req.user.dump());
+  res.json(req.user.dump(req));
 });
 
 exports.updateMyProfile = auth(UserPermission.all(), (req, res) => {
@@ -38,5 +38,6 @@ exports.updateMyProfile = auth(UserPermission.all(), (req, res) => {
 
   req.user.name = form.name;
   req.user.email = form.email;
-  return req.user.save().then(user => res.json(user.dump()));
+  req.user.hotkeys = form.hotkeys;
+  return req.user.save().then(user => res.json(user.dump(req)));
 });

@@ -28,6 +28,17 @@ const schema = utils.generateSchema(
       required: true,
       enum: UserPermission.all(),
     },
+    hotkeys: [
+      {
+        _id: false,
+        speciesTitle: {
+          type: String,
+        },
+        hotkey: {
+          type: String,
+        },
+      },
+    ],
   },
   {
     collection: 'Users',
@@ -44,19 +55,19 @@ schema.index(
     },
   },
 );
-const model = mongoose.model('UserModel', schema);
-
-model.prototype.isLogin = function() {
+schema.method('isLogin', function() {
   return this.isNew === false;
-};
-
-model.prototype.dump = function() {
+});
+schema.method('dump', function(req) {
   return {
     id: `${this._id}`,
     name: this.name,
     email: this.email,
     permission: this.permission,
+    hotkeys:
+      req && req.user && `${req.user._id}` === `${this._id}`
+        ? this.hotkeys
+        : undefined,
   };
-};
-
-module.exports = model;
+});
+module.exports = mongoose.model('UserModel', schema);
