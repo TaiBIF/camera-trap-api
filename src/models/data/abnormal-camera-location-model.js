@@ -1,4 +1,4 @@
-const _ = require('lodash');
+// const _ = require('lodash');
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const CameraLocationState = require('../const/camera-location-state');
