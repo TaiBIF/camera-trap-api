@@ -52,7 +52,7 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     });
 });
 
-exports.addDataFieldApprove = auth(UserPermission.all(), (req, res) =>
+exports.addDataFieldApprove = auth(UserPermission.administrator, (req, res) =>
   /*
   POST /api/v1/data-fields/:dataFieldId/_approve
   */
@@ -63,12 +63,14 @@ exports.addDataFieldApprove = auth(UserPermission.all(), (req, res) =>
         throw new errors.Http404();
       }
       dataField.state = DataFieldState.approved;
-      dataField.save();
+      return dataField.save();
+    })
+    .then(dataField => {
       res.json(dataField.dump());
     }),
 );
 
-exports.addDataFieldReject = auth(UserPermission.all(), (req, res) =>
+exports.addDataFieldReject = auth(UserPermission.administrator, (req, res) =>
   /*
   POST /api/v1/data-fields/:dataFieldId/_reject
   */
@@ -79,7 +81,9 @@ exports.addDataFieldReject = auth(UserPermission.all(), (req, res) =>
         throw new errors.Http404();
       }
       dataField.state = DataFieldState.rejected;
-      dataField.save();
+      return dataField.save();
+    })
+    .then(dataField => {
       res.json(dataField.dump());
     }),
 );
