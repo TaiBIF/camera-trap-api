@@ -157,7 +157,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
               "email": "email@example.com",
-              "permission": "general-account"
+              "permission": "general-account",
+              "hotkeys": [
+                {
+                  "speciesTitle": "人",
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -178,11 +184,25 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "permission": {
                   "type": "string",
                   "enum": ["administrator", "general-account"]
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "speciesTitle": {
+                        "type": "string"
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
 
-## Update profile [PUT]
+## Update profile [PUT /me]
 
 - The user's permission should be 'administrator' or 'general-account'.
 
@@ -192,7 +212,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
             {
               "name": "Your Name",
-              "email": "email@example.com"
+              "email": "email@example.com",
+              "hotkeys": [
+                {
+                  "speciesTitle": "人",
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -207,6 +233,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "email": {
                   "type": "string",
                   "format": "idn-email"
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "speciesTitle": {
+                        "type": "string"
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -219,7 +259,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
               "email": "email@example.com",
-              "permission": "general-account"
+              "permission": "general-account",
+              "hotkeys": [
+                {
+                  "speciesTitle": "人",
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -241,6 +287,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "permission": {
                   "type": "string",
                   "enum": ["administrator", "general-account"]
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "speciesTitle": {
+                        "type": "string"
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
