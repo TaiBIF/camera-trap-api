@@ -52,6 +52,38 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.addDataFieldApprove = auth(UserPermission.all(), (req, res) =>
+  /*
+  POST /api/v1/data-fields/:dataFieldId/_approve
+  */
+  DataFieldModel.findById(req.params.dataFieldId)
+    .where({ state: DataFieldState.waitForReview })
+    .then(dataField => {
+      if (!dataField) {
+        throw new errors.Http404();
+      }
+      dataField.state = DataFieldState.approved;
+      dataField.save();
+      res.json(dataField.dump());
+    }),
+);
+
+exports.addDataFieldReject = auth(UserPermission.all(), (req, res) =>
+  /*
+  POST /api/v1/data-fields/:dataFieldId/_reject
+  */
+  DataFieldModel.findById(req.params.dataFieldId)
+    .where({ state: DataFieldState.waitForReview })
+    .then(dataField => {
+      if (!dataField) {
+        throw new errors.Http404();
+      }
+      dataField.state = DataFieldState.rejected;
+      dataField.save();
+      res.json(dataField.dump());
+    }),
+);
+
 exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/data-fields

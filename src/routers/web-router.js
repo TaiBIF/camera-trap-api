@@ -184,6 +184,14 @@ apiRouter.post(
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_approve',
+  dataFieldHandler.addDataFieldApprove,
+);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_reject',
+  dataFieldHandler.addDataFieldReject,
+);
 apiRouter.get(
   '/data-fields/:dataFieldId([a-f\\d]{24})',
   dataFieldHandler.getPublishedDataField,
