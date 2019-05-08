@@ -25,4 +25,5 @@ AbnormalCameraLocationForm.define({
     validators: [forms.validators.length({ max: 1024 })],
   }),
 });
+
 module.exports = AbnormalCameraLocationForm;

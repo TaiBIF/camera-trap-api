@@ -77,7 +77,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'AbnormalCameraLocations',
+    collection: 'AbnormalCameraLocation',
   },
 );
 schema.index(
@@ -103,7 +103,7 @@ schema.method('isLocked', function() {
   return !!(this.lockExpiredTime && this.lockExpiredTime > new Date());
 });
 
-const model = mongoose.model('CameraLocationModel', schema);
+const model = mongoose.model('AbnormalCameraLocationModel', schema);
 
 model.prototype.dump = function() {
   const isLocked = this.isLocked();
