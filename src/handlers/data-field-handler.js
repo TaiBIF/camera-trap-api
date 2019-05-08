@@ -52,7 +52,7 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     });
 });
 
-exports.addDataFieldApprove = auth(UserPermission.administrator, (req, res) =>
+exports.addDataFieldApprove = auth([UserPermission.administrator], (req, res) =>
   /*
   POST /api/v1/data-fields/:dataFieldId/_approve
   */
@@ -63,17 +63,34 @@ exports.addDataFieldApprove = auth(UserPermission.administrator, (req, res) =>
         throw new errors.Http404();
       }
       dataField.state = DataFieldState.approved;
-      return dataField.save();
+      return Promise.all([
+        dataField.save(),
+        UserModel.where({ permission: UserPermission.administrator }),
+      ]);
     })
-    .then(dataField => {
+    .then(([dataField, administrators]) => {
+      const tasks = [dataField];
+      administrators.forEach(administrator => {
+        const notification = new NotificationModel({
+          sender: req.user,
+          user: administrator,
+          type: NotificationType.dataFieldApproved,
+          dataField,
+        });
+        tasks.push(notification.save());
+      });
+      return Promise.all(tasks);
+    })
+    .then(([dataField]) => {
       res.json(dataField.dump());
     }),
 );
 
-exports.addDataFieldReject = auth(UserPermission.administrator, (req, res) =>
+exports.addDataFieldReject = auth([UserPermission.administrator], (req, res) =>
   /*
   POST /api/v1/data-fields/:dataFieldId/_reject
   */
+  //  waitForReview
   DataFieldModel.findById(req.params.dataFieldId)
     .where({ state: DataFieldState.waitForReview })
     .then(dataField => {
@@ -81,9 +98,25 @@ exports.addDataFieldReject = auth(UserPermission.administrator, (req, res) =>
         throw new errors.Http404();
       }
       dataField.state = DataFieldState.rejected;
-      return dataField.save();
+      return Promise.all([
+        dataField.save(),
+        UserModel.where({ permission: UserPermission.administrator }),
+      ]);
     })
-    .then(dataField => {
+    .then(([dataField, administrators]) => {
+      const tasks = [dataField];
+      administrators.forEach(administrator => {
+        const notification = new NotificationModel({
+          sender: req.user,
+          user: administrator,
+          type: NotificationType.dataFieldRejected,
+          dataField,
+        });
+        tasks.push(notification.save());
+      });
+      return Promise.all(tasks);
+    })
+    .then(([dataField]) => {
       res.json(dataField.dump());
     }),
 );
