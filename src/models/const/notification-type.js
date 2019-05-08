@@ -5,7 +5,7 @@ module.exports = {
   waitForOverwrite: 'wait-for-overwrite', // 上傳後因有資料重複問題，等待確認覆蓋或取消
   dataFieldApplication: 'data-field-application', // 申請新欄位
   dataFieldApproved: 'data-field-approved', // 通過欄位申請
-  dataFieldRejected: 'data-field-rejected', // 通過欄位申請
+  dataFieldRejected: 'data-field-rejected', // 未通過欄位申請
   newIssue: 'new-issue', // 問題回報
   newSuggestion: 'new-suggestion', // 意見反饋
   all() {
