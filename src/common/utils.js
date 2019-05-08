@@ -654,7 +654,7 @@ exports.logError = (error, extra) => {
     return;
   }
   const log = new LogModel({
-    server: os.hostname(),
+    hostname: os.hostname(),
     errorStack: error ? error.stack : undefined,
     extra: (() => {
       try {
