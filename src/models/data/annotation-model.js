@@ -39,7 +39,6 @@ const model = mongoose.model(
       uploadSession: {
         type: Schema.ObjectId,
         ref: 'UploadSessionModel',
-        required: true,
         index: {
           name: 'UploadSession',
         },

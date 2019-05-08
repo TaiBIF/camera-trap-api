@@ -18,6 +18,8 @@ const AnnotationForm = require('../forms/annotation/annotation-form');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const AnnotationFailureType = require('../models/const/annotation-failure-type');
+const FileModel = require('../models/data/file-model');
+const FileType = require('../models/const/file-type');
 
 exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
   /*
@@ -392,11 +394,109 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
       res.json(annotation.dump());
     });
 });
+
+exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
+  /*
+  POST /api/v1/annotations
+   */
+  const form = new AnnotationForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+  if (!form.cameraLocation) {
+    throw new errors.Http400('The camera location is required.');
+  }
+  if (!form.filename) {
+    throw new errors.Http400('The filename is required.');
+  }
+  if (!form.time) {
+    throw new errors.Http400('The time is required.');
+  }
+
+  return Promise.all([
+    CameraLocationModel.findById(form.cameraLocation)
+      .where({ state: CameraLocationState.active })
+      .populate('project')
+      .populate('studyArea'),
+    SpeciesModel.findById(form.species),
+    FileModel.findById(form.file).where({
+      type: { $in: [FileType.annotationImage, FileType.annotationVideo] },
+    }),
+  ])
+    .then(([cameraLocation, species, file]) =>
+      Promise.all([
+        cameraLocation,
+        species,
+        file,
+        DataFieldModel.populate(cameraLocation, 'project.dataFields'),
+      ]),
+    )
+    .then(([cameraLocation, species, file]) => {
+      if (!cameraLocation) {
+        throw new errors.Http400('Not found the camera location.');
+      }
+      if (cameraLocation.studyArea.state !== StudyAreaState.active) {
+        throw new errors.Http400(
+          `The study area of the camera location isn't active.`,
+        );
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !cameraLocation.project.members.find(
+          x => `${x.user._id}` === `${req.user._id}`,
+        )
+      ) {
+        throw new errors.Http403();
+      }
+      if (form.species) {
+        if (!species) {
+          throw new errors.Http400('Not found the species.');
         }
-        return {
-          dataField: projectDataFields[field.dataField],
-          value,
-        };
+        if (`${species.project._id}` !== `${cameraLocation.project._id}`) {
+          throw new errors.Http400(
+            'The project of species and the project of the camera location are different.',
+          );
+        }
+      }
+      if (form.file) {
+        if (!file) {
+          throw new errors.Http400('Not found the file.');
+        }
+        if (`${file.project._id}` !== `${cameraLocation.project._id}`) {
+          throw new errors.Http400(
+            'The project of the file and the project of the camera location are different.',
+          );
+        }
+      }
+      // Validate form.fields.
+      const projectDataFields = {}; // { "dataFieldId": DataField }
+      const formFieldIds = new Set();
+      cameraLocation.project.dataFields.forEach(dataField => {
+        projectDataFields[`${dataField._id}`] = dataField;
+      });
+      (form.fields || []).forEach(field => {
+        if (!(field.dataField in projectDataFields)) {
+          throw new errors.Http400(
+            `Data field ${field.dataField} not in the project.`,
+          );
+        }
+        if (formFieldIds.has(field.dataField)) {
+          throw new errors.Http400(`${field.dataField} is duplicate.`);
+        }
+        formFieldIds.add(field.dataField);
+      });
+
+      const annotation = new AnnotationModel({
+        project: cameraLocation.project,
+        studyArea: cameraLocation.studyArea,
+        cameraLocation,
+        state: AnnotationState.active,
+        filename: form.filename,
+        file: file || undefined,
+        time: form.time,
+        species: species || undefined,
+        fields: utils.convertAnnotationFields(form.fields, projectDataFields),
       });
       return annotation.saveAndAddRevision(req.user);
     })
