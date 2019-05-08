@@ -354,7 +354,8 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
           );
         }
       }
-      const projectDataFields = {};
+      // Validate form.fields.
+      const projectDataFields = {}; // { "dataFieldId": DataField }
       const formFieldIds = new Set();
       project.dataFields.forEach(dataField => {
         projectDataFields[`${dataField._id}`] = dataField;
@@ -381,30 +382,16 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
       // Assign species.
       annotation.species = species;
       // Assign fields.
-      annotation.fields = (form.fields || []).map(field => {
-        const value = {};
-        switch (projectDataFields[field.dataField].widgetType) {
-          case DataFieldWidgetType.time:
-            value.time = field.value;
-            break;
-          case DataFieldWidgetType.select:
-            if (
-              !projectDataFields[field.dataField].options.find(
-                x => `${x._id}` === field.value,
-              )
-            ) {
-              throw new errors.Http400(
-                `${field.value} not in ${JSON.stringify(
-                  projectDataFields[field.dataField].options,
-                )}.`,
-              );
-            }
-            value.selectId = field.value;
-            break;
-          case DataFieldWidgetType.text:
-          default:
-            value.text = field.value;
-            break;
+      annotation.fields = utils.convertAnnotationFields(
+        form.fields,
+        projectDataFields,
+      );
+      return annotation.saveAndAddRevision(req.user);
+    })
+    .then(annotation => {
+      res.json(annotation.dump());
+    });
+});
         }
         return {
           dataField: projectDataFields[field.dataField],

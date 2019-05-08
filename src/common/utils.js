@@ -375,6 +375,57 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
 
 exports.getAnonymous = () => ({ isLogin: () => false });
 
+exports.convertAnnotationFields = (fields, dataFieldTable) =>
+  /*
+  Convert and validate fields from AnnotationForm for the annotation.
+  @param annotation {AnnotationModel}
+  @param fields {Array<{dataField: "", value: ""}>}
+  @param dataFieldTable {Object}
+    {"dataFieldId": {DataFieldModel}}
+  @returns {Array<Object>}
+    [{
+      dataField: {DataFieldModel}
+      value: {
+        time: {Date}
+        selectId: {string}
+        text: {string}
+      }
+    }]
+   */
+  (fields || []).map(field => {
+    const value = {};
+    switch (dataFieldTable[field.dataField].widgetType) {
+      case DataFieldWidgetType.time:
+        value.time = new Date(field.value);
+        if (Number.isNaN(value.time.getTime())) {
+          throw new Error(`Invalid Date: {${field.dataField}: ${field.value}}`);
+        }
+        break;
+      case DataFieldWidgetType.select:
+        if (
+          !dataFieldTable[field.dataField].options.find(
+            x => `${x._id}` === field.value,
+          )
+        ) {
+          throw new Error(
+            `${field.value} not in ${JSON.stringify(
+              dataFieldTable[field.dataField].options,
+            )}.`,
+          );
+        }
+        value.selectId = field.value;
+        break;
+      case DataFieldWidgetType.text:
+      default:
+        value.text = field.value;
+        break;
+    }
+    return {
+      dataField: dataFieldTable[field.dataField],
+      value,
+    };
+  });
+
 exports.convertCsvToAnnotations = ({
   project,
   studyAreas,
