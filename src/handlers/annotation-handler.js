@@ -539,3 +539,31 @@ exports.getAnnotation = auth(UserPermission.all(), (req, res) =>
       res.json(annotation.dump());
     }),
 );
+
+exports.deleteAnnotation = auth(UserPermission.all(), (req, res) =>
+  /*
+  DELETE /api/v1/annotations/:annotationId
+   */
+  AnnotationModel.findById(req.params.annotationId)
+    .where({ state: AnnotationState.active })
+    .populate('project')
+    .then(annotation => {
+      if (!annotation) {
+        throw new errors.Http404('Not found the annotation.');
+      }
+      if (
+        req.user.permission !== UserPermission.administrator &&
+        !annotation.project.members.find(
+          x => `${x.user._id}` === `${req.user._id}`,
+        )
+      ) {
+        throw new errors.Http403();
+      }
+
+      annotation.state = AnnotationState.removed;
+      return annotation.save();
+    })
+    .then(() => {
+      res.status(204).send();
+    }),
+);

@@ -102,6 +102,10 @@ apiRouter.put(
   '/annotations/:annotationId([a-f\\d]{24})',
   annotationHandler.updateAnnotation,
 );
+apiRouter.delete(
+  '/annotations/:annotationId([a-f\\d]{24})',
+  annotationHandler.deleteAnnotation,
+);
 apiRouter.get(
   '/annotations/:annotationId([a-f\\d]{24})/revisions',
   annotationRevisionHandler.getAnnotationRevisions,
