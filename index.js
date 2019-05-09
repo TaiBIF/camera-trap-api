@@ -112,9 +112,10 @@ if (op.argv.createCollections) {
     }),
     new DataFieldModel({
       // 欄位：性別
+      systemCode: DataFieldSystemCode.gender,
       title: {
         'zh-TW': '性別',
-        'en-US': 'Sex',
+        'en-US': 'Gender',
       },
       description: {
         'zh-TW': '雄性、雌性',
@@ -139,6 +140,7 @@ if (op.argv.createCollections) {
     }),
     new DataFieldModel({
       // 欄位：年齡
+      systemCode: DataFieldSystemCode.lifeStage,
       title: {
         'zh-TW': '年齡',
         'en-US': 'Life Stage',
@@ -170,6 +172,7 @@ if (op.argv.createCollections) {
     }),
     new DataFieldModel({
       // 欄位：角況
+      systemCode: DataFieldSystemCode.antler,
       title: {
         'zh-TW': '角況',
         'en-US': 'Antler',
@@ -225,6 +228,7 @@ if (op.argv.createCollections) {
     }),
     new DataFieldModel({
       // 欄位：備註
+      systemCode: DataFieldSystemCode.remarks,
       title: {
         'zh-TW': '備註',
         'en-US': 'Remarks',
