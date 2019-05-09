@@ -46,9 +46,11 @@ if (op.argv.createCollections) {
       systemCode: DataFieldSystemCode.studyArea,
       title: {
         'zh-TW': '樣區',
+        'en-US': 'Study area',
       },
       description: {
         'zh-TW': '樣區-子樣區',
+        'en-US': 'Study area (self-referencing possible)',
       },
       widgetType: DataFieldWidgetType.select,
       state: DataFieldState.approved,
@@ -58,9 +60,11 @@ if (op.argv.createCollections) {
       systemCode: DataFieldSystemCode.cameraLocation,
       title: {
         'zh-TW': '相機位置',
+        'en-US': 'Camera Location',
       },
       description: {
         'zh-TW': '相機位置名稱',
+        'en-US': 'Camera Location',
       },
       widgetType: DataFieldWidgetType.select,
       state: DataFieldState.approved,
@@ -70,9 +74,11 @@ if (op.argv.createCollections) {
       systemCode: DataFieldSystemCode.fileName,
       title: {
         'zh-TW': '檔名',
+        'en-US': 'File name',
       },
       description: {
-        'zh-TW': '01234.jpg',
+        'zh-TW': '檔名，如 01234.jpg',
+        'en-US': 'File name, such as 01234.jpg',
       },
       widgetType: DataFieldWidgetType.text,
       state: DataFieldState.approved,
@@ -82,9 +88,11 @@ if (op.argv.createCollections) {
       systemCode: DataFieldSystemCode.time,
       title: {
         'zh-TW': '日期時間',
+        'en-US': 'Date and time',
       },
       description: {
-        'zh-TW': 'YY/MM/DD hh:mm',
+        'zh-TW': 'YY-MM-DD hh:mm',
+        'en-US': 'YY-MM-DD hh:mm',
       },
       widgetType: DataFieldWidgetType.time,
       state: DataFieldState.approved,
@@ -93,9 +101,11 @@ if (op.argv.createCollections) {
       systemCode: DataFieldSystemCode.species,
       title: {
         'zh-TW': '物種',
+        'en-US': 'Species',
       },
       description: {
-        'zh-TW': '',
+        'zh-TW': '照片辨識結果',
+        'en-US': 'Identification',
       },
       widgetType: DataFieldWidgetType.select,
       state: DataFieldState.approved,
@@ -104,16 +114,24 @@ if (op.argv.createCollections) {
       // 欄位：性別
       title: {
         'zh-TW': '性別',
+        'en-US': 'Sex',
       },
       description: {
-        'zh-TW': '公、母',
+        'zh-TW': '雄性、雌性',
+        'en-US': 'Male, female',
       },
       options: [
         {
-          'zh-TW': '公',
+          'zh-TW': '雄性',
+          'en-US': 'Male',
         },
         {
-          'zh-TW': '母',
+          'zh-TW': '雌性',
+          'en-US': 'Female',
+        },
+        {
+          'zh-TW': '無法判定',
+          'en-US': 'Unidentified',
         },
       ],
       widgetType: DataFieldWidgetType.select,
@@ -123,19 +141,83 @@ if (op.argv.createCollections) {
       // 欄位：年齡
       title: {
         'zh-TW': '年齡',
+        'en-US': 'Life Stage',
       },
       description: {
         'zh-TW': '成體、亞成體、幼體',
+        'en-US': 'Adult, Subadult, Juvenile',
       },
       options: [
         {
           'zh-TW': '成體',
+          'en-US': 'Adult',
         },
         {
           'zh-TW': '亞成體',
+          'en-US': 'Subadult',
         },
         {
           'zh-TW': '幼體',
+          'en-US': 'Juvenile',
+        },
+        {
+          'zh-TW': '無法判定',
+          'en-US': 'Unidentified',
+        },
+      ],
+      widgetType: DataFieldWidgetType.select,
+      state: DataFieldState.approved,
+    }),
+    new DataFieldModel({
+      // 欄位：角況
+      title: {
+        'zh-TW': '角況',
+        'en-US': 'Antler',
+      },
+      description: {
+        'zh-TW': '水鹿角況',
+        'en-US': 'Antler',
+      },
+      options: [
+        {
+          'zh-TW': '初茸',
+          'en-US': 'Initial appearance of antler in velvet',
+        },
+        {
+          'zh-TW': '茸角一尖',
+          'en-US': '1-point antler in velvet',
+        },
+        {
+          'zh-TW': '茸角一岔二尖',
+          'en-US': '2-point antler in velvet',
+        },
+        {
+          'zh-TW': '茸角二岔三尖',
+          'en-US': '3-point antler in velvet',
+        },
+        {
+          'zh-TW': '茸角三岔四尖',
+          'en-US': '4-point antler in velvet',
+        },
+        {
+          'zh-TW': '硬角一尖',
+          'en-US': '1-point antler',
+        },
+        {
+          'zh-TW': '硬角一岔二尖',
+          'en-US': '2-point antler',
+        },
+        {
+          'zh-TW': '硬角二岔三尖',
+          'en-US': '3-point antler',
+        },
+        {
+          'zh-TW': '硬角三岔四尖',
+          'en-US': '3-point antler',
+        },
+        {
+          'zh-TW': '解角',
+          'en-US': 'antler drop',
         },
       ],
       widgetType: DataFieldWidgetType.select,
@@ -145,9 +227,11 @@ if (op.argv.createCollections) {
       // 欄位：備註
       title: {
         'zh-TW': '備註',
+        'en-US': 'Remarks',
       },
       description: {
         'zh-TW': '',
+        'en-US': '',
       },
       widgetType: DataFieldWidgetType.text,
       state: DataFieldState.approved,
