@@ -149,7 +149,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
         }),
         new SpeciesModel({
           project,
-          code: SpeciesCode.test,
+          code: SpeciesCode.testShot,
           title: {
             'zh-TW': '測試',
           },
@@ -157,11 +157,115 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
         }),
         new SpeciesModel({
           project,
-          code: SpeciesCode.people,
+          code: SpeciesCode.human,
           title: {
             'zh-TW': '人',
           },
           index: 2,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.testShot,
+          title: {
+            'zh-TW': '定時測試',
+          },
+          index: 3,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.taskShot,
+          title: {
+            'zh-TW': '工作照',
+          },
+          index: 4,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.muntiacusReevesiMicrurus,
+          title: {
+            'zh-TW': '山羌',
+          },
+          index: 5,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.rusaUnicolor,
+          title: {
+            'zh-TW': '水鹿',
+          },
+          index: 6,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.macacaCyclopis,
+          title: {
+            'zh-TW': '獼猴',
+          },
+          index: 7,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.melogaleMoschata,
+          title: {
+            'zh-TW': '鼬獾',
+          },
+          index: 8,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.naemorhedusSwinhoei,
+          title: {
+            'zh-TW': '山羊',
+          },
+          index: 9,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.susScrofaTaivanus,
+          title: {
+            'zh-TW': '野豬',
+          },
+          index: 10,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.rats,
+          title: {
+            'zh-TW': '鼠類',
+          },
+          index: 11,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.pagumaLarvataTaivana,
+          title: {
+            'zh-TW': '白鼻心',
+          },
+          index: 12,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.lophuraSwinhoii,
+          title: {
+            'zh-TW': '藍腹鷴',
+          },
+          index: 13,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.herpestesUrva,
+          title: {
+            'zh-TW': '食蟹獴',
+          },
+          index: 14,
+        }),
+        new SpeciesModel({
+          project,
+          code: SpeciesCode.dog,
+          title: {
+            'zh-TW': '狗',
+          },
+          index: 15,
         }),
       ];
       const result = species.map(doc => doc.save());
