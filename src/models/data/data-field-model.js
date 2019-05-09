@@ -43,6 +43,10 @@ const schema = utils.generateSchema(
         type: String,
         required: true,
       },
+      'en-US': {
+        // English
+        type: String,
+      },
     },
     widgetType: {
       // 欄位形式
@@ -54,6 +58,10 @@ const schema = utils.generateSchema(
       // 欄位形式為輸入框時儲存輸入格式內容
       'zh-TW': {
         // 繁體中文
+        type: String,
+      },
+      'en-US': {
+        // English
         type: String,
       },
     },
@@ -71,6 +79,10 @@ const schema = utils.generateSchema(
           // 繁體中文
           type: String,
           required: true,
+        },
+        'en-US': {
+          // English
+          type: String,
         },
       },
     ],
