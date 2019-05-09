@@ -63,7 +63,7 @@ const schema = utils.generateSchema(
       // 植被
       type: String,
     },
-    landCover: {
+    landCoverType: {
       // 土地覆蓋類型
       type: String,
     },
@@ -156,7 +156,7 @@ model.prototype.dump = function() {
     longitude: this.longitude,
     altitude: this.altitude,
     vegetation: this.vegetation,
-    landCover: this.landCover,
+    landCoverType: this.landCoverType,
     isLocked,
     lockUser,
   };

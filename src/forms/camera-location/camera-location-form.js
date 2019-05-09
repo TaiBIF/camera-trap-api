@@ -17,7 +17,7 @@ CameraLocationForm.define({
   vegetation: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  landCover: new forms.fields.StringField({
+  landCoverType: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
 });
