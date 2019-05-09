@@ -1,5 +1,5 @@
 const forms = require('../');
-const AbnormalType = require('../../models/const/abnormal-camera-location');
+const AbnormalType = require('../../models/const/abnormal-type');
 
 class AbnormalCameraLocationForm extends forms.Form {}
 
