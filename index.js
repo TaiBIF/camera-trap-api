@@ -125,14 +125,17 @@ if (op.argv.createCollections) {
         {
           'zh-TW': '雄性',
           'en-US': 'Male',
+          key: 'male',
         },
         {
           'zh-TW': '雌性',
           'en-US': 'Female',
+          key: 'female',
         },
         {
           'zh-TW': '無法判定',
           'en-US': 'Unidentified',
+          key: 'unidentified',
         },
       ],
       widgetType: DataFieldWidgetType.select,
@@ -153,18 +156,22 @@ if (op.argv.createCollections) {
         {
           'zh-TW': '成體',
           'en-US': 'Adult',
+          key: 'adult',
         },
         {
           'zh-TW': '亞成體',
           'en-US': 'Subadult',
+          key: 'subadult',
         },
         {
           'zh-TW': '幼體',
           'en-US': 'Juvenile',
+          key: 'juvenile',
         },
         {
           'zh-TW': '無法判定',
           'en-US': 'Unidentified',
+          key: 'unidentified',
         },
       ],
       widgetType: DataFieldWidgetType.select,
@@ -185,42 +192,52 @@ if (op.argv.createCollections) {
         {
           'zh-TW': '初茸',
           'en-US': 'Initial appearance of antler in velvet',
+          key: 'initialAppearanceOfAntlerInVelvet',
         },
         {
           'zh-TW': '茸角一尖',
           'en-US': '1-point antler in velvet',
+          key: '1pointAntlerInVelvet',
         },
         {
           'zh-TW': '茸角一岔二尖',
           'en-US': '2-point antler in velvet',
+          key: '2pointAntlerInVelvet',
         },
         {
           'zh-TW': '茸角二岔三尖',
           'en-US': '3-point antler in velvet',
+          key: '3pointAntlerInVelvet',
         },
         {
           'zh-TW': '茸角三岔四尖',
           'en-US': '4-point antler in velvet',
+          key: '4pointAntlerInVelvet',
         },
         {
           'zh-TW': '硬角一尖',
           'en-US': '1-point antler',
+          key: '1pointAntler',
         },
         {
           'zh-TW': '硬角一岔二尖',
           'en-US': '2-point antler',
+          key: '2pointAntler',
         },
         {
           'zh-TW': '硬角二岔三尖',
           'en-US': '3-point antler',
+          key: '3pointAntler',
         },
         {
           'zh-TW': '硬角三岔四尖',
-          'en-US': '3-point antler',
+          'en-US': '4-point antler',
+          key: '4pointAntler',
         },
         {
           'zh-TW': '解角',
           'en-US': 'antler drop',
+          key: 'antlerDrop',
         },
       ],
       widgetType: DataFieldWidgetType.select,
