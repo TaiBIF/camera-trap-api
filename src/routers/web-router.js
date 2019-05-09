@@ -5,7 +5,7 @@ const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
-const abnormalcameraLocationHandler = require('../handlers/abnormal-camera-location-handler');
+const abnormalCameraLocationHandler = require('../handlers/abnormal-camera-location-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const issueHandler = require('../handlers/issue-handler');
@@ -176,9 +176,13 @@ apiRouter.post(
 );
 
 // Abnormal Camera Location
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/abnormal-camera-location/:cameraLocationId([a-f\\d]{24})',
+  abnormalCameraLocationHandler.getAbnormalCameraLocation,
+);
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/abnormal-camera-location',
-  abnormalcameraLocationHandler.addAbnormalCameraLocation,
+  abnormalCameraLocationHandler.addAbnormalCameraLocation,
 );
 
 apiRouter.get('/users', userHandler.getUsers);
