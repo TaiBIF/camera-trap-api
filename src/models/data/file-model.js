@@ -50,6 +50,7 @@ const schema = utils.generateSchema(
     collection: 'Files',
   },
 );
+
 schema.post('remove', file => {
   if (file.exif) {
     ExchangeableImageFileModel.deleteOne({ _id: file.exif }).catch(error => {
@@ -113,23 +114,22 @@ schema.method('getUrl', function() {
   return utils.getFileUrl(this.type, this.getFilename());
 });
 
-const model = mongoose.model('FileModel', schema);
-
-model.prototype.getExtensionName = function() {
+schema.method('getExtensionName', function() {
   return path
     .extname(this.originalFilename)
     .replace('.', '')
     .toLowerCase();
-};
-model.prototype.getFilename = function() {
+});
+
+schema.method('getFilename', function() {
   /*
   Get the filename on S3.
   @returns {string}
    */
   return `${this._id}.${this.getExtensionName()}`;
-};
+});
 
-model.prototype.saveWithContent = function(content) {
+schema.method('saveWithContent', function(content) {
   /*
   Save the document and update the binary content to S3.
   @param content {Buffer|Stream} Set .size by yourself when it is stream.
@@ -235,9 +235,9 @@ model.prototype.saveWithContent = function(content) {
         throw new Error('error type');
     }
   });
-};
+});
 
-model.prototype.dump = function() {
+schema.method('dump', function() {
   return {
     id: `${this._id}`,
     type: this.type,
@@ -246,6 +246,6 @@ model.prototype.dump = function() {
     url: this.getUrl(),
     size: this.size,
   };
-};
+});
 
-module.exports = model;
+module.exports = mongoose.model('FileModel', schema);
