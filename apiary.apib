@@ -3080,13 +3080,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 - The general-account gets affiliated projects and who is a project manager.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
-
+]
 + Request Add a member into the project (application/json)
 
     + Body
 
             {
               "user": "name@example.com",
+              "role": "manager"
+            }
+            
+            or,
+            
+            {
+              "user": "0000-0002-6376-3705",
               "role": "manager"
             }
 
