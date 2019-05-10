@@ -15,7 +15,7 @@
 </p>
 
 ## Setup the develop environment
-### 1. Clone repositories
+### 1. Clone repository
 ```bash
 # host
 $ git clone git@github.com:TaiBIF/camera-trap-api.git
