@@ -113,6 +113,27 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         });
       }
 
+      // 進階篩選 DataField
+      if (req.query.dataFieldsQuery) {
+        req.query.dataFieldsQuery.split(',').forEach( function(fieldQuery) {
+          const fieldQueryList = fieldQuery.split(':');
+          const dataFieldId = fieldQueryList[0];
+          const dataFieldValue = fieldQueryList[1];
+          if (fieldQueryList.length <= 1) {
+            throw new errors.Http404();
+          }
+          //const DataField
+          query.where({
+            fields: {
+              $elemMatch: {
+                dataField: dataFieldId,
+                value: dataFieldValue
+              }
+            }
+          });
+        });
+      }
+
       if (!/\.csv$/i.test(req.path)) {
         // return json
         query.populate('file');
