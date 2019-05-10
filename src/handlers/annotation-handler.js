@@ -239,7 +239,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
 
                       switch (dataField.widgetType) {
                         case DataFieldWidgetType.select:
-                          if (annotationField) {
+                          if (annotationField.value.selectId) {
                             row[
                               systemRowQuantity +
                                 customDataFieldIds.indexOf(
@@ -265,7 +265,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                               customDataFieldIds.indexOf(
                                 `${annotationField.dataField._id}`,
                               )
-                          ] = annotationField
+                          ] = annotationField.value.time
                             ? utils.stringifyTimeToCSV(
                                 annotationField.value.time,
                                 config.defaultTimezone,
@@ -279,7 +279,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                               customDataFieldIds.indexOf(
                                 `${annotationField.dataField._id}`,
                               )
-                          ] = annotationField ? annotationField.value.text : '';
+                          ] = annotationField.value.text ? annotationField.value.text : '';
                       }
                   }
                 });
