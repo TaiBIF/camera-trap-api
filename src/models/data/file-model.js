@@ -156,13 +156,13 @@ model.prototype.saveWithContent = function(content) {
           });
       case FileType.annotationImage:
         return Promise.all([
-          utils.uploadToS3(
-            content,
-            `${
+          utils.uploadToS3({
+            Key: `${
               config.s3.folders.annotationOriginalImages
             }/${this.getFilename()}`,
-            true,
-          ),
+            Body: content,
+            ACL: 'public-read',
+          }),
           utils.resizeImageAndUploadToS3({
             buffer: content,
             filename: `${
@@ -210,27 +210,25 @@ model.prototype.saveWithContent = function(content) {
           .then(() => this.save());
       case FileType.annotationZIP:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
-            false,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
+            Body: content,
+          })
           .then(() => this);
       case FileType.annotationCSV:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
-            false,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
+            Body: content,
+          })
           .then(() => this);
       case FileType.issueAttachment:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
-            true,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
+            Body: content,
+            ACL: 'public-read',
+          })
           .then(() => this);
       default:
         throw new Error('error type');

@@ -240,29 +240,25 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
     });
   });
 
-exports.uploadToS3 = (buffer, filename, isPublic) =>
+exports.uploadToS3 = (args = {}) =>
   /*
   Upload the image to storage.
-  @param buffer {Buffer}
-  @param filename {string} The file name with path.
-  @param isPublic {bool}
+  @param args {Object} The params for s3.upload().
   @returns {Promise<Buffer>}
    */
   new Promise((resolve, reject) => {
     // upload to S3
     const params = {
+      ...args,
       Bucket: config.s3.bucket,
-      Key: filename,
-      Body: buffer,
-      ACL: isPublic ? 'public-read' : undefined,
-      ContentType: mime.lookup(filename),
+      ContentType: mime.lookup(args.Key),
       CacheControl: 'max-age=31536000', // 365days
     };
     _s3.upload(params, error_ => {
       if (error_) {
         return reject(error_);
       }
-      resolve(buffer);
+      resolve(args.Body);
     });
   });
 
@@ -357,7 +353,11 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               }
               Promise.all([
                 result,
-                exports.uploadToS3(buffer, args.filename, args.isPublic),
+                exports.uploadToS3({
+                  Key: args.filename,
+                  Body: buffer,
+                  ACL: args.isPublic ? 'public-read' : undefined,
+                }),
                 exif,
               ])
                 .then(results => resolve(results))
