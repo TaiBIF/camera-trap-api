@@ -162,6 +162,7 @@ model.prototype.saveWithContent = function(content) {
             }/${this.getFilename()}`,
             Body: content,
             ACL: 'public-read',
+            StorageClass: 'STANDARD_IA',
           }),
           utils.resizeImageAndUploadToS3({
             buffer: content,
