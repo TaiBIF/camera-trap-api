@@ -46,8 +46,14 @@ $ npm start
 $ node . -c
 ```
 ### Insert database default data.
+**Don't run this command twice.**
 ```bash
 $ node . -i
+```
+### Create MediaConvert job template.
+Please remove the old template by yourself.
+```bash
+$ node . -m
 ```
 
 ## Branching strategy
