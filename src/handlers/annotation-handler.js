@@ -279,7 +279,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                               customDataFieldIds.indexOf(
                                 `${annotationField.dataField._id}`,
                               )
-                          ] = annotationField.value.text ? annotationField.value.text : '';
+                          ] = annotationField.value.text
+                            ? annotationField.value.text
+                            : '';
                       }
                   }
                 });
