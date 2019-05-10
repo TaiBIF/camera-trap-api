@@ -345,7 +345,6 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
       ([result, exif]) =>
         new Promise((resolve, reject) => {
           result.gm
-            .noProfile()
             .quality(args.quality)
             .toBuffer(args.format, (error, buffer) => {
               if (error) {
