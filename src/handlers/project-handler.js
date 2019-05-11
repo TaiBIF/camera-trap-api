@@ -406,19 +406,23 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
                   data[1].push(cameraLocation.studyArea.parent.title['zh-TW']);
                   data[1].push(cameraLocation.studyArea.title['zh-TW']);
                   data[1].push(cameraLocation.name);
-                } else if (subStudyArea) {
-                  data[1].push(subStudyArea.parent.title['zh-TW']);
-                  data[1].push(subStudyArea.title['zh-TW']);
-                  data[1].push('');
-                } else if (studyArea) {
-                  data[1].push(studyArea.title['zh-TW']);
-                  data[1].push('');
-                  data[1].push('');
                 } else {
+                  data[1].push(cameraLocation.studyArea.title['zh-TW']);
                   data[1].push('');
-                  data[1].push('');
-                  data[1].push('');
+                  data[1].push(cameraLocation.name);
                 }
+              } else if (subStudyArea) {
+                data[1].push(subStudyArea.parent.title['zh-TW']);
+                data[1].push(subStudyArea.title['zh-TW']);
+                data[1].push('');
+              } else if (studyArea) {
+                data[1].push(studyArea.title['zh-TW']);
+                data[1].push('');
+                data[1].push('');
+              } else {
+                data[1].push('');
+                data[1].push('');
+                data[1].push('');
               }
               break;
             case DataFieldSystemCode.fileName:
