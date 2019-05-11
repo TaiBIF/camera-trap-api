@@ -16,6 +16,7 @@ const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
 const userHandler = require('../handlers/user-handler');
+const LocationMonthRetrievedHandler = require('../handlers/location-month-retrieved-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -186,6 +187,12 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_unlock',
   cameraLocationHandler.unlockCameraLocation,
 );
+
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/location-month-retrieved',
+  LocationMonthRetrievedHandler.LocationMonthRetrieved,
+);
+
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
