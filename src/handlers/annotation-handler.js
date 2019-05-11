@@ -17,6 +17,7 @@ const AnnotationsSearchForm = require('../forms/annotation/annotations-search-fo
 const AnnotationForm = require('../forms/annotation/annotation-form');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const AnnotationFailureType = require('../models/const/annotation-failure-type');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 
@@ -371,6 +372,13 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
         formFieldIds.add(field.dataField);
       });
 
+      // Remove newSpecies failure flag.
+      const newSpeciesIndex = annotation.failures.indexOf(
+        AnnotationFailureType.newSpecies,
+      );
+      if (newSpeciesIndex >= 0 && (projectSpecies || !form.species)) {
+        annotation.failures.splice(newSpeciesIndex, 1);
+      }
       // Assign species.
       annotation.species = projectSpecies.species;
       // Assign fields.
