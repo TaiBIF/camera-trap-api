@@ -112,6 +112,11 @@ const model = mongoose.model(
             selectId: {
               type: Schema.ObjectId,
             },
+            selectLabel: {
+              // This field is just for debug.
+              // Don't search or dump by this field.
+              type: String,
+            },
           },
         },
       ],

@@ -413,6 +413,9 @@ exports.convertAnnotationFields = (fields, dataFieldTable) =>
           );
         }
         value.selectId = field.value;
+        value.selectLabel = dataFieldTable[field.dataField].options.find(
+          x => `${x._id}` === field.value,
+        )['zh-TW'];
         break;
       case DataFieldWidgetType.text:
       default:
