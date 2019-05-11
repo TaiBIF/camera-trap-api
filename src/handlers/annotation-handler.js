@@ -10,14 +10,13 @@ const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const ProjectModel = require('../models/data/project-model');
+const ProjectSpeciesModel = require('../models/data/project-species-model');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
-const SpeciesModel = require('../models/data/species-model');
 const AnnotationsSearchForm = require('../forms/annotation/annotations-search-form');
 const AnnotationForm = require('../forms/annotation/annotation-form');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
-const AnnotationFailureType = require('../models/const/annotation-failure-type');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 
@@ -325,20 +324,22 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  return Promise.all([
-    AnnotationModel.findById(req.params.annotationId)
-      .where({ state: AnnotationState.active })
-      .populate('file'),
-    SpeciesModel.findById(form.species),
-  ])
-    .then(([annotation, species]) =>
+  return AnnotationModel.findById(req.params.annotationId)
+    .where({ state: AnnotationState.active })
+    .populate('file')
+    .then(annotation =>
       Promise.all([
         ProjectModel.findById(annotation.project).populate('dataFields'),
         annotation,
-        species,
+        ProjectSpeciesModel.where({
+          project: annotation.project._id,
+          species: form.species,
+        })
+          .populate('species')
+          .findOne(),
       ]),
     )
-    .then(([project, annotation, species]) => {
+    .then(([project, annotation, projectSpecies]) => {
       if (!annotation) {
         throw new errors.Http404();
       }
@@ -348,16 +349,10 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
       ) {
         throw new errors.Http403();
       }
-      if (form.species) {
-        if (!species) {
-          throw new errors.Http404();
-        }
-        if (`${species.project._id}` !== `${project._id}`) {
-          throw new errors.Http400(
-            'The project of species and the project of the annotation are different.',
-          );
-        }
+      if (form.species && !projectSpecies) {
+        throw new errors.Http404();
       }
+
       // Validate form.fields.
       const projectDataFields = {}; // { "dataFieldId": DataField }
       const formFieldIds = new Set();
@@ -376,15 +371,8 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
         formFieldIds.add(field.dataField);
       });
 
-      // Remove newSpecies failure flag.
-      const newSpeciesIndex = annotation.failures.indexOf(
-        AnnotationFailureType.newSpecies,
-      );
-      if (newSpeciesIndex >= 0) {
-        annotation.failures.splice(newSpeciesIndex, 1);
-      }
       // Assign species.
-      annotation.species = species;
+      annotation.species = projectSpecies.species;
       // Assign fields.
       annotation.fields = utils.convertAnnotationFields(
         form.fields,
@@ -416,25 +404,30 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400('The time is required.');
   }
 
+  console.log(form);
   return Promise.all([
     CameraLocationModel.findById(form.cameraLocation)
       .where({ state: CameraLocationState.active })
       .populate('project')
       .populate('studyArea'),
-    SpeciesModel.findById(form.species),
     FileModel.findById(form.file).where({
       type: { $in: [FileType.annotationImage, FileType.annotationVideo] },
     }),
   ])
-    .then(([cameraLocation, species, file]) =>
+    .then(([cameraLocation, file]) =>
       Promise.all([
         cameraLocation,
-        species,
+        ProjectSpeciesModel.where({
+          project: cameraLocation.project._id,
+          species: form.species,
+        })
+          .populate('species')
+          .findOne(),
         file,
         DataFieldModel.populate(cameraLocation, 'project.dataFields'),
       ]),
     )
-    .then(([cameraLocation, species, file]) => {
+    .then(([cameraLocation, projectSpecies, file]) => {
       if (!cameraLocation) {
         throw new errors.Http400('Not found the camera location.');
       }
@@ -451,15 +444,8 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
       ) {
         throw new errors.Http403();
       }
-      if (form.species) {
-        if (!species) {
-          throw new errors.Http400('Not found the species.');
-        }
-        if (`${species.project._id}` !== `${cameraLocation.project._id}`) {
-          throw new errors.Http400(
-            'The project of species and the project of the camera location are different.',
-          );
-        }
+      if (form.species && !projectSpecies) {
+        throw new errors.Http400('Not found the species.');
       }
       if (form.file) {
         if (!file) {
@@ -497,7 +483,7 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
         filename: form.filename,
         file: file || undefined,
         time: form.time,
-        species: species || undefined,
+        species: projectSpecies ? projectSpecies.species : undefined,
         fields: utils.convertAnnotationFields(form.fields, projectDataFields),
       });
       return annotation.saveAndAddRevision(req.user);

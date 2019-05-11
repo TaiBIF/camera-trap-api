@@ -8,6 +8,7 @@ const UserPermission = require('../models/const/user-permission');
 const ProjectRole = require('../models/const/project-role');
 const ProjectAreaModel = require('../models/data/project-area-model');
 const ProjectModel = require('../models/data/project-model');
+const ProjectSpeciesModel = require('../models/data/project-species-model');
 const ProjectsSearchForm = require('../forms/project/projects-search-form');
 const ProjectMemberForm = require('../forms/project/project-member-form');
 const ProjectForm = require('../forms/project/project-form');
@@ -15,7 +16,6 @@ const UserModel = require('../models/data/user-model');
 const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const SpeciesModel = require('../models/data/species-model');
-const SpeciesCode = require('../models/const/species-code');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 const StudyAreaModel = require('../models/data/study-area-model');
@@ -91,8 +91,9 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
     FileModel.findById(form.coverImageFile).where({
       type: FileType.projectCoverImage,
     }),
+    SpeciesModel.where({ isDefault: true }),
   ])
-    .then(([dataFields, projectAreas, coverImageFile]) => {
+    .then(([dataFields, projectAreas, coverImageFile, speciesList]) => {
       /*
       - Check the file is exists and it is a cover image.
       - Create a new project with the form.
@@ -127,50 +128,32 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
           dataFields.find(x => x.systemCode === DataFieldSystemCode.species),
         ],
       });
-      return Promise.all([project.save(), coverImageFile]);
+      return Promise.all([project.save(), coverImageFile, speciesList]);
     })
-    .then(([project, coverImageFile]) => {
+    .then(([project, coverImageFile, speciesList]) => {
       /*
-      - Add default species (空拍, 測試, 人) for this project.
+      - Add default species into the project.
       - Add coverImageFile.project and save it.
       @param project {ProjectModel}
       @param coverImageFile {FileModel}
       @returns {Promises<[{ProjectModel}]>}
        */
       // Add default species.
-      const species = [
-        new SpeciesModel({
-          project,
-          code: SpeciesCode.emptyShot,
-          title: {
-            'zh-TW': '空拍',
-          },
-          index: 0,
-        }),
-        new SpeciesModel({
-          project,
-          code: SpeciesCode.test,
-          title: {
-            'zh-TW': '測試',
-          },
-          index: 1,
-        }),
-        new SpeciesModel({
-          project,
-          code: SpeciesCode.people,
-          title: {
-            'zh-TW': '人',
-          },
-          index: 2,
-        }),
-      ];
-      const result = species.map(doc => doc.save());
+      const speciesReference = speciesList.map(
+        (species, index) =>
+          new ProjectSpeciesModel({
+            project,
+            species,
+            index,
+          }),
+      );
+      const tasks = speciesReference.map(x => x.save());
       if (coverImageFile) {
         coverImageFile.project = project;
-        result.push(coverImageFile.save());
+        tasks.push(coverImageFile.save());
       }
-      result.unshift(project);
-      return Promise.all(result);
+      tasks.unshift(project);
+      return Promise.all(tasks);
     })
     .then(([project]) => {
       res.json(project.dump());
@@ -378,91 +361,99 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
     })
       .findOne()
       .populate('studyArea'),
-    SpeciesModel.where({ project: req.params.projectId }).findOne(),
+    ProjectSpeciesModel.where({ project: req.params.projectId })
+      .populate('species')
+      .findOne(),
   ])
-    .then(([project, subStudyArea, studyArea, cameraLocation, species]) =>
-      Promise.all([
-        project,
-        subStudyArea,
-        studyArea,
-        cameraLocation,
-        species,
-        StudyAreaModel.populate(cameraLocation, 'studyArea.parent'),
-      ]),
+    .then(
+      ([project, subStudyArea, studyArea, cameraLocation, projectSpecies]) =>
+        Promise.all([
+          project,
+          subStudyArea,
+          studyArea,
+          cameraLocation,
+          projectSpecies,
+          StudyAreaModel.populate(cameraLocation, 'studyArea.parent'),
+        ]),
     )
-    .then(([project, subStudyArea, studyArea, cameraLocation, species]) => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-      ) {
-        throw new errors.Http403();
-      }
-
-      const data = [[], []];
-      project.dataFields.forEach(dataField => {
-        // head row
-        data[0].push(dataField.title['zh-TW']);
-        if (dataField.systemCode === DataFieldSystemCode.studyArea) {
-          data[0].push('子樣區');
+    .then(
+      ([project, subStudyArea, studyArea, cameraLocation, projectSpecies]) => {
+        if (!project) {
+          throw new errors.Http404();
+        }
+        if (
+          req.user.permission !== UserPermission.administrator &&
+          !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+        ) {
+          throw new errors.Http403();
         }
 
-        // data row
-        switch (dataField.systemCode) {
-          case DataFieldSystemCode.studyArea:
-            break;
-          case DataFieldSystemCode.cameraLocation:
-            if (cameraLocation) {
-              if (cameraLocation.studyArea.parent) {
-                data[1].push(cameraLocation.studyArea.parent.title['zh-TW']);
-                data[1].push(cameraLocation.studyArea.title['zh-TW']);
-                data[1].push(cameraLocation.name);
-              } else if (subStudyArea) {
-                data[1].push(subStudyArea.parent.title['zh-TW']);
-                data[1].push(subStudyArea.title['zh-TW']);
-                data[1].push('');
-              } else if (studyArea) {
-                data[1].push(studyArea.title['zh-TW']);
-                data[1].push('');
-                data[1].push('');
-              } else {
-                data[1].push('');
-                data[1].push('');
-                data[1].push('');
+        const data = [[], []];
+        project.dataFields.forEach(dataField => {
+          // head row
+          data[0].push(dataField.title['zh-TW']);
+          if (dataField.systemCode === DataFieldSystemCode.studyArea) {
+            data[0].push('子樣區');
+          }
+
+          // data row
+          switch (dataField.systemCode) {
+            case DataFieldSystemCode.studyArea:
+              break;
+            case DataFieldSystemCode.cameraLocation:
+              if (cameraLocation) {
+                if (cameraLocation.studyArea.parent) {
+                  data[1].push(cameraLocation.studyArea.parent.title['zh-TW']);
+                  data[1].push(cameraLocation.studyArea.title['zh-TW']);
+                  data[1].push(cameraLocation.name);
+                } else if (subStudyArea) {
+                  data[1].push(subStudyArea.parent.title['zh-TW']);
+                  data[1].push(subStudyArea.title['zh-TW']);
+                  data[1].push('');
+                } else if (studyArea) {
+                  data[1].push(studyArea.title['zh-TW']);
+                  data[1].push('');
+                  data[1].push('');
+                } else {
+                  data[1].push('');
+                  data[1].push('');
+                  data[1].push('');
+                }
               }
-            }
-            break;
-          case DataFieldSystemCode.fileName:
-            data[1].push('IMG_0001.jpg');
-            break;
-          case DataFieldSystemCode.time:
-            data[1].push(
-              utils.stringifyTimeToCSV(new Date(), config.defaultTimezone),
-            );
-            break;
-          case DataFieldSystemCode.species:
-            data[1].push(species.title['zh-TW']);
-            break;
-          default:
-            // custom fields
-            switch (dataField.widgetType) {
-              case DataFieldWidgetType.select:
-                data[1].push(dataField.options[0]['zh-TW']);
-                break;
-              case DataFieldWidgetType.time:
-                data[1].push(
-                  utils.stringifyTimeToCSV(new Date(), config.defaultTimezone),
-                );
-                break;
-              default:
-                data[1].push('');
-            }
-        }
-      });
-      return utils.csvStringifyAsync(data);
-    })
+              break;
+            case DataFieldSystemCode.fileName:
+              data[1].push('IMG_0001.jpg');
+              break;
+            case DataFieldSystemCode.time:
+              data[1].push(
+                utils.stringifyTimeToCSV(new Date(), config.defaultTimezone),
+              );
+              break;
+            case DataFieldSystemCode.species:
+              data[1].push(projectSpecies.species.title['zh-TW']);
+              break;
+            default:
+              // custom fields
+              switch (dataField.widgetType) {
+                case DataFieldWidgetType.select:
+                  data[1].push(dataField.options[0]['zh-TW']);
+                  break;
+                case DataFieldWidgetType.time:
+                  data[1].push(
+                    utils.stringifyTimeToCSV(
+                      new Date(),
+                      config.defaultTimezone,
+                    ),
+                  );
+                  break;
+                default:
+                  data[1].push('');
+              }
+          }
+        });
+        return utils.csvStringifyAsync(data);
+      },
+    )
     .then(csv => {
       res.setHeader('Content-disposition', 'attachment; filename=example.csv');
       res.contentType('csv');

@@ -43,6 +43,8 @@ if (op.argv.createCollections) {
   const DataFieldWidgetType = require('./src/models/const/data-field-widget-type');
   const DataFieldState = require('./src/models/const/data-field-state');
   const ProjectAreaModel = require('./src/models/data/project-area-model');
+  const SpeciesModel = require('./src/models/data/species-model');
+  const SpeciesCode = require('./src/models/const/species-code');
 
   const data = [
     new DataFieldModel({
@@ -155,6 +157,105 @@ if (op.argv.createCollections) {
       },
       widgetType: DataFieldWidgetType.text,
       state: DataFieldState.approved,
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      code: SpeciesCode.emptyShot,
+      title: {
+        'zh-TW': '空拍',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      code: SpeciesCode.testShot,
+      title: {
+        'zh-TW': '測試',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      code: SpeciesCode.human,
+      title: {
+        'zh-TW': '人',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '定時測試',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '工作照',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '山羌',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '水鹿',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '獼猴',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '鼬獾',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '山羊',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '野豬',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '鼠類',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '白鼻心',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '藍腹鷴',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '食蟹獴',
+      },
+    }),
+    new SpeciesModel({
+      isDefault: true,
+      title: {
+        'zh-TW': '狗',
+      },
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '台北市', 'en-US': 'Taipei City' },

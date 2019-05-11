@@ -431,6 +431,7 @@ exports.convertCsvToAnnotations = ({
   dataFields,
   cameraLocations,
   uploadSession,
+  projectSpecies,
   species,
   csvObject,
   timezone,
@@ -441,7 +442,8 @@ exports.convertCsvToAnnotations = ({
   @param dataFields {Array<DataFieldModel>} All data fields of this project.
   @param cameraLocations {Array<CameraLocationModel>} All camera locations of this project.
   @param uploadSession {UploadSessionModel}
-  @param species {Array<SpeciesModel>} All species of this project.
+  @param projectSpecies {Array<ProjectSpeciesModel>}
+  @param species {Array<SpeciesModel>} All species.
   @param csvObject {Array<Array<string>>}
   @param timezone {Number} minutes (480 -> GMT+8).
   @returns {Object}
@@ -505,24 +507,37 @@ exports.convertCsvToAnnotations = ({
           information.time = exports.parseTimeFromCSV(data, timezone);
           break;
         case DataFieldSystemCode.species:
+          if (!data) {
+            break;
+          }
           information.species = species.find(x => x.title['zh-TW'] === data);
-          if (!information.species && data) {
-            // mark this annotation use a automatically created species.
+          if (
+            information.species &&
+            !projectSpecies.find(
+              x => `${x.species._id}` === `${information.species._id}`,
+            )
+          ) {
+            // The species is not reference to the project.
+            // Add a new species flat into .failures.
             information.failures.push(AnnotationFailureType.newSpecies);
-            // find the species in the new items.
+          }
+
+          if (!information.species) {
+            // The species is not exists.
+            // Add a new species flat into .failures.
+            information.failures.push(AnnotationFailureType.newSpecies);
+            // Find the species from the new species list.
             information.species = result.newSpecies.find(
               x => x.title['zh-TW'] === data,
             );
           }
-          if (!information.species && data) {
+          if (!information.species) {
             // automatically create a new species.
             result.newSpecies.push(
               new SpeciesModel({
-                project,
                 title: {
                   'zh-TW': data,
                 },
-                index: species.length + result.newSpecies.length,
               }),
             );
             information.species =
