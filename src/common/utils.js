@@ -8,6 +8,7 @@ const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
+const pLimit = require('p-limit');
 const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
@@ -657,6 +658,38 @@ exports.csvStringifyAsync = data =>
       resolve(output);
     });
   });
+
+exports.removeNewSpeciesFailureFlag = (project, species) => {
+  /*
+  Remove the new-species flat at annotation.failures.
+  @param project {ProjectModel}
+  @param species {SpeciesModel}
+  @returns {Promise<{Array<AnnotationModel>}>}
+   */
+  const AnnotationModel = require('../models/data/annotation-model');
+  const AnnotationState = require('../models/const/annotation-state');
+
+  const limit = pLimit(5);
+  return AnnotationModel.where({
+    project: project._id,
+    state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+    species: species._id,
+    failures: AnnotationFailureType.newSpecies,
+  }).then(annotations =>
+    annotations.map(annotation =>
+      limit(() => {
+        const failures = [];
+        annotation.failures.forEach(x => {
+          if (x !== AnnotationFailureType.newSpecies) {
+            failures.push(x);
+          }
+        });
+        annotation.failures = failures;
+        return annotation.save();
+      }),
+    ),
+  );
+};
 
 exports.logError = (error, extra) => {
   /*

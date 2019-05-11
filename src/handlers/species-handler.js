@@ -1,6 +1,7 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
+const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
@@ -171,10 +172,15 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
               index,
             });
             tasks.push(projectSpecies.save());
+
+            // Find annotations by the species.
+            // Remove the flag `new-species` at annotation.failures.
+            utils.removeNewSpeciesFailureFlag(project, species).catch(error => {
+              utils.logError(error, { project, species });
+            });
           } else {
             // The species is not exists.
             // Create a new species and add the reference with the project.
-            // todo: remove the flat AnnotationFailureType.newSpecies in annotation.failures when the annotation.species is equal to this one.
             const newSpecies = new SpeciesModel({ title: form.title });
             const projectSpecies = new ProjectSpeciesModel({
               project,
