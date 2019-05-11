@@ -110,7 +110,6 @@ exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
             const groupedLockedCameraLocation = groupedLockedCameraLocations.find(
               x => `${x._id}` === `${studyArea._id}`,
             );
-            console.log(groupedLockedCameraLocations);
 
             studyAreaInformation.children = [];
             studyAreaInformation.failures = failure ? failure.count : 0;

@@ -412,7 +412,6 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400('The time is required.');
   }
 
-  console.log(form);
   return Promise.all([
     CameraLocationModel.findById(form.cameraLocation)
       .where({ state: CameraLocationState.active })
