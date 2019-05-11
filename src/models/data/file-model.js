@@ -214,6 +214,7 @@ schema.method('saveWithContent', function(content) {
           .uploadToS3({
             Key: `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
             Body: content,
+            StorageClass: 'STANDARD_IA',
           })
           .then(() => this);
       case FileType.annotationCSV:
@@ -221,6 +222,7 @@ schema.method('saveWithContent', function(content) {
           .uploadToS3({
             Key: `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
             Body: content,
+            StorageClass: 'STANDARD_IA',
           })
           .then(() => this);
       case FileType.issueAttachment:
