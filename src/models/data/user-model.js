@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const UserPermission = require('../const/user-permission');
 const utils = require('../../common/utils');
 
+const { Schema } = mongoose;
 utils.connectDatabase();
 const schema = utils.generateSchema(
   {
@@ -31,11 +32,14 @@ const schema = utils.generateSchema(
     hotkeys: [
       {
         _id: false,
-        speciesTitle: {
-          type: String,
+        species: {
+          type: Schema.ObjectId,
+          ref: 'SpeciesModel',
+          required: true,
         },
         hotkey: {
           type: String,
+          required: true,
         },
       },
     ],

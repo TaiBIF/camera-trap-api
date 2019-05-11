@@ -2,6 +2,7 @@ const UserPermission = require('../models/const/user-permission');
 const errors = require('../models/errors');
 const auth = require('../auth/authorization');
 const ProfileForm = require('../forms/account/profile-form');
+const SpeciesModel = require('../models/data/species-model');
 
 exports.logout = auth(
   /*
@@ -19,12 +20,14 @@ exports.logout = auth(
     }),
 );
 
-exports.getMyProfile = auth(UserPermission.all(), (req, res) => {
+exports.getMyProfile = auth(UserPermission.all(), (req, res) =>
   /*
   GET /api/v1/me
    */
-  res.json(req.user.dump(req));
-});
+  SpeciesModel.populate(req.user, 'hotkeys.species').then(() => {
+    res.json(req.user.dump(req));
+  }),
+);
 
 exports.updateMyProfile = auth(UserPermission.all(), (req, res) => {
   /*
@@ -36,8 +39,23 @@ exports.updateMyProfile = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  req.user.name = form.name;
-  req.user.email = form.email;
-  req.user.hotkeys = form.hotkeys;
-  return req.user.save().then(user => res.json(user.dump(req)));
+  return SpeciesModel.where({
+    _id: { $in: form.hotkeys.map(x => x.species) },
+  })
+    .then(speciesList => {
+      if (form.hotkeys.length !== speciesList.length) {
+        throw new errors.Http400('Some species are not found.');
+      }
+
+      req.user.name = form.name;
+      req.user.email = form.email;
+      req.user.hotkeys = form.hotkeys.map(item => ({
+        species: speciesList.find(x => `${x._id}` === item.species),
+        hotkey: item.hotkey,
+      }));
+      return req.user.save();
+    })
+    .then(user => {
+      res.json(user.dump(req));
+    });
 });
