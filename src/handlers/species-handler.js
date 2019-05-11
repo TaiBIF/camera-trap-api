@@ -8,6 +8,32 @@ const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
 
+exports.getSpecies = auth(UserPermission.all(), (req, res) => {
+  /*
+  GET /api/v1/species
+   */
+  const form = new SpeciesSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const query = SpeciesModel.where().sort('title.zh-TW');
+  return SpeciesModel.paginate(query, {
+    offset: form.index * form.size,
+    limit: form.size,
+  }).then(speciesList => {
+    res.json(
+      new PageList(
+        form.index,
+        form.size,
+        speciesList.totalDocs,
+        speciesList.docs,
+      ),
+    );
+  });
+});
+
 exports.getProjectSpecies = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/projects/:projectId/species

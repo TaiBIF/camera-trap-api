@@ -91,6 +91,7 @@ apiRouter.get(
   '/system-announcements',
   notificationHandler.getSystemAnnouncements,
 );
+apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
