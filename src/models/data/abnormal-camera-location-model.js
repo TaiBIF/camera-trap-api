@@ -1,40 +1,46 @@
-// const _ = require('lodash');
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const AbnormalType = require('../const/abnormal-type');
 
 const { Schema } = mongoose;
-
 utils.connectDatabase();
 
 const schema = utils.generateSchema(
   {
-    cameraLocationId: {
-      // 相機位置 ID
+    project: {
+      type: Schema.ObjectId,
+      ref: 'ProjectModel',
+      required: true,
+      index: {
+        name: 'Project',
+      },
+    },
+    cameraLocationName: {
+      // 相機位置
       type: Schema.ObjectId,
       ref: 'CameraLocationModel',
       required: true,
       index: {
-        name: 'CameraLocationId',
+        name: 'CameraLocationName',
       },
     },
-    // studyArea: {
-    //   // 樣區
-    //   type: Schema.ObjectId,
-    //   ref: 'StudyAreaModel',
-    //   required: true,
-    // },
-    // studySubarea: {
-    //   // 子樣區
-    //   type: Schema.ObjectId,
-    //   ref: 'StudysSubareaModel',
-    //   required: true,
-    // },
-    // name: {
-    //   // 相機位置
-    //   type: String,
-    //   required: true,
-    // },
+    studyArea: {
+      // 樣區
+      type: Schema.ObjectId,
+      ref: 'StudyAreaModel',
+      required: true,
+      index: {
+        name: 'StudyArea',
+      },
+    },
+    studySubarea: {
+      // 子樣區
+      type: String,
+      required: true,
+      index: {
+        name: 'StudySubarea',
+      },
+    },
     abnormalStartDate: {
       // 異常資料時間 (開始)
       type: Date,
@@ -48,7 +54,7 @@ const schema = utils.generateSchema(
       type: Date,
       required: true,
       index: {
-        name: 'AbnormalEdnDate',
+        name: 'AbnormalEndDate',
       },
     },
     abnormalType: {
@@ -69,22 +75,42 @@ const schema = utils.generateSchema(
         name: 'Remarks',
       },
     },
+    createTime: {
+      type: Date,
+      default: Date.now,
+      required: true,
+      index: {
+        name: 'CreateTime',
+      },
+    },
+    updateTime: {
+      type: Date,
+      default: Date.now,
+      required: true,
+      index: {
+        name: 'UpdateTime',
+      },
+    },
   },
   {
     collection: 'AbnormalCameraLocation',
   },
 );
-
 const model = mongoose.model('AbnormalCameraLocationModel', schema);
 
 model.prototype.dump = function() {
   const doc = {
     id: `${this._id}`,
     cameraLocationId: this.cameraLocationId,
+    cameraLocationName: this.cameraLocationName,
+    studyArea: this.studyArea,
+    studySubarea: this.studySubarea,
     abnormalStartDate: this.abnormalStartDate,
     abnormalEndDate: this.abnormalEndDate,
     abnormalType: this.abnormalType,
     remarks: this.remarks,
+    createTime: this.createTime,
+    updateTime: this.updateTime,
   };
 
   if (this.failures !== undefined) {
