@@ -23,7 +23,7 @@ exports.addIssue = (req, res) => {
   return FileModel.findById(form.attachmentFile)
     .where({ type: FileType.issueAttachment })
     .then(file => {
-      if (!file) {
+      if (form.attachmentFile && !file) {
         throw new errors.Http400('The attachment file not found.');
       }
 
