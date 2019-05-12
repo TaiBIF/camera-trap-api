@@ -86,11 +86,9 @@ exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
       }
 
       const statements = annotations.map(annotation => ({
-        $and: [
-          { state: AnnotationState.active },
-          { cameraLocation: annotation.cameraLocation._id },
-          { time: annotation.time },
-        ],
+        state: AnnotationState.active,
+        cameraLocation: annotation.cameraLocation._id,
+        time: annotation.time,
       }));
       return Promise.all([
         uploadSession,
