@@ -8,7 +8,6 @@ const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
-const pLimit = require('p-limit');
 const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
@@ -669,26 +668,30 @@ exports.removeNewSpeciesFailureFlag = (project, species) => {
   const AnnotationModel = require('../models/data/annotation-model');
   const AnnotationState = require('../models/const/annotation-state');
 
-  const limit = pLimit(5);
-  return AnnotationModel.where({
-    project: project._id,
-    state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
-    species: species._id,
-    failures: AnnotationFailureType.newSpecies,
-  }).then(annotations =>
-    annotations.map(annotation =>
-      limit(() => {
-        const failures = [];
-        annotation.failures.forEach(x => {
-          if (x !== AnnotationFailureType.newSpecies) {
-            failures.push(x);
-          }
+  return new Promise((resolve, reject) => {
+    AnnotationModel.where({
+      project: project._id,
+      state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+      species: species._id,
+      failures: AnnotationFailureType.newSpecies,
+    })
+      .cursor()
+      .on('error', error => {
+        reject(error);
+      })
+      .on('close', () => {
+        resolve();
+      })
+      .on('data', annotation => {
+        const newSpeciesIndex = annotation.failures.indexOf(
+          AnnotationFailureType.newSpecies,
+        );
+        annotation.failures.splice(newSpeciesIndex, 1);
+        annotation.save().catch(error => {
+          reject(error);
         });
-        annotation.failures = failures;
-        return annotation.save();
-      }),
-    ),
-  );
+      });
+  });
 };
 
 exports.logError = (error, extra) => {
