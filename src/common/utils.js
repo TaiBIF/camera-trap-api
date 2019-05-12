@@ -584,7 +584,11 @@ exports.convertCsvToAnnotations = ({
       !information.filename ||
       !information.time
     ) {
-      throw new Error(`Missing required fields at row ${row}.`);
+      throw new Error(
+        `Missing required fields at row ${row}.\n${JSON.stringify(
+          information,
+        )}`,
+      );
     }
     if (
       result.annotations.find(
