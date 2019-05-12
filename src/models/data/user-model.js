@@ -63,15 +63,20 @@ schema.method('isLogin', function() {
   return this.isNew === false;
 });
 schema.method('dump', function(req) {
+  let hotkeys;
+  if (req && req.user && `${req.user._id}` === `${this._id}`) {
+    hotkeys = this.hotkeys.map(x =>
+      x.species && typeof x.species.dump === 'function'
+        ? { species: x.species.dump(), hotkey: x.hotkey }
+        : { species: x.species, hotkey: x.hotkey },
+    );
+  }
   return {
     id: `${this._id}`,
     name: this.name,
     email: this.email,
     permission: this.permission,
-    hotkeys:
-      req && req.user && `${req.user._id}` === `${this._id}`
-        ? this.hotkeys
-        : undefined,
+    hotkeys,
   };
 });
 module.exports = mongoose.model('UserModel', schema);
