@@ -175,7 +175,7 @@ apiRouter.post(
   cameraLocationHandler.unlockCameraLocation,
 );
 apiRouter.post(
-  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/abnormal-camera-location',
+  '/projects/:projectId([a-f\\d]{24})/abnormal-camera-location',
   abnormalCameraLocationHandler.addAbnormalCameraLocation,
 );
 apiRouter.get('/users', userHandler.getUsers);

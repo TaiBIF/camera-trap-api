@@ -2,8 +2,6 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const StudyAreaModel = require('../models/data/study-area-model');
-const StudyAreaState = require('../models/const/study-area-state');
 const AbnormalCameraLocationModel = require('../models/data/abnormal-camera-location-model');
 const AbnormalCameraLocationForm = require('../forms/abnormal-camera-location/abnormal-camera-location-form');
 
@@ -18,17 +16,9 @@ exports.addAbnormalCameraLocation = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  return Promise.all([
-    ProjectModel.findById(req.params.projectId),
-    StudyAreaModel.findById(req.params.studyAreaId)
-      .where({ project: req.params.projectId })
-      .where({ state: StudyAreaState.active }),
-  ])
-    .then(([project, studyArea]) => {
+  return Promise.all([ProjectModel.findById(req.params.projectId)])
+    .then(([project]) => {
       if (!project) {
-        throw new errors.Http404();
-      }
-      if (!studyArea) {
         throw new errors.Http404();
       }
       if (!project.canManageBy(req.user)) {
@@ -38,7 +28,6 @@ exports.addAbnormalCameraLocation = auth(UserPermission.all(), (req, res) => {
       const abnormalCameraLocation = new AbnormalCameraLocationModel({
         ...form,
         project,
-        studyArea,
       });
       return abnormalCameraLocation.save();
     })
