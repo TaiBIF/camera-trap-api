@@ -4,7 +4,7 @@ const AbnormalType = require('../../models/const/abnormal-type');
 class AbnormalCameraLocationForm extends forms.Form {}
 
 AbnormalCameraLocationForm.define({
-  cameraLocationName: new forms.fields.StringField({
+  cameraLocation: new forms.fields.StringField({
     required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
@@ -22,7 +22,7 @@ AbnormalCameraLocationForm.define({
     required: true,
     validators: [forms.validators.anyOf(AbnormalType.all())],
   }),
-  remarks: new forms.fields.StringField({
+  note: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
 });

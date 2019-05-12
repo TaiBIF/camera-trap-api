@@ -7,7 +7,7 @@ const AbnormalCameraLocationForm = require('../forms/abnormal-camera-location/ab
 
 exports.addAbnormalCameraLocation = auth(UserPermission.all(), (req, res) => {
   /*
-  POST /api/v1/projects/:projectId/study-areas/:studyAreaId/abnormal-camera-location
+  POST /api/v1/projects/:projectId/abnormal-camera-location
    */
   const form = new AbnormalCameraLocationForm(req.body);
   const errorMessage = form.validate();

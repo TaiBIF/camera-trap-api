@@ -15,19 +15,18 @@ const schema = utils.generateSchema(
         name: 'Project',
       },
     },
-    cameraLocationName: {
+    cameraLocation: {
       // 相機位置
       type: Schema.ObjectId,
       ref: 'CameraLocationModel',
       required: true,
       index: {
-        name: 'CameraLocationName',
+        name: 'CameraLocation',
       },
     },
     studyArea: {
       // 樣區
-      type: Schema.ObjectId,
-      ref: 'StudyAreaModel',
+      type: String,
       required: true,
       index: {
         name: 'StudyArea',
@@ -68,28 +67,9 @@ const schema = utils.generateSchema(
         name: 'AbnormalType',
       },
     },
-    remarks: {
+    note: {
       // 註解
       type: String,
-      index: {
-        name: 'Remarks',
-      },
-    },
-    createTime: {
-      type: Date,
-      default: Date.now,
-      required: true,
-      index: {
-        name: 'CreateTime',
-      },
-    },
-    updateTime: {
-      type: Date,
-      default: Date.now,
-      required: true,
-      index: {
-        name: 'UpdateTime',
-      },
     },
   },
   {
@@ -101,24 +81,15 @@ const model = mongoose.model('AbnormalCameraLocationModel', schema);
 model.prototype.dump = function() {
   const doc = {
     id: `${this._id}`,
-    cameraLocationId: this.cameraLocationId,
-    cameraLocationName: this.cameraLocationName,
+    cameraLocation: this.cameraLocation,
     studyArea: this.studyArea,
     studySubarea: this.studySubarea,
     abnormalStartDate: this.abnormalStartDate,
     abnormalEndDate: this.abnormalEndDate,
     abnormalType: this.abnormalType,
-    remarks: this.remarks,
-    createTime: this.createTime,
-    updateTime: this.updateTime,
+    note: this.note,
   };
 
-  if (this.failures !== undefined) {
-    doc.failures = this.failures;
-  }
-  if (this.canTrash !== undefined) {
-    doc.canTrash = this.canTrash;
-  }
   return doc;
 };
 
