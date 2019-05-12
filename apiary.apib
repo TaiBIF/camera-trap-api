@@ -160,7 +160,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "permission": "general-account",
               "hotkeys": [
                 {
-                  "speciesTitle": "人",
+                  "species": {
+                    "id": "5cd661e332a98b60839c6caa",
+                    "title": {
+                      "zh-TW": "空拍"
+                    },
+                    "code": "empty-shot"
+                  },
                   "hotkey": "P"
                 }
               ]
@@ -190,8 +196,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "item": {
                     "type": "object",
                     "properties": {
-                      "speciesTitle": {
-                        "type": "string"
+                      "species": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
                       },
                       "hotkey": {
                         "type": "string"
@@ -215,7 +234,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "email": "email@example.com",
               "hotkeys": [
                 {
-                  "speciesTitle": "人",
+                  "species": "5cd661e332a98b60839c6caa",
                   "hotkey": "P"
                 }
               ]
@@ -239,7 +258,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "item": {
                     "type": "object",
                     "properties": {
-                      "speciesTitle": {
+                      "species": {
                         "type": "string"
                       },
                       "hotkey": {
@@ -262,7 +281,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "permission": "general-account",
               "hotkeys": [
                 {
-                  "speciesTitle": "人",
+                  "species": {
+                    "id": "5cd661e332a98b60839c6caa",
+                    "title": {
+                      "zh-TW": "空拍"
+                    },
+                    "code": "empty-shot"
+                  },
                   "hotkey": "P"
                 }
               ]
@@ -293,8 +318,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "item": {
                     "type": "object",
                     "properties": {
-                      "speciesTitle": {
-                        "type": "string"
+                      "species": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
                       },
                       "hotkey": {
                         "type": "string"
@@ -4773,6 +4811,52 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   }
                 }
               }
+            }
+
+
+# Group Species
+## System species [/species]
+### Get all species [GET /species{?index,size}]
+取得系統所有物種。
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + index: 0 (number, optional) - The page index.
+        + Default: 0
+    + size: 9007199254740991 (number, optional) - The page size (1~9007199254740991).
+        + Default: 9007199254740991
+
++ Request Get all species (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 9007199254740991,
+              "total": 3,
+              "items": [
+                {
+                  "id": "5cd6941d0353661e18a1d370",
+                  "title": {
+                    "zh-TW": "NA"
+                  }
+                },
+                {
+                  "id": "5cd661e332a98b60839c6cac",
+                  "title": {
+                    "zh-TW": "人"
+                  },
+                  "code": "human"
+                },
+                {
+                  "id": "5cd661e332a98b60839c6cad",
+                  "title": {
+                    "zh-TW": "定時測試"
+                  }
+                }
+              ]
             }
 
 
