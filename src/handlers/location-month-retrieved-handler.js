@@ -18,3 +18,21 @@ exports.LocationMonthRetrieved = (req, res) => {
       res.json(records);
     });
 };
+
+exports.retrievedByStudyArea = (req, res) => {
+  const { projectId, studyAreaId } = req.params;
+
+  return ProjectModel.findById(projectId)
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!project.canManageBy(req.user)) {
+        throw new errors.Http403();
+      }
+      return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId);
+    })
+    .then(records => {
+      res.json(records);
+    });
+};

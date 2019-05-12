@@ -192,6 +192,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/location-month-retrieved',
   LocationMonthRetrievedHandler.LocationMonthRetrieved,
 );
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/location-month-retrieved',
+  LocationMonthRetrievedHandler.retrievedByStudyArea,
+);
 
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);

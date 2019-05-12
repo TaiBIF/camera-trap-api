@@ -5,6 +5,7 @@ const ProjectRole = require('../const/project-role');
 const UserPermission = require('../../models/const/user-permission');
 const getMonthRetrieved = require('../../models/static/project/static-getMonthRetrieved');
 const getRetrievedByProjectStudyArea = require('../../models/static/project/static-getRetrievedByProjectStudyArea');
+const getRetrievedBySingleStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -165,6 +166,8 @@ schema.method('canManageBy', canManageBy);
 
 schema.static('getMonthRetrieved', getMonthRetrieved);
 schema.static('getRetrievedByProjectStudyArea', getRetrievedByProjectStudyArea);
+schema.static('getRetrievedByStudyArea', getRetrievedBySingleStudyArea);
+
 //
 const model = mongoose.model('ProjectModel', schema);
 
