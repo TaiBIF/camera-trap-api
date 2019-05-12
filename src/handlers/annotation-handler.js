@@ -11,6 +11,7 @@ const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
+const SpeciesModel = require('../models/data/species-model');
 const StudyAreaModel = require('../models/data/study-area-model');
 const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationsSearchForm = require('../forms/annotation/annotations-search-form');
@@ -325,70 +326,121 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  return AnnotationModel.findById(req.params.annotationId)
-    .where({ state: AnnotationState.active })
-    .populate('file')
-    .then(annotation =>
-      Promise.all([
-        ProjectModel.findById(annotation.project).populate('dataFields'),
-        annotation,
-        ProjectSpeciesModel.where({
-          project: annotation.project._id,
-          species: form.species,
-        })
-          .populate('species')
-          .findOne(),
-      ]),
-    )
-    .then(([project, annotation, projectSpecies]) => {
+  return Promise.all([
+    AnnotationModel.findById(req.params.annotationId)
+      .where({ state: AnnotationState.active })
+      .populate('file'),
+    form.speciesTitle
+      ? SpeciesModel.where({ 'title.zh-TW': form.speciesTitle }).findOne()
+      : null,
+  ])
+    .then(([annotation, species]) => {
       if (!annotation) {
         throw new errors.Http404();
       }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-      ) {
-        throw new errors.Http403();
-      }
-      if (form.species && !projectSpecies) {
-        throw new errors.Http404();
-      }
 
-      // Validate form.fields.
-      const projectDataFields = {}; // { "dataFieldId": DataField }
-      const formFieldIds = new Set();
-      project.dataFields.forEach(dataField => {
-        projectDataFields[`${dataField._id}`] = dataField;
-      });
-      (form.fields || []).forEach(field => {
-        if (!(field.dataField in projectDataFields)) {
-          throw new errors.Http400(
-            `Data field ${field.dataField} not in the project.`,
-          );
-        }
-        if (formFieldIds.has(field.dataField)) {
-          throw new errors.Http400(`${field.dataField} is duplicate.`);
-        }
-        formFieldIds.add(field.dataField);
-      });
-
-      // Remove newSpecies failure flag.
-      const newSpeciesIndex = annotation.failures.indexOf(
-        AnnotationFailureType.newSpecies,
-      );
-      if (newSpeciesIndex >= 0 && (projectSpecies || !form.species)) {
-        annotation.failures.splice(newSpeciesIndex, 1);
-      }
-      // Assign species.
-      annotation.species = projectSpecies.species;
-      // Assign fields.
-      annotation.fields = utils.convertAnnotationFields(
-        form.fields,
-        projectDataFields,
-      );
-      return annotation.saveAndAddRevision(req.user);
+      return Promise.all([
+        ProjectModel.findById(annotation.project._id).populate('dataFields'),
+        annotation,
+        species,
+        species
+          ? ProjectSpeciesModel.where({
+              project: annotation.project._id,
+              species: species._id,
+            }).findOne()
+          : null,
+        ProjectSpeciesModel.where({
+          project: annotation.project._id,
+        }).countDocuments(),
+      ]);
     })
-    .then(annotation => {
+    .then(
+      ([
+        project,
+        annotation,
+        species,
+        projectSpecies,
+        projectSpeciesQuantity,
+      ]) => {
+        if (
+          req.user.permission !== UserPermission.administrator &&
+          !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+        ) {
+          throw new errors.Http403();
+        }
+
+        // Validate form.fields.
+        const projectDataFields = {}; // { "dataFieldId": DataField }
+        const formFieldIds = new Set();
+        project.dataFields.forEach(dataField => {
+          projectDataFields[`${dataField._id}`] = dataField;
+        });
+        (form.fields || []).forEach(field => {
+          if (!(field.dataField in projectDataFields)) {
+            throw new errors.Http400(
+              `Data field ${field.dataField} not in the project.`,
+            );
+          }
+          if (formFieldIds.has(field.dataField)) {
+            throw new errors.Http400(`${field.dataField} is duplicate.`);
+          }
+          formFieldIds.add(field.dataField);
+        });
+
+        let tasks = [];
+        let isAddedNewProjectSpecies = false;
+        if (form.speciesTitle) {
+          if (!species) {
+            // The species isn't in the system.
+            species = new SpeciesModel({
+              title: {
+                'zh-TW': form.speciesTitle,
+              },
+            });
+            projectSpecies = new ProjectSpeciesModel({
+              project,
+              species,
+              index: projectSpeciesQuantity,
+            });
+            tasks = [project, species.save(), projectSpecies.save()];
+            isAddedNewProjectSpecies = true;
+          } else if (!projectSpecies) {
+            // The species is already in the system, but not in the project.
+            projectSpecies = new ProjectSpeciesModel({
+              project,
+              species,
+              index: projectSpeciesQuantity,
+            });
+            tasks = [project, species, projectSpecies.save()];
+            isAddedNewProjectSpecies = true;
+          }
+        }
+
+        // Remove newSpecies failure flag.
+        const newSpeciesIndex = annotation.failures.indexOf(
+          AnnotationFailureType.newSpecies,
+        );
+        if (newSpeciesIndex >= 0) {
+          annotation.failures.splice(newSpeciesIndex, 1);
+        }
+        // Assign species.
+        annotation.species = species || undefined;
+        // Assign fields.
+        annotation.fields = utils.convertAnnotationFields(
+          form.fields,
+          projectDataFields,
+        );
+        tasks.unshift(isAddedNewProjectSpecies);
+        tasks.unshift(annotation.saveAndAddRevision(req.user));
+        return Promise.all(tasks);
+      },
+    )
+    .then(([annotation, isAddedNewProjectSpecies, project, species]) => {
+      if (isAddedNewProjectSpecies) {
+        utils.removeNewSpeciesFailureFlag(project, species).catch(error => {
+          utils.logError(error, { project, species, annotation });
+        });
+      }
       res.json(annotation.dump());
     });
 });
@@ -417,24 +469,12 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
       .where({ state: CameraLocationState.active })
       .populate('project')
       .populate('studyArea'),
+    SpeciesModel.where({ 'title.zh-TW': form.speciesTitle }).findOne(),
     FileModel.findById(form.file).where({
       type: { $in: [FileType.annotationImage, FileType.annotationVideo] },
     }),
   ])
-    .then(([cameraLocation, file]) =>
-      Promise.all([
-        cameraLocation,
-        ProjectSpeciesModel.where({
-          project: cameraLocation.project._id,
-          species: form.species,
-        })
-          .populate('species')
-          .findOne(),
-        file,
-        DataFieldModel.populate(cameraLocation, 'project.dataFields'),
-      ]),
-    )
-    .then(([cameraLocation, projectSpecies, file]) => {
+    .then(([cameraLocation, species, file]) => {
       if (!cameraLocation) {
         throw new errors.Http400('Not found the camera location.');
       }
@@ -451,9 +491,6 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
       ) {
         throw new errors.Http403();
       }
-      if (form.species && !projectSpecies) {
-        throw new errors.Http400('Not found the species.');
-      }
       if (form.file) {
         if (!file) {
           throw new errors.Http400('Not found the file.');
@@ -464,38 +501,102 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
           );
         }
       }
-      // Validate form.fields.
-      const projectDataFields = {}; // { "dataFieldId": DataField }
-      const formFieldIds = new Set();
-      cameraLocation.project.dataFields.forEach(dataField => {
-        projectDataFields[`${dataField._id}`] = dataField;
-      });
-      (form.fields || []).forEach(field => {
-        if (!(field.dataField in projectDataFields)) {
-          throw new errors.Http400(
-            `Data field ${field.dataField} not in the project.`,
-          );
-        }
-        if (formFieldIds.has(field.dataField)) {
-          throw new errors.Http400(`${field.dataField} is duplicate.`);
-        }
-        formFieldIds.add(field.dataField);
-      });
 
-      const annotation = new AnnotationModel({
-        project: cameraLocation.project,
-        studyArea: cameraLocation.studyArea,
+      return Promise.all([
+        cameraLocation.project,
         cameraLocation,
-        state: AnnotationState.active,
-        filename: form.filename,
-        file: file || undefined,
-        time: form.time,
-        species: projectSpecies ? projectSpecies.species : undefined,
-        fields: utils.convertAnnotationFields(form.fields, projectDataFields),
-      });
-      return annotation.saveAndAddRevision(req.user);
+        species,
+        species
+          ? ProjectSpeciesModel.where({
+              project: cameraLocation.project._id,
+              species: species._id,
+            }).findOne()
+          : null,
+        ProjectSpeciesModel.where({
+          project: cameraLocation.project._id,
+        }).countDocuments(),
+        file,
+        DataFieldModel.populate(cameraLocation.project, 'dataFields'),
+      ]);
     })
-    .then(annotation => {
+    .then(
+      ([
+        project,
+        cameraLocation,
+        species,
+        projectSpecies,
+        projectSpeciesQuantity,
+        file,
+      ]) => {
+        // Validate form.fields.
+        const projectDataFields = {}; // { "dataFieldId": DataField }
+        const formFieldIds = new Set();
+        project.dataFields.forEach(dataField => {
+          projectDataFields[`${dataField._id}`] = dataField;
+        });
+        (form.fields || []).forEach(field => {
+          if (!(field.dataField in projectDataFields)) {
+            throw new errors.Http400(
+              `Data field ${field.dataField} not in the project.`,
+            );
+          }
+          if (formFieldIds.has(field.dataField)) {
+            throw new errors.Http400(`${field.dataField} is duplicate.`);
+          }
+          formFieldIds.add(field.dataField);
+        });
+
+        let tasks = [];
+        let isAddedNewProjectSpecies = false;
+        if (form.speciesTitle) {
+          if (!species) {
+            // The species isn't in the system.
+            species = new SpeciesModel({
+              title: {
+                'zh-TW': form.speciesTitle,
+              },
+            });
+            projectSpecies = new ProjectSpeciesModel({
+              project,
+              species,
+              index: projectSpeciesQuantity,
+            });
+            tasks = [project, species.save(), projectSpecies.save()];
+            isAddedNewProjectSpecies = true;
+          } else if (!projectSpecies) {
+            // The species is already in the system, but not in the project.
+            projectSpecies = new ProjectSpeciesModel({
+              project,
+              species,
+              index: projectSpeciesQuantity,
+            });
+            tasks = [project, species, projectSpecies.save()];
+            isAddedNewProjectSpecies = true;
+          }
+        }
+
+        const annotation = new AnnotationModel({
+          project,
+          studyArea: cameraLocation.studyArea,
+          cameraLocation,
+          state: AnnotationState.active,
+          filename: form.filename,
+          file: file || undefined,
+          time: form.time,
+          species: species || undefined,
+          fields: utils.convertAnnotationFields(form.fields, projectDataFields),
+        });
+        tasks.unshift(isAddedNewProjectSpecies);
+        tasks.unshift(annotation.saveAndAddRevision(req.user));
+        return Promise.all(tasks);
+      },
+    )
+    .then(([annotation, isAddedNewProjectSpecies, project, species]) => {
+      if (isAddedNewProjectSpecies) {
+        utils.removeNewSpeciesFailureFlag(project, species).catch(error => {
+          utils.logError(error, { project, species, annotation });
+        });
+      }
       res.json(annotation.dump());
     });
 });
