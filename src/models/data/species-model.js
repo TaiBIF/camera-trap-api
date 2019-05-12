@@ -16,8 +16,8 @@ const schema = utils.generateSchema(
         type: String,
         required: true,
         index: {
-          // We will use species to search from .csv.
           name: 'TitleZhTW',
+          unique: true,
         },
       },
     },
