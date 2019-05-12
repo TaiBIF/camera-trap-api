@@ -209,11 +209,8 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           tasks.unshift(file.saveWithContent(req.file.buffer));
         } else {
           // disk storage
-          file.size = req.file.size;
-          const stream = fs.createReadStream(req.file.path);
           tasks.unshift(
-            file.saveWithContent(stream).then(result => {
-              stream.close();
+            file.saveWithContent(req.file.path).then(result => {
               fs.unlinkSync(req.file.path);
               return result;
             }),
