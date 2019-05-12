@@ -12,7 +12,7 @@ exports.LocationMonthRetrieved = (req, res) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getMonthRetrieved(projectId);
+      return ProjectModel.getRetrievedByProjectStudyArea(projectId);
     })
     .then(records => {
       res.json(records);
