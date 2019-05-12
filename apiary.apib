@@ -6099,7 +6099,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     
             {
               "type": "issue",
-              "category": "system",
+              "categories": ["system"],
               "description": "hello",
               "email": "email@example.com",
               "attachmentFile": "5ccd2c3feb8a98a70489c322"
@@ -6116,18 +6116,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "description": "問題回報, 意見反饋",
                   "enum": ["issue", "suggestion"]
                 },
-                "category": {
-                  "type": "string",
-                  "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
-                  "enum": [
-                    "system",
-                    "account",
-                    "project-management",
-                    "file-upload",
-                    "data-edit",
-                    "search-and-download",
-                    "others"
-                  ]
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
+                    "enum": [
+                      "system",
+                      "account",
+                      "project-management",
+                      "file-upload",
+                      "data-edit",
+                      "search-and-download",
+                      "others"
+                    ]
+                  }
                 },
                 "description": {
                   "type": "string",
@@ -6150,7 +6153,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             {
               "id": "5ccfa6d1657c6220127b048b",
               "type": "issue",
-              "category": "system",
+              "category": ["system"],
               "description": "hello",
               "email": "email@example.com",
               "attachmentFile": {
@@ -6175,8 +6178,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "type": {
                   "type": "string"
                 },
-                "category": {
-                  "type": "string"
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
+                    "enum": [
+                      "system",
+                      "account",
+                      "project-management",
+                      "file-upload",
+                      "data-edit",
+                      "search-and-download",
+                      "others"
+                    ]
+                  }
                 },
                 "description": {
                   "type": "string"
