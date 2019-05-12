@@ -8,9 +8,11 @@ IssueForm.define({
     required: true,
     validators: [forms.validators.anyOf(IssueType.all())],
   }),
-  category: new forms.fields.StringField({
-    required: true,
-    validators: [forms.validators.anyOf(IssueCategory.all())],
+  categories: new forms.fields.ArrayField({
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.anyOf(IssueCategory.all())],
+    }),
   }),
   description: new forms.fields.StringField({
     required: true,

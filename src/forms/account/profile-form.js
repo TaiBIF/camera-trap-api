@@ -13,16 +13,16 @@ ProfileForm.define({
     ],
   }),
   hotkeys: new forms.fields.ArrayField({
+    filter: value => value || [],
     subField: new forms.fields.Field({
       validators: [
         (field = {}) => {
+          const idValidator = forms.validators.id();
           const lengthValidator = forms.validators.length({
             min: 1,
             max: 1024,
           });
-          return (
-            lengthValidator(field.speciesTitle) || lengthValidator(field.hotkey)
-          );
+          return idValidator(field.species) || lengthValidator(field.hotkey);
         },
       ],
     }),

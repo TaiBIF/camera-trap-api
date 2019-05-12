@@ -1,8 +1,11 @@
 const os = require('os');
 const util = require('util');
+const { Readable } = require('stream');
 const AWS = require('aws-sdk');
 const config = require('config');
 const csvStringify = require('csv-stringify');
+const exifTool = require('node-exiftool');
+const exifToolBin = require('dist-exiftool');
 const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
@@ -240,29 +243,29 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
     });
   });
 
-exports.uploadToS3 = (buffer, filename, isPublic) =>
+exports.uploadToS3 = (args = {}) =>
   /*
   Upload the image to storage.
-  @param buffer {Buffer}
-  @param filename {string} The file name with path.
-  @param isPublic {bool}
-  @returns {Promise<Buffer>}
+  @param args {Object} The params for s3.upload().
+    Body: {Buffer|stream} When it is stream this function will automatically close the stream.
+  @returns {Promise<Buffer|stream>}
    */
   new Promise((resolve, reject) => {
     // upload to S3
     const params = {
+      ...args,
       Bucket: config.s3.bucket,
-      Key: filename,
-      Body: buffer,
-      ACL: isPublic ? 'public-read' : undefined,
-      ContentType: mime.lookup(filename),
+      ContentType: mime.lookup(args.Key),
       CacheControl: 'max-age=31536000', // 365days
     };
-    _s3.upload(params, error_ => {
-      if (error_) {
-        return reject(error_);
+    _s3.upload(params, error => {
+      if (typeof args.Body.close === 'function') {
+        args.Body.close();
       }
-      resolve(buffer);
+      if (error) {
+        return reject(error);
+      }
+      resolve(args.Body);
     });
   });
 
@@ -320,12 +323,10 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     quality {Number|null} The image quality. The default is 86.
     isFillUp {bool}
     isPublic {bool}
-    isReturnExif {bool}
   @returns {Promise<object>}
     buffer: {Buffer}
     width: {int}
     height: {int}
-    exif: {string|null}
    */
   args.quality = args.quality || 86;
   return exports
@@ -333,23 +334,7 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     .then(
       result =>
         new Promise((resolve, reject) => {
-          if (!args.isReturnExif) {
-            return resolve([result]);
-          }
-          result.gm.identify('%[EXIF:*]', (error, exif) => {
-            if (error) {
-              exports.logError(error, { filename: args.filename });
-              return resolve([result]);
-            }
-            return resolve([result, exif]);
-          });
-        }),
-    )
-    .then(
-      ([result, exif]) =>
-        new Promise((resolve, reject) => {
           result.gm
-            .noProfile()
             .quality(args.quality)
             .toBuffer(args.format, (error, buffer) => {
               if (error) {
@@ -357,19 +342,21 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               }
               Promise.all([
                 result,
-                exports.uploadToS3(buffer, args.filename, args.isPublic),
-                exif,
+                exports.uploadToS3({
+                  Key: args.filename,
+                  Body: buffer,
+                  ACL: args.isPublic ? 'public-read' : undefined,
+                }),
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
             });
         }),
     )
-    .then(([result, buffer, exif]) => ({
+    .then(([result, buffer]) => ({
       buffer,
       width: result.width,
       height: result.height,
-      exif,
     }));
 };
 
@@ -414,6 +401,9 @@ exports.convertAnnotationFields = (fields, dataFieldTable) =>
           );
         }
         value.selectId = field.value;
+        value.selectLabel = dataFieldTable[field.dataField].options.find(
+          x => `${x._id}` === field.value,
+        )['zh-TW'];
         break;
       case DataFieldWidgetType.text:
       default:
@@ -432,6 +422,7 @@ exports.convertCsvToAnnotations = ({
   dataFields,
   cameraLocations,
   uploadSession,
+  projectSpecies,
   species,
   csvObject,
   timezone,
@@ -442,7 +433,8 @@ exports.convertCsvToAnnotations = ({
   @param dataFields {Array<DataFieldModel>} All data fields of this project.
   @param cameraLocations {Array<CameraLocationModel>} All camera locations of this project.
   @param uploadSession {UploadSessionModel}
-  @param species {Array<SpeciesModel>} All species of this project.
+  @param projectSpecies {Array<ProjectSpeciesModel>}
+  @param species {Array<SpeciesModel>} All species.
   @param csvObject {Array<Array<string>>}
   @param timezone {Number} minutes (480 -> GMT+8).
   @returns {Object}
@@ -506,24 +498,37 @@ exports.convertCsvToAnnotations = ({
           information.time = exports.parseTimeFromCSV(data, timezone);
           break;
         case DataFieldSystemCode.species:
+          if (!data) {
+            break;
+          }
           information.species = species.find(x => x.title['zh-TW'] === data);
-          if (!information.species && data) {
-            // mark this annotation use a automatically created species.
+          if (
+            information.species &&
+            !projectSpecies.find(
+              x => `${x.species._id}` === `${information.species._id}`,
+            )
+          ) {
+            // The species is not reference to the project.
+            // Add a new species flat into .failures.
             information.failures.push(AnnotationFailureType.newSpecies);
-            // find the species in the new items.
+          }
+
+          if (!information.species) {
+            // The species is not exists.
+            // Add a new species flat into .failures.
+            information.failures.push(AnnotationFailureType.newSpecies);
+            // Find the species from the new species list.
             information.species = result.newSpecies.find(
               x => x.title['zh-TW'] === data,
             );
           }
-          if (!information.species && data) {
+          if (!information.species) {
             // automatically create a new species.
             result.newSpecies.push(
               new SpeciesModel({
-                project,
                 title: {
                   'zh-TW': data,
                 },
-                index: species.length + result.newSpecies.length,
               }),
             );
             information.species =
@@ -567,7 +572,11 @@ exports.convertCsvToAnnotations = ({
       !information.filename ||
       !information.time
     ) {
-      throw new Error(`Missing required fields at row ${row}.`);
+      throw new Error(
+        `Missing required fields at row ${row}.\n${JSON.stringify(
+          information,
+        )}`,
+      );
     }
     if (
       result.annotations.find(
@@ -640,6 +649,82 @@ exports.csvStringifyAsync = data =>
       resolve(output);
     });
   });
+
+exports.removeNewSpeciesFailureFlag = (project, species) => {
+  /*
+  Remove the new-species flat at annotation.failures.
+  @param project {ProjectModel}
+  @param species {SpeciesModel}
+  @returns {Promise<{Array<AnnotationModel>}>}
+   */
+  const AnnotationModel = require('../models/data/annotation-model');
+  const AnnotationState = require('../models/const/annotation-state');
+
+  return new Promise((resolve, reject) => {
+    AnnotationModel.where({
+      project: project._id,
+      state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+      species: species._id,
+      failures: AnnotationFailureType.newSpecies,
+    })
+      .cursor()
+      .on('error', error => {
+        reject(error);
+      })
+      .on('close', () => {
+        resolve();
+      })
+      .on('data', annotation => {
+        const newSpeciesIndex = annotation.failures.indexOf(
+          AnnotationFailureType.newSpecies,
+        );
+        annotation.failures.splice(newSpeciesIndex, 1);
+        annotation.save().catch(error => {
+          reject(error);
+        });
+      });
+  });
+};
+
+exports.convertBufferToStream = buffer =>
+  /*
+  Convert the buffer to a readable stream.
+  @param buffer {Buffer}
+  @returns {stream.Readable}
+   */
+  new Readable({
+    read() {
+      this.push(buffer);
+      this.push(null);
+    },
+  });
+
+exports.getExif = source => {
+  /*
+  Get exif from the stream.
+  @param source {stream.Readable}
+  @returns {Promise<Object>}
+    {
+      ...
+      Make: 'Apple',
+      Model: 'iPhone SE',
+      DateTimeOriginal: '2019:03:06 10:34:56',
+      ...
+    }
+   */
+  const ep = new exifTool.ExiftoolProcess(exifToolBin);
+  return ep
+    .open()
+    .then(() => ep.readMetadata(source))
+    .then(result => {
+      ep.close();
+      return result.data[0];
+    })
+    .catch(error => {
+      ep.close();
+      throw error;
+    });
+};
 
 exports.logError = (error, extra) => {
   /*

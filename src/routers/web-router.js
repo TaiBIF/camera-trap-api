@@ -91,6 +91,7 @@ apiRouter.get(
   '/system-announcements',
   notificationHandler.getSystemAnnouncements,
 );
+apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
@@ -141,14 +142,6 @@ apiRouter.get(
 apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.updateProjectSpeciesList,
-);
-apiRouter.post(
-  '/projects/:projectId([a-f\\d]{24})/species',
-  speciesHandler.addProjectSpecies,
-);
-apiRouter.put(
-  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
-  speciesHandler.updateProjectSpecies,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas',

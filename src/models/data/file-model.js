@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const config = require('config');
 const mongoose = require('mongoose');
@@ -50,6 +51,7 @@ const schema = utils.generateSchema(
     collection: 'Files',
   },
 );
+
 schema.post('remove', file => {
   if (file.exif) {
     ExchangeableImageFileModel.deleteOne({ _id: file.exif }).catch(error => {
@@ -113,34 +115,43 @@ schema.method('getUrl', function() {
   return utils.getFileUrl(this.type, this.getFilename());
 });
 
-const model = mongoose.model('FileModel', schema);
-
-model.prototype.getExtensionName = function() {
+schema.method('getExtensionName', function() {
   return path
     .extname(this.originalFilename)
     .replace('.', '')
     .toLowerCase();
-};
-model.prototype.getFilename = function() {
+});
+
+schema.method('getFilename', function() {
   /*
   Get the filename on S3.
   @returns {string}
    */
   return `${this._id}.${this.getExtensionName()}`;
-};
+});
 
-model.prototype.saveWithContent = function(content) {
+schema.method('saveWithContent', function(source) {
   /*
   Save the document and update the binary content to S3.
-  @param content {Buffer|Stream} Set .size by yourself when it is stream.
+  @param content {Buffer|string} The buffer or the file path.
   @returns {Promise<FileModel>}
    */
+  let sourceSize;
+  if (typeof source === 'string') {
+    sourceSize = fs.statSync(source).size;
+  } else {
+    // Buffer
+    sourceSize = source.length;
+  }
+  this.size = sourceSize;
+
   return this.save().then(() => {
     switch (this.type) {
       case FileType.projectCoverImage:
         return utils
           .resizeImageAndUploadToS3({
-            buffer: content,
+            buffer:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
             filename: `${
               config.s3.folders.projectCovers
             }/${this.getFilename()}`,
@@ -156,15 +167,18 @@ model.prototype.saveWithContent = function(content) {
           });
       case FileType.annotationImage:
         return Promise.all([
-          utils.uploadToS3(
-            content,
-            `${
+          utils.uploadToS3({
+            Key: `${
               config.s3.folders.annotationOriginalImages
             }/${this.getFilename()}`,
-            true,
-          ),
+            Body:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            ACL: 'public-read',
+            StorageClass: 'STANDARD_IA',
+          }),
           utils.resizeImageAndUploadToS3({
-            buffer: content,
+            buffer:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
             filename: `${
               config.s3.folders.annotationImages
             }/${this.getFilename()}`,
@@ -173,72 +187,76 @@ model.prototype.saveWithContent = function(content) {
             height: 1280,
             isFillUp: false,
             isPublic: true,
-            isReturnExif: true,
           }),
+          utils.getExif(
+            typeof source === 'string'
+              ? fs.createReadStream(source)
+              : utils.convertBufferToStream(source),
+          ),
         ])
-          .then(([originalBuffer, thumbnailResult]) => {
-            const items = thumbnailResult.exif.split('\n');
-            const make = items.find(x => /^Make=/.test(x));
-            const exifModel = items.find(x => /^Model=/.test(x));
-            let dateTime;
-            const dateTimeOriginal = items.find(x =>
-              /^DateTimeOriginal=/.test(x),
-            );
-            if (dateTimeOriginal) {
-              dateTime = new Date(
-                `${dateTimeOriginal
-                  .match(/^DateTimeOriginal=(.*)$/)[1]
-                  .replace(':', '-')
-                  .replace(':', '-')
-                  .replace(' ', 'T')}.000Z`,
-              );
-              dateTime.setUTCMinutes(
-                dateTime.getUTCMinutes() - config.defaultTimezone,
-              );
-            }
+          .then(([originalBuffer, thumbnailResult, exifData]) => {
+            let exif;
+            if (exifData) {
+              let dateTime;
+              const dateTimeOriginal = exifData.DateTimeOriginal;
+              if (dateTimeOriginal) {
+                dateTime = new Date(
+                  `${dateTimeOriginal
+                    .replace(':', '-')
+                    .replace(':', '-')
+                    .replace(' ', 'T')}.000Z`,
+                );
+                dateTime.setUTCMinutes(
+                  dateTime.getUTCMinutes() - config.defaultTimezone,
+                );
+              }
 
-            const exif = new ExchangeableImageFileModel({
-              rawData: thumbnailResult.exif,
-              make: make ? make.match(/^Make=(.*)$/)[1] : undefined,
-              model: exifModel ? exifModel.match(/^Model=(.*)$/)[1] : undefined,
-              dateTime,
-            });
-            this.exif = exif;
-            this.size = originalBuffer.length + thumbnailResult.buffer.length;
-            return exif.save();
+              exif = new ExchangeableImageFileModel({
+                rawData: JSON.stringify(exifData),
+                make: exifData.Make,
+                model: exifData.Model,
+                dateTime,
+              });
+              this.exif = exif;
+            }
+            this.size = sourceSize + thumbnailResult.buffer.length;
+            return Promise.all([this.save(), exif ? exif.save() : null]);
           })
-          .then(() => this.save());
+          .then(() => this);
       case FileType.annotationZIP:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
-            false,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
+            Body:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            StorageClass: 'STANDARD_IA',
+          })
           .then(() => this);
       case FileType.annotationCSV:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
-            false,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.annotationCSVs}/${this.getFilename()}`,
+            Body:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            StorageClass: 'STANDARD_IA',
+          })
           .then(() => this);
       case FileType.issueAttachment:
         return utils
-          .uploadToS3(
-            content,
-            `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
-            true,
-          )
+          .uploadToS3({
+            Key: `${config.s3.folders.issueAttachments}/${this.getFilename()}`,
+            Body:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            ACL: 'public-read',
+          })
           .then(() => this);
       default:
         throw new Error('error type');
     }
   });
-};
+});
 
-model.prototype.dump = function() {
+schema.method('dump', function() {
   return {
     id: `${this._id}`,
     type: this.type,
@@ -247,6 +265,6 @@ model.prototype.dump = function() {
     url: this.getUrl(),
     size: this.size,
   };
-};
+});
 
-module.exports = model;
+module.exports = mongoose.model('FileModel', schema);
