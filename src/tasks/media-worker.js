@@ -421,11 +421,9 @@ module.exports = (job, done) => {
         (new annotations, duplicate annotations)
        */
       const statements = annotations.map(annotation => ({
-        $and: [
-          { state: AnnotationState.active },
-          { cameraLocation: annotation.cameraLocation._id },
-          { time: annotation.time },
-        ],
+        state: AnnotationState.active,
+        cameraLocation: annotation.cameraLocation._id,
+        time: annotation.time,
       }));
 
       return Promise.all([

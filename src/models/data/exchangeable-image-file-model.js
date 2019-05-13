@@ -17,6 +17,7 @@ const schema = utils.generateSchema(
       type: Date,
     },
     rawData: {
+      // JSON string
       type: String,
     },
   },

@@ -1,8 +1,11 @@
 const os = require('os');
 const util = require('util');
+const { Readable } = require('stream');
 const AWS = require('aws-sdk');
 const config = require('config');
 const csvStringify = require('csv-stringify');
+const exifTool = require('node-exiftool');
+const exifToolBin = require('dist-exiftool');
 const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
@@ -244,7 +247,8 @@ exports.uploadToS3 = (args = {}) =>
   /*
   Upload the image to storage.
   @param args {Object} The params for s3.upload().
-  @returns {Promise<Buffer>}
+    Body: {Buffer|stream} When it is stream this function will automatically close the stream.
+  @returns {Promise<Buffer|stream>}
    */
   new Promise((resolve, reject) => {
     // upload to S3
@@ -254,9 +258,12 @@ exports.uploadToS3 = (args = {}) =>
       ContentType: mime.lookup(args.Key),
       CacheControl: 'max-age=31536000', // 365days
     };
-    _s3.upload(params, error_ => {
-      if (error_) {
-        return reject(error_);
+    _s3.upload(params, error => {
+      if (typeof args.Body.close === 'function') {
+        args.Body.close();
+      }
+      if (error) {
+        return reject(error);
       }
       resolve(args.Body);
     });
@@ -316,33 +323,16 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     quality {Number|null} The image quality. The default is 86.
     isFillUp {bool}
     isPublic {bool}
-    isReturnExif {bool}
   @returns {Promise<object>}
     buffer: {Buffer}
     width: {int}
     height: {int}
-    exif: {string|null}
    */
   args.quality = args.quality || 86;
   return exports
     .resize(args.buffer, args.width, args.height, args.isFillUp)
     .then(
       result =>
-        new Promise((resolve, reject) => {
-          if (!args.isReturnExif) {
-            return resolve([result]);
-          }
-          result.gm.identify('%[EXIF:*]', (error, exif) => {
-            if (error) {
-              exports.logError(error, { filename: args.filename });
-              return resolve([result]);
-            }
-            return resolve([result, exif]);
-          });
-        }),
-    )
-    .then(
-      ([result, exif]) =>
         new Promise((resolve, reject) => {
           result.gm
             .quality(args.quality)
@@ -357,18 +347,16 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
                   Body: buffer,
                   ACL: args.isPublic ? 'public-read' : undefined,
                 }),
-                exif,
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
             });
         }),
     )
-    .then(([result, buffer, exif]) => ({
+    .then(([result, buffer]) => ({
       buffer,
       width: result.width,
       height: result.height,
-      exif,
     }));
 };
 
@@ -578,16 +566,24 @@ exports.convertCsvToAnnotations = ({
       }
     }
 
-    if (
-      !information.studyArea ||
-      !information.cameraLocation ||
-      !information.filename ||
-      !information.time
-    ) {
+    const missingFields = [];
+    if (!information.studyArea) {
+      missingFields.push('study area');
+    }
+    if (!information.cameraLocation) {
+      missingFields.push('camera location');
+    }
+    if (!information.filename) {
+      missingFields.push('filename');
+    }
+    if (!information.time || Number.isNaN(information.time.getTime())) {
+      missingFields.push('time');
+    }
+    if (missingFields.length) {
       throw new Error(
-        `Missing required fields at row ${row}.\n${JSON.stringify(
-          information,
-        )}`,
+        `Missing required fields ${missingFields.join(
+          ', ',
+        )} at row ${row}.\n${JSON.stringify(information)}`,
       );
     }
     if (
@@ -696,6 +692,46 @@ exports.removeNewSpeciesFailureFlag = (project, species) => {
         });
       });
   });
+};
+
+exports.convertBufferToStream = buffer =>
+  /*
+  Convert the buffer to a readable stream.
+  @param buffer {Buffer}
+  @returns {stream.Readable}
+   */
+  new Readable({
+    read() {
+      this.push(buffer);
+      this.push(null);
+    },
+  });
+
+exports.getExif = source => {
+  /*
+  Get exif from the stream.
+  @param source {stream.Readable}
+  @returns {Promise<Object>}
+    {
+      ...
+      Make: 'Apple',
+      Model: 'iPhone SE',
+      DateTimeOriginal: '2019:03:06 10:34:56',
+      ...
+    }
+   */
+  const ep = new exifTool.ExiftoolProcess(exifToolBin);
+  return ep
+    .open()
+    .then(() => ep.readMetadata(source))
+    .then(result => {
+      ep.close();
+      return result.data[0];
+    })
+    .catch(error => {
+      ep.close();
+      throw error;
+    });
 };
 
 exports.logError = (error, extra) => {

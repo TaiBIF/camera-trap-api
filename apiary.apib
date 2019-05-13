@@ -4075,6 +4075,119 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+## Camera Location Abnormality [/projects/{projectId}/camera-location-abnormality]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+
+### Camera location abnormality [POST /projects/{projectId}/camera-location-abnormality]
+新增相機異常回報。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined and who is a project manager.
+
++ Request Create a camera location abnormality report (application/json)
+
+    + Body
+
+            {
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityStartDate": "2019-01-01T00:00:00.000Z",
+              "abnormalityEndDate": "2019-01-15T00:00:00.000Z",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityType": "others",
+              "note": ""
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "project": {
+                  "type": "String",
+                  "description": "專案 ID"
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "相機位置 ID"
+                },
+                "abnormalityStartDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (開始)"
+                },
+                "abnormalityEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (結束)"
+                },
+                "abnormalityType": {
+                  "type": "string",
+                  "description": "異常類型",
+                  "enum": ["emptyShots", "noPhoto", "cameraTheft", "noBattery", "others"]
+                },
+                "note": {
+                  "type": "String",
+                  "description": "備註"
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityStartDate": "2019-01-01T00:00:00.000Z",
+              "abnormalityEndDate": "2019-01-15T00:00:00.000Z",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityType": "others",
+              "note": ""
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "project": {
+                  "type": "string",
+                  "description": "專案"
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "相機位置 ID"
+                },
+                "abnormalityStartDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (開始)"
+                },
+                "abnormalityEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (結束)"
+                },
+                "abnormalityType": {
+                  "type": "string",
+                  "description": "異常類型",
+                  "enum": ["emptyShots", "noPhoto", "cameraTheft", "noBattery", "others"]
+                },
+                "note": {
+                  "type": "string",
+                  "description": "備註"
+                }
+              }
+            }
+            
+
 ## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
@@ -4861,7 +4974,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -4881,6 +4994,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
 
 + Request Get annotations (application/json)
 
@@ -6044,7 +6158,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Export annotations [/annotations.csv]
-### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort}]
+### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort,fields}]
 匯出標註為 CSV 檔，直接將瀏覽器網址改成匯出網址後瀏覽器會開始下載。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -6060,6 +6174,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
 
 + Request Export annotations to .csv (application/json)
 

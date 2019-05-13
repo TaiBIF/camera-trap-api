@@ -52,6 +52,54 @@ exports.addDataField = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.addDataFieldApprove = auth([UserPermission.administrator], (req, res) =>
+  /*
+  POST /api/v1/data-fields/:dataFieldId/_approve
+  */
+  DataFieldModel.findById(req.params.dataFieldId)
+    .where({ state: DataFieldState.waitForReview })
+    .then(dataField => {
+      if (!dataField) {
+        throw new errors.Http404();
+      }
+
+      dataField.state = DataFieldState.approved;
+      const notification = new NotificationModel({
+        user: dataField.user,
+        type: NotificationType.dataFieldApproved,
+        dataField,
+      });
+      return Promise.all([dataField.save(), notification.save()]);
+    })
+    .then(([dataField]) => {
+      res.json(dataField.dump());
+    }),
+);
+
+exports.addDataFieldReject = auth([UserPermission.administrator], (req, res) =>
+  /*
+  POST /api/v1/data-fields/:dataFieldId/_reject
+  */
+  DataFieldModel.findById(req.params.dataFieldId)
+    .where({ state: DataFieldState.waitForReview })
+    .then(dataField => {
+      if (!dataField) {
+        throw new errors.Http404();
+      }
+
+      dataField.state = DataFieldState.rejected;
+      const notification = new NotificationModel({
+        user: dataField.user,
+        type: NotificationType.dataFieldRejected,
+        dataField,
+      });
+      return Promise.all([dataField.save(), notification.save()]);
+    })
+    .then(([dataField]) => {
+      res.json(dataField.dump());
+    }),
+);
+
 exports.getPublishedDataFields = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/data-fields

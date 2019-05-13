@@ -9,6 +9,7 @@ const CameraLocationState = require('../models/const/camera-location-state');
 const DataFieldModel = require('../models/data/data-field-model');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
+const DataFieldState = require('../models/const/data-field-state');
 const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
 const SpeciesModel = require('../models/data/species-model');
@@ -61,8 +62,14 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         .populate('project'),
     ];
   }
+  tasks.push(
+    DataFieldModel.where({
+      _id: { $in: Object.keys(form.fields) },
+      state: DataFieldState.approved,
+    }),
+  );
   return Promise.all(tasks).then(
-    ([studyArea, childStudyAreas, cameraLocations]) => {
+    ([studyArea, childStudyAreas, cameraLocations, dataFields]) => {
       if (form.studyArea) {
         if (!studyArea) {
           throw new errors.Http404();
@@ -91,6 +98,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           }
         });
       }
+      if (Object.keys(form.fields).length !== dataFields.length) {
+        throw new errors.Http400('Some data fields are not found.');
+      }
 
       const query = AnnotationModel.where({ state: AnnotationState.active })
         .populate('species')
@@ -113,6 +123,62 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           cameraLocation: { $in: cameraLocations.map(x => x._id) },
         });
       }
+
+      // 進階篩選 DataField
+      dataFields.forEach(dataField => {
+        let date;
+        switch (dataField.widgetType) {
+          case DataFieldWidgetType.time:
+            date = new Date(form.fields[`${dataField._id}`]);
+            if (Number.isNaN(date.getTime())) {
+              throw new errors.Http400(
+                `The value "${form.fields[`${dataField._id}`]}" of field ${
+                  dataField._id
+                } should be a date.`,
+              );
+            }
+            query.where({
+              fields: {
+                $elemMatch: {
+                  dataField: dataField._id,
+                  'value.time': new Date(form.fields[`${dataField._id}`]),
+                },
+              },
+            });
+            break;
+          case DataFieldWidgetType.select:
+            if (
+              !dataField.options.find(
+                x => `${x._id}` === form.fields[`${dataField._id}`],
+              )
+            ) {
+              throw new errors.Http400(
+                `The option ${
+                  form.fields[`${dataField._id}`]
+                } not in the field ${dataField._id}.`,
+              );
+            }
+            query.where({
+              fields: {
+                $elemMatch: {
+                  dataField: dataField._id,
+                  'value.selectId': form.fields[`${dataField._id}`],
+                },
+              },
+            });
+            break;
+          case DataFieldWidgetType.text:
+          default:
+            query.where({
+              fields: {
+                $elemMatch: {
+                  dataField: dataField._id,
+                  'value.text': form.fields[`${dataField._id}`],
+                },
+              },
+            });
+        }
+      });
 
       if (!/\.csv$/i.test(req.path)) {
         // return json
