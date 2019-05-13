@@ -196,6 +196,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/location-month-retrieved',
   LocationMonthRetrievedHandler.retrievedByStudyArea,
 );
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/location-month-retrieved',
+  LocationMonthRetrievedHandler.retrievedByCameraLocation,
+);
 
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);

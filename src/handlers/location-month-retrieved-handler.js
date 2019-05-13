@@ -12,7 +12,7 @@ exports.LocationMonthRetrieved = (req, res) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrievedByProjectStudyArea(projectId);
+      return ProjectModel.getRetrieved(projectId);
     })
     .then(records => {
       res.json(records);
@@ -31,6 +31,24 @@ exports.retrievedByStudyArea = (req, res) => {
         throw new errors.Http403();
       }
       return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId);
+    })
+    .then(records => {
+      res.json(records);
+    });
+};
+
+exports.retrievedByCameraLocation = (req, res) => {
+  const { projectId, cameraLocationId } = req.params;
+
+  return ProjectModel.findById(projectId)
+    .then(project => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!project.canManageBy(req.user)) {
+        throw new errors.Http403();
+      }
+      return ProjectModel.getRetrievedByCamera(projectId, cameraLocationId);
     })
     .then(records => {
       res.json(records);

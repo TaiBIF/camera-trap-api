@@ -4,8 +4,9 @@ const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
 const UserPermission = require('../../models/const/user-permission');
 const getMonthRetrieved = require('../../models/static/project/static-getMonthRetrieved');
-const getRetrievedByProjectStudyArea = require('../../models/static/project/static-getRetrievedByProjectStudyArea');
-const getRetrievedBySingleStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
+const getRetrieved = require('../static/project/static-getRetrieved');
+const getRetrievedByStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
+const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -165,8 +166,9 @@ const canManageBy = function(currentUser) {
 schema.method('canManageBy', canManageBy);
 
 schema.static('getMonthRetrieved', getMonthRetrieved);
-schema.static('getRetrievedByProjectStudyArea', getRetrievedByProjectStudyArea);
-schema.static('getRetrievedByStudyArea', getRetrievedBySingleStudyArea);
+schema.static('getRetrieved', getRetrieved);
+schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
+schema.static('getRetrievedByCamera', getRetrievedByCamera);
 
 //
 const model = mongoose.model('ProjectModel', schema);
