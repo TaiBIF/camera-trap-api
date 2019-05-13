@@ -5,6 +5,7 @@ const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
+const cameraLocationAbnormalityHandler = require('../handlers/camera-location-abnormality-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const issueHandler = require('../handlers/issue-handler');
@@ -178,6 +179,10 @@ apiRouter.post(
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_unlock',
   cameraLocationHandler.unlockCameraLocation,
+);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/camera-location-abnormality',
+  cameraLocationAbnormalityHandler.addCameraLocationAbnormality,
 );
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
