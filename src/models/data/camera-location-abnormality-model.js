@@ -60,19 +60,19 @@ const schema = utils.generateSchema(
     collection: 'CameraLocationAbnormality',
   },
 );
-const model = mongoose.model('CameraLocationAbnormalityModel', schema);
 
-model.prototype.dump = function() {
-  const doc = {
+schema.method('dump', function() {
+  return {
     id: `${this._id}`,
-    cameraLocation: this.cameraLocation,
+    cameraLocation:
+      this.cameraLocation && typeof this.cameraLocation.dump === 'function'
+        ? this.cameraLocation.dump()
+        : this.cameraLocation,
     abnormalityStartDate: this.abnormalityStartDate,
     abnormalityEndDate: this.abnormalityEndDate,
     abnormalityType: this.abnormalityType,
     note: this.note,
   };
+});
 
-  return doc;
-};
-
-module.exports = model;
+module.exports = mongoose.model('CameraLocationAbnormalityModel', schema);
