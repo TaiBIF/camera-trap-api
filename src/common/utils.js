@@ -566,16 +566,24 @@ exports.convertCsvToAnnotations = ({
       }
     }
 
-    if (
-      !information.studyArea ||
-      !information.cameraLocation ||
-      !information.filename ||
-      !information.time
-    ) {
+    const missingFields = [];
+    if (!information.studyArea) {
+      missingFields.push('study area');
+    }
+    if (!information.cameraLocation) {
+      missingFields.push('camera location');
+    }
+    if (!information.filename) {
+      missingFields.push('filename');
+    }
+    if (!information.time || Number.isNaN(information.time.getTime())) {
+      missingFields.push('time');
+    }
+    if (missingFields.length) {
       throw new Error(
-        `Missing required fields at row ${row}.\n${JSON.stringify(
-          information,
-        )}`,
+        `Missing required fields ${missingFields.join(
+          ', ',
+        )} at row ${row}.\n${JSON.stringify(information)}`,
       );
     }
     if (
