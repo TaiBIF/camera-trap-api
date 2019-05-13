@@ -62,24 +62,14 @@ exports.addDataFieldApprove = auth([UserPermission.administrator], (req, res) =>
       if (!dataField) {
         throw new errors.Http404();
       }
+
       dataField.state = DataFieldState.approved;
-      return Promise.all([
-        dataField.save(),
-        UserModel.where({ permission: UserPermission.administrator }),
-      ]);
-    })
-    .then(([dataField, administrators]) => {
-      const tasks = [dataField];
-      administrators.forEach(administrator => {
-        const notification = new NotificationModel({
-          sender: req.user,
-          user: administrator,
-          type: NotificationType.dataFieldApproved,
-          dataField,
-        });
-        tasks.push(notification.save());
+      const notification = new NotificationModel({
+        user: dataField.user,
+        type: NotificationType.dataFieldApproved,
+        dataField,
       });
-      return Promise.all(tasks);
+      return Promise.all([dataField.save(), notification.save()]);
     })
     .then(([dataField]) => {
       res.json(dataField.dump());
@@ -90,31 +80,20 @@ exports.addDataFieldReject = auth([UserPermission.administrator], (req, res) =>
   /*
   POST /api/v1/data-fields/:dataFieldId/_reject
   */
-  //  waitForReview
   DataFieldModel.findById(req.params.dataFieldId)
     .where({ state: DataFieldState.waitForReview })
     .then(dataField => {
       if (!dataField) {
         throw new errors.Http404();
       }
+
       dataField.state = DataFieldState.rejected;
-      return Promise.all([
-        dataField.save(),
-        UserModel.where({ permission: UserPermission.administrator }),
-      ]);
-    })
-    .then(([dataField, administrators]) => {
-      const tasks = [dataField];
-      administrators.forEach(administrator => {
-        const notification = new NotificationModel({
-          sender: req.user,
-          user: administrator,
-          type: NotificationType.dataFieldRejected,
-          dataField,
-        });
-        tasks.push(notification.save());
+      const notification = new NotificationModel({
+        user: dataField.user,
+        type: NotificationType.dataFieldRejected,
+        dataField,
       });
-      return Promise.all(tasks);
+      return Promise.all([dataField.save(), notification.save()]);
     })
     .then(([dataField]) => {
       res.json(dataField.dump());
