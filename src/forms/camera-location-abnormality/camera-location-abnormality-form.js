@@ -6,7 +6,7 @@ class CameraLocationAbnormalityForm extends forms.Form {}
 CameraLocationAbnormalityForm.define({
   cameraLocation: new forms.fields.StringField({
     required: true,
-    validators: [forms.validators.length({ max: 1024 })],
+    validators: [forms.validators.id()],
   }),
   abnormalityStartDate: new forms.fields.DateField(),
   abnormalityEndDate: new forms.fields.DateField(),
