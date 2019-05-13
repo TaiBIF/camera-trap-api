@@ -15,15 +15,6 @@ const schema = utils.generateSchema(
         name: 'Project',
       },
     },
-    cameraLocation: {
-      // 相機位置
-      type: Schema.ObjectId,
-      ref: 'CameraLocationModel',
-      required: true,
-      index: {
-        name: 'CameraLocation',
-      },
-    },
     studyArea: {
       // 樣區
       type: String,
@@ -38,6 +29,15 @@ const schema = utils.generateSchema(
       required: true,
       index: {
         name: 'StudySubarea',
+      },
+    },
+    cameraLocation: {
+      // 相機位置
+      type: Schema.ObjectId,
+      ref: 'CameraLocationModel',
+      required: true,
+      index: {
+        name: 'CameraLocation',
       },
     },
     abnormalityStartDate: {
