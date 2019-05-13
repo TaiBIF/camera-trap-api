@@ -4158,15 +4158,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string"
                 },
                 "project": {
-                  "type": "String",
+                  "type": "string",
                   "description": "專案"
                 },
                 "cameraLocation": {
                   "type": "string",
+                  "description": "相機位置 ID"
+                },
+                "abnormalityStartDate": {
+                  "type": "string",
                   "format": "date-time",
                   "description": "異常資料時間 (開始)"
                 },
-                "abnormalityStartDate": {
+                "abnormalityEndDate": {
                   "type": "string",
                   "format": "date-time",
                   "description": "異常資料時間 (結束)"
@@ -4177,7 +4181,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "enum": ["emptyShots", "noPhoto", "cameraTheft", "noBattery", "others"]
                 },
                 "note": {
-                  "type": "String",
+                  "type": "string",
                   "description": "備註"
                 }
               }
