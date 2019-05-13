@@ -9,7 +9,7 @@ const StudyAreaModel = require('../models/data/study-area-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 
-exports.getMyUploadSession = auth(UserPermission.all(), (req, res) => {
+exports.getMyUploadSessions = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/me/upload-sessions
    */
@@ -47,6 +47,24 @@ exports.getMyUploadSession = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.getMyUploadSession = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/me/upload-sessions/:uploadSessionId
+   */
+  UploadSessionModel.findById(req.params.uploadSessionId)
+    .where({ user: req.user._id })
+    .populate('project')
+    .populate('cameraLocation')
+    .populate('file')
+    .then(uploadSession => {
+      if (!uploadSession) {
+        throw new errors.Http404();
+      }
+
+      res.json(uploadSession.dump());
+    }),
+);
+
 exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
   /*
   POST /api/v1/me/upload-session/:uploadSessionId/_overwrite
@@ -68,11 +86,9 @@ exports.overwriteUploadSession = auth(UserPermission.all(), (req, res) =>
       }
 
       const statements = annotations.map(annotation => ({
-        $and: [
-          { state: AnnotationState.active },
-          { cameraLocation: annotation.cameraLocation._id },
-          { time: annotation.time },
-        ],
+        state: AnnotationState.active,
+        cameraLocation: annotation.cameraLocation._id,
+        time: annotation.time,
       }));
       return Promise.all([
         uploadSession,

@@ -69,7 +69,11 @@ const apiRouter = new CustomRouter(exports.api);
 apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);
-apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSession);
+apiRouter.get('/me/upload-sessions', uploadSessionHandler.getMyUploadSessions);
+apiRouter.get(
+  '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})',
+  uploadSessionHandler.getMyUploadSession,
+);
 apiRouter.post(
   '/me/upload-sessions/:uploadSessionId([a-f\\d]{24})/_overwrite',
   uploadSessionHandler.overwriteUploadSession,
@@ -88,11 +92,21 @@ apiRouter.get(
   '/system-announcements',
   notificationHandler.getSystemAnnouncements,
 );
+apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
+apiRouter.post('/annotations', annotationHandler.addAnnotation);
+apiRouter.get(
+  '/annotations/:annotationId([a-f\\d]{24})',
+  annotationHandler.getAnnotation,
+);
 apiRouter.put(
   '/annotations/:annotationId([a-f\\d]{24})',
   annotationHandler.updateAnnotation,
+);
+apiRouter.delete(
+  '/annotations/:annotationId([a-f\\d]{24})',
+  annotationHandler.deleteAnnotation,
 );
 apiRouter.get(
   '/annotations/:annotationId([a-f\\d]{24})/revisions',
@@ -129,14 +143,6 @@ apiRouter.get(
 apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.updateProjectSpeciesList,
-);
-apiRouter.post(
-  '/projects/:projectId([a-f\\d]{24})/species',
-  speciesHandler.addProjectSpecies,
-);
-apiRouter.put(
-  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
-  speciesHandler.updateProjectSpecies,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
@@ -181,6 +187,14 @@ apiRouter.post(
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_approve',
+  dataFieldHandler.addDataFieldApprove,
+);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_reject',
+  dataFieldHandler.addDataFieldReject,
+);
 apiRouter.get(
   '/data-fields/:dataFieldId([a-f\\d]{24})',
   dataFieldHandler.getPublishedDataField,

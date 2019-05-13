@@ -6,130 +6,131 @@ const AnnotationRevisionModel = require('./annotation-revision-model');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
-const model = mongoose.model(
-  'AnnotationModel',
-  utils.generateSchema(
-    {
-      project: {
-        type: Schema.ObjectId,
-        ref: 'ProjectModel',
-        required: true,
-        index: {
-          name: 'Project',
-        },
+const schema = utils.generateSchema(
+  {
+    project: {
+      type: Schema.ObjectId,
+      ref: 'ProjectModel',
+      required: true,
+      index: {
+        name: 'Project',
       },
-      studyArea: {
-        // 樣區
-        type: Schema.ObjectId,
-        ref: 'StudyAreaModel',
-        required: true,
-        index: {
-          name: 'StudyArea',
-        },
+    },
+    studyArea: {
+      // 樣區
+      type: Schema.ObjectId,
+      ref: 'StudyAreaModel',
+      required: true,
+      index: {
+        name: 'StudyArea',
       },
-      cameraLocation: {
-        // 相機
-        type: Schema.ObjectId,
-        ref: 'CameraLocationModel',
-        required: true,
-        index: {
-          name: 'CameraLocation',
-        },
+    },
+    cameraLocation: {
+      // 相機
+      type: Schema.ObjectId,
+      ref: 'CameraLocationModel',
+      required: true,
+      index: {
+        name: 'CameraLocation',
       },
-      uploadSession: {
-        type: Schema.ObjectId,
-        ref: 'UploadSessionModel',
-        required: true,
-        index: {
-          name: 'UploadSession',
-        },
+    },
+    uploadSession: {
+      type: Schema.ObjectId,
+      ref: 'UploadSessionModel',
+      index: {
+        name: 'UploadSession',
       },
-      state: {
+    },
+    state: {
+      type: String,
+      required: true,
+      enum: AnnotationState.all(),
+      index: {
+        name: 'State',
+      },
+    },
+    failures: [
+      // 錯誤提示
+      {
         type: String,
         required: true,
-        enum: AnnotationState.all(),
+        enum: AnnotationFailureType.all(),
         index: {
-          name: 'State',
+          name: 'Failures',
         },
       },
-      failures: [
-        // 錯誤提示
-        {
-          type: String,
+    ],
+    filename: {
+      // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）
+      type: String,
+      required: true,
+    },
+    file: {
+      // S3 file.
+      // 匯入 .csv 時不一定要有圖片，所以 annotation 有可能會只有檔名但沒檔案
+      type: Schema.ObjectId,
+      ref: 'FileModel',
+      index: {
+        name: 'File',
+      },
+    },
+    time: {
+      // 時間
+      type: Date,
+      required: true,
+      index: {
+        name: 'Time',
+      },
+    },
+    species: {
+      // 物種
+      type: Schema.ObjectId,
+      ref: 'SpeciesModel',
+      index: {
+        name: 'Species',
+      },
+    },
+    fields: [
+      // 儲存非系統預設欄位的資料
+      // 將系統預設欄位儲於上層物件是為了方便搜尋
+      {
+        _id: false,
+        dataField: {
+          type: Schema.ObjectId,
+          ref: 'DataFieldModel',
           required: true,
-          enum: AnnotationFailureType.all(),
-          index: {
-            name: 'Failures',
+        },
+        value: {
+          time: {
+            type: Date,
           },
-        },
-      ],
-      filename: {
-        // 檔名（顯示於資料編輯界面，內容來自 csv 匯入）
-        type: String,
-        required: true,
-      },
-      file: {
-        // S3 file.
-        // 匯入 .csv 時不一定要有圖片，所以 annotation 有可能會只有檔名但沒檔案
-        type: Schema.ObjectId,
-        ref: 'FileModel',
-        index: {
-          name: 'File',
-        },
-      },
-      time: {
-        // 時間
-        type: Date,
-        required: true,
-        index: {
-          name: 'Time',
-        },
-      },
-      species: {
-        // 物種
-        type: Schema.ObjectId,
-        ref: 'SpeciesModel',
-        index: {
-          name: 'Species',
-        },
-      },
-      fields: [
-        // 儲存非系統預設欄位的資料
-        // 將系統預設欄位儲於上層物件是為了方便搜尋
-        {
-          _id: false,
-          dataField: {
+          text: {
+            type: String,
+          },
+          selectId: {
             type: Schema.ObjectId,
-            ref: 'DataFieldModel',
-            required: true,
           },
-          value: {
-            time: {
-              type: Date,
-            },
-            text: {
-              type: String,
-            },
-            selectId: {
-              type: Schema.ObjectId,
-            },
+          selectLabel: {
+            // This field is just for debug.
+            // Don't search or dump by this field.
+            type: String,
           },
         },
-      ],
-      rawData: [
-        // The original data from .csv.
-        {
-          type: String,
-        },
-      ],
-    },
-    {
-      collection: 'Annotations',
-    },
-  ),
+      },
+    ],
+    rawData: [
+      // The original data from .csv.
+      {
+        type: String,
+      },
+    ],
+  },
+  {
+    collection: 'Annotations',
+  },
 );
 
-model.prototype.saveAndAddRevision = function(user) {
+schema.method('saveAndAddRevision', function(user) {
   /*
   Save the annotation and create a new revision.
   @param user {UserModel}
@@ -163,9 +164,9 @@ model.prototype.saveAndAddRevision = function(user) {
       return Promise.all(tasks);
     })
     .then(([annotation]) => annotation);
-};
+});
 
-model.prototype.dump = function() {
+schema.method('dump', function() {
   return {
     id: `${this._id}`,
     studyArea:
@@ -195,6 +196,6 @@ model.prototype.dump = function() {
       value: field.value.selectId || field.value.text || field.value.time,
     })),
   };
-};
+});
 
-module.exports = model;
+module.exports = mongoose.model('AnnotationModel', schema);

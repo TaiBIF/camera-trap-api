@@ -22,11 +22,12 @@ const model = mongoose.model(
         enum: IssueType.all(),
         required: true,
       },
-      category: {
-        type: String,
-        enum: IssueCategory.all(),
-        required: true,
-      },
+      categories: [
+        {
+          type: String,
+          enum: IssueCategory.all(),
+        },
+      ],
       description: {
         // 問題描述 / 意見描述
         type: String,
@@ -51,7 +52,7 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     type: this.type,
-    category: this.category,
+    categories: this.categories,
     description: this.description,
     email: this.email,
     attachmentFile:

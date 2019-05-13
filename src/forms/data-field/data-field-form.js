@@ -3,6 +3,10 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 
 class DataFieldForm extends forms.Form {}
 DataFieldForm.define({
+  project: new forms.fields.StringField({
+    required: true,
+    validators: [forms.validators.id()],
+  }),
   title: new forms.fields.MultiLanguageField({
     required: true,
     subField: new forms.fields.StringField({

@@ -18,6 +18,7 @@ const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
 const ProjectModel = require('../models/data/project-model');
+const ProjectSpeciesModel = require('../models/data/project-species-model');
 require('../models/data/data-field-model'); // for populate
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
@@ -38,6 +39,7 @@ module.exports = (job, done) => {
   let _cameraLocation;
   let _allStudyAreas; // only for zip or csv type.
   let _allCameraLocations; // only for zip or csv type.
+  let _allProjectSpecies; // only for zip or csv type.
   let _allSpecies; // only for zip or csv type.
   let _isZipWithCsv; // The user upload a zip file include images and a csv.
 
@@ -96,14 +98,25 @@ module.exports = (job, done) => {
       }
     })(),
 
-    // Fetch all species of the project for csv data.
+    // Fetch all project species of the project for csv data.
     (() => {
       if (
         [FileType.annotationCSV, FileType.annotationZIP].indexOf(
           workerData.fileType,
         ) >= 0
       ) {
-        return SpeciesModel.where({ project: workerData.projectId });
+        return ProjectSpeciesModel.where({ project: workerData.projectId });
+      }
+    })(),
+
+    // Fetch all species for csv data.
+    (() => {
+      if (
+        [FileType.annotationCSV, FileType.annotationZIP].indexOf(
+          workerData.fileType,
+        ) >= 0
+      ) {
+        return SpeciesModel.where();
       }
     })(),
   ])
@@ -116,6 +129,7 @@ module.exports = (job, done) => {
         cameraLocation,
         allStudyAreas,
         allCameraLocations,
+        allProjectSpecies,
         allSpecies,
       ]) => {
         /*
@@ -130,6 +144,7 @@ module.exports = (job, done) => {
         _cameraLocation = cameraLocation;
         _allStudyAreas = allStudyAreas;
         _allCameraLocations = allCameraLocations;
+        _allProjectSpecies = allProjectSpecies;
         _allSpecies = allSpecies;
 
         // Check user, project, file, uploadSession isn't null.
@@ -306,6 +321,7 @@ module.exports = (job, done) => {
               dataFields: _project.dataFields,
               cameraLocations: _allCameraLocations,
               uploadSession: _uploadSession,
+              projectSpecies: _allProjectSpecies,
               species: _allSpecies,
               csvObject,
             });
@@ -362,6 +378,7 @@ module.exports = (job, done) => {
             dataFields: _project.dataFields,
             cameraLocations: _allCameraLocations,
             uploadSession: _uploadSession,
+            projectSpecies: _allProjectSpecies,
             species: _allSpecies,
             csvObject,
           });
@@ -404,11 +421,9 @@ module.exports = (job, done) => {
         (new annotations, duplicate annotations)
        */
       const statements = annotations.map(annotation => ({
-        $and: [
-          { state: AnnotationState.active },
-          { cameraLocation: annotation.cameraLocation._id },
-          { time: annotation.time },
-        ],
+        state: AnnotationState.active,
+        cameraLocation: annotation.cameraLocation._id,
+        time: annotation.time,
       }));
 
       return Promise.all([
