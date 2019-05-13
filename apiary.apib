@@ -4075,6 +4075,125 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+## Camera Location Abnormality [/projects/{projectId}/camera-location-abnormality]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+
+### Camera location abnormality [POST /projects/{projectId}/camera-location-abnormality]
+新增相機異常回報。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined and who is a project manager.
+
++ Request Create a camera location abnormality report (application/json)
+
+    + Body
+
+            {
+              "studyArea": "5c9d9428e7462d3d989cb69b",
+              "studySubarea": "5c9d95acea5c9b4036d97c88",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityStartDate": "2019-01-01T00:00:00.000Z",
+              "abnormalityEndDate": "2019-01-15T00:00:00.000Z",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityType": "others",
+              "note": ""
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "project": {
+                  "type": "String",
+                  "description": "專案 ID"
+                },
+                "studyArea": {
+                  "type": "String",
+                  "description": "樣區 ID"
+                },
+                "studySubarea": {
+                  "type": "String",
+                  "description": "子樣區 ID"
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "相機位置 ID"
+                },
+                "abnormalityStartDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (開始)"
+                },
+                "abnormalityEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (結束)"
+                },
+                "note": {
+                  "type": "String",
+                  "description": "備註"
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f28070d9cee99f8a11a12",
+              "studyArea": "5c9d9428e7462d3d989cb69b",
+              "studySubarea": "5c9d95acea5c9b4036d97c88",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityStartDate": "2019-01-01T00:00:00.000Z",
+              "abnormalityEndDate": "2019-01-15T00:00:00.000Z",
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "abnormalityType": "others",
+              "note": ""
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "project": {
+                  "type": "String",
+                  "description": "專案"
+                },
+                "studyArea": {
+                  "type": "String",
+                  "description": "樣區"
+                },
+                "studySubarea": {
+                  "type": "String",
+                  "description": "子樣區"
+                },
+                "cameraLocation": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (開始)"
+                },
+                "abnormalityStartDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "異常資料時間 (結束)"
+                },
+                "note": {
+                  "type": "String",
+                  "description": "備註"
+                }
+              }
+            }
+            
+
 ## Camera locations in study areas [/projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
@@ -4238,120 +4357,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-
-## Abnormal Camera [/projects/{projectId}/abnormal-camera-location]
-+ Parameters
-    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
-
-### Abnormal camera location [POST /projects/{projectId}/abnormal-camera-location]
-新增相機異常回報。
-- The user's permission should be 'administrator' or 'general-account'.
-- The administrator gets all projects.
-- The general-account gets the project who joined and who is a project manager.
-
-+ Request Create an abnormal camera report (application/json)
-
-    + Body
-
-            {
-              "studyArea": "5c9d9428e7462d3d989cb69b",
-              "studySubarea": "5c9d95acea5c9b4036d97c88",
-              "cameraLocation": "5c9f28070d9cee99f8a11a12",
-              "abnormalStartDate": "2019-01-01T00:00:00.000Z",
-              "abnormalEndDate": "2019-01-15T00:00:00.000Z",
-              "cameraLocation": "5c9f28070d9cee99f8a11a12",
-              "abnormalType": "others",
-              "note": ""
-            }
-
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "project": {
-                  "type": "String",
-                  "description": "專案"
-                },
-                "studyArea": {
-                  "type": "String",
-                  "description": "樣區"
-                },
-                "studySubarea": {
-                  "type": "String",
-                  "description": "子樣區"
-                },
-                "cameraLocation": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "異常資料時間 (開始)"
-                },
-                "abnormalStartDate": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "異常資料時間 (結束)"
-                },
-                "note": {
-                  "type": "String",
-                  "description": "備註"
-                }
-              }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "5c9f28070d9cee99f8a11a12",
-              "studyArea": "5c9d9428e7462d3d989cb69b",
-              "studySubarea": "5c9d95acea5c9b4036d97c88",
-              "cameraLocation": "5c9f28070d9cee99f8a11a12",
-              "abnormalStartDate": "2019-01-01T00:00:00.000Z",
-              "abnormalEndDate": "2019-01-15T00:00:00.000Z",
-              "cameraLocation": "5c9f28070d9cee99f8a11a12",
-              "abnormalType": "others",
-              "note": ""
-            }
-
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "project": {
-                  "type": "String",
-                  "description": "專案"
-                },
-                "studyArea": {
-                  "type": "String",
-                  "description": "樣區"
-                },
-                "studySubarea": {
-                  "type": "String",
-                  "description": "子樣區"
-                },
-                "cameraLocation": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "異常資料時間 (開始)"
-                },
-                "abnormalStartDate": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "異常資料時間 (結束)"
-                },
-                "note": {
-                  "type": "String",
-                  "description": "備註"
-                }
-              }
-            }
 
 ### Create a camera location in a specified study area [POST /projects/{projectId}/study-areas/{studyAreaId}/camera-locations]
 在指定的樣區新增相機位置。

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
-const AbnormalType = require('../const/abnormal-type');
+const AbnormalityType = require('../const/abnormality-type');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -40,31 +40,31 @@ const schema = utils.generateSchema(
         name: 'StudySubarea',
       },
     },
-    abnormalStartDate: {
+    abnormalityStartDate: {
       // 異常資料時間 (開始)
       type: Date,
       required: true,
       index: {
-        name: 'AbnormalStartDate',
+        name: 'AbnormalityStartDate',
       },
     },
-    abnormalEndDate: {
+    abnormalityEndDate: {
       // 異常資料時間 (結束)
       type: Date,
       required: true,
       index: {
-        name: 'AbnormalEndDate',
+        name: 'AbnormalityEndDate',
       },
     },
-    abnormalType: {
+    abnormalityType: {
       // 異常狀態
       // 1. 相機故障 (空拍過多); 2. 相機故障 (沒影像); 3. 相繼失竊 4. 相機電量好所過快 5. 其他
       type: String,
-      default: AbnormalType.others,
-      enum: AbnormalType.all(),
+      default: AbnormalityType.others,
+      enum: AbnormalityType.all(),
       required: true,
       index: {
-        name: 'AbnormalType',
+        name: 'AbnormalityType',
       },
     },
     note: {
@@ -84,9 +84,9 @@ model.prototype.dump = function() {
     cameraLocation: this.cameraLocation,
     studyArea: this.studyArea,
     studySubarea: this.studySubarea,
-    abnormalStartDate: this.abnormalStartDate,
-    abnormalEndDate: this.abnormalEndDate,
-    abnormalType: this.abnormalType,
+    abnormalityStartDate: this.abnormalityStartDate,
+    abnormalityEndDate: this.abnormalityEndDate,
+    abnormalityType: this.abnormalityType,
     note: this.note,
   };
 
