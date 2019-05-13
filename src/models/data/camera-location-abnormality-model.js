@@ -15,22 +15,6 @@ const schema = utils.generateSchema(
         name: 'Project',
       },
     },
-    studyArea: {
-      // 樣區
-      type: String,
-      required: true,
-      index: {
-        name: 'StudyArea',
-      },
-    },
-    studySubarea: {
-      // 子樣區
-      type: String,
-      required: true,
-      index: {
-        name: 'StudySubarea',
-      },
-    },
     cameraLocation: {
       // 相機位置
       type: Schema.ObjectId,
@@ -82,8 +66,6 @@ model.prototype.dump = function() {
   const doc = {
     id: `${this._id}`,
     cameraLocation: this.cameraLocation,
-    studyArea: this.studyArea,
-    studySubarea: this.studySubarea,
     abnormalityStartDate: this.abnormalityStartDate,
     abnormalityEndDate: this.abnormalityEndDate,
     abnormalityType: this.abnormalityType,

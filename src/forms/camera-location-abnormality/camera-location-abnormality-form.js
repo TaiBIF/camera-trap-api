@@ -8,14 +8,6 @@ CameraLocationAbnormalityForm.define({
     required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  studyArea: new forms.fields.StringField({
-    required: true,
-    validators: [forms.validators.length({ max: 1024 })],
-  }),
-  studySubarea: new forms.fields.StringField({
-    required: true,
-    validators: [forms.validators.length({ max: 1024 })],
-  }),
   abnormalityStartDate: new forms.fields.DateField(),
   abnormalityEndDate: new forms.fields.DateField(),
   abnormalityType: new forms.fields.StringField({
