@@ -117,11 +117,7 @@ if (config.enableLog) {
 }
 
 utils.getTaskQueue();
-app.use(
-  '/admin/kue',
-  authorization([UserPermission.administrator], (req, res, next) => next()),
-);
-app.use('/admin/kue', kue.app);
+app.use('/admin/kue', authorization([UserPermission.administrator], kue.app));
 
 app.use(nocache());
 app.use('/api/v1', cors(config.corsOptions), webRouter.api);
