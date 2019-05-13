@@ -157,7 +157,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
               "email": "email@example.com",
-              "permission": "general-account"
+              "permission": "general-account",
+              "hotkeys": [
+                {
+                  "species": {
+                    "id": "5cd661e332a98b60839c6caa",
+                    "title": {
+                      "zh-TW": "空拍"
+                    },
+                    "code": "empty-shot"
+                  },
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -178,11 +190,38 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "permission": {
                   "type": "string",
                   "enum": ["administrator", "general-account"]
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "species": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
 
-## Update profile [PUT]
+## Update profile [PUT /me]
 
 - The user's permission should be 'administrator' or 'general-account'.
 
@@ -192,7 +231,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
             {
               "name": "Your Name",
-              "email": "email@example.com"
+              "email": "email@example.com",
+              "hotkeys": [
+                {
+                  "species": "5cd661e332a98b60839c6caa",
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -207,6 +252,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "email": {
                   "type": "string",
                   "format": "idn-email"
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "species": {
+                        "type": "string"
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -219,7 +278,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c949bbbe5d5377f98c81ab0",
               "name": "Your Name",
               "email": "email@example.com",
-              "permission": "general-account"
+              "permission": "general-account",
+              "hotkeys": [
+                {
+                  "species": {
+                    "id": "5cd661e332a98b60839c6caa",
+                    "title": {
+                      "zh-TW": "空拍"
+                    },
+                    "code": "empty-shot"
+                  },
+                  "hotkey": "P"
+                }
+              ]
             }
 
     + Schema
@@ -241,6 +312,33 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "permission": {
                   "type": "string",
                   "enum": ["administrator", "general-account"]
+                },
+                "hotkeys": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "species": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "hotkey": {
+                        "type": "string"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -329,7 +427,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "longitude": 121.462417,
                     "altitude": 100,
                     "vegetation": "植被",
-                    "landCover": "土地覆蓋類型"
+                    "landCoverType": "土地覆蓋類型"
                   },
                   "file": {
                     "id": "5ca996477242134e2593331c",
@@ -546,7 +644,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                             "type": "string",
                             "description": "植被"
                           },
-                          "landCover": {
+                          "landCoverType": {
                             "type": "string",
                             "description": "土地覆蓋類型"
                           }
@@ -595,7 +693,323 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-            
+
+### Get the upload session [GET /me/upload-sessions/{uploadSessionId}]
+取得上傳紀錄。
+- The user's permission should be 'administrator' or 'general-account'.
+- The user should be the creator of this upload session.
+
++ Parameters
+    + uploadSessionId: `5cc932399628d9ac0c1aa3a4` (string) - The upload session id.
+
++ Request Get the upload session (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5ca996477242134e2593331d",
+              "state": "failure",
+              "errorType": "lost-exif-time",
+              "project": {
+                "id": "5c9af1d2403d37067adadbc5",
+                "title": "計畫名稱",
+                "shortTitle": "計畫簡稱",
+                "funder": "委辦單位",
+                "code": "計畫編號",
+                "principalInvestigator": "計畫主持人",
+                "startTime": "2019-01-01T00:00:00.000Z",
+                "endTime": "2029-01-01T00:00:00.000Z",
+                "areas": [
+                  "5c9af16a4ee1b606477f9236"
+                ],
+                "coverImageFile": "5c9b1dfafc43be12b823b7b2",
+                "members": [
+                  {
+                    "user": "5c949bbbe5d5377f98c81ab0",
+                    "role": "manager"
+                  },
+                  {
+                    "user": "5ca570886ee6391d81fd773e",
+                    "role": "researcher"
+                  }
+                ],
+                "dataFields": [
+                  "5c9af16a4ee1b606477f9229",
+                  "5c9af16a4ee1b606477f922a",
+                  "5c9af16a4ee1b606477f922b",
+                  "5c9af16a4ee1b606477f922c",
+                  "5c9af16a4ee1b606477f922d",
+                  "5c9af16a4ee1b606477f9231"
+                ],
+                "dailyTestTime": "13:00:00"
+              },
+              "cameraLocation": {
+                "id": "5c9f28070d9cee99f8a11a12",
+                "studyArea": {
+                  "id": "5c9d95acea5c9b4036d97c88",
+                  "title": {
+                    "zh-TW": "titleX"
+                  },
+                  "parent": {
+                    "id": "5c9d9428e7462d3d989cb69b",
+                    "title": {
+                      "zh-TW": "title"
+                    }
+                  }
+                },
+                "name": "PT02A",
+                "settingTime": "2019-01-01T00:00:00.000Z",
+                "latitude": 58.28,
+                "longitude": 121.462417,
+                "altitude": 100,
+                "vegetation": "植被",
+                "landCoverType": "土地覆蓋類型"
+              },
+              "file": {
+                "id": "5ca996477242134e2593331c",
+                "type": "annotation-image",
+                "originalFilename": "IMG_1073.JPG",
+                "filename": "5ca996477242134e2593331c.jpg",
+                "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/annotation-images/5ca996477242134e2593331c.jpg",
+                "size": 1609437
+              },
+              "createTime": "2019-04-07T06:18:47.234Z"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The session ID."
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "processing",
+                    "wait-for-review",
+                    "cancel",
+                    "success",
+                    "failure"
+                  ]
+                },
+                "errorType": {
+                  "type": "string",
+                  "enum": [
+                    "lost-exif-time",
+                    "inconsistent-quantity",
+                    "images-and-csv-not-match",
+                    "permission-denied",
+                    "others"
+                  ]
+                },
+                "project": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "object",
+                      "description": "計畫名稱"
+                    },
+                    "shortTitle": {
+                      "type": "string",
+                      "description": "計畫簡稱"
+                    },
+                    "funder": {
+                      "type": "string",
+                      "description": "委辦單位"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "計畫編號"
+                    },
+                    "principalInvestigator": {
+                      "type": "string",
+                      "description": "計畫主持人"
+                    },
+                    "startTime": {
+                      "type": "Date",
+                      "description": "計畫時間（開始）"
+                    },
+                    "endTime": {
+                      "type": "Date",
+                      "description": "計畫時間（結束）"
+                    },
+                    "areas": {
+                      "type": "array",
+                      "description": "計畫地區",
+                      "item": {
+                        "title": "id",
+                        "type": "string"
+                      }
+                    },
+                    "coverImageFile": {
+                      "type": "string",
+                      "description": "封面檔案 ID"
+                    },
+                    "members": {
+                      "type": "array",
+                      "description": "計畫成員",
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "user": {
+                            "type": "string",
+                            "description": "成員 ID"
+                          },
+                          "role": {
+                            "type": "string",
+                            "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                            "enum": [
+                              "manager",
+                              "researcher",
+                              "executor"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "dataFields": {
+                      "type": "array",
+                      "description": "資料欄位",
+                      "item": {
+                        "type": "string",
+                        "description": "欄位名稱"
+                      }
+                    },
+                    "dailyTestTime": {
+                      "type": "string",
+                      "format": "time",
+                      "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                      "enum": [
+                        "null",
+                        ""
+                      ]
+                    }
+                  }
+                },
+                "cameraLocation": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The camera location ID."
+                    },
+                    "studyArea": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "The study area ID."
+                        },
+                        "title": {
+                          "type": "object",
+                          "properties": {
+                            "zh-TW": {
+                              "type": "string",
+                              "description": "The study area title in Traditional Chinese."
+                            }
+                          }
+                        },
+                        "parent": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "The affiliating study area ID."
+                            },
+                            "title": {
+                              "type": "object",
+                              "properties": {
+                                "zh-TW": {
+                                  "type": "string",
+                                  "description": "The affiliating study area title in Traditional Chinese."
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "相機位置編號如 PT02A。"
+                    },
+                    "settingTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "架設日期(ISO-8601)"
+                    },
+                    "latitude": {
+                      "type": "number",
+                      "description": "十進位緯度 (WGS84)"
+                    },
+                    "longitude": {
+                      "type": "number",
+                      "description": "十進位經度 (WGS84)"
+                    },
+                    "altitude": {
+                      "type": "number",
+                      "description": "海拔（公尺）"
+                    },
+                    "vegetation": {
+                      "type": "string",
+                      "description": "植被"
+                    },
+                    "landCoverType": {
+                      "type": "string",
+                      "description": "土地覆蓋類型"
+                    }
+                  }
+                },
+                "file": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The file ID."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "檔案類別",
+                      "enum": [
+                        "project-cover-image",
+                        "annotation-image"
+                      ]
+                    },
+                    "originalFilename": {
+                      "type": "string",
+                      "description": "原始檔名"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "description": "儲存於 S3 的檔名"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "description": "File size in byte."
+                    }
+                  }
+                },
+                "createTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Session create time."
+                }
+              }
+            }
+
 ### Cancel the upload session [POST /me/upload-sessions/{uploadSessionId}/_cancel]
 取消等待確認是否複寫標註的上傳紀錄。
 - The user's permission should be 'administrator' or 'general-account'.
@@ -1046,7 +1460,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                                 "type": "string",
                                 "description": "植被"
                               },
-                              "landCover": {
+                              "landCoverType": {
                                 "type": "string",
                                 "description": "土地覆蓋類型"
                               }
@@ -2704,13 +3118,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 - The general-account gets affiliated projects and who is a project manager.
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
-
+]
 + Request Add a member into the project (application/json)
 
     + Body
 
             {
               "user": "name@example.com",
+              "role": "manager"
+            }
+            
+            or,
+            
+            {
+              "user": "0000-0002-6376-3705",
               "role": "manager"
             }
 
@@ -2947,7 +3368,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "longitude": 121.462417,
                       "altitude": 100,
                       "vegetation": "植被",
-                      "landCover": "土地覆蓋類型"
+                      "landCoverType": "土地覆蓋類型"
                     }
                   },
                   {
@@ -3056,7 +3477,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                               "type": "string",
                               "description": "植被"
                             },
-                            "landCover": {
+                            "landCoverType": {
                               "type": "string",
                               "description": "土地覆蓋類型"
                             }
@@ -3104,7 +3525,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string",
                         "description": "植被"
                       },
-                      "landCover": {
+                      "landCoverType": {
                         "type": "string",
                         "description": "土地覆蓋類型"
                       }
@@ -3229,7 +3650,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "longitude": 121.462417,
                   "altitude": 100,
                   "vegetation": "植被",
-                  "landCover": "土地覆蓋類型"
+                  "landCoverType": "土地覆蓋類型"
                 }
               ]
             }
@@ -3289,7 +3710,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string",
                         "description": "植被"
                       },
-                      "landCover": {
+                      "landCoverType": {
                         "type": "string",
                         "description": "土地覆蓋類型"
                       }
@@ -3321,7 +3742,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "longitude": 121.462417,
               "altitude": 100,
               "vegetation": "植被",
-              "landCover": "土地覆蓋類型"
+              "landCoverType": "土地覆蓋類型"
             }
 
     + Schema
@@ -3355,7 +3776,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 }
@@ -3380,7 +3801,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "longitude": 121.462417,
               "altitude": 100,
               "vegetation": "植被",
-              "landCover": "土地覆蓋類型"
+              "landCoverType": "土地覆蓋類型"
             }
 
     + Schema
@@ -3436,7 +3857,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 }
@@ -3484,7 +3905,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "longitude": 121.462417,
               "altitude": 100,
               "vegetation": "植被",
-              "landCover": "土地覆蓋類型",
+              "landCoverType": "土地覆蓋類型",
               "isLocked": true,
               "lockUser": {
                 "id": "5c949bbbe5d5377f98c81ab0",
@@ -3531,7 +3952,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 },
@@ -3584,7 +4005,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "longitude": 121.462417,
               "altitude": 100,
               "vegetation": "植被",
-              "landCover": "土地覆蓋類型",
+              "landCoverType": "土地覆蓋類型",
               "isLocked": false
             }
 
@@ -3625,7 +4046,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 },
@@ -3709,7 +4130,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "longitude": 121.462417,
                   "altitude": 100,
                   "vegetation": "植被",
-                  "landCover": "土地覆蓋類型",
+                  "landCoverType": "土地覆蓋類型",
                   "isLocked": true,
                   "lockUser": {
                     "id": "5c949bbbe5d5377f98c81ab0",
@@ -3778,7 +4199,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string",
                         "description": "植被"
                       },
-                      "landCover": {
+                      "landCoverType": {
                         "type": "string",
                         "description": "土地覆蓋類型"
                       },
@@ -3835,7 +4256,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "longitude": 121.462417,
               "altitude": 100,
               "vegetation": "植被",
-              "landCover": "土地覆蓋類型"
+              "landCoverType": "土地覆蓋類型"
             }
 
     + Schema
@@ -3869,7 +4290,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 }
@@ -3948,7 +4369,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "植被"
                 },
-                "landCover": {
+                "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
                 }
@@ -4170,6 +4591,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     + Body
 
             {
+              "project": "5c9af1d2403d37067adadbc5",
               "title": {
                 "zh-TW": "title"
               },
@@ -4188,6 +4610,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
               "properties": {
+                "project" : {
+                  "type": "string",
+                  "description": "提出審核時的計畫，僅用於通知時顯示使用者在哪個計畫提出"
+                },
                 "title": {
                   "type": "object",
                   "properties": {
@@ -4388,8 +4814,54 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+# Group Species
+## System species [/species]
+### Get all species [GET /species{?index,size}]
+取得系統所有物種。
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + index: 0 (number, optional) - The page index.
+        + Default: 0
+    + size: 9007199254740991 (number, optional) - The page size (1~9007199254740991).
+        + Default: 9007199254740991
+
++ Request Get all species (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 9007199254740991,
+              "total": 3,
+              "items": [
+                {
+                  "id": "5cd6941d0353661e18a1d370",
+                  "title": {
+                    "zh-TW": "NA"
+                  }
+                },
+                {
+                  "id": "5cd661e332a98b60839c6cac",
+                  "title": {
+                    "zh-TW": "人"
+                  },
+                  "code": "human"
+                },
+                {
+                  "id": "5cd661e332a98b60839c6cad",
+                  "title": {
+                    "zh-TW": "定時測試"
+                  }
+                }
+              ]
+            }
+
+
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -4409,6 +4881,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
 
 + Request Get annotations (application/json)
 
@@ -4596,22 +5069,262 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+## Access annotation [/annotations/{annotationId}]
 
-## Update annotation [PUT /annotations/{annotationId}]
-更新標註。
++ Parameters
+    + annotationId: `5cbabb2c84bf6a8dc5ccf960` (string) - The annotation ID.
+
+### Get annotation [GET /annotations/{annotationId}]
+取得標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
 - The general-account gets the project who joined.
 
-+ Parameters
-    + annotationId: `` (string) - The annotation ID.
++ Request Get an annotation (application/json)
 
-+ Request Update an annotation (application/json)
++ Response 200 (application/json)
 
     + Body
 
             {
-              "species": "5c9af1d2403d37067adadbc7",
+              "id": "5cbabb2c84bf6a8dc5ccf960",
+              "studyArea": {
+                "id": "5c9d95acea5c9b4036d97c88",
+                "title": {
+                  "zh-TW": "titleX"
+                },
+                "parent": "5c9d9428e7462d3d989cb69b"
+              },
+              "cameraLocation": {
+                "id": "5c9f28070d9cee99f8a11a12",
+                "studyArea": "5c9d95acea5c9b4036d97c88",
+                "name": "PT02A",
+                "settingTime": "2019-01-01T00:00:00.000Z",
+                "latitude": 58.28,
+                "longitude": 121.462417,
+                "altitude": 100,
+                "vegetation": "植被",
+                "landCoverType": "土地覆蓋類型",
+                "isLocked": false
+              },
+              "failures": [
+              ],
+              "filename": "IMG_7191.JPG",
+              "file": {
+                "id": "5cbabb0284bf6a8dc5ccf953",
+                "type": "annotation-image",
+                "originalFilename": "IMG_7191.JPG",
+                "filename": "5cbabb0284bf6a8dc5ccf953.jpg",
+                "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/annotation-images/5cbabb0284bf6a8dc5ccf953.jpg",
+                "size": 3934239
+              },
+              "time": "2010-07-25T04:27:48.000Z",
+              "species": {
+                "id": "5c9af1d2403d37067adadbc7",
+                "title": {
+                  "zh-TW": "測試"
+                },
+                "index": 1,
+                "code": "test"
+              },
+              "fields": [
+                {
+                  "dataField": {
+                    "id": "5c9af16a4ee1b606477f9231",
+                    "state": "approved",
+                    "title": {
+                      "zh-TW": "年齡"
+                    },
+                    "widgetType": "select",
+                    "description": {
+                      "zh-TW": "成體、亞成體、幼體"
+                    },
+                    "options": [
+                      {
+                        "id": "5c9af16a4ee1b606477f9234",
+                        "zh-TW": "成體"
+                      },
+                      {
+                        "id": "5c9af16a4ee1b606477f9233",
+                        "zh-TW": "亞成體"
+                      },
+                      {
+                        "id": "5c9af16a4ee1b606477f9232",
+                        "zh-TW": "幼體"
+                      }
+                    ]
+                  },
+                  "value": "5c9af16a4ee1b606477f9234"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Annotation ID."
+                },
+                "studyArea": {
+                  "type": "object"
+                },
+                "cameraLocation": {
+                  "type": "object"
+                },
+                "failures": {
+                  "type": "string",
+                  "enum": [
+                    "new-species"
+                  ],
+                  "description": "物種不在預設中"
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "檔名"
+                },
+                "file": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The file ID."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "檔案類別",
+                      "enum": [
+                        "project-cover-image",
+                        "annotation-image"
+                      ]
+                    },
+                    "originalFilename": {
+                      "type": "string",
+                      "description": "原始檔名"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "description": "儲存於 S3 的檔名"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "description": "File size in byte."
+                    }
+                  }
+                },
+                "time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "species": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "物種 ID"
+                    },
+                    "title": {
+                      "type": "object",
+                      "properties": {
+                        "zh-TW": {
+                          "type": "string",
+                          "description": "繁體中文物種名稱"
+                        }
+                      }
+                    },
+                    "index": {
+                      "type": "integer",
+                      "description": "順序"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Machine code for internal referencing."
+                    }
+                  }
+                },
+                "fields": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "dataField": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Data field ID."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": ["approved", "pending", "rejected"]
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文欄位名稱"
+                              }
+                            }
+                          },
+                          "widgetType": {
+                            "type": "string",
+                            "enum": ["select", "text", "date-picker"]
+                          },
+                          "description": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": "繁體中文欄位說明。"
+                            }
+                          },
+                          "options": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "選項編號"
+                              },
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文選項名稱"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
+### Create an annotation [POST /annotations]
+新增標註。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Request Create an annotation (application/json)
+
+    + Body
+
+            {
+              "cameraLocation": "5c9f28070d9cee99f8a11a12",
+              "filename": "IMG_7191.JPG",
+              "file": "5cbabb0284bf6a8dc5ccf951",
+              "time": "2010-07-25T04:27:48.000Z",
+              "speciesTitle": "測試",
               "fields": [
                 {
                   "dataField": "5c9af16a4ee1b606477f9231",
@@ -4626,9 +5339,301 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "$schema": "http://json-schema.org/draft-04/schema#",
               "type": "object",
               "properties": {
-                "species": {
+                "cameraLocation": {
                   "type": "string",
-                  "description": "物種 ID."
+                  "description": "相機位置 ID"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "檔案 ID"
+                },
+                "time": {
+                  "type": "string"
+                },
+                "speciesTitle": {
+                  "type": "string",
+                  "description": "物種中文標題"
+                },
+                "fields": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "dataField": {
+                        "type": "string",
+                        "description": "Data field ID."
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5cbabb2c84bf6a8dc5ccf960",
+              "studyArea": {
+                "id": "5c9d95acea5c9b4036d97c88",
+                "title": {
+                  "zh-TW": "titleX"
+                },
+                "parent": "5c9d9428e7462d3d989cb69b"
+              },
+              "cameraLocation": {
+                "id": "5c9f28070d9cee99f8a11a12",
+                "studyArea": "5c9d95acea5c9b4036d97c88",
+                "name": "PT02A",
+                "settingTime": "2019-01-01T00:00:00.000Z",
+                "latitude": 58.28,
+                "longitude": 121.462417,
+                "altitude": 100,
+                "vegetation": "植被",
+                "landCoverType": "土地覆蓋類型",
+                "isLocked": false
+              },
+              "failures": [
+              ],
+              "filename": "IMG_7191.JPG",
+              "file": {
+                "id": "5cbabb0284bf6a8dc5ccf953",
+                "type": "annotation-image",
+                "originalFilename": "IMG_7191.JPG",
+                "filename": "5cbabb0284bf6a8dc5ccf953.jpg",
+                "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/annotation-images/5cbabb0284bf6a8dc5ccf953.jpg",
+                "size": 3934239
+              },
+              "time": "2010-07-25T04:27:48.000Z",
+              "species": {
+                "id": "5c9af1d2403d37067adadbc7",
+                "title": {
+                  "zh-TW": "測試"
+                },
+                "index": 1,
+                "code": "test"
+              },
+              "fields": [
+                {
+                  "dataField": {
+                    "id": "5c9af16a4ee1b606477f9231",
+                    "state": "approved",
+                    "title": {
+                      "zh-TW": "年齡"
+                    },
+                    "widgetType": "select",
+                    "description": {
+                      "zh-TW": "成體、亞成體、幼體"
+                    },
+                    "options": [
+                      {
+                        "id": "5c9af16a4ee1b606477f9234",
+                        "zh-TW": "成體"
+                      },
+                      {
+                        "id": "5c9af16a4ee1b606477f9233",
+                        "zh-TW": "亞成體"
+                      },
+                      {
+                        "id": "5c9af16a4ee1b606477f9232",
+                        "zh-TW": "幼體"
+                      }
+                    ]
+                  },
+                  "value": "5c9af16a4ee1b606477f9234"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Annotation ID."
+                },
+                "studyArea": {
+                  "type": "object"
+                },
+                "cameraLocation": {
+                  "type": "object"
+                },
+                "failures": {
+                  "type": "string",
+                  "enum": [
+                    "new-species"
+                  ],
+                  "description": "物種不在預設中"
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "檔名"
+                },
+                "file": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The file ID."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "檔案類別",
+                      "enum": [
+                        "project-cover-image",
+                        "annotation-image"
+                      ]
+                    },
+                    "originalFilename": {
+                      "type": "string",
+                      "description": "原始檔名"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "description": "儲存於 S3 的檔名"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "description": "File size in byte."
+                    }
+                  }
+                },
+                "time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "species": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "物種 ID"
+                    },
+                    "title": {
+                      "type": "object",
+                      "properties": {
+                        "zh-TW": {
+                          "type": "string",
+                          "description": "繁體中文物種名稱"
+                        }
+                      }
+                    },
+                    "index": {
+                      "type": "integer",
+                      "description": "順序"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Machine code for internal referencing."
+                    }
+                  }
+                },
+                "fields": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "dataField": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Data field ID."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": ["approved", "pending", "rejected"]
+                          },
+                          "title": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文欄位名稱"
+                              }
+                            }
+                          },
+                          "widgetType": {
+                            "type": "string",
+                            "enum": ["select", "text", "date-picker"]
+                          },
+                          "description": {
+                            "type": "object",
+                            "properties": {
+                              "zh-TW": "繁體中文欄位說明。"
+                            }
+                          },
+                          "options": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "選項編號"
+                              },
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文選項名稱"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
+### Update annotation [PUT /annotations/{annotationId}]
+更新標註。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + annotationId: `5cd25d0100407e2fea3fcf63` (string) - The annotation ID.
+
++ Request Update an annotation (application/json)
+
+    + Body
+
+            {
+              "speciesTitle": "測試",
+              "fields": [
+                {
+                  "dataField": "5c9af16a4ee1b606477f9231",
+                  "value": "5c9af16a4ee1b606477f9234"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "speciesTitle": {
+                  "type": "string",
+                  "description": "物種中文標題"
                 },
                 "fields": {
                   "type": "array",
@@ -4648,7 +5653,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
-
 
 + Response 200 (application/json)
 
@@ -4863,6 +5867,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+### Delete an annotation [DELETE /annotations/{annotationId}]
+刪除標註。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + annotationId: `5cd25d0100407e2fea3fcf63` (string) - The annotation ID.
+
++ Request Delete an annotation (application/json)
+
++ Response 204 (application/json)
+
+
 ## Annotation revision [/annotations/{annotationId}/revisions]
 ### Get revisions of the annotation [GET /annotations/{annotationId}/revisions{?index,size,sort}]
 取得標註的版本紀錄。
@@ -5027,7 +6045,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Export annotations [/annotations.csv]
-### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort}]
+### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort,fields}]
 匯出標註為 CSV 檔，直接將瀏覽器網址改成匯出網址後瀏覽器會開始下載。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -5043,6 +6061,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
 
 + Request Export annotations to .csv (application/json)
 
@@ -5166,7 +6185,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     
             {
               "type": "issue",
-              "category": "system",
+              "categories": ["system"],
               "description": "hello",
               "email": "email@example.com",
               "attachmentFile": "5ccd2c3feb8a98a70489c322"
@@ -5183,18 +6202,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "description": "問題回報, 意見反饋",
                   "enum": ["issue", "suggestion"]
                 },
-                "category": {
-                  "type": "string",
-                  "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
-                  "enum": [
-                    "system",
-                    "account",
-                    "project-management",
-                    "file-upload",
-                    "data-edit",
-                    "search-and-download",
-                    "others"
-                  ]
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
+                    "enum": [
+                      "system",
+                      "account",
+                      "project-management",
+                      "file-upload",
+                      "data-edit",
+                      "search-and-download",
+                      "others"
+                    ]
+                  }
                 },
                 "description": {
                   "type": "string",
@@ -5217,7 +6239,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             {
               "id": "5ccfa6d1657c6220127b048b",
               "type": "issue",
-              "category": "system",
+              "category": ["system"],
               "description": "hello",
               "email": "email@example.com",
               "attachmentFile": {
@@ -5242,8 +6264,21 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "type": {
                   "type": "string"
                 },
-                "category": {
-                  "type": "string"
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "系統操作, 帳號相關, 計畫管理, 檔案上傳, 資料編輯, 篩選及下載, 其他問題",
+                    "enum": [
+                      "system",
+                      "account",
+                      "project-management",
+                      "file-upload",
+                      "data-edit",
+                      "search-and-download",
+                      "others"
+                    ]
+                  }
                 },
                 "description": {
                   "type": "string"
@@ -5281,7 +6316,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `annotation-image`
             + `annotation-csv`
             + `annotation-zip`
-    + cameraLocation: `5c9af16a4ee1b606477f922f` (string, optional) - 上傳 annotation 相關檔案時必須包含相機位置
+    + cameraLocation: `5c9af16a4ee1b606477f922f` (string) - 上傳 annotation 相關檔案時必須包含相機位置
 
 + Request Upload file (multipart/form-data; boundary=------FormBoundaryShouldDifferAtRuntime)
 

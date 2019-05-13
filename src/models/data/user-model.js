@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const UserPermission = require('../const/user-permission');
 const utils = require('../../common/utils');
 
+const { Schema } = mongoose;
 utils.connectDatabase();
 const schema = utils.generateSchema(
   {
@@ -28,6 +29,20 @@ const schema = utils.generateSchema(
       required: true,
       enum: UserPermission.all(),
     },
+    hotkeys: [
+      {
+        _id: false,
+        species: {
+          type: Schema.ObjectId,
+          ref: 'SpeciesModel',
+          required: true,
+        },
+        hotkey: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     collection: 'Users',
@@ -44,19 +59,24 @@ schema.index(
     },
   },
 );
-const model = mongoose.model('UserModel', schema);
-
-model.prototype.isLogin = function() {
+schema.method('isLogin', function() {
   return this.isNew === false;
-};
-
-model.prototype.dump = function() {
+});
+schema.method('dump', function(req) {
+  let hotkeys;
+  if (req && req.user && `${req.user._id}` === `${this._id}`) {
+    hotkeys = this.hotkeys.map(x =>
+      x.species && typeof x.species.dump === 'function'
+        ? { species: x.species.dump(), hotkey: x.hotkey }
+        : { species: x.species, hotkey: x.hotkey },
+    );
+  }
   return {
     id: `${this._id}`,
     name: this.name,
     email: this.email,
     permission: this.permission,
+    hotkeys,
   };
-};
-
-module.exports = model;
+});
+module.exports = mongoose.model('UserModel', schema);
