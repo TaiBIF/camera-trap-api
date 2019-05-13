@@ -2,14 +2,14 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
-const AbnormalCameraLocationModel = require('../models/data/abnormal-camera-location-model');
-const AbnormalCameraLocationForm = require('../forms/abnormal-camera-location/abnormal-camera-location-form');
+const CameraLocationAbnormalityModel = require('../models/data/abnormal-camera-location-model');
+const CameraLocationAbnormalityForm = require('../forms/abnormal-camera-location/abnormal-camera-location-form');
 
-exports.addAbnormalCameraLocation = auth(UserPermission.all(), (req, res) => {
+exports.addCameraLocationAbnormality = auth(UserPermission.all(), (req, res) => {
   /*
   POST /api/v1/projects/:projectId/abnormal-camera-location
    */
-  const form = new AbnormalCameraLocationForm(req.body);
+  const form = new CameraLocationAbnormalityForm(req.body);
   const errorMessage = form.validate();
 
   if (errorMessage) {
@@ -25,7 +25,7 @@ exports.addAbnormalCameraLocation = auth(UserPermission.all(), (req, res) => {
         throw new errors.Http403();
       }
 
-      const abnormalCameraLocation = new AbnormalCameraLocationModel({
+      const abnormalCameraLocation = new CameraLocationAbnormalityModel({
         ...form,
         project,
       });

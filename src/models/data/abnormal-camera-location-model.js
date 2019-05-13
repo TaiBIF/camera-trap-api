@@ -73,10 +73,10 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'AbnormalCameraLocation',
+    collection: 'CameraLocationAbnormality',
   },
 );
-const model = mongoose.model('AbnormalCameraLocationModel', schema);
+const model = mongoose.model('CameraLocationAbnormalityModel', schema);
 
 model.prototype.dump = function() {
   const doc = {

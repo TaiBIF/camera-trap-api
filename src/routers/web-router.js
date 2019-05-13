@@ -182,7 +182,7 @@ apiRouter.post(
 );
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/abnormal-camera-location',
-  abnormalCameraLocationHandler.addAbnormalCameraLocation,
+  abnormalCameraLocationHandler.addCameraLocationAbnormality,
 );
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
