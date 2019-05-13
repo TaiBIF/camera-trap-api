@@ -18,12 +18,15 @@ exports.addCameraLocationAbnormality = auth(
       throw new errors.Http400(errorMessage);
     }
 
-    return Promise.all([ProjectModel.findById(req.params.projectId)])
-      .then(([project]) => {
+    return ProjectModel.findById(req.params.projectId)
+      .then(project => {
         if (!project) {
           throw new errors.Http404();
         }
-        if (!project.canManageBy(req.user)) {
+        if (
+          req.user.permission !== UserPermission.administrator &&
+          !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
+        ) {
           throw new errors.Http403();
         }
 
