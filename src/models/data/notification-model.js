@@ -39,6 +39,10 @@ const model = mongoose.model(
         type: Schema.ObjectId,
         ref: 'UploadSessionModel',
       },
+      cameraLocationAbnormality: {
+        type: Schema.ObjectId,
+        ref: 'CameraLocationAbnormalityModel',
+      },
       issue: {
         type: Schema.ObjectId,
         ref: 'IssueModel',
@@ -76,6 +80,11 @@ model.prototype.dump = function() {
       this.uploadSession && typeof this.uploadSession.dump === 'function'
         ? this.uploadSession.dump()
         : this.uploadSession,
+    cameraLocationAbnormality:
+      this.cameraLocationAbnormality &&
+      typeof this.cameraLocationAbnormality.dump === 'function'
+        ? this.cameraLocationAbnormality.dump()
+        : this.cameraLocationAbnormality,
     issue:
       this.issue && typeof this.issue.dump === 'function'
         ? this.issue.dump()

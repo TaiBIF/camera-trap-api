@@ -24,6 +24,7 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
     .sort(form.sort)
     .populate('dataField')
     .populate('uploadSession')
+    .populate('cameraLocationAbnormality')
     .populate('issue')
     .populate('sender');
   if (form.isRead != null) {
@@ -42,6 +43,11 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
           result.docs,
           'uploadSession.cameraLocation',
         ),
+        ProjectModel.populate(result.docs, 'cameraLocationAbnormality.project'),
+        CameraLocationModel.populate(
+          result.docs,
+          'cameraLocationAbnormality.cameraLocation',
+        ),
       ]),
     )
     .then(([result]) =>
@@ -51,6 +57,10 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
           result.docs,
           'uploadSession.cameraLocation.studyArea',
         ),
+        StudyAreaModel.populate(
+          result.docs,
+          'cameraLocationAbnormality.cameraLocation.studyArea',
+        ),
       ]),
     )
     .then(([result]) =>
@@ -59,6 +69,10 @@ exports.getMyNotifications = auth(UserPermission.all(), (req, res) => {
         StudyAreaModel.populate(
           result.docs,
           'uploadSession.cameraLocation.studyArea.parent',
+        ),
+        StudyAreaModel.populate(
+          result.docs,
+          'cameraLocationAbnormality.cameraLocation.studyArea.parent',
         ),
       ]),
     )
