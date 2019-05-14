@@ -4833,6 +4833,254 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+
+## Approve new data field [/data-fields/{dataFieldId}/_approve]
+### Apply for a new data field [POST /data-fields/{dataFieldId}/_approve]
+通過申請新欄位。
+- The user's permission should be 'administrator'.
+
++ Request Approve a data field (application/json)
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "project" : {
+                  "type": "string",
+                  "description": "提出審核時的計畫，僅用於通知時顯示使用者在哪個計畫提出"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f31037ef1509d50d2911f",
+              "title": {
+                "zh-TW": "title"
+              },
+              "widgetType": "select",
+              "description": {
+                "zh-TW": "description"
+              },
+              "options": [
+                {
+                  "id": "5c9f31037ef1509d50d29120",
+                  "zh-TW": "xx"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+## Reject new data field [/data-fields/{dataFieldId}/_reject]
+### Apply for a new data field [POST /data-fields/{dataFieldId}/_reject]
+未通過申請新欄位。
+- The user's permission should be 'administrator'.
+
++ Request Reject a data field (application/json)
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "project" : {
+                  "type": "string",
+                  "description": "提出審核時的計畫，僅用於通知時顯示使用者在哪個計畫提出"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "5c9f31037ef1509d50d2911f",
+              "title": {
+                "zh-TW": "title"
+              },
+              "widgetType": "select",
+              "description": {
+                "zh-TW": "description"
+              },
+              "options": [
+                {
+                  "id": "5c9f31037ef1509d50d29120",
+                  "zh-TW": "xx"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單名稱"
+                    }
+                  }
+                },
+                "widgetType": {
+                  "type": "string",
+                  "enum": ["select"]
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文選單說明"
+                    }
+                  }
+                },
+                "options": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "zh-TW": {
+                        "type": "string",
+                        "description": "繁體中文選項名稱"
+                      }
+                    }
+                  }
+                }
+              }
+            }
 ## Retrieve data field information [/data-fields/{dataFieldId}]
 ### Retrieve data field information [GET /data-fields/{dataFieldId}]
 取得欄位詳細資料。
