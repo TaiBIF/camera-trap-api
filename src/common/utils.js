@@ -21,6 +21,13 @@ const _s3 = new AWS.S3({
   secretAccessKey: config.s3.secret,
   region: config.s3.region,
 });
+const _mediaConvert = new AWS.MediaConvert({
+  accessKeyId: config.mediaConvert.key,
+  secretAccessKey: config.mediaConvert.secret,
+  region: config.mediaConvert.region,
+  endpoint: config.mediaConvert.endpoint,
+  apiVersion: '2017-08-29',
+});
 
 let _isRegisterHandlers;
 let _isConnectionLocked;
@@ -732,6 +739,56 @@ exports.getExif = source => {
       ep.close();
       throw error;
     });
+};
+
+exports.addMediaConvertJob = file => {
+  const jobParams = {
+    JobTemplate: config.mediaConvert.jobTemplate,
+    Queue: config.mediaConvert.queue,
+    Role: config.mediaConvert.role,
+    Settings: {
+      Inputs: [
+        {
+          AudioSelectors: {
+            'Audio Selector 1': {
+              Offset: 0,
+              DefaultSelection: 'NOT_DEFAULT',
+              ProgramSelection: 1,
+              SelectorType: 'TRACK',
+              Tracks: [1],
+            },
+          },
+          VideoSelector: {
+            ColorSpace: 'FOLLOW',
+          },
+          FilterEnable: 'AUTO',
+          PsiControl: 'USE_PSI',
+          FilterStrength: 0,
+          DeblockFilter: 'DISABLED',
+          DenoiseFilter: 'DISABLED',
+          TimecodeSource: 'EMBEDDED',
+          FileInput: `s3://${config.s3.bucket}/${
+            config.s3.folders.annotationOriginalVideos
+          }/${file.getFilename()}`,
+        },
+      ],
+      OutputGroups: [
+        {
+          Name: 'File Group',
+          OutputGroupSettings: {
+            Type: 'FILE_GROUP_SETTINGS',
+            FileGroupSettings: {
+              Destination: `s3://${config.s3.bucket}/${
+                config.s3.folders.annotationVideos
+              }/`,
+            },
+          },
+          Outputs: [],
+        },
+      ],
+    },
+  };
+  return _mediaConvert.createJob(jobParams).promise();
 };
 
 exports.logError = (error, extra) => {

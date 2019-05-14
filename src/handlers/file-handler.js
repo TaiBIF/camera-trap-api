@@ -26,6 +26,12 @@ const multers = {
       limits: { fileSize: config.limit.imageFileSize },
     }).single('file'),
   ),
+  video: util.promisify(
+    multer({
+      storage: multer.diskStorage({}),
+      limits: { fileSize: config.limit.videoFileSize },
+    }).single('file'),
+  ),
   csv: util.promisify(
     multer({
       storage: multer.diskStorage({}),
@@ -58,6 +64,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
   switch (form.type) {
+    case FileType.annotationVideo:
+      if (!form.lastModified) {
+        throw new errors.Http400('The field lastModified is required.');
+      }
+    // eslint-disable-next-line no-fallthrough
     case FileType.annotationImage:
     case FileType.annotationZIP:
     case FileType.annotationCSV:
@@ -72,6 +83,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   const multerTable = {};
   multerTable[FileType.projectCoverImage] = multers.image;
   multerTable[FileType.annotationImage] = multers.image;
+  multerTable[FileType.annotationVideo] = multers.video;
   multerTable[FileType.annotationCSV] = multers.csv;
   multerTable[FileType.annotationZIP] = multers.zip;
   multerTable[FileType.issueAttachment] = multers.issueAttachment;
@@ -99,6 +111,9 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         case FileType.annotationImage:
           allowExtensionNames = FileExtensionName.annotationImage;
           break;
+        case FileType.annotationVideo:
+          allowExtensionNames = FileExtensionName.annotationVideo;
+          break;
         case FileType.annotationZIP:
           allowExtensionNames = FileExtensionName.annotationZip;
           break;
@@ -118,6 +133,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
 
       switch (form.type) {
         case FileType.annotationImage:
+        case FileType.annotationVideo:
         case FileType.annotationZIP:
         case FileType.annotationCSV:
           return Promise.all([
@@ -144,6 +160,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       // Authorization
       switch (form.type) {
         case FileType.annotationImage:
+        case FileType.annotationVideo:
         case FileType.annotationZIP:
         case FileType.annotationCSV:
           if (!cameraLocation) {
@@ -173,6 +190,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       if (
         [
           FileType.annotationImage,
+          FileType.annotationVideo,
           FileType.annotationZIP,
           FileType.annotationCSV,
         ].indexOf(form.type) >= 0
@@ -193,10 +211,12 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         } else {
           // disk storage
           tasks.unshift(
-            file.saveWithContent(req.file.path).then(result => {
-              fs.unlinkSync(req.file.path);
-              return result;
-            }),
+            file
+              .saveWithContent(req.file.path, form.lastModified)
+              .then(result => {
+                fs.unlinkSync(req.file.path);
+                return result;
+              }),
           );
         }
         return Promise.all(tasks);
@@ -212,7 +232,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       @param file {FileModel}
       @returns {Promise<FileModel>}
        */
-      if (file.type === FileType.annotationImage) {
+      if (
+        [FileType.annotationImage, FileType.annotationVideo].indexOf(
+          file.type,
+        ) >= 0
+      ) {
         if (!file.exif || !file.exif.dateTime) {
           _uploadSession.errorType = UploadSessionErrorType.lostExifTime;
           throw new errors.Http400(
@@ -224,6 +248,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       if (
         [
           FileType.annotationImage,
+          FileType.annotationVideo,
           FileType.annotationCSV,
           FileType.annotationZIP,
         ].indexOf(file.type) >= 0
