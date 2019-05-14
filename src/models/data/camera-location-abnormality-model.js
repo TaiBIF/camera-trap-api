@@ -57,7 +57,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'CameraLocationAbnormality',
+    collection: 'CameraLocationAbnormalities',
   },
 );
 
