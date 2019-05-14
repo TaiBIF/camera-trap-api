@@ -44,6 +44,7 @@ const schema = utils.generateSchema(
     },
     size: {
       // The file total size.
+      // Whe the file type is `annotation-video`, it isn't include the video from the AWS MediaConvert.
       type: Number,
     },
   },
@@ -73,6 +74,16 @@ schema.post('remove', file => {
         .deleteS3Objects([
           `${config.s3.folders.annotationImages}/${file.getFilename()}`,
           `${config.s3.folders.annotationOriginalImages}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, file);
+        });
+      break;
+    case FileType.annotationVideo:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.annotationVideos}/${file.getFilename()}`,
+          `${config.s3.folders.annotationOriginalVideos}/${file.getFilename()}`,
         ])
         .catch(error => {
           utils.logError(error, file);
@@ -116,6 +127,10 @@ schema.method('getUrl', function() {
 });
 
 schema.method('getExtensionName', function() {
+  /*
+  Get original extension filename in lower case.
+  @returns {string}
+   */
   return path
     .extname(this.originalFilename)
     .replace('.', '')
@@ -127,23 +142,27 @@ schema.method('getFilename', function() {
   Get the filename on S3.
   @returns {string}
    */
+  if (this.type === FileType.annotationVideo) {
+    return `${this._id}.mp4`;
+  }
   return `${this._id}.${this.getExtensionName()}`;
 });
 
-schema.method('saveWithContent', function(source) {
+schema.method('saveWithContent', function(source, lastModified) {
   /*
   Save the document and update the binary content to S3.
   @param content {Buffer|string} The buffer or the file path.
+  @param lastModified {Date|null} This is for the video file.
   @returns {Promise<FileModel>}
    */
-  let sourceSize;
+  let fileStat;
   if (typeof source === 'string') {
-    sourceSize = fs.statSync(source).size;
+    fileStat = fs.statSync(source);
+    this.size = fileStat.size;
   } else {
     // Buffer
-    sourceSize = source.length;
+    this.size = source.length;
   }
-  this.size = sourceSize;
 
   return this.save().then(() => {
     switch (this.type) {
@@ -200,6 +219,7 @@ schema.method('saveWithContent', function(source) {
               let dateTime;
               const dateTimeOriginal = exifData.DateTimeOriginal;
               if (dateTimeOriginal) {
+                // dateTimeOriginal is like this "2018:05:17 09:39:29"
                 dateTime = new Date(
                   `${dateTimeOriginal
                     .replace(':', '-')
@@ -219,8 +239,29 @@ schema.method('saveWithContent', function(source) {
               });
               this.exif = exif;
             }
-            this.size = sourceSize + thumbnailResult.buffer.length;
+            this.size += thumbnailResult.buffer.length;
             return Promise.all([this.save(), exif ? exif.save() : null]);
+          })
+          .then(() => this);
+      case FileType.annotationVideo:
+        return utils
+          .uploadToS3({
+            Key: `${
+              config.s3.folders.annotationOriginalVideos
+            }/${this.getFilename()}`,
+            Body:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            StorageClass: 'STANDARD_IA',
+          })
+          .then(() => {
+            utils.addMediaConvertJob(this).catch(error => {
+              utils.logError(error, { file: this });
+            });
+            const exif = new ExchangeableImageFileModel({
+              dateTime: lastModified || fileStat.mtime,
+            });
+            this.exif = exif;
+            return Promise.all([this.save(), exif.save()]);
           })
           .then(() => this);
       case FileType.annotationZIP:

@@ -13,6 +13,7 @@ const UserModel = require('../models/data/user-model');
 const UserPermission = require('../models/const/user-permission');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
+const FileExtensionName = require('../models/const/file-extension-name');
 require('../models/data/exchangeable-image-file-model'); // for populate
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
@@ -169,21 +170,14 @@ module.exports = (job, done) => {
           throw new errors.Http403();
         }
         // Do validations for each the file type.
-        switch (file.type) {
-          case FileType.annotationImage:
-          case FileType.annotationZIP:
-          case FileType.annotationCSV:
-            if (!cameraLocation) {
-              throw new errors.Http404('Camera location is not found.');
-            }
-            if (
-              !cameraLocation.studyArea ||
-              cameraLocation.studyArea.state !== StudyAreaState.active
-            ) {
-              throw new errors.Http404('Study area is not found.');
-            }
-            break;
-          default:
+        if (!cameraLocation) {
+          throw new errors.Http404('Camera location is not found.');
+        }
+        if (
+          !cameraLocation.studyArea ||
+          cameraLocation.studyArea.state !== StudyAreaState.active
+        ) {
+          throw new errors.Http404('Study area is not found.');
         }
       },
     )
@@ -210,12 +204,27 @@ module.exports = (job, done) => {
         const file = fs.createWriteStream(tempFile.name);
 
         file.on('close', () => {
-          extract(tempFile.name, { dir: tempDir.name }, error => {
-            if (error) {
-              return reject(error);
-            }
-            resolve();
-          });
+          extract(
+            tempFile.name,
+            {
+              dir: tempDir.name,
+              onEntry: (entry, zipfile) => {
+                zipfile.once('end', () => {
+                  fs.utimesSync(
+                    path.join(tempDir.name, entry.fileName),
+                    entry.getLastModDate(),
+                    entry.getLastModDate(),
+                  );
+                });
+              },
+            },
+            error => {
+              if (error) {
+                return reject(error);
+              }
+              resolve();
+            },
+          );
         });
         s3.getObject({
           Bucket: config.s3.bucket,
@@ -245,20 +254,37 @@ module.exports = (job, done) => {
                   originalFilename: filename,
                 });
                 const fileExtensionName = file.getExtensionName();
-                if (['jpg', 'png', 'csv'].indexOf(fileExtensionName) < 0) {
+                if (
+                  FileExtensionName.annotationImage.indexOf(fileExtensionName) <
+                    0 &&
+                  FileExtensionName.annotationVideo.indexOf(fileExtensionName) <
+                    0 &&
+                  FileExtensionName.annotationCsv.indexOf(fileExtensionName) < 0
+                ) {
+                  // This is not allow files.
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   return;
                 }
-                const content = fs.readFileSync(
-                  path.join(tempDir.name, filename),
-                );
-                if (fileExtensionName === 'csv') {
-                  // Fix file.type
+                let source = path.join(tempDir.name, filename);
+
+                // Fix file.type
+                if (
+                  FileExtensionName.annotationCsv.indexOf(fileExtensionName) >=
+                  0
+                ) {
+                  // The binary content will be used for convert to annotations.
+                  source = fs.readFileSync(source);
+                  file.content = source;
                   file.type = FileType.annotationCSV;
-                  file.content = content; // The binary content will be used for convert to annotations.
+                } else if (
+                  FileExtensionName.annotationVideo.indexOf(
+                    fileExtensionName,
+                  ) >= 0
+                ) {
+                  file.type = FileType.annotationVideo;
                 }
 
-                return file.saveWithContent(content).then(() => {
+                return file.saveWithContent(source).then(() => {
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   if (
                     file.type === FileType.annotationImage &&
@@ -334,6 +360,7 @@ module.exports = (job, done) => {
       }
 
       // _file.type === FileType.annotationImage
+      // _file.type === FileType.annotationVideo
       // _file.type === FileType.annotationZIP
       const csvFileIndex = files.findIndex(
         x => x.type === FileType.annotationCSV,
@@ -442,7 +469,11 @@ module.exports = (job, done) => {
        */
       const tasks = [];
 
-      if (_file.type === FileType.annotationImage) {
+      if (
+        [FileType.annotationImage, FileType.annotationVideo].indexOf(
+          _file.type,
+        ) >= 0
+      ) {
         annotations.forEach(annotation => {
           const duplicateAnnotation = duplicateAnnotations.find(
             x =>
