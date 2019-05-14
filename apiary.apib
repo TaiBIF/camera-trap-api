@@ -6669,14 +6669,16 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + type: `project-cover-image` (enum[string]) - File type/purpose.
 
-        project-cover-image, annotation-image (上傳單一圖片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)
+        project-cover-image, annotation-image (上傳單一圖片), annotation-video (上傳單一影片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)
 
         + Members
             + `project-cover-image`
             + `annotation-image`
+            + `annotation-video`
             + `annotation-csv`
             + `annotation-zip`
     + cameraLocation: `5c9af16a4ee1b606477f922f` (string) - 上傳 annotation 相關檔案時必須包含相機位置
+    + lastModified `2018-03-06T02:34:56.000Z` (string) - 上傳單一影片時必須上傳檔案的最後編輯時間
 
 + Request Upload file (multipart/form-data; boundary=------FormBoundaryShouldDifferAtRuntime)
 
