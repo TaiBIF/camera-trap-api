@@ -13,6 +13,7 @@ const UserModel = require('../models/data/user-model');
 const UserPermission = require('../models/const/user-permission');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
+const FileExtensionName = require('../models/const/file-extension-name');
 require('../models/data/exchangeable-image-file-model'); // for populate
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
@@ -245,14 +246,22 @@ module.exports = (job, done) => {
                   originalFilename: filename,
                 });
                 const fileExtensionName = file.getExtensionName();
-                if (['jpg', 'png', 'csv'].indexOf(fileExtensionName) < 0) {
+                if (
+                  FileExtensionName.annotationImage.indexOf(fileExtensionName) <
+                    0 &&
+                  fileExtensionName.annotationCsv.indexOf(fileExtensionName) < 0
+                ) {
+                  // This is not allow files.
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   return;
                 }
                 const content = fs.readFileSync(
                   path.join(tempDir.name, filename),
                 );
-                if (fileExtensionName === 'csv') {
+                if (
+                  FileExtensionName.annotationCsv.indexOf(fileExtensionName) >=
+                  0
+                ) {
                   // Fix file.type
                   file.type = FileType.annotationCSV;
                   file.content = content; // The binary content will be used for convert to annotations.

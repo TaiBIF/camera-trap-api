@@ -7,6 +7,7 @@ const errors = require('../models/errors');
 const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const FileType = require('../models/const/file-type');
+const FileExtensionName = require('../models/const/file-extension-name');
 const FileForm = require('../forms/file/file-form');
 const FileModel = require('../models/data/file-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
@@ -90,47 +91,29 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         user: req.user,
         originalFilename: req.file.originalname,
       });
+      let allowExtensionNames;
       switch (form.type) {
         case FileType.projectCoverImage:
+          allowExtensionNames = FileExtensionName.projectCoverImage;
+          break;
         case FileType.annotationImage:
-          if (['jpg', 'png'].indexOf(file.getExtensionName()) < 0) {
-            throw new errors.Http400('Just allow jpg and png files.');
-          }
+          allowExtensionNames = FileExtensionName.annotationImage;
           break;
         case FileType.annotationZIP:
-          if (file.getExtensionName() !== 'zip') {
-            throw new errors.Http400('Just allow zip files.');
-          }
+          allowExtensionNames = FileExtensionName.annotationZip;
           break;
         case FileType.annotationCSV:
-          if (file.getExtensionName() !== 'csv') {
-            throw new errors.Http400('Just allow csv files.');
-          }
+          allowExtensionNames = FileExtensionName.annotationCsv;
           break;
         case FileType.issueAttachment:
-          if (
-            [
-              'csv',
-              'tsv',
-              'tab',
-              'txt',
-              'xls',
-              'xlsx',
-              'jpg',
-              'png',
-              'mp4',
-              'avi',
-              'mov',
-              'mpg',
-              'mpeg',
-            ].indexOf(file.getExtensionName()) < 0
-          ) {
-            throw new errors.Http400(
-              'Just allow csv, tsv, tab, txt, xls, xlsx, jpg, png, mp4, avi, mov, mpg and mpeg files.',
-            );
-          }
+          allowExtensionNames = FileExtensionName.issueAttachment;
           break;
         default:
+      }
+      if (allowExtensionNames.indexOf(file.getExtensionName()) < 0) {
+        throw new errors.Http400(
+          `Just allow ${allowExtensionNames.join(', ')} files.`,
+        );
       }
 
       switch (form.type) {
