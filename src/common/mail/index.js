@@ -111,4 +111,23 @@ module.exports = class Mail {
       body: template.body,
     });
   }
+
+  sendCameraLocationAbnormalityToSystemAdmin(
+    cameraLocationAbnormality,
+    administrators,
+  ) {
+    /*
+    @param cameraLocationAbnormality {CameraLocationAbnormalityModel}
+    @param administrators {Array<UserModel>}
+    */
+    const template = templates[this.languageCode].notifyAdministratorGotIssue(
+      cameraLocationAbnormality,
+    );
+    return this.sendEmail({
+      to: administrators.map(user => user.email),
+      replyTo: cameraLocationAbnormality.email,
+      subject: template.subject,
+      body: template.body,
+    });
+  }
 };
