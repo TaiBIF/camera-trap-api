@@ -8,6 +8,7 @@ module.exports = {
   dataFieldRejected: 'data-field-rejected', // 未通過欄位申請
   newIssue: 'new-issue', // 問題回報
   newSuggestion: 'new-suggestion', // 意見反饋
+  cameraLocationAbnormality: 'camera-location-abnormality', // 相機異常回報
   all() {
     return [
       this.system,
@@ -19,6 +20,7 @@ module.exports = {
       this.dataFieldRejected,
       this.newIssue,
       this.newSuggestion,
+      this.cameraLocationAbnormality,
     ];
   },
 };
