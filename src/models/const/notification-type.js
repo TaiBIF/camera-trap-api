@@ -6,6 +6,7 @@ module.exports = {
   dataFieldApplication: 'data-field-application', // 申請新欄位
   dataFieldApproved: 'data-field-approved', // 通過欄位申請
   dataFieldRejected: 'data-field-rejected', // 未通過欄位申請
+  newCameraLocationAbnormality: 'new-camera-location-abnormality', // 回報相機異常
   newIssue: 'new-issue', // 問題回報
   newSuggestion: 'new-suggestion', // 意見反饋
   all() {
@@ -17,6 +18,7 @@ module.exports = {
       this.dataFieldApplication,
       this.dataFieldApproved,
       this.dataFieldRejected,
+      this.newCameraLocationAbnormality,
       this.newIssue,
       this.newSuggestion,
     ];

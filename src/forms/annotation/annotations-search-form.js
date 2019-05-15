@@ -52,6 +52,13 @@ AnnotationsSearchForm.define({
       },
     ],
   }),
+  species: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.id()],
+    }),
+  }),
   fields: new forms.fields.Field({
     filter: value => JSON.parse(value || '{}'),
     validators: [

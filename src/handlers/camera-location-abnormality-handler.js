@@ -2,10 +2,13 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
+const ProjectRole = require('../models/const/project-role');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const CameraLocationAbnormalityModel = require('../models/data/camera-location-abnormality-model');
 const CameraLocationAbnormalityForm = require('../forms/camera-location-abnormality/camera-location-abnormality-form');
+const NotificationModel = require('../models/data/notification-model');
+const NotificationType = require('../models/const/notification-type');
 
 exports.addCameraLocationAbnormality = auth(
   UserPermission.all(),
@@ -43,11 +46,24 @@ exports.addCameraLocationAbnormality = auth(
 
         const cameraLocationAbnormality = new CameraLocationAbnormalityModel({
           ...form,
+          user: req.user,
           project,
         });
-        return cameraLocationAbnormality.save();
+        const tasks = [cameraLocationAbnormality.save()];
+        project.members.forEach(member => {
+          if (member.role === ProjectRole.manager) {
+            const notification = new NotificationModel({
+              type: NotificationType.newCameraLocationAbnormality,
+              user: member.user,
+              sender: req.user,
+              cameraLocationAbnormality,
+            });
+            tasks.push(notification.save());
+          }
+        });
+        return Promise.all(tasks);
       })
-      .then(cameraLocationAbnormality => {
+      .then(([cameraLocationAbnormality]) => {
         res.json(cameraLocationAbnormality.dump());
       });
   },

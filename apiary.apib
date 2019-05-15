@@ -5221,7 +5221,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -5229,7 +5229,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Parameters
     + studyArea: `5c9d95acea5c9b4036d97c88` (string, optional) - 使用樣區 id 搜尋標註，回傳結果包含子樣區資料。
-    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13 。
+    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13
     + startTime: `2017-11-09T03:48:46.000Z` (string, optional) - 開始時間
     + endTime: `2017-11-09T03:48:46.000Z` (string, optional) - 結束時間
     + index: 0 (number, optional) - The page index.
@@ -5241,7 +5241,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
-    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value} (JSON)
+    + species: `5cd795a461a221310e546b58` (string, optional) - 使用物種 id 搜尋標註。<br/>多個物種：?species=5c9f28070d9cee99f8a11a12&species=5c9f28070d9cee99f8a11a13
 
 + Request Get annotations (application/json)
 
@@ -6405,7 +6406,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 ## Export annotations [/annotations.csv]
-### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort,fields}]
+### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort,fields,species}]
 匯出標註為 CSV 檔，直接將瀏覽器網址改成匯出網址後瀏覽器會開始下載。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -6413,7 +6414,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Parameters
     + studyArea: `5c9d95acea5c9b4036d97c88` (string, optional) - 使用樣區 id 搜尋標註，回傳結果包含子樣區資料。
-    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13 。
+    + cameraLocations: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用相機位置 id 搜尋標註。<br/>多個相機位置：?cameraLocations=5c9f28070d9cee99f8a11a12&cameraLocations=5c9f28070d9cee99f8a11a13
     + startTime: `2017-11-09T03:48:46.000Z` (string, optional) - 開始時間
     + endTime: `2017-11-09T03:48:46.000Z` (string, optional) - 結束時間
     + sort: `cameraLocation time filename` (enum[string], optional)
@@ -6421,7 +6422,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
         + Members
             + `cameraLocation time filename`
             + `time filename cameraLocation`
-    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value}
+    + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value} (JSON)
+    + species: `5cd795a461a221310e546b58` (string, optional) - 使用物種 id 搜尋標註。<br/>多個物種：?species=5c9f28070d9cee99f8a11a12&species=5c9f28070d9cee99f8a11a13
 
 + Request Export annotations to .csv (application/json)
 

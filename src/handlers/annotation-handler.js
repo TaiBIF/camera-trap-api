@@ -123,6 +123,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           cameraLocation: { $in: cameraLocations.map(x => x._id) },
         });
       }
+      if (form.species.length) {
+        query.where({ species: { $in: form.species } });
+      }
 
       // 進階篩選 DataField
       dataFields.forEach(dataField => {

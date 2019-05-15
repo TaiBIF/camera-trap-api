@@ -7,13 +7,16 @@ utils.connectDatabase();
 
 const schema = utils.generateSchema(
   {
+    user: {
+      // The user who added this entity.
+      type: Schema.ObjectId,
+      ref: 'UserModel',
+      required: true,
+    },
     project: {
       type: Schema.ObjectId,
       ref: 'ProjectModel',
       required: true,
-      index: {
-        name: 'Project',
-      },
     },
     cameraLocation: {
       // 相機位置
@@ -57,13 +60,17 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'CameraLocationAbnormality',
+    collection: 'CameraLocationAbnormalities',
   },
 );
 
 schema.method('dump', function() {
   return {
     id: `${this._id}`,
+    user:
+      this.user && typeof this.user.dump === 'function'
+        ? this.user.dump()
+        : this.user,
     cameraLocation:
       this.cameraLocation && typeof this.cameraLocation.dump === 'function'
         ? this.cameraLocation.dump()
