@@ -189,15 +189,15 @@ apiRouter.post(
 );
 
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/location-month-retrieved',
+  '/projects/:projectId([a-f\\d]{24})/month-retrieved',
   LocationMonthRetrievedHandler.LocationMonthRetrieved,
 );
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/location-month-retrieved',
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/month-retrieved',
   LocationMonthRetrievedHandler.retrievedByStudyArea,
 );
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/location-month-retrieved',
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/month-retrieved',
   LocationMonthRetrievedHandler.retrievedByCameraLocation,
 );
 
