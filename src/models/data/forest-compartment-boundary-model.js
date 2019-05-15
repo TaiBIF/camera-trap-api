@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 
-
-const { Schema } = mongoose;
+// const { Schema } = mongoose;
 utils.connectDatabase();
 
 const schema = utils.generateSchema(
@@ -15,22 +14,43 @@ const schema = utils.generateSchema(
       type: {
         type: String,
         enum: ['Polygon'],
-        required: true
+        required: true,
       },
       coordinates: {
         type: [[[Number]]],
-        required: true
-      }
+        required: true,
+      },
     },
     properties: {
-      'Name': {
+      Name: {
         type: String,
         required: true,
       },
-      'description': {
+      description: {
         type: String,
       },
-      'altitudeMode': {
+      altitudeMode: {
+        type: String,
+      },
+      CMPT: {
+        type: String,
+      },
+      AREA: {
+        type: String,
+      },
+      WKNG: {
+        type: String,
+      },
+      DIST_C: {
+        type: String,
+      },
+      DIST: {
+        type: String,
+      },
+      Field_1: {
+        type: String,
+      },
+      WKNG_C: {
         type: String,
       },
     },
@@ -44,12 +64,14 @@ const schema = utils.generateSchema(
   },
 );
 
-
 const model = mongoose.model('ForestCompartmentBoundaryModel', schema);
 
 model.prototype.dump = function() {
   return {
     id: `${this._id}`,
+    type: this.type,
+    geometry: this.geometry,
+    properties: this.properties,
   };
 };
 

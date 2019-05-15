@@ -17,7 +17,7 @@ const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
 const userHandler = require('../handlers/user-handler');
-const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler')
+const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -203,7 +203,10 @@ apiRouter.get(
 apiRouter.post('/issues', issueHandler.addIssue);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
-apiRouter.post('/forest-compartment-boundary', forestCompartmentBoundary.getForestCompartmentBoundary);
+apiRouter.post(
+  '/forest-compartment-boundary',
+  forestCompartmentBoundary.getForestCompartmentBoundary,
+);
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
 callbackRouter.get('/orcid/auth', callbackHandler.orcidAuth);

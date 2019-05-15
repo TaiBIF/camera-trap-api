@@ -23,9 +23,9 @@ ForestCompartmentBoundaryForm.define({
         return forms.constants.PAGE_SIZE_MAXIMUM;
       }
       // TODO-MG
-      //if (result > forms.constants.ANNOTATION_SIZE_MAXIMUM) {
-      //  return forms.constants.ANNOTATION_SIZE_MAXIMUM;
-      //}
+      // if (result > forms.constants.XXX_SIZE_MAXIMUM) {
+      //  return forms.constants.XXX_SIZE_MAXIMUM;
+      // }
       return result;
     },
   }),
