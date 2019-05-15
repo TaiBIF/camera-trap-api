@@ -51,3 +51,30 @@ exports.notifyAdministratorGotIssue = issue =>
       </p>
       <p>Camera Trap.</p>`,
   });
+
+exports.notifyAdministratorGotCameraLocationAbnormality = (issue, project) =>
+  /*
+  Send an email to sysadmin when user add a camera location abnormality
+  @param issue {IssueModel}
+  @param project {ProjectModel}
+  @returns {Object}
+    subject: {string}
+    body: {string}
+   */
+  ({
+    subject: `[Camera Trap] 相機異常回報 ${project.title}`,
+    body: `
+      <p>系統管理員：</p>
+      <p>
+        電子郵件：${issue.email}<br/>
+        ${
+          issue.attachmentFile
+            ? `附件：<a href="${issue.attachmentFile.getUrl()}">${issue.attachmentFile.getUrl()}</a>`
+            : ''
+        }
+      </p>
+      <p>
+        <pre>${issue.description}</pre>
+      </p>
+      <p>Camera Trap.</p>`,
+  });
