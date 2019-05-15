@@ -1225,6 +1225,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                           "upload-failure'",
                           "data-field-application",
                           "data-field-approved",
+                          "new-camera-location-abnormality",
                           "new-issue",
                           "new-suggestion"
                         ]
@@ -1275,6 +1276,39 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                           "id": {
                             "type": "string",
                             "description": "The issue ID."
+                          }
+                        }
+                      },
+                      "cameraLocationAbnormality": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The ID."
+                          },
+                          "project": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "cameraLocation": {
+                            "type": "object",
+                            "properties": {
+                              "studyArea": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "parent": {
+                                    "type": "object"
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
                       },
