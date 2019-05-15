@@ -3,6 +3,7 @@ const ProjectModel = require('../models/data/project-model');
 
 exports.LocationMonthRetrieved = (req, res) => {
   const { projectId } = req.params;
+  const { year } = req.query;
 
   return ProjectModel.findById(projectId)
     .then(project => {
@@ -12,7 +13,7 @@ exports.LocationMonthRetrieved = (req, res) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrieved(projectId);
+      return ProjectModel.getRetrieved(projectId, year);
     })
     .then(records => {
       res.json(records);
@@ -21,6 +22,7 @@ exports.LocationMonthRetrieved = (req, res) => {
 
 exports.retrievedByStudyArea = (req, res) => {
   const { projectId, studyAreaId } = req.params;
+  const { year } = req.query;
 
   return ProjectModel.findById(projectId)
     .then(project => {
@@ -30,7 +32,7 @@ exports.retrievedByStudyArea = (req, res) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId);
+      return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId, year);
     })
     .then(records => {
       res.json(records);
@@ -39,6 +41,7 @@ exports.retrievedByStudyArea = (req, res) => {
 
 exports.retrievedByCameraLocation = (req, res) => {
   const { projectId, cameraLocationId } = req.params;
+  const { year } = req.query;
 
   return ProjectModel.findById(projectId)
     .then(project => {
@@ -48,7 +51,11 @@ exports.retrievedByCameraLocation = (req, res) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrievedByCamera(projectId, cameraLocationId);
+      return ProjectModel.getRetrievedByCamera(
+        projectId,
+        cameraLocationId,
+        year,
+      );
     })
     .then(records => {
       res.json(records);

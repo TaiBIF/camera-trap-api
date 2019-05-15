@@ -1,14 +1,23 @@
 const mongoose = require('mongoose');
+const errors = require('../../errors');
+const reformatRetrieved = require('./_reformatRetrieved');
 
 // getRetrievedByStudyArea
-module.exports = async function(projectId, studyAreaId) {
+module.exports = async function(projectId, studyAreaId, year) {
+  if (!year) {
+    throw new errors.Http400();
+  }
   const AnnotationModel = this.db.model('AnnotationModel');
+
+  const timeYearStart = new Date(year, 0, 1, 0);
+  const timeYearEnd = new Date(timeYearStart.getFullYear() + 1, 0, 1);
 
   const r = await AnnotationModel.aggregate([
     {
       $match: {
         // project: mongoose.Types.ObjectId(projectId),
         studyArea: mongoose.Types.ObjectId(studyAreaId),
+        time: { $gt: timeYearStart, $lt: timeYearEnd },
       },
     },
     {
@@ -33,5 +42,5 @@ module.exports = async function(projectId, studyAreaId) {
     },
   ]);
 
-  return r;
+  return reformatRetrieved(r, 'cameraLocation');
 };

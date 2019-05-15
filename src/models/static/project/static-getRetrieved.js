@@ -1,19 +1,28 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
+const errors = require('../../errors');
+const reformatRetrieved = require('./_reformatRetrieved');
 
 // getRetrievedByProjectStudyArea
-module.exports = async function(projectId) {
+module.exports = async function(projectId, year) {
+  if (!year) {
+    throw new errors.Http400();
+  }
   const AnnotationModel = this.db.model('AnnotationModel');
   const StudyAreaModel = this.db.model('StudyAreaModel');
 
   const studyArea = await StudyAreaModel.getByProjectId(projectId);
   const studyAreaIds = _.map(studyArea, '_id');
 
+  const timeYearStart = new Date(year, 0, 1, 0);
+  const timeYearEnd = new Date(timeYearStart.getFullYear() + 1, 0, 1);
+
   const r = await AnnotationModel.aggregate([
     {
       $match: {
         project: mongoose.Types.ObjectId(projectId),
         studyArea: { $in: studyAreaIds },
+        time: { $gt: timeYearStart, $lt: timeYearEnd },
       },
     },
     {
@@ -44,7 +53,6 @@ module.exports = async function(projectId) {
       $group: {
         _id: {
           month: { $month: '$time' },
-          year: { $year: '$time' },
           studyArea: '$studyAreaId',
         },
         dataCount: { $sum: 1 },
@@ -62,5 +70,5 @@ module.exports = async function(projectId) {
     },
   ]);
 
-  return r;
+  return reformatRetrieved(r, 'studyArea');
 };
