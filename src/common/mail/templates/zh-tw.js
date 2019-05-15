@@ -36,7 +36,9 @@ exports.notifyAdministratorGotIssue = issue =>
       <p>系統管理員：</p>
       <p>
         回報類型：${IssueType.dict(issue.type)}<br/>
-        問題/意見類型：${IssueCategory.dict(issue.category)}<br/>
+        問題/意見類型：${issue.categories
+          .map(x => IssueCategory.dict(x))
+          .join(', ')}<br/>
         電子郵件：${issue.email}<br/>
         ${
           issue.attachmentFile

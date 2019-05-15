@@ -10,5 +10,6 @@ FileForm.define({
   cameraLocation: new forms.fields.StringField({
     validators: [forms.validators.id()],
   }),
+  lastModified: new forms.fields.DateField(),
 });
 module.exports = FileForm;

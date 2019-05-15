@@ -1,8 +1,11 @@
 const os = require('os');
 const util = require('util');
+const { Readable } = require('stream');
 const AWS = require('aws-sdk');
 const config = require('config');
 const csvStringify = require('csv-stringify');
+const exifTool = require('node-exiftool');
+const exifToolBin = require('dist-exiftool');
 const kue = require('kue');
 const gm = require('gm'); // this module require graphicsmagick
 const mime = require('mime-types');
@@ -17,6 +20,13 @@ const _s3 = new AWS.S3({
   accessKeyId: config.s3.key,
   secretAccessKey: config.s3.secret,
   region: config.s3.region,
+});
+const _mediaConvert = new AWS.MediaConvert({
+  accessKeyId: config.mediaConvert.key,
+  secretAccessKey: config.mediaConvert.secret,
+  region: config.mediaConvert.region,
+  endpoint: config.mediaConvert.endpoint,
+  apiVersion: '2017-08-29',
 });
 
 let _isRegisterHandlers;
@@ -244,7 +254,8 @@ exports.uploadToS3 = (args = {}) =>
   /*
   Upload the image to storage.
   @param args {Object} The params for s3.upload().
-  @returns {Promise<Buffer>}
+    Body: {Buffer|stream} When it is stream this function will automatically close the stream.
+  @returns {Promise<Buffer|stream>}
    */
   new Promise((resolve, reject) => {
     // upload to S3
@@ -254,9 +265,12 @@ exports.uploadToS3 = (args = {}) =>
       ContentType: mime.lookup(args.Key),
       CacheControl: 'max-age=31536000', // 365days
     };
-    _s3.upload(params, error_ => {
-      if (error_) {
-        return reject(error_);
+    _s3.upload(params, error => {
+      if (typeof args.Body.close === 'function') {
+        args.Body.close();
+      }
+      if (error) {
+        return reject(error);
       }
       resolve(args.Body);
     });
@@ -316,33 +330,16 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     quality {Number|null} The image quality. The default is 86.
     isFillUp {bool}
     isPublic {bool}
-    isReturnExif {bool}
   @returns {Promise<object>}
     buffer: {Buffer}
     width: {int}
     height: {int}
-    exif: {string|null}
    */
   args.quality = args.quality || 86;
   return exports
     .resize(args.buffer, args.width, args.height, args.isFillUp)
     .then(
       result =>
-        new Promise((resolve, reject) => {
-          if (!args.isReturnExif) {
-            return resolve([result]);
-          }
-          result.gm.identify('%[EXIF:*]', (error, exif) => {
-            if (error) {
-              exports.logError(error, { filename: args.filename });
-              return resolve([result]);
-            }
-            return resolve([result, exif]);
-          });
-        }),
-    )
-    .then(
-      ([result, exif]) =>
         new Promise((resolve, reject) => {
           result.gm
             .quality(args.quality)
@@ -357,18 +354,16 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
                   Body: buffer,
                   ACL: args.isPublic ? 'public-read' : undefined,
                 }),
-                exif,
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
             });
         }),
     )
-    .then(([result, buffer, exif]) => ({
+    .then(([result, buffer]) => ({
       buffer,
       width: result.width,
       height: result.height,
-      exif,
     }));
 };
 
@@ -413,6 +408,9 @@ exports.convertAnnotationFields = (fields, dataFieldTable) =>
           );
         }
         value.selectId = field.value;
+        value.selectLabel = dataFieldTable[field.dataField].options.find(
+          x => `${x._id}` === field.value,
+        )['zh-TW'];
         break;
       case DataFieldWidgetType.text:
       default:
@@ -431,6 +429,7 @@ exports.convertCsvToAnnotations = ({
   dataFields,
   cameraLocations,
   uploadSession,
+  projectSpecies,
   species,
   csvObject,
   timezone,
@@ -441,7 +440,8 @@ exports.convertCsvToAnnotations = ({
   @param dataFields {Array<DataFieldModel>} All data fields of this project.
   @param cameraLocations {Array<CameraLocationModel>} All camera locations of this project.
   @param uploadSession {UploadSessionModel}
-  @param species {Array<SpeciesModel>} All species of this project.
+  @param projectSpecies {Array<ProjectSpeciesModel>}
+  @param species {Array<SpeciesModel>} All species.
   @param csvObject {Array<Array<string>>}
   @param timezone {Number} minutes (480 -> GMT+8).
   @returns {Object}
@@ -505,24 +505,37 @@ exports.convertCsvToAnnotations = ({
           information.time = exports.parseTimeFromCSV(data, timezone);
           break;
         case DataFieldSystemCode.species:
+          if (!data) {
+            break;
+          }
           information.species = species.find(x => x.title['zh-TW'] === data);
-          if (!information.species && data) {
-            // mark this annotation use a automatically created species.
+          if (
+            information.species &&
+            !projectSpecies.find(
+              x => `${x.species._id}` === `${information.species._id}`,
+            )
+          ) {
+            // The species is not reference to the project.
+            // Add a new species flat into .failures.
             information.failures.push(AnnotationFailureType.newSpecies);
-            // find the species in the new items.
+          }
+
+          if (!information.species) {
+            // The species is not exists.
+            // Add a new species flat into .failures.
+            information.failures.push(AnnotationFailureType.newSpecies);
+            // Find the species from the new species list.
             information.species = result.newSpecies.find(
               x => x.title['zh-TW'] === data,
             );
           }
-          if (!information.species && data) {
+          if (!information.species) {
             // automatically create a new species.
             result.newSpecies.push(
               new SpeciesModel({
-                project,
                 title: {
                   'zh-TW': data,
                 },
-                index: species.length + result.newSpecies.length,
               }),
             );
             information.species =
@@ -560,13 +573,25 @@ exports.convertCsvToAnnotations = ({
       }
     }
 
-    if (
-      !information.studyArea ||
-      !information.cameraLocation ||
-      !information.filename ||
-      !information.time
-    ) {
-      throw new Error(`Missing required fields at row ${row}.`);
+    const missingFields = [];
+    if (!information.studyArea) {
+      missingFields.push('study area');
+    }
+    if (!information.cameraLocation) {
+      missingFields.push('camera location');
+    }
+    if (!information.filename) {
+      missingFields.push('filename');
+    }
+    if (!information.time || Number.isNaN(information.time.getTime())) {
+      missingFields.push('time');
+    }
+    if (missingFields.length) {
+      throw new Error(
+        `Missing required fields ${missingFields.join(
+          ', ',
+        )} at row ${row}.\n${JSON.stringify(information)}`,
+      );
     }
     if (
       result.annotations.find(
@@ -639,6 +664,132 @@ exports.csvStringifyAsync = data =>
       resolve(output);
     });
   });
+
+exports.removeNewSpeciesFailureFlag = (project, species) => {
+  /*
+  Remove the new-species flat at annotation.failures.
+  @param project {ProjectModel}
+  @param species {SpeciesModel}
+  @returns {Promise<{Array<AnnotationModel>}>}
+   */
+  const AnnotationModel = require('../models/data/annotation-model');
+  const AnnotationState = require('../models/const/annotation-state');
+
+  return new Promise((resolve, reject) => {
+    AnnotationModel.where({
+      project: project._id,
+      state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+      species: species._id,
+      failures: AnnotationFailureType.newSpecies,
+    })
+      .cursor()
+      .on('error', error => {
+        reject(error);
+      })
+      .on('close', () => {
+        resolve();
+      })
+      .on('data', annotation => {
+        const newSpeciesIndex = annotation.failures.indexOf(
+          AnnotationFailureType.newSpecies,
+        );
+        annotation.failures.splice(newSpeciesIndex, 1);
+        annotation.save().catch(error => {
+          reject(error);
+        });
+      });
+  });
+};
+
+exports.convertBufferToStream = buffer =>
+  /*
+  Convert the buffer to a readable stream.
+  @param buffer {Buffer}
+  @returns {stream.Readable}
+   */
+  new Readable({
+    read() {
+      this.push(buffer);
+      this.push(null);
+    },
+  });
+
+exports.getExif = source => {
+  /*
+  Get exif from the stream.
+  @param source {stream.Readable}
+  @returns {Promise<Object>}
+    {
+      ...
+      Make: 'Apple',
+      Model: 'iPhone SE',
+      DateTimeOriginal: '2019:03:06 10:34:56',
+      ...
+    }
+   */
+  const ep = new exifTool.ExiftoolProcess(exifToolBin);
+  return ep
+    .open()
+    .then(() => ep.readMetadata(source))
+    .then(result => {
+      ep.close();
+      return result.data[0];
+    })
+    .catch(error => {
+      ep.close();
+      throw error;
+    });
+};
+
+exports.addMediaConvertJob = file => {
+  const jobParams = {
+    JobTemplate: config.mediaConvert.jobTemplate,
+    Queue: config.mediaConvert.queue,
+    Role: config.mediaConvert.role,
+    Settings: {
+      Inputs: [
+        {
+          AudioSelectors: {
+            'Audio Selector 1': {
+              Offset: 0,
+              DefaultSelection: 'NOT_DEFAULT',
+              ProgramSelection: 1,
+              SelectorType: 'TRACK',
+              Tracks: [1],
+            },
+          },
+          VideoSelector: {
+            ColorSpace: 'FOLLOW',
+          },
+          FilterEnable: 'AUTO',
+          PsiControl: 'USE_PSI',
+          FilterStrength: 0,
+          DeblockFilter: 'DISABLED',
+          DenoiseFilter: 'DISABLED',
+          TimecodeSource: 'EMBEDDED',
+          FileInput: `s3://${config.s3.bucket}/${
+            config.s3.folders.annotationOriginalVideos
+          }/${file.getFilename()}`,
+        },
+      ],
+      OutputGroups: [
+        {
+          Name: 'File Group',
+          OutputGroupSettings: {
+            Type: 'FILE_GROUP_SETTINGS',
+            FileGroupSettings: {
+              Destination: `s3://${config.s3.bucket}/${
+                config.s3.folders.annotationVideos
+              }/`,
+            },
+          },
+          Outputs: [],
+        },
+      ],
+    },
+  };
+  return _mediaConvert.createJob(jobParams).promise();
+};
 
 exports.logError = (error, extra) => {
   /*

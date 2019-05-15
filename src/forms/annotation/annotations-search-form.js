@@ -52,5 +52,27 @@ AnnotationsSearchForm.define({
       },
     ],
   }),
+  species: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.id()],
+    }),
+  }),
+  fields: new forms.fields.Field({
+    filter: value => JSON.parse(value || '{}'),
+    validators: [
+      value => {
+        const idValidator = forms.validators.id();
+        const keys = Object.keys(value);
+        for (let index = 0; index < keys.length; index += 1) {
+          const result = idValidator(keys[index]);
+          if (result) {
+            return result;
+          }
+        }
+      },
+    ],
+  }),
 });
 module.exports = AnnotationsSearchForm;

@@ -9,9 +9,13 @@ const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const kue = require('kue');
 const nocache = require('nocache');
+const utils = require('./common/utils');
 const errors = require('./models/errors');
 const authentication = require('./auth/authentication');
+const authorization = require('./auth/authorization');
+const UserPermission = require('./models/const/user-permission');
 const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
 
@@ -111,6 +115,9 @@ if (config.enableLog) {
     next();
   });
 }
+
+utils.getTaskQueue();
+app.use('/admin/kue', authorization([UserPermission.administrator], kue.app));
 
 app.use(nocache());
 app.use('/api/v1', cors(config.corsOptions), webRouter.api);

@@ -1,11 +1,39 @@
 const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const PageList = require('../models/page-list');
+const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
+const ProjectSpeciesModel = require('../models/data/project-species-model');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
+
+exports.getSpecies = auth(UserPermission.all(), (req, res) => {
+  /*
+  GET /api/v1/species
+   */
+  const form = new SpeciesSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const query = SpeciesModel.where().sort('title.zh-TW');
+  return SpeciesModel.paginate(query, {
+    offset: form.index * form.size,
+    limit: form.size,
+  }).then(speciesList => {
+    res.json(
+      new PageList(
+        form.index,
+        form.size,
+        speciesList.totalDocs,
+        speciesList.docs,
+      ),
+    );
+  });
+});
 
 exports.getProjectSpecies = auth(UserPermission.all(), (req, res) => {
   /*
@@ -17,12 +45,12 @@ exports.getProjectSpecies = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = SpeciesModel.where({ project: req.params.projectId }).sort(
-    form.sort,
-  );
+  const query = ProjectSpeciesModel.where({ project: req.params.projectId })
+    .sort(form.sort)
+    .populate('species');
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    SpeciesModel.paginate(query, {
+    ProjectSpeciesModel.paginate(query, {
       offset: form.index * form.size,
       limit: form.size,
     }),
@@ -68,111 +96,103 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
     forms.push(form);
   }
 
+  const newSpeciesTitles = [];
+  forms.forEach(form => {
+    if (form.id) {
+      return;
+    }
+    if (newSpeciesTitles.indexOf(form.title['zh-TW']) >= 0) {
+      throw new errors.Http400(`${form.title['zh-TW']} is duplicate.`);
+    }
+    newSpeciesTitles.push(form.title['zh-TW']);
+  });
+
   return Promise.all([
     ProjectModel.findById(req.params.projectId),
-    SpeciesModel.where({ project: req.params.projectId }).sort('index'),
+    ProjectSpeciesModel.where({ project: req.params.projectId })
+      .populate('species')
+      .sort('index'),
+    SpeciesModel.where({
+      'title.zh-TW': { $in: Array.from(newSpeciesTitles) },
+    }),
   ])
-    .then(([project, speciesList]) => {
+    .then(([project, projectSpeciesList, speciesList]) => {
       if (!project) {
         throw new errors.Http404();
       }
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
+      forms.forEach(form => {
+        if (form.id) {
+          return;
+        }
+        if (
+          projectSpeciesList.find(
+            x => x.species.title['zh-TW'] === form.title['zh-TW'],
+          )
+        ) {
+          throw new errors.Http400(`${form.title['zh-TW']} is duplicate.`);
+        }
+        newSpeciesTitles.push(form.title['zh-TW']);
+      });
 
       const tasks = [];
-      speciesList.forEach(species => {
-        if (!forms.find(x => x.id === `${species._id}`)) {
+      projectSpeciesList.forEach(projectSpecies => {
+        if (!forms.find(x => x.id === `${projectSpecies.species._id}`)) {
           // Missing the species in forms.
-          throw new errors.Http400(`Missing ${species._id}.`);
+          // The user can't delete any exist species.
+          throw new errors.Http400(`Missing ${projectSpecies.species._id}.`);
         }
       });
       forms.forEach((form, index) => {
         if (form.id) {
-          // Update the exists species.
-          const species = speciesList.find(x => `${x._id}` === form.id);
-          if (!species) {
+          // Update .index of exists species.
+          const projectSpecies = projectSpeciesList.find(
+            x => `${x.species._id}` === form.id,
+          );
+          if (!projectSpecies) {
             throw new errors.Http400(`Can't find species ${form.id}.`);
           }
-          species.index = index;
-          tasks.push(species.save());
+          if (projectSpecies.index !== index) {
+            projectSpecies.index = index;
+            tasks.push(projectSpecies.save());
+          }
         } else {
           // Create a new species.
-          const species = new SpeciesModel({
-            ...form,
-            index,
-            project,
-          });
-          tasks.push(species.save());
+          const species = speciesList.find(
+            x => x.title['zh-TW'] === form.title['zh-TW'],
+          );
+          if (species) {
+            // The species is exists.
+            // Just add the reference with the project.
+            const projectSpecies = new ProjectSpeciesModel({
+              project,
+              species,
+              index,
+            });
+            tasks.push(projectSpecies.save());
+
+            // Find annotations by the species.
+            // Remove the flag `new-species` at annotation.failures.
+            utils.removeNewSpeciesFailureFlag(project, species).catch(error => {
+              utils.logError(error, { project, species });
+            });
+          } else {
+            // The species is not exists.
+            // Create a new species and add the reference with the project.
+            const newSpecies = new SpeciesModel({ title: form.title });
+            const projectSpecies = new ProjectSpeciesModel({
+              project,
+              species: newSpecies,
+              index,
+            });
+            tasks.push(newSpecies.save());
+            tasks.push(projectSpecies.save());
+          }
         }
       });
       return Promise.all(tasks);
     })
     .then(() => exports.getProjectSpecies(req, res));
-});
-
-exports.addProjectSpecies = auth(UserPermission.all(), (req, res) => {
-  /*
-  POST /api/v1/projects/:projectId/species
-   */
-  const form = new SpeciesForm(req.body);
-  const errorMessage = form.validate();
-  if (errorMessage) {
-    throw new errors.Http400(errorMessage);
-  }
-
-  return ProjectModel.findById(req.params.projectId)
-    .then(project => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (!project.canManageBy(req.user)) {
-        throw new errors.Http403();
-      }
-
-      delete form.id;
-      const species = new SpeciesModel({
-        ...form,
-        project,
-      });
-      return species.save();
-    })
-    .then(species => {
-      res.json(species.dump());
-    });
-});
-
-exports.updateProjectSpecies = auth(UserPermission.all(), (req, res) => {
-  /*
-  PUT /api/v1/projects/:projectId/species/:speciesId
-   */
-  const form = new SpeciesForm(req.body);
-  const errorMessage = form.validate();
-  if (errorMessage) {
-    throw new errors.Http400(errorMessage);
-  }
-
-  return Promise.all([
-    ProjectModel.findById(req.params.projectId),
-    SpeciesModel.findById(req.params.speciesId).where({
-      project: req.params.projectId,
-    }),
-  ])
-    .then(([project, species]) => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (!species) {
-        throw new errors.Http404();
-      }
-      if (!project.canManageBy(req.user)) {
-        throw new errors.Http403();
-      }
-
-      species.index = form.index;
-      return species.save();
-    })
-    .then(species => {
-      res.json(species.dump());
-    });
 });

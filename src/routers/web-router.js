@@ -5,6 +5,7 @@ const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
+const cameraLocationAbnormalityHandler = require('../handlers/camera-location-abnormality-handler');
 const dataFieldHandler = require('../handlers/data-field-handler');
 const fileHandler = require('../handlers/file-handler');
 const issueHandler = require('../handlers/issue-handler');
@@ -92,6 +93,7 @@ apiRouter.get(
   '/system-announcements',
   notificationHandler.getSystemAnnouncements,
 );
+apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
@@ -143,14 +145,6 @@ apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/species',
   speciesHandler.updateProjectSpeciesList,
 );
-apiRouter.post(
-  '/projects/:projectId([a-f\\d]{24})/species',
-  speciesHandler.addProjectSpecies,
-);
-apiRouter.put(
-  '/projects/:projectId([a-f\\d]{24})/species/:speciesId([a-f\\d]{24})',
-  speciesHandler.updateProjectSpecies,
-);
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
   studyAreaHandler.getProjectStudyAreas,
@@ -201,9 +195,21 @@ apiRouter.get(
   LocationMonthRetrievedHandler.retrievedByCameraLocation,
 );
 
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/camera-location-abnormality',
+  cameraLocationAbnormalityHandler.addCameraLocationAbnormality,
+);
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_approve',
+  dataFieldHandler.addDataFieldApprove,
+);
+apiRouter.post(
+  '/data-fields/:dataFieldId([a-f\\d]{24})/_reject',
+  dataFieldHandler.addDataFieldReject,
+);
 apiRouter.get(
   '/data-fields/:dataFieldId([a-f\\d]{24})',
   dataFieldHandler.getPublishedDataField,
