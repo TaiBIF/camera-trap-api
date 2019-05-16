@@ -36,10 +36,7 @@ exports.addCameraLocationAbnormality = auth(
         if (!project) {
           throw new errors.Http404();
         }
-        if (
-          req.user.permission !== UserPermission.administrator &&
-          !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-        ) {
+        if (!project.canAccessBy(req.user)) {
           throw new errors.Http403();
         }
         if (!cameraLocation) {

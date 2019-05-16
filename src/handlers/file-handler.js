@@ -174,12 +174,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
           ) {
             throw new errors.Http404('Study area is not found.');
           }
-          if (
-            req.user.permission !== UserPermission.administrator &&
-            !cameraLocation.project.members.find(
-              x => `${x.user._id}` === `${req.user._id}`,
-            )
-          ) {
+          if (!cameraLocation.project.canAccessBy(req.user)) {
             throw new errors.Http403();
           }
           break;

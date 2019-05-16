@@ -162,10 +162,7 @@ module.exports = (job, done) => {
           throw new errors.Http400();
         }
         // Check the user is a member of the project.
-        if (
-          user.permission !== UserPermission.administrator &&
-          !project.members.find(x => `${x.user._id}` === `${user._id}`)
-        ) {
+        if (!project.canAccessBy(user)) {
           _uploadSession.errorType = UploadSessionErrorType.permissionDenied;
           throw new errors.Http403();
         }
