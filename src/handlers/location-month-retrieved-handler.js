@@ -1,7 +1,10 @@
 const errors = require('../models/errors');
 const ProjectModel = require('../models/data/project-model');
 
-exports.LocationMonthRetrieved = (req, res) => {
+exports.locationMonthRetrieved = (req, res) => {
+  /*
+  GET /api/v1/projects/:projectId/month-retrieved
+   */
   const { projectId } = req.params;
   const { year } = req.query;
 
@@ -21,6 +24,9 @@ exports.LocationMonthRetrieved = (req, res) => {
 };
 
 exports.retrievedByStudyArea = (req, res) => {
+  /*
+  GET /api/v1/projects/:projectId/study-areas/:studyAreaId/month-retrieved
+   */
   const { projectId, studyAreaId } = req.params;
   const { year } = req.query;
 
@@ -40,6 +46,9 @@ exports.retrievedByStudyArea = (req, res) => {
 };
 
 exports.retrievedByCameraLocation = (req, res) => {
+  /*
+  GET /api/v1/projects/:projectId/camera-locations/:cameraLocationId/month-retrieved
+   */
   const { projectId, cameraLocationId } = req.params;
   const { year } = req.query;
 

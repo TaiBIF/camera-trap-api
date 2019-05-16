@@ -185,7 +185,7 @@ apiRouter.post(
 
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
-  locationMonthRetrievedHandler.LocationMonthRetrieved,
+  locationMonthRetrievedHandler.locationMonthRetrieved,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/month-retrieved',
