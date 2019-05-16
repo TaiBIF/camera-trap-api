@@ -10,7 +10,6 @@ const utils = require('../common/utils');
 const errors = require('../models/errors');
 const MediaWorkerData = require('../models/dto/media-worker-data');
 const UserModel = require('../models/data/user-model');
-const UserPermission = require('../models/const/user-permission');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 const FileExtensionName = require('../models/const/file-extension-name');
