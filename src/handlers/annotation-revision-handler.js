@@ -34,12 +34,7 @@ exports.getAnnotationRevisions = auth(UserPermission.all(), (req, res) => {
     if (!annotation) {
       throw new errors.Http404();
     }
-    if (
-      req.user.permission !== UserPermission.administrator &&
-      !annotation.project.members.find(
-        x => `${x.user._id}` === `${req.user._id}`,
-      )
-    ) {
+    if (!annotation.project.canAccessBy(req.user)) {
       throw new errors.Http403();
     }
 
@@ -70,12 +65,7 @@ exports.rollbackAnnotation = auth(UserPermission.all(), (req, res) =>
       if (!annotationRevision) {
         throw new errors.Http404();
       }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !annotation.project.members.find(
-          x => `${x.user._id}` === `${req.user._id}`,
-        )
-      ) {
+      if (!annotation.project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
 

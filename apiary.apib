@@ -1225,6 +1225,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                           "upload-failure'",
                           "data-field-application",
                           "data-field-approved",
+                          "new-camera-location-abnormality",
                           "new-issue",
                           "new-suggestion"
                         ]
@@ -1275,6 +1276,39 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                           "id": {
                             "type": "string",
                             "description": "The issue ID."
+                          }
+                        }
+                      },
+                      "cameraLocationAbnormality": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The ID."
+                          },
+                          "project": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "cameraLocation": {
+                            "type": "object",
+                            "properties": {
+                              "studyArea": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "parent": {
+                                    "type": "object"
+                                  }
+                                }
+                              }
+                            }
                           }
                         }
                       },
@@ -6439,6 +6473,354 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             title,titleX,PT02A,IMG_4380.JPG,2019-03-06 10:46:51,,
 
 
+# Group Metrics
+## Retrieved images summary
+
+## Get retrieved By Project [GET /projects/{projectId}/month-retrieved{?year}]
+取得專案下的回收/辨識狀況
+- The user's permission should be 'administrator' or 'general-account'.
++ Parameters
+    + year: `2019` (number, required) - year to query.
+
++ Response 200 (application/json)
+
+    + Body
+
+            [{
+                "studyArea": "5cd6643c99580e819b7fe123",
+                "data": [
+                    {
+                        "month": 1,
+                        "dataCount": 2677,
+                        "fileCount": 2677,
+                        "speciesCount": 2677,
+                        "failures": 295,
+                        "lastData": "2019-05-12T13:42:53.018Z"
+                    },
+                    {
+                        "month": 2,
+                        "dataCount": 1999,
+                        "fileCount": 1999,
+                        "speciesCount": 1999,
+                        "failures": 204,
+                        "lastData": "2019-05-12T13:42:07.614Z"
+                    },
+                    {
+                        "month": 3,
+                        "dataCount": 506,
+                        "fileCount": 506,
+                        "speciesCount": 506,
+                        "failures": 9,
+                        "lastData": "2019-05-12T13:37:06.026Z"
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                        "month": 12,
+                        "dataCount": 6,
+                        "fileCount": 6,
+                        "speciesCount": 6,
+                        "failures": 0,
+                        "lastData": "2019-05-12T13:30:03.099Z"
+                    }
+                ]
+            },
+            {
+                "studyArea": "5cdbc8b05d2c6a43f5a46680",
+                "data": [
+                    {
+                        "month": 1,
+                        "dataCount": 928,
+                        "fileCount": 928,
+                        "speciesCount": 928,
+                        "failures": 351,
+                        "lastData": "2019-05-15T14:09:28.466Z"
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                        "month": 12,
+                        "dataCount": 19,
+                        "fileCount": 19,
+                        "speciesCount": 19,
+                        "failures": 0,
+                        "lastData": "2019-05-15T14:02:37.846Z"
+                    }
+                ]
+            }]
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "properties": {
+                "studyArea": {
+                  "type": "string",
+                  "description": "studyArea id."
+                },
+                "data": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "month": {
+                        "type": "number"
+                      },
+                      "dataCount": {
+                        "type": "number"
+                      },
+                      "fileCount": {
+                        "type": "number"
+                      },
+                      "speciesCount": {
+                        "type": "number"
+                      },
+                      "failures": {
+                        "type": "number"
+                      },
+                      "lastData": {
+                        "type": "date"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+## Get retrieved By StudyArea [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
+取得特定地區的回收/辨識狀況
+- The user's permission should be 'administrator' or 'general-account'.
++ Parameters
+    + year: `2019` (number, required) - year to query.
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "cameraLocation": "5cd7c0c383028cf0c5a5c69c",
+                    "data": [
+                        {
+                            "month": 1,
+                            "dataCount": 206,
+                            "fileCount": 206,
+                            "speciesCount": 206,
+                            "failures": 138,
+                            "lastData": "2019-05-12T13:32:30.210Z"
+                        },
+                        {
+                            "month": 2,
+                            "dataCount": 136,
+                            "fileCount": 136,
+                            "speciesCount": 136,
+                            "failures": 90,
+                            "lastData": "2019-05-12T13:32:33.829Z"
+                        },
+                        {
+                            "month": 3,
+                            "dataCount": 83,
+                            "fileCount": 83,
+                            "speciesCount": 83,
+                            "failures": 6,
+                            "lastData": "2019-05-12T13:32:36.220Z"
+                        },
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                    ]
+                },
+                {
+                    "cameraLocation": "5cd7c0c083028c6aa8a5c692",
+                    "data": [
+                        {
+                            "month": 1,
+                            "dataCount": 520,
+                            "fileCount": 520,
+                            "speciesCount": 520,
+                            "failures": 6,
+                            "lastData": "2019-05-12T13:30:22.029Z"
+                        },
+                        {
+                            "month": 2,
+                            "dataCount": 346,
+                            "fileCount": 346,
+                            "speciesCount": 346,
+                            "failures": 21,
+                            "lastData": "2019-05-12T13:30:37.733Z"
+                        },
+                        {
+                            "month": 3,
+                            "dataCount": 23,
+                            "fileCount": 23,
+                            "speciesCount": 23,
+                            "failures": 0,
+                            "lastData": "2019-05-12T13:30:38.890Z"
+                        },
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        {
+                            "month": 12,
+                            "dataCount": 6,
+                            "fileCount": 6,
+                            "speciesCount": 6,
+                            "failures": 0,
+                            "lastData": "2019-05-12T13:30:03.099Z"
+                        }
+                    ]
+                }
+            ]
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "properties": {
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "cameraLocation id."
+                },
+                "data": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "month": {
+                        "type": "number"
+                      },
+                      "dataCount": {
+                        "type": "number"
+                      },
+                      "fileCount": {
+                        "type": "number"
+                      },
+                      "speciesCount": {
+                        "type": "number"
+                      },
+                      "failures": {
+                        "type": "number"
+                      },
+                      "lastData": {
+                        "type": "date"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+## Get retrieved By CameraLocation [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
+取得單一相機的回收/辨識狀況
+- The user's permission should be 'administrator' or 'general-account'.
++ Parameters
+    + year: `2019` (number, required) - year to query.
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "cameraLocation": "5cd6648799580eda3c7fe12c",
+                    "data": [
+                        {
+                            "month": 1,
+                            "dataCount": 164,
+                            "fileCount": 164,
+                            "speciesCount": 164,
+                            "failures": 0,
+                            "lastData": "2019-05-11T06:53:44.906Z"
+                        },
+                        {
+                            "month": 2,
+                            "dataCount": 770,
+                            "fileCount": 770,
+                            "speciesCount": 770,
+                            "failures": 0,
+                            "lastData": "2019-05-11T06:55:35.607Z"
+                        },
+                        {
+                            "month": 3,
+                            "dataCount": 136,
+                            "fileCount": 136,
+                            "speciesCount": 136,
+                            "failures": 0,
+                            "lastData": "2019-05-11T06:55:55.508Z"
+                        }
+                    ]
+                }
+            ]
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "properties": {
+                "cameraLocation": {
+                  "type": "string",
+                  "description": "cameraLocation id."
+                },
+                "data": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "month": {
+                        "type": "number"
+                      },
+                      "dataCount": {
+                        "type": "number"
+                      },
+                      "fileCount": {
+                        "type": "number"
+                      },
+                      "speciesCount": {
+                        "type": "number"
+                      },
+                      "failures": {
+                        "type": "number"
+                      },
+                      "lastData": {
+                        "type": "date"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
 取得地區列表。
@@ -6671,7 +7053,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 + Parameters
     + type: `project-cover-image` (enum[string]) - File type/purpose.
 
-        project-cover-image, annotation-image (上傳單一圖片), annotation-video (上傳單一影片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片及 csv 的壓縮檔)
+        project-cover-image, annotation-image (上傳單一圖片), annotation-video (上傳單一影片), annotation-csv (上傳單一csv), annotation-zip (上傳包含多張圖片、多個影片，或多個允許的媒體加上 csv 的壓縮檔)
 
         + Members
             + `project-cover-image`
