@@ -1,6 +1,7 @@
 const kue = require('kue');
 const utils = require('./common/utils');
 const mediaWorker = require('./tasks/media-worker');
+const updateProjectAnnotationTime = require('./tasks/update-project-annotation-time');
 const TaskWorker = require('./models/const/task-worker');
 
 /*
@@ -15,6 +16,11 @@ const queue = utils.getTaskQueue();
 setTimeout(() => {
   console.log('task-worker is start.');
   queue.process(TaskWorker.mediaWorker, 1, mediaWorker);
+  queue.process(
+    TaskWorker.updateProjectAnnotationTime,
+    1,
+    updateProjectAnnotationTime,
+  );
   queue.on('job complete', (id, result) => {
     kue.Job.get(id, (error, job) => {
       if (!error) {

@@ -10,7 +10,6 @@ const utils = require('../common/utils');
 const errors = require('../models/errors');
 const MediaWorkerData = require('../models/dto/media-worker-data');
 const UserModel = require('../models/data/user-model');
-const UserPermission = require('../models/const/user-permission');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 const FileExtensionName = require('../models/const/file-extension-name');
@@ -162,10 +161,7 @@ module.exports = (job, done) => {
           throw new errors.Http400();
         }
         // Check the user is a member of the project.
-        if (
-          user.permission !== UserPermission.administrator &&
-          !project.members.find(x => `${x.user._id}` === `${user._id}`)
-        ) {
+        if (!project.canAccessBy(user)) {
           _uploadSession.errorType = UploadSessionErrorType.permissionDenied;
           throw new errors.Http403();
         }

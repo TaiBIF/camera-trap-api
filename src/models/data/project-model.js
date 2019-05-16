@@ -3,6 +3,9 @@ const utils = require('../../common/utils');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
 const UserPermission = require('../../models/const/user-permission');
+const getRetrieved = require('../static/project/static-getRetrieved');
+const getRetrievedByStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
+const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -146,6 +149,11 @@ const schema = utils.generateSchema(
 );
 
 const canManageBy = function(currentUser) {
+  /*
+  Check the user have the permission to manage this project.
+  @param currentUser {UserModel}
+  @returns {Boolean}
+   */
   if (!currentUser || !currentUser._id || !currentUser.permission) {
     return false;
   }
@@ -160,6 +168,29 @@ const canManageBy = function(currentUser) {
   );
 };
 schema.method('canManageBy', canManageBy);
+
+schema.method('canAccessBy', function(currentUser) {
+  /*
+  Check the user have the permission to access the project.
+  - Read this project.
+  - Update annotations of this project.
+  @param currentUser {UserModel}
+  @returns {Boolean}
+   */
+  if (!currentUser || !currentUser._id || !currentUser.permission) {
+    return false;
+  }
+
+  const member = this.members.find(
+    item => `${item.user._id}` === `${currentUser._id}`,
+  );
+
+  return currentUser.permission === UserPermission.administrator || member;
+});
+
+schema.static('getRetrieved', getRetrieved);
+schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
+schema.static('getRetrievedByCamera', getRetrievedByCamera);
 
 //
 const model = mongoose.model('ProjectModel', schema);

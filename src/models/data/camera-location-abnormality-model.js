@@ -71,6 +71,10 @@ schema.method('dump', function() {
       this.user && typeof this.user.dump === 'function'
         ? this.user.dump()
         : this.user,
+    project:
+      this.project && typeof this.project.dump === 'function'
+        ? this.project.dump()
+        : this.project,
     cameraLocation:
       this.cameraLocation && typeof this.cameraLocation.dump === 'function'
         ? this.cameraLocation.dump()

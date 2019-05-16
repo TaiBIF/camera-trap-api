@@ -74,12 +74,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         if (!studyArea) {
           throw new errors.Http404();
         }
-        if (
-          req.user.permission !== UserPermission.administrator &&
-          !studyArea.project.members.find(
-            x => `${x.user._id}` === `${req.user._id}`,
-          )
-        ) {
+        if (!studyArea.project.canAccessBy(req.user)) {
           throw new errors.Http403();
         }
       }
@@ -88,12 +83,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           throw new errors.Http404();
         }
         cameraLocations.forEach(cameraLocation => {
-          if (
-            req.user.permission !== UserPermission.administrator &&
-            !cameraLocation.project.members.find(
-              x => `${x.user._id}` === `${req.user._id}`,
-            )
-          ) {
+          if (!cameraLocation.project.canAccessBy(req.user)) {
             throw new errors.Http403();
           }
         });
@@ -431,10 +421,7 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
         projectSpecies,
         projectSpeciesQuantity,
       ]) => {
-        if (
-          req.user.permission !== UserPermission.administrator &&
-          !project.members.find(x => `${x.user._id}` === `${req.user._id}`)
-        ) {
+        if (!project.canAccessBy(req.user)) {
           throw new errors.Http403();
         }
 
@@ -552,12 +539,7 @@ exports.addAnnotation = auth(UserPermission.all(), (req, res) => {
           `The study area of the camera location isn't active.`,
         );
       }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !cameraLocation.project.members.find(
-          x => `${x.user._id}` === `${req.user._id}`,
-        )
-      ) {
+      if (!cameraLocation.project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
       if (form.file) {
@@ -692,12 +674,7 @@ exports.getAnnotation = auth(UserPermission.all(), (req, res) =>
       if (annotation.studyArea.state !== StudyAreaState.active) {
         throw new errors.Http404();
       }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !annotation.project.members.find(
-          x => `${x.user._id}` === `${req.user._id}`,
-        )
-      ) {
+      if (!annotation.project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
 
@@ -716,12 +693,7 @@ exports.deleteAnnotation = auth(UserPermission.all(), (req, res) =>
       if (!annotation) {
         throw new errors.Http404('Not found the annotation.');
       }
-      if (
-        req.user.permission !== UserPermission.administrator &&
-        !annotation.project.members.find(
-          x => `${x.user._id}` === `${req.user._id}`,
-        )
-      ) {
+      if (!annotation.project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
 
