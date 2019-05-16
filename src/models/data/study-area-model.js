@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const StudyAreaState = require('../const/study-area-state');
+const getByProjectId = require('../static/studyArea/static-getByProjectId');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -57,6 +58,10 @@ schema.index(
     },
   },
 );
+
+schema.static('getByProjectId', getByProjectId);
+
+//
 const model = mongoose.model('StudyAreaModel', schema);
 
 model.prototype.dump = function() {

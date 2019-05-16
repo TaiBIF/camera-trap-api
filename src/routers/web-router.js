@@ -17,6 +17,7 @@ const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
 const userHandler = require('../handlers/user-handler');
+const locationMonthRetrievedHandler = require('../handlers/location-month-retrieved-handler');
 const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
 
 exports.api = express.Router();
@@ -181,6 +182,20 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_unlock',
   cameraLocationHandler.unlockCameraLocation,
 );
+
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/month-retrieved',
+  locationMonthRetrievedHandler.LocationMonthRetrieved,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/month-retrieved',
+  locationMonthRetrievedHandler.retrievedByStudyArea,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/month-retrieved',
+  locationMonthRetrievedHandler.retrievedByCameraLocation,
+);
+
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-location-abnormality',
   cameraLocationAbnormalityHandler.addCameraLocationAbnormality,
