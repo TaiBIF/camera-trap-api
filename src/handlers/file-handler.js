@@ -271,7 +271,11 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
       return file;
     })
     .then(file => {
-      res.json(file.dump());
+      const result = file.dump();
+      if (_uploadSession) {
+        result.uploadSession = `${_uploadSession._id}`;
+      }
+      res.json(result);
     })
     .catch(error => {
       if (_uploadSession) {
