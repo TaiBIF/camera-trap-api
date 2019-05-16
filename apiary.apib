@@ -6474,9 +6474,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Metrics
-## Retrieved images summary
-
-## Get retrieved By Project [GET /projects/{projectId}/month-retrieved{?year}]
+## Get retrieval metrics by project [GET /projects/{projectId}/month-retrieved{?year}]
 取得專案下的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
@@ -6596,14 +6594,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       },
                       "lastData": {
                         "type": "date"
-                      },
+                      }
                     }
                   }
                 }
               }
             }
 
-## Get retrieved By StudyArea [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
+## Get retrieval metrics my study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
 取得特定地區的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
@@ -6732,14 +6730,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       },
                       "lastData": {
                         "type": "date"
-                      },
+                      }
                     }
                   }
                 }
               }
             }
 
-## Get retrieved By CameraLocation [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
+## Get retrieval metrics by camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
 取得單一相機的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
@@ -6814,7 +6812,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       },
                       "lastData": {
                         "type": "date"
-                      },
+                      }
                     }
                   }
                 }
