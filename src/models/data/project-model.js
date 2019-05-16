@@ -149,6 +149,11 @@ const schema = utils.generateSchema(
 );
 
 const canManageBy = function(currentUser) {
+  /*
+  Check the user have the permission to manage this project.
+  @param currentUser {UserModel}
+  @returns {Boolean}
+   */
   if (!currentUser || !currentUser._id || !currentUser.permission) {
     return false;
   }
@@ -163,6 +168,25 @@ const canManageBy = function(currentUser) {
   );
 };
 schema.method('canManageBy', canManageBy);
+
+schema.method('canAccessBy', function(currentUser) {
+  /*
+  Check the user have the permission to access the project.
+  - Read this project.
+  - Update annotations of this project.
+  @param currentUser {UserModel}
+  @returns {Boolean}
+   */
+  if (!currentUser || !currentUser._id || !currentUser.permission) {
+    return false;
+  }
+
+  const member = this.members.find(
+    item => `${item.user._id}` === `${currentUser._id}`,
+  );
+
+  return currentUser.permission === UserPermission.administrator || member;
+});
 
 schema.static('getRetrieved', getRetrieved);
 schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);

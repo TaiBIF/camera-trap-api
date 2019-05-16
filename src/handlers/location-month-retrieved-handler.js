@@ -10,7 +10,7 @@ exports.LocationMonthRetrieved = (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (!project.canManageBy(req.user)) {
+      if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
       return ProjectModel.getRetrieved(projectId, year);
@@ -29,7 +29,7 @@ exports.retrievedByStudyArea = (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (!project.canManageBy(req.user)) {
+      if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
       return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId, year);
@@ -48,7 +48,7 @@ exports.retrievedByCameraLocation = (req, res) => {
       if (!project) {
         throw new errors.Http404();
       }
-      if (!project.canManageBy(req.user)) {
+      if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
       return ProjectModel.getRetrievedByCamera(
