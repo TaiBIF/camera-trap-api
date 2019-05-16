@@ -18,7 +18,14 @@ Usage: node . -c`,
   .options('m', {
     alias: 'createMediaConvertJobTemplate',
   })
-  .describe('m', 'Create the media convert job template "".');
+  .describe('m', 'Create the media convert job template "".')
+  .options('u', {
+    alias: 'updateProjectAnnotationTime',
+  })
+  .describe(
+    'u',
+    `Update 'latestAnnotationTime' and 'oldestAnnotationTime' of all projects.`,
+  );
 
 if (op.argv.createCollections) {
   // Create collections and indexes of all models.
@@ -568,6 +575,21 @@ if (op.argv.createCollections) {
     .promise()
     .then(result => console.log(result))
     .catch(error => console.error(error));
+} else if (op.argv.updateProjectAnnotationTime) {
+  const utils = require('./src/common/utils');
+  const TaskWorker = require('./src/models/const/task-worker');
+
+  const queue = utils.getTaskQueue();
+  queue.on('job complete', (id, result) => {
+    console.log(`Job ${id} was done.`);
+    process.exit(0);
+  });
+  const job = queue.createJob(TaskWorker.updateProjectAnnotationTime);
+  job.save(error => {
+    if (error) {
+      console.error(error);
+    }
+  });
 } else {
   op.showHelp();
 }

@@ -55,6 +55,11 @@ Please remove the old template by yourself.
 ```bash
 $ node . -m
 ```
+### Update annotation time of all projects.
+Update 'latestAnnotationTime' and 'oldestAnnotationTime' of all projects.
+```bash
+$ node . -u
+```
 
 ## Branching strategy
 1. **master**: main development branch. No CI workflow connected.

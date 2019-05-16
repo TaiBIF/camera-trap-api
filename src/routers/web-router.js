@@ -17,7 +17,8 @@ const studyAreaHandler = require('../handlers/study-area-handler');
 const systemHandler = require('../handlers/system-handler');
 const uploadSessionHandler = require('../handlers/upload-session-handler');
 const userHandler = require('../handlers/user-handler');
-const LocationMonthRetrievedHandler = require('../handlers/location-month-retrieved-handler');
+const locationMonthRetrievedHandler = require('../handlers/location-month-retrieved-handler');
+const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -184,15 +185,15 @@ apiRouter.post(
 
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
-  LocationMonthRetrievedHandler.LocationMonthRetrieved,
+  locationMonthRetrievedHandler.LocationMonthRetrieved,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/month-retrieved',
-  LocationMonthRetrievedHandler.retrievedByStudyArea,
+  locationMonthRetrievedHandler.retrievedByStudyArea,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/month-retrieved',
-  LocationMonthRetrievedHandler.retrievedByCameraLocation,
+  locationMonthRetrievedHandler.retrievedByCameraLocation,
 );
 
 apiRouter.post(
@@ -217,7 +218,10 @@ apiRouter.get(
 apiRouter.post('/issues', issueHandler.addIssue);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
-
+apiRouter.get(
+  '/forest-compartment-boundary',
+  forestCompartmentBoundary.getForestCompartmentBoundary,
+);
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
 callbackRouter.get('/orcid/auth', callbackHandler.orcidAuth);
