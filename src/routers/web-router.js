@@ -203,7 +203,7 @@ apiRouter.get(
 apiRouter.post('/issues', issueHandler.addIssue);
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
-apiRouter.post(
+apiRouter.get(
   '/forest-compartment-boundary',
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
