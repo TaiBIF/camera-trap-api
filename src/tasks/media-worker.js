@@ -438,7 +438,9 @@ module.exports = (job, done) => {
     .then(annotations => {
       /*
       - Find the duplicate annotation.
-        使用樣區、相機位置、時間檢查是否已存在 annotation，存在的話需要替換 annotation.file。
+        使用樣區、相機位置、檔名、時間檢查是否已存在 annotation。
+        存在的話且使用者是上傳圖片、影片的話需要替換 annotation.file。
+        存在的話且使用者是 csv 的話需要替換 annotation.species, .filename, .file, .fields。
       @param annotations {Promise<[{AnnotationModel}]>} Not saved.
       @returns {Promise<[{AnnotationModel}, {AnnotationModel}]>}
         (new annotations, duplicate annotations)
@@ -446,6 +448,7 @@ module.exports = (job, done) => {
       const statements = annotations.map(annotation => ({
         state: AnnotationState.active,
         cameraLocation: annotation.cameraLocation._id,
+        filename: annotation.filename,
         time: annotation.time,
       }));
 
@@ -479,7 +482,6 @@ module.exports = (job, done) => {
           );
           if (duplicateAnnotation) {
             // The user upload images so we should replace with a new file.
-            duplicateAnnotation.filename = annotation.filename;
             duplicateAnnotation.file = annotation.file;
             tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
           } else {
@@ -499,6 +501,7 @@ module.exports = (job, done) => {
             });
             _uploadSession.state = UploadSessionState.waitForReview;
           } else {
+            // There is no duplicate annotation.
             annotations.forEach(annotation => {
               annotation.state = AnnotationState.active;
               tasks.push(annotation.saveAndAddRevision(_user));
@@ -506,17 +509,17 @@ module.exports = (job, done) => {
             _uploadSession.state = UploadSessionState.success;
           }
         } else {
-          // Just images are in this zip file.
+          // Just images, videos are in this zip file.
           annotations.forEach(annotation => {
             const duplicateAnnotation = duplicateAnnotations.find(
               x =>
                 `${x.cameraLocation._id}` ===
                   `${annotation.cameraLocation._id}` &&
+                x.filename === annotation.filename &&
                 x.time.getTime() === annotation.time.getTime(),
             );
             if (duplicateAnnotation) {
               // The user upload images so we should replace with a new file.
-              duplicateAnnotation.filename = annotation.filename;
               duplicateAnnotation.file = annotation.file;
               tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
             } else {
