@@ -9,7 +9,7 @@ exports.getForestCompartmentBoundary = auth(
   UserPermission.all(),
   (req, res) => {
     /*
-    POST /api/v1/forest-compartment-boundaryy
+    POST /api/v1/forest-compartment-boundary
      */
     const form = new ForestBoundaryForm(req.query);
     const errorMessage = form.validate();

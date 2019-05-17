@@ -6870,6 +6870,77 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
 
 
+# Group Forest Compartment Boundary
+## List forest compartment boundary  [GET /forest-compartment-boundary{?decimalLongitude,decimalLatitude,size}]
+取得林班地範圍。
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + decimalLongitude: `121.1960595` (number, required) - Longitude represented in decimal number.
+    + decimalLatitude: `23.7794695` (number, required) - Longitude represented in decimal number.
+    + size: `10` (number, optional) - The size of the response (Note: limit pending).
+
++ Request GET forest compartment boundary (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+              "index": 0,
+              "size": 10,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c03a64d6efcfc9409780a50",
+                  "type": "Feature",
+                  "geometry": {
+                    "coordinates": [
+                      [
+                        [
+                          121.1689,
+                          23.80766
+                        ],
+                        [
+                          121.16964,
+                          23.8072
+                        ],
+                        [
+                          121.16996,
+                          23.80717
+                        ],
+                        [
+                          121.16841,
+                          23.80723
+                        ],
+                        [
+                          121.16865,
+                          23.80753
+                        ],
+                        [
+                          121.1689,
+                          23.80766
+                        ]
+                      ]
+                    ],
+                    "type": "Polygon"
+                  },
+                  "properties": {
+                    "Name": "南投處",
+                    "altitudeMode": "clampToGround",
+                    "CMPT": "8",
+                    "AREA": "15101072.053",
+                    "WKNG": "12",
+                    "DIST_C": "南投處",
+                    "DIST": "04",
+                    "Field_1": "南投處",
+                    "WKNG_C": "丹大"
+                  }
+                }
+              ]
+            }
+    
+    
 # Group Issues
 ## Create an issue [POST /issues]
 聯絡我們 - 新增問題回報/意見反饋。
