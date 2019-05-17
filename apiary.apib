@@ -4999,53 +4999,6 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Request Reject a data field (application/json)
 
-    + Schema
-
-            {
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "type": "object",
-              "properties": {
-                "project" : {
-                  "type": "string",
-                  "description": "提出審核時的計畫，僅用於通知時顯示使用者在哪個計畫提出"
-                },
-                "title": {
-                  "type": "object",
-                  "properties": {
-                    "zh-TW": {
-                      "type": "string",
-                      "description": "繁體中文選單名稱"
-                    }
-                  }
-                },
-                "widgetType": {
-                  "type": "string",
-                  "enum": ["select"]
-                },
-                "description": {
-                  "type": "object",
-                  "properties": {
-                    "zh-TW": {
-                      "type": "string",
-                      "description": "繁體中文選單說明"
-                    }
-                  }
-                },
-                "options": {
-                  "type": "array",
-                  "item": {
-                    "type": "object",
-                    "properties": {
-                      "zh-TW": {
-                        "type": "string",
-                        "description": "繁體中文選項名稱"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
 + Response 200 (application/json)
 
     + Body
