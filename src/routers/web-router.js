@@ -19,6 +19,7 @@ const uploadSessionHandler = require('../handlers/upload-session-handler');
 const userHandler = require('../handlers/user-handler');
 const locationMonthRetrievedHandler = require('../handlers/location-month-retrieved-handler');
 const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
+const imageSpeciesGroup = require('../handlers/image-species-group-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -200,6 +201,12 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-location-abnormality',
   cameraLocationAbnormalityHandler.addCameraLocationAbnormality,
 );
+
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/image-species-group',
+  imageSpeciesGroup.getByProjectId,
+);
+
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);
