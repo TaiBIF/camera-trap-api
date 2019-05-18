@@ -64,6 +64,7 @@ const schema = utils.generateSchema(
       // 大地基準
       type: String,
       required: true,
+      default: GeodeticDatum.twd97,
       enum: GeodeticDatum.all(),
     },
     altitude: {
