@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const AnnotationState = require('../const/annotation-state');
 const CameraLocationState = require('../const/camera-location-state');
+const GeodeticDatum = require('../const/geodetic-datum');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -45,15 +46,25 @@ const schema = utils.generateSchema(
       // 架設日期
       type: Date,
     },
+    retireTime: {
+      // 撤收日期
+      type: Date,
+    },
     latitude: {
-      // 緯度 (WGS84)
+      // 緯度
       type: Number,
       required: true,
     },
     longitude: {
-      // 經度 (WGS84)
+      // 經度
       type: Number,
       required: true,
+    },
+    geodeticDatum: {
+      // 大地基準
+      type: String,
+      required: true,
+      enum: GeodeticDatum.all(),
     },
     altitude: {
       // 海拔（公尺）
@@ -65,6 +76,10 @@ const schema = utils.generateSchema(
     },
     landCoverType: {
       // 土地覆蓋類型
+      type: String,
+    },
+    verbatimLocality: {
+      // 地點
       type: String,
     },
     lockExpiredTime: {
@@ -152,11 +167,14 @@ model.prototype.dump = function() {
         : this.studyArea,
     name: this.name,
     settingTime: this.settingTime,
+    retireTime: this.retireTime,
     latitude: this.latitude,
     longitude: this.longitude,
+    geodeticDatum: this.geodeticDatum,
     altitude: this.altitude,
     vegetation: this.vegetation,
     landCoverType: this.landCoverType,
+    verbatimLocality: this.verbatimLocality,
     isLocked,
     lockUser,
   };

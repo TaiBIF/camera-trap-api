@@ -761,11 +761,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 },
                 "name": "PT02A",
                 "settingTime": "2019-01-01T00:00:00.000Z",
+                "retireTime": "2019-01-01T00:00:00.000Z",
                 "latitude": 58.28,
                 "longitude": 121.462417,
+                "geodeticDatum": "WGS84",
                 "altitude": 100,
                 "vegetation": "植被",
-                "landCoverType": "土地覆蓋類型"
+                "landCoverType": "土地覆蓋類型",
+                "verbatimLocality": "傾斜屋對面產道，小池旁"
               },
               "file": {
                 "id": "5ca996477242134e2593331c",
@@ -3397,12 +3400,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "id": "5c9f28070d9cee99f8a11a12",
                       "studyArea": "5c9d95acea5c9b4036d97c88",
                       "name": "PT02A",
-                      "settingTime": "2019-01-01T00:00:00.000Z",
+                      "settingTime": "2018-01-01T00:00:00.000Z",
+                      "retireTime": "2019-01-01T00:00:00.000Z",
                       "latitude": 58.28,
                       "longitude": 121.462417,
+                      "geodeticDatum": "WGS84",
                       "altitude": 100,
                       "vegetation": "植被",
-                      "landCoverType": "土地覆蓋類型"
+                      "landCoverType": "土地覆蓋類型",
+                      "verbatimLocality": "傾斜屋對面產道，小池旁"
                     }
                   },
                   {
@@ -3495,6 +3501,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                               "format": "date-time",
                               "description": "架設日期(ISO-8601)"
                             },
+                            "retireTime": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "撤除日期(ISO-8601)"
+                            },
                             "latitude": {
                               "type": "number",
                               "description": "十進位緯度 (WGS84)"
@@ -3502,6 +3513,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                             "longitude": {
                               "type": "number",
                               "description": "十進位經度 (WGS84)"
+                            },
+                            "geodeticDatum": {
+                              "type": "string",
+                              "description": "大地基準",
+                              "enum": ["WGS84", "TWD97"]
                             },
                             "altitude": {
                               "type": "number",
@@ -3514,6 +3530,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                             "landCoverType": {
                               "type": "string",
                               "description": "土地覆蓋類型"
+                            },
+                            "verbatimLocality": {
+                              "type": "string",
+                              "description": "地點"
                             }
                           }
                         },
@@ -3543,6 +3563,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "format": "date-time",
                         "description": "架設日期(ISO-8601)"
                       },
+                      "retireTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "撤除日期(ISO-8601)"
+                      },
                       "latitude": {
                         "type": "number",
                         "description": "十進位緯度 (WGS84)"
@@ -3550,6 +3575,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "longitude": {
                         "type": "number",
                         "description": "十進位經度 (WGS84)"
+                      },
+                      "geodeticDatum": {
+                        "type": "string",
+                        "description": "大地基準",
+                        "enum": ["WGS84", "TWD97"]
                       },
                       "altitude": {
                         "type": "number",
@@ -3562,6 +3592,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "landCoverType": {
                         "type": "string",
                         "description": "土地覆蓋類型"
+                      },
+                      "verbatimLocality": {
+                        "type": "string",
+                        "description": "地點"
                       }
                     }
                   }
@@ -3679,12 +3713,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "id": "5c9f28070d9cee99f8a11a12",
                   "name": "PT02A",
                   "studyArea": "5c9d95acea5c9b4036d97c88",
-                  "settingTime": "2019-01-01T00:00:00.000Z",
+                  "settingTime": "2018-01-01T00:00:00.000Z",
+                  "retireTime": "2019-01-01T00:00:00.000Z",
                   "latitude": 58.28,
                   "longitude": 121.462417,
+                  "geodeticDatum": "WGS84",
                   "altitude": 100,
                   "vegetation": "植被",
-                  "landCoverType": "土地覆蓋類型"
+                  "landCoverType": "土地覆蓋類型",
+                  "verbatimLocality": "傾斜屋對面產道，小池旁"
                 }
               ]
             }
@@ -3728,6 +3765,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "format": "date-time",
                         "description": "架設日期(ISO-8601)"
                       },
+                      "retireTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "撤除日期(ISO-8601)"
+                      },
                       "latitude": {
                         "type": "number",
                         "description": "十進位緯度 (WGS84)"
@@ -3735,6 +3777,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "longitude": {
                         "type": "number",
                         "description": "十進位經度 (WGS84)"
+                      },
+                      "geodeticDatum": {
+                        "type": "string",
+                        "description": "大地基準",
+                        "enum": ["WGS84", "TWD97"]
                       },
                       "altitude": {
                         "type": "number",
@@ -3747,6 +3794,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "landCoverType": {
                         "type": "string",
                         "description": "土地覆蓋類型"
+                      },
+                      "verbatimLocality": {
+                        "type": "string",
+                        "description": "地點"
                       }
                     }
                   }
@@ -3771,12 +3822,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
             {
               "name": "PT02A",
-              "settingTime": "2019-01-01T00:00:00.000Z",
+              "settingTime": "2018-01-01T00:00:00.000Z",
+              "retireTime": "2019-01-01T00:00:00.000Z",
               "latitude": 58.28,
               "longitude": 121.462417,
+              "geodeticDatum": "WGS84",
               "altitude": 100,
               "vegetation": "植被",
-              "landCoverType": "土地覆蓋類型"
+              "landCoverType": "土地覆蓋類型",
+              "verbatimLocality": "傾斜屋對面產道，小池旁"
             }
 
     + Schema
@@ -3794,6 +3848,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "format": "date-time",
                   "description": "架設日期(ISO-8601)"
                 },
+                "retireTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "撤除日期(ISO-8601)"
+                },
                 "latitude": {
                   "type": "number",
                   "description": "十進位緯度 (WGS84)"
@@ -3801,6 +3860,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "longitude": {
                   "type": "number",
                   "description": "十進位經度 (WGS84)"
+                },
+                "geodeticDatum": {
+                  "type": "string",
+                  "description": "大地基準",
+                  "enum": ["WGS84", "TWD97"]
                 },
                 "altitude": {
                   "type": "number",
@@ -3813,6 +3877,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
+                },
+                "verbatimLocality": {
+                  "type": "string",
+                  "description": "地點"
                 }
               }
             }
@@ -3830,12 +3898,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "zh-TW": "titleX"
                 }
               },
-              "settingTime": "2019-01-01T00:00:00.000Z",
+              "settingTime": "2018-01-01T00:00:00.000Z",
+              "retireTime": "2019-01-01T00:00:00.000Z",
               "latitude": 58.28,
               "longitude": 121.462417,
+              "geodeticDatum": "WGS84",
               "altitude": 100,
               "vegetation": "植被",
-              "landCoverType": "土地覆蓋類型"
+              "landCoverType": "土地覆蓋類型",
+              "verbatimLocality": "傾斜屋對面產道，小池旁"
             }
 
     + Schema
@@ -3875,6 +3946,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "format": "date-time",
                   "description": "架設日期(ISO-8601)"
                 },
+                "retireTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "撤除日期(ISO-8601)"
+                },
                 "latitude": {
                   "type": "number",
                   "description": "十進位緯度 (WGS84)"
@@ -3882,6 +3958,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "longitude": {
                   "type": "number",
                   "description": "十進位經度 (WGS84)"
+                },
+                "geodeticDatum": {
+                  "type": "string",
+                  "description": "大地基準",
+                  "enum": ["WGS84", "TWD97"]
                 },
                 "altitude": {
                   "type": "number",
@@ -3894,6 +3975,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
+                },
+                "verbatimLocality": {
+                  "type": "string",
+                  "description": "地點"
                 }
               }
             }
@@ -3934,12 +4019,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c9f28070d9cee99f8a11a12",
               "name": "PT02A",
               "studyArea": "5c9d95acea5c9b4036d97c88",
-              "settingTime": "2019-01-01T00:00:00.000Z",
+              "settingTime": "2018-01-01T00:00:00.000Z",
+              "retireTime": "2019-01-01T00:00:00.000Z",
               "latitude": 58.28,
               "longitude": 121.462417,
+              "geodeticDatum": "WGS84",
               "altitude": 100,
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
+              "verbatimLocality": "傾斜屋對面產道，小池旁",
               "isLocked": true,
               "lockUser": {
                 "id": "5c949bbbe5d5377f98c81ab0",
@@ -3970,6 +4058,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "format": "date-time",
                   "description": "架設日期(ISO-8601)"
                 },
+                "retireTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "撤除日期(ISO-8601)"
+                },
                 "latitude": {
                   "type": "number",
                   "description": "十進位緯度 (WGS84)"
@@ -3977,6 +4070,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "longitude": {
                   "type": "number",
                   "description": "十進位經度 (WGS84)"
+                },
+                "geodeticDatum": {
+                  "type": "string",
+                  "description": "大地基準",
+                  "enum": ["WGS84", "TWD97"]
                 },
                 "altitude": {
                   "type": "number",
@@ -3989,6 +4087,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
+                },
+                "verbatimLocality": {
+                  "type": "string",
+                  "description": "地點"
                 },
                 "isLocked": {
                   "type": "boolean",
@@ -4034,12 +4136,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "id": "5c9f28070d9cee99f8a11a12",
               "name": "PT02A",
               "studyArea": "5c9d95acea5c9b4036d97c88",
-              "settingTime": "2019-01-01T00:00:00.000Z",
+              "settingTime": "2018-01-01T00:00:00.000Z",
+              "retireTime": "2019-01-01T00:00:00.000Z",
               "latitude": 58.28,
               "longitude": 121.462417,
+              "geodeticDatum": "WGS84",
               "altitude": 100,
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
+              "verbatimLocality": "傾斜屋對面產道，小池旁",
               "isLocked": false
             }
 
@@ -4064,6 +4169,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "format": "date-time",
                   "description": "架設日期(ISO-8601)"
                 },
+                "retireTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "撤除日期(ISO-8601)"
+                },
                 "latitude": {
                   "type": "number",
                   "description": "十進位緯度 (WGS84)"
@@ -4071,6 +4181,11 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "longitude": {
                   "type": "number",
                   "description": "十進位經度 (WGS84)"
+                },
+                "geodeticDatum": {
+                  "type": "string",
+                  "description": "大地基準",
+                  "enum": ["WGS84", "TWD97"]
                 },
                 "altitude": {
                   "type": "number",
@@ -4083,6 +4198,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "landCoverType": {
                   "type": "string",
                   "description": "土地覆蓋類型"
+                },
+                "verbatimLocality": {
+                  "type": "string",
+                  "description": "地點"
                 },
                 "isLocked": {
                   "type": "boolean",
