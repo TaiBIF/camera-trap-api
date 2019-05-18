@@ -31,6 +31,14 @@ const schema = utils.generateSchema(
     collection: 'ProjectSpecies',
   },
 );
+schema.index(
+  { project: 1, species: 1 },
+  {
+    name: 'ProjectSpecies',
+    background: true,
+    unique: true,
+  },
+);
 
 schema.method('dump', function() {
   return {
