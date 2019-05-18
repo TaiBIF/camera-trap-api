@@ -6549,6 +6549,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Get retrieval metrics by project [GET /projects/{projectId}/month-retrieved{?year}]
 取得專案下的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
+
 + Parameters
     + year: `2019` (number, required) - year to query.
 
@@ -6675,6 +6676,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 ## Get retrieval metrics my study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
 取得特定地區的回收/辨識狀況
+
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
     + year: `2019` (number, required) - year to query.
@@ -6812,6 +6814,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 ## Get retrieval metrics by camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
 取得單一相機的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
+
 + Parameters
     + year: `2019` (number, required) - year to query.
 
@@ -6890,6 +6893,80 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 }
               }
             }
+
+## Get identified species by project [GET /projects/{projectId}/image-species-group]
+取得計畫已辨識的物種資料
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + projectId: `5cd6631299580e3eb17fe0f3` (string, required) - project ID.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "records": [
+                    {
+                        "_id": "5cd7c0100094ee25325380b7",
+                        "species": "其他",
+                        "count": 3826
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb3",
+                        "species": "山羊",
+                        "count": 3938
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb6",
+                        "species": "白鼻心",
+                        "count": 4327
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb4",
+                        "species": "野豬",
+                        "count": 6765
+                    },
+                    {
+                        "_id": "5cd66618582a3ff6ae040591",
+                        "species": "鼠",
+                        "count": 10258
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb1",
+                        "species": "獼猴",
+                        "count": 19227
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb2",
+                        "species": "鼬獾",
+                        "count": 19646
+                    },
+                    {
+                        "_id": "5cd66620582a3f0ee504071a",
+                        "species": "鳥",
+                        "count": 22143
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6caf",
+                        "species": "山羌",
+                        "count": 65849
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6caa",
+                        "species": "空拍",
+                        "count": 90883
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cab",
+                        "species": "測試",
+                        "count": 95787
+                    }
+                ],
+                "total": 376939,
+                "time": 1558185524783
+            }
+            
 
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
