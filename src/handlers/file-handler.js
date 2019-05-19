@@ -16,6 +16,8 @@ const StudyAreaState = require('../models/const/study-area-state');
 const UploadSessionModel = require('../models/data/upload-session-model');
 const UploadSessionState = require('../models/const/upload-session-state');
 const UploadSessionErrorType = require('../models/const/upload-session-error-type');
+const AnnotationModel = require('../models/data/annotation-model');
+const AnnotationState = require('../models/const/annotation-state');
 const MediaWorkerData = require('../models/dto/media-worker-data');
 const TaskWorker = require('../models/const/task-worker');
 
@@ -285,5 +287,121 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
         _uploadSession.save();
       }
       throw error;
+    });
+});
+
+exports.uploadAnnotationFile = auth(UserPermission.all(), (req, res) => {
+  /*
+  POST /api/v1/annotations/:annotationId/file?type
+  Content-Type: multipart/form-data
+  The input name is "file" of the form.
+
+  Direct update the file of the annotation.
+  - The annotation time will not update to file.exif.dateTime.
+  - The annotation filename will not update to file.originalFilename.
+  * Replace `PUT` with `POST` because of that this is multipart form data.
+   */
+  const form = new FileForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  let multipart;
+  switch (form.type) {
+    case FileType.annotationImage:
+      multipart = multers.image;
+      break;
+    case FileType.annotationVideo:
+      if (!form.lastModified) {
+        throw new errors.Http400('Missing lastModified.');
+      }
+      multipart = multers.video;
+      break;
+    default:
+      throw new errors.Http400('The type not allow.');
+  }
+  return multipart(req, res)
+    .then(() => {
+      /*
+      - Do validations.
+      - Fetch the annotation.
+       */
+      if (!req.file) {
+        throw new errors.Http400('Missing file.');
+      }
+
+      const file = new FileModel({
+        type: form.type,
+        user: req.user,
+        originalFilename: req.file.originalname,
+      });
+      let allowExtensionNames;
+      switch (form.type) {
+        case FileType.annotationImage:
+          allowExtensionNames = FileExtensionName.annotationImage;
+          break;
+        case FileType.annotationVideo:
+          allowExtensionNames = FileExtensionName.annotationVideo;
+          break;
+        default:
+      }
+      if (allowExtensionNames.indexOf(file.getExtensionName()) < 0) {
+        throw new errors.Http400(
+          `Just allow ${allowExtensionNames.join(', ')} files.`,
+        );
+      }
+
+      return Promise.all([
+        file,
+        AnnotationModel.findById(req.params.annotationId)
+          .where({ state: AnnotationState.active })
+          .populate('project'),
+      ]);
+    })
+    .then(([file, annotation]) => {
+      /*
+      - Do authorization.
+      - Save the file content to S3.
+       */
+      if (!annotation) {
+        throw new errors.Http404();
+      }
+      if (!annotation.project.canAccessBy(req.user)) {
+        throw new errors.Http403();
+      }
+
+      if (req.file.buffer) {
+        // memory storage
+        return Promise.all([file.saveWithContent(req.file.buffer), annotation]);
+      }
+      // disk storage
+      return Promise.all([
+        file.saveWithContent(req.file.path, form.lastModified).then(result => {
+          fs.unlinkSync(req.file.path);
+          return result;
+        }),
+        annotation,
+      ]);
+    })
+    .then(([file, annotation]) => {
+      /*
+      - Update the annotation.file.
+       */
+      annotation.file = file;
+      return annotation.saveAndAddRevision(req.user);
+    })
+    .then(annotation => {
+      const uploadSession = new UploadSessionModel({
+        state: UploadSessionState.success,
+        project: annotation.project,
+        cameraLocation: annotation.cameraLocation,
+        user: req.user,
+        file: annotation.file,
+      });
+      uploadSession.save().catch(error => {
+        utils.logError(error, { uploadSession });
+      });
+      res.json(annotation.file.dump());
     });
 });
