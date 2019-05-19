@@ -136,11 +136,12 @@ schema.method('saveAndAddRevision', function(user) {
   @param user {UserModel}
   @returns {Promise<AnnotationModel>}
    */
-  let revisionQuery;
-  if (this._id) {
+  let revisionQuery = [];
+  if (!this.isNew) {
     revisionQuery = AnnotationRevisionModel.where({
       annotation: this._id,
-    }).where({ isCurrent: true });
+      isCurrent: true,
+    });
   }
   return Promise.all([this.save(), revisionQuery])
     .then(([annotation, oldRevisions]) => {
