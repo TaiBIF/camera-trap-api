@@ -1,9 +1,26 @@
 FORMAT: 1A
 HOST: https://api-dev.camera-trap.tw/api/v1
 
-# api.camera-trap.tw
+# api.camera-trap.tw[doc
 
 CameraTrap.TW is a repository for automatic biodiversity monitoring.
+
+# Status Code
+- 200 成功。
+- 204 成功且不回覆內容，用於回覆 cross site access 的 OPTIONS request，以及 DELETE request。
+- 400 表單驗證失敗，前端必須在發送前驗證使用者的輸入，後端返回訊息僅供開發使用。
+- 401 未登入，前端可顯示需登入提示或直接轉跳到 oauthUrl 進行登入。
+- 403 已登入，但仍然沒有權限，如存取自己沒有權限的計畫，或用計畫執行者權限編輯常見物種...等。
+- 404 找不到，網址錯誤或資源不存在。
+- 500 後端發生錯誤。
+
+# Time Format
+資料傳輸一律使用 ISO 8601 UTC 時區 `2019-01-01T00:00:00.000Z`。  
+僅 CSV 匯出、匯入時使用設定檔的預設時區 GMT+8。
+
+# Location
+經緯度前端空間資訊呈現僅使用 WGS84，故資料來源需要注意原始大地基準，若為 TWD97 則應該在提供給前端時轉換為 WGS84。  
+請尋找類似的程式：https://github.com/yichunsung/trans97.js
 
 # Group System
 ## Configuration [/config]
