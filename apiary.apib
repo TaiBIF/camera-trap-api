@@ -5327,7 +5327,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -5349,6 +5349,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `time filename cameraLocation`
     + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value} (JSON)
     + species: `5cd795a461a221310e546b58` (string, optional) - 使用物種 id 搜尋標註。<br/>多個物種：?species=5c9f28070d9cee99f8a11a12&species=5c9f28070d9cee99f8a11a13
+    + uploadSession: `5cdd1fdbf65647074718202b` (string, optional) - 使用上傳紀錄 id 搜尋標註。
 
 + Request Get annotations (application/json)
 

@@ -74,5 +74,8 @@ AnnotationsSearchForm.define({
       },
     ],
   }),
+  uploadSession: new forms.fields.StringField({
+    validators: [forms.validators.id()],
+  }),
 });
 module.exports = AnnotationsSearchForm;

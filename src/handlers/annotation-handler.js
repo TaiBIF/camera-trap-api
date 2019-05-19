@@ -107,6 +107,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
           cameraLocation: { $in: cameraLocations.map(x => x._id) },
         });
       }
+      if (form.uploadSession) {
+        query.where({ uploadSession: form.uploadSession });
+      }
       if (form.startTime) {
         query.where({ time: { $gte: form.startTime } });
       }
