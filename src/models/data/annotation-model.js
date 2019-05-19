@@ -130,16 +130,16 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
-  { state: 1, studyArea: 1, cameraLocation: 1, time: 1 },
+  { state: 1, studyArea: 1, cameraLocation: 1, time: 1, filename: 1 },
   {
-    name: 'StateStudyAreaCameraLocationTime',
+    name: 'StateStudyAreaCameraLocationTimeFilename',
     background: true,
   },
 );
 schema.index(
-  { state: 1, cameraLocation: 1, time: 1 },
+  { state: 1, cameraLocation: 1, time: 1, filename: 1 },
   {
-    name: 'StateCameraLocationTime',
+    name: 'StateCameraLocationTimeFilename',
     background: true,
   },
 );
