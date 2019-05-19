@@ -116,11 +116,12 @@ exports.getTaskQueue = () => {
   return _queue;
 };
 
-exports.getFileUrl = (fileType, filename) => {
+exports.getFileUrl = (fileType, filename, isAnnotationThumbnail) => {
   /*
-  Get the image url.
+  Get the file url.
   @param fileType {string}
   @param filename {string}
+  @param isAnnotationThumbnail {bool}
   @returns {string|undefined}
    */
   if (FileType.all().indexOf(fileType) < 0) {
@@ -131,6 +132,11 @@ exports.getFileUrl = (fileType, filename) => {
   }
   if ([FileType.annotationCSV, FileType.annotationZIP].indexOf(fileType) >= 0) {
     return;
+  }
+  if (fileType === FileType.annotationImage && isAnnotationThumbnail) {
+    return `${config.s3.urlPrefix}${
+      config.s3.folders.annotationThumbnailImages
+    }/${filename}`;
   }
   const mapping = {};
   mapping[FileType.projectCoverImage] = config.s3.folders.projectCovers;

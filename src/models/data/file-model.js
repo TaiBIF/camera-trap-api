@@ -207,41 +207,62 @@ schema.method('saveWithContent', function(source, lastModified) {
             isFillUp: false,
             isPublic: true,
           }),
+          utils.resizeImageAndUploadToS3({
+            buffer:
+              typeof source === 'string' ? fs.createReadStream(source) : source,
+            filename: `${
+              config.s3.folders.annotationThumbnailImages
+            }/${this.getFilename()}`,
+            format: this.getExtensionName(),
+            width: 640,
+            height: 640,
+            isFillUp: false,
+            isPublic: true,
+          }),
           utils.getExif(
             typeof source === 'string'
               ? fs.createReadStream(source)
               : utils.convertBufferToStream(source),
           ),
         ])
-          .then(([originalBuffer, thumbnailResult, exifData]) => {
-            let exif;
-            if (exifData) {
-              let dateTime;
-              const dateTimeOriginal = exifData.DateTimeOriginal;
-              if (dateTimeOriginal) {
-                // dateTimeOriginal is like this "2018:05:17 09:39:29"
-                dateTime = new Date(
-                  `${dateTimeOriginal
-                    .replace(':', '-')
-                    .replace(':', '-')
-                    .replace(' ', 'T')}.000Z`,
-                );
-                dateTime.setUTCMinutes(
-                  dateTime.getUTCMinutes() - config.defaultTimezone,
-                );
-              }
+          .then(
+            ([
+              originalBuffer,
+              middleImageUploadResult,
+              smallImageUploadResult,
+              exifData,
+            ]) => {
+              let exif;
+              if (exifData) {
+                let dateTime;
+                const dateTimeOriginal = exifData.DateTimeOriginal;
+                if (dateTimeOriginal) {
+                  // dateTimeOriginal is like this "2018:05:17 09:39:29"
+                  dateTime = new Date(
+                    `${dateTimeOriginal
+                      .replace(':', '-')
+                      .replace(':', '-')
+                      .replace(' ', 'T')}.000Z`,
+                  );
+                  dateTime.setUTCMinutes(
+                    dateTime.getUTCMinutes() - config.defaultTimezone,
+                  );
+                }
 
-              exif = new ExchangeableImageFileModel({
-                rawData: JSON.stringify(exifData),
-                make: exifData.Make,
-                model: exifData.Model,
-                dateTime,
-              });
-              this.exif = exif;
-            }
-            this.size += thumbnailResult.buffer.length;
-            return Promise.all([this.save(), exif ? exif.save() : null]);
-          })
+                exif = new ExchangeableImageFileModel({
+                  rawData: JSON.stringify(exifData),
+                  make: exifData.Make,
+                  model: exifData.Model,
+                  dateTime,
+                });
+                this.exif = exif;
+              }
+              this.size +=
+                middleImageUploadResult.buffer.length +
+                smallImageUploadResult.buffer.length;
+              return Promise.all([this.save(), exif ? exif.save() : null]);
+            },
+          )
           .then(() => this);
       case FileType.annotationVideo:
         return utils
@@ -298,7 +319,7 @@ schema.method('saveWithContent', function(source, lastModified) {
 });
 
 schema.method('dump', function() {
-  return {
+  const result = {
     id: `${this._id}`,
     type: this.type,
     originalFilename: this.originalFilename,
@@ -306,6 +327,10 @@ schema.method('dump', function() {
     url: this.getUrl(),
     size: this.size,
   };
+  if (this.type === FileType.annotationImage) {
+    result.thumbnailUrl = utils.getFileUrl(this.type, this.getFilename(), true);
+  }
+  return result;
 });
 
 module.exports = mongoose.model('FileModel', schema);
