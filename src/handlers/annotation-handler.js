@@ -95,12 +95,6 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       const query = AnnotationModel.where({ state: AnnotationState.active })
         .populate('species')
         .sort(form.sort);
-      if (form.startTime) {
-        query.where({ time: { $gte: form.startTime } });
-      }
-      if (form.endTime) {
-        query.where({ time: { $lte: form.endTime } });
-      }
       if (studyArea) {
         const studyAreaIds = [`${studyArea._id}`];
         childStudyAreas.forEach(childStudyArea => {
@@ -112,6 +106,12 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         query.where({
           cameraLocation: { $in: cameraLocations.map(x => x._id) },
         });
+      }
+      if (form.startTime) {
+        query.where({ time: { $gte: form.startTime } });
+      }
+      if (form.endTime) {
+        query.where({ time: { $lte: form.endTime } });
       }
       if (form.species.length) {
         query.where({ species: { $in: form.species } });

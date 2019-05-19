@@ -129,6 +129,20 @@ const schema = utils.generateSchema(
     collection: 'Annotations',
   },
 );
+schema.index(
+  { state: 1, studyArea: 1, cameraLocation: 1, time: 1 },
+  {
+    name: 'StateStudyAreaCameraLocationTime',
+    background: true,
+  },
+);
+schema.index(
+  { state: 1, cameraLocation: 1, time: 1 },
+  {
+    name: 'StateCameraLocationTime',
+    background: true,
+  },
+);
 
 schema.method('saveAndAddRevision', function(user) {
   /*
