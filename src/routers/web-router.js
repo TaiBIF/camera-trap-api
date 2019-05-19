@@ -119,6 +119,10 @@ apiRouter.post(
   '/annotations/:annotationId([a-f\\d]{24})/revisions/:revisionId([a-f\\d]{24})/_rollback',
   annotationRevisionHandler.rollbackAnnotation,
 );
+apiRouter.post(
+  '/annotations/:annotationId([a-f\\d]{24})/file',
+  fileHandler.uploadAnnotationFile,
+);
 apiRouter.get('/project-areas', projectAreaHandler.getProjectAreas);
 apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.post('/projects', projectHandler.addProject);
