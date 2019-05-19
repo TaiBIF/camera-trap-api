@@ -9,6 +9,8 @@ const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const CameraLocationForm = require('../forms/camera-location/camera-location-form');
 const CameraLocationsSearchForm = require('../forms/camera-location/camera-locations-search-form');
+const AnnotationModel = require('../models/data/annotation-model');
+const AnnotationState = require('../models/const/annotation-state');
 
 exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
@@ -192,8 +194,12 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
       .where({ project: req.params.projectId })
       .where({ state: CameraLocationState.active })
       .populate('studyArea'),
+    AnnotationModel.where({
+      cameraLocation: req.params.cameraLocationId,
+      state: { $in: [AnnotationState.active, AnnotationState.waitForReview] },
+    }).countDocuments(),
   ])
-    .then(([project, cameraLocation]) => {
+    .then(([project, cameraLocation, annotationQuantity]) => {
       if (!project) {
         throw new errors.Http404();
       }
@@ -205,6 +211,11 @@ exports.deleteCameraLocation = auth(UserPermission.all(), (req, res) =>
       }
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
+      }
+      if (annotationQuantity > 0) {
+        throw new errors.Http400(
+          `Can't delete the camera location that has annotations.`,
+        );
       }
 
       cameraLocation.state = CameraLocationState.removed;
