@@ -95,6 +95,7 @@ orbs:
           - aws-ecr/build-and-push-image:
               repo: $AWS_APP_PREFIX
               tag: $CIRCLE_SHA1
+              dockerfile: scripts/api/$ENV/Dockerfile
           - aws-ecs/update-service:
               family: $AWS_APP_PREFIX-service
               cluster-name: $AWS_APP_PREFIX-cluster
@@ -109,7 +110,7 @@ orbs:
           - aws-ecr/build-and-push-image:
               repo: $AWS_TASK_PREFIX
               tag: $CIRCLE_SHA1
-              dockerfile: scripts/task-worker/Dockerfile
+              dockerfile: scripts/task-worker/$ENV/Dockerfile
           - aws-ecs/update-service:
               family: $AWS_TASK_PREFIX-service
               cluster-name: $AWS_APP_PREFIX-cluster
@@ -124,7 +125,7 @@ orbs:
           - aws-ecr/build-and-push-image:
               repo: $AWS_CRON_PREFIX
               tag: $CIRCLE_SHA1
-              dockerfile: scripts/cron-job/Dockerfile
+              dockerfile: scripts/cron-job/$ENV/Dockerfile
           - aws-ecs/update-service:
               family: $AWS_CRON_PREFIX-service
               cluster-name: $AWS_APP_PREFIX-cluster
