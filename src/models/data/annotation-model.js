@@ -130,6 +130,7 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
+  // for GET /api/v1/annotations
   { state: 1, studyArea: 1, cameraLocation: 1, time: 1, filename: 1 },
   {
     name: 'StateStudyAreaCameraLocationTimeFilename',
@@ -137,6 +138,7 @@ schema.index(
   },
 );
 schema.index(
+  // for GET /api/v1/annotations
   { state: 1, cameraLocation: 1, time: 1, filename: 1 },
   {
     name: 'StateCameraLocationTimeFilename',
@@ -144,6 +146,7 @@ schema.index(
   },
 );
 schema.index(
+  // for GET /api/v1/calculator/ltd
   { state: 1, cameraLocation: 1, species: 1, time: 1 },
   {
     name: 'StateCameraLocationSpeciesTime',

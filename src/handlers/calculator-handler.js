@@ -13,7 +13,7 @@ const AnnotationState = require('../models/const/annotation-state');
 
 exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
   /*
-  GET /calculator/ltd
+  GET /api/v1/calculator/ltd
   Latency to initial detection
   @response {Array<Object>}
     {
