@@ -92,6 +92,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
           $sort: { time: 1 },
         },
         {
+          // Group result by 24hours time interval.
+          // The time base is config.defaultTimezone.
           $group: {
             _id: {
               $subtract: [
