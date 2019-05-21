@@ -22,7 +22,7 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
     },
     {
       "time": "2016-05-06T16:00:00.000Z",
-      "duration": 71520000 // 71520000ms -> 19hrs and 52 minutes
+      "duration": 71520000 // 71520000ms -> 19 hours and 52 minutes
     }
    */
   const form = new LTDForm(req.query);
