@@ -119,6 +119,10 @@ if (config.enableLog) {
 utils.getTaskQueue();
 app.use('/admin/kue', authorization([UserPermission.administrator], kue.app));
 
+app.get('/robots.txt', (req, res) => {
+  res.send('User-agent: *\nDisallow: /');
+});
+
 app.use(nocache());
 app.use('/api/v1', cors(config.corsOptions), webRouter.api);
 app.use('/callback', webRouter.callback);
