@@ -143,6 +143,13 @@ schema.index(
     background: true,
   },
 );
+schema.index(
+  { state: 1, cameraLocation: 1, species: 1, time: 1 },
+  {
+    name: 'StateCameraLocationSpeciesTime',
+    background: true,
+  },
+);
 
 schema.method('saveAndAddRevision', function(user) {
   /*
