@@ -233,6 +233,7 @@ apiRouter.get(
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
+apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);

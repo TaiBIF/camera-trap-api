@@ -3,6 +3,7 @@ const auth = require('../auth/authorization');
 const errors = require('../models/errors');
 const UserPermission = require('../models/const/user-permission');
 const LTDForm = require('../forms/calculator/ltd-form');
+const OIForm = require('../forms/calculator/oi-form');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const SpeciesModel = require('../models/data/species-model');
@@ -10,6 +11,125 @@ const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+
+exports.calculateOI = auth(UserPermission.all(), (req, res) => {
+  /*
+  GET /api/v1/calculator/oi
+  Occurrence index
+  @response {Object}
+    {
+      cameraLocationWorkDuration: 53737326000, // 相機工作時數 ms
+      validQuantity: 18, // 有效照片
+      eventQuantity: 18, // 目擊事件
+    }
+   */
+  const form = new OIForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  return Promise.all([
+    CameraLocationModel.findById(form.cameraLocation).where({
+      state: CameraLocationState.active,
+    }),
+    SpeciesModel.findById(form.species),
+  ])
+    .then(([cameraLocation, species]) => {
+      if (!cameraLocation) {
+        throw new errors.Http400('Not found the camera location.');
+      }
+      if (!species) {
+        throw new errors.Http400('Not found the species.');
+      }
+
+      return Promise.all([
+        cameraLocation,
+        species,
+        ProjectModel.findById(cameraLocation.project._id),
+        ProjectSpeciesModel.where({
+          project: cameraLocation.project._id,
+          species: species._id,
+        }),
+      ]);
+    })
+    .then(([cameraLocation, species, project, projectSpecies]) => {
+      if (!project) {
+        throw new errors.Http400('The project is not exists.');
+      }
+      if (!projectSpecies) {
+        throw new errors.Http400('The species is not belong to the project.');
+      }
+      if (!project.canAccessBy(req.user)) {
+        throw new errors.Http403();
+      }
+
+      const matchCondition = {
+        state: AnnotationState.active,
+        cameraLocation: cameraLocation._id,
+        species: species._id,
+      };
+      if (form.startTime || form.endTime) {
+        matchCondition.time = {};
+        if (form.startTime) {
+          matchCondition.time.$gte = form.startTime;
+        }
+        if (form.endTime) {
+          matchCondition.time.$lte = form.endTime;
+        }
+      }
+      const matchConditionWithoutSpecies = Object.assign({}, matchCondition);
+      delete matchConditionWithoutSpecies.species;
+
+      return Promise.all([
+        AnnotationModel.where(matchConditionWithoutSpecies)
+          .sort({ time: 1 })
+          .findOne(),
+        AnnotationModel.where(matchConditionWithoutSpecies)
+          .sort({ time: -1 })
+          .findOne(),
+        AnnotationModel.where(matchCondition).sort({ time: 1 }),
+      ]);
+    })
+    .then(([firstAnnotation, lastAnnotation, annotations]) => {
+      let lastValidAnnotation;
+      let lastEventAnnotation;
+      const result = {
+        cameraLocationWorkDuration: 0,
+        validQuantity: 0,
+        eventQuantity: 0,
+      };
+
+      if (
+        !firstAnnotation ||
+        `${firstAnnotation._id}` === `${lastAnnotation._id}`
+      ) {
+        // There are no data.
+        return res.json(result);
+      }
+
+      annotations.forEach(annotation => {
+        if (
+          !lastValidAnnotation ||
+          annotation.time - lastValidAnnotation.time > form.validTimeInterval
+        ) {
+          lastValidAnnotation = annotation;
+          result.validQuantity += 1;
+        }
+        if (
+          !lastEventAnnotation ||
+          annotation.time - lastEventAnnotation.time > form.eventTimeInterval
+        ) {
+          result.eventQuantity += 1;
+        }
+        lastEventAnnotation = annotation;
+      });
+
+      result.cameraLocationWorkDuration =
+        lastAnnotation.time - firstAnnotation.time;
+      res.json(result);
+    });
+});
 
 exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
   /*
