@@ -77,6 +77,7 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
+  // for PUT /api/v1/annotations/:annotationId
   { annotation: 1, isCurrent: 1 },
   {
     name: 'AnnotationIsCurrent',

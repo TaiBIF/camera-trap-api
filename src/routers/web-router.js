@@ -3,6 +3,7 @@ const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const annotationHandler = require('../handlers/annotation-handler');
 const annotationRevisionHandler = require('../handlers/annotation-revision-handler');
+const calculatorHandler = require('../handlers/calculator-handler');
 const callbackHandler = require('../handlers/callback-handler');
 const cameraLocationHandler = require('../handlers/camera-location-handler');
 const cameraLocationAbnormalityHandler = require('../handlers/camera-location-abnormality-handler');
@@ -227,12 +228,16 @@ apiRouter.get(
   dataFieldHandler.getPublishedDataField,
 );
 apiRouter.post('/issues', issueHandler.addIssue);
-// multipart/form-data
-apiRouter.post('/files', fileHandler.uploadFile);
 apiRouter.get(
   '/forest-compartment-boundary',
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
+apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
+apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
+
+// multipart/form-data
+apiRouter.post('/files', fileHandler.uploadFile);
+
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
 callbackRouter.get('/orcid/auth', callbackHandler.orcidAuth);

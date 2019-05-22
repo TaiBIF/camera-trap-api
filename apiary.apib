@@ -6991,6 +6991,64 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             }
             
 
+# Group Calculate
+## The calculator [/calculator]
+### Calculate LTD [GET /calculator/ltd{?cameraLocation,species,startTime,endTime}]
+計算初測延遲。
+- The user's permission should be 'administrator' or 'general-account'.
+- The user is joined the the project.
+
++ Parameters
+    + cameraLocation: `5cdc1a3718ad11d97c794648` (string) - The camera location id.
+    + species: `5cdc121631ff030c7b15a38c` (string) - The species id.
+    + startTime: `2016-05-04T00:00:00.000Z` (string, optional) - The start time.
+    + endTime: `2016-05-04T00:00:00.000Z` (string, optional) - The end time.
+
++ Request Calculate LTD (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+            
+            [
+              {
+                "time": "2016-05-03T16:00:00.000Z",
+                "duration": null
+              },
+              {
+                "time": "2016-05-04T16:00:00.000Z",
+                "duration": 67980000
+              },
+              {
+                "time": "2016-05-05T16:00:00.000Z",
+                "duration": null
+              },
+              {
+                "time": "2016-05-06T16:00:00.000Z",
+                "duration": 71520000
+              }
+            ]
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "array",
+              "description": "Documents.",
+              "item": {
+                "type": "object",
+                "properties": {
+                  "time": {
+                    "type": "string"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "description": "單位為 ms，如 71520000ms 代表 19小時又52分鐘。null 代表沒有照片。"
+                  }
+                }
+              }
+            }
+
 # Group Project Areas
 ## List project areas [GET /project-areas{?index,size,sort}]
 取得地區列表。
@@ -7324,7 +7382,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "originalFilename": "432x324c.jpg",
               "filename": "5c9afa256c59080852644719.jpg",
               "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9afa256c59080852644719.jpg",
-              "size": 26172
+              "size": 26172,
+              "uploadSession": "5ca996477242134e2593331d"
             }
 
     + Schema
@@ -7357,11 +7416,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "size": {
                   "type": "integer",
                   "description": "File size in byte."
+                },
+                "uploadSession": {
+                  "type": "string",
+                  "description": "The upload session ID of this file."
                 }
               }
             }
 
-## Upload a file for the annotation [POST /annotations/{annotationId}/file{?type,lastModified}]
+## Upload a file for a particular annotation [POST /annotations/{annotationId}/file{?type,lastModified}]
 針對標註上傳檔案。  
 不會更新標註的檔名及時間。
 - The user's permission should be 'administrator' or 'general-account'.
@@ -7395,7 +7458,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "originalFilename": "432x324c.jpg",
               "filename": "5c9afa256c59080852644719.jpg",
               "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9afa256c59080852644719.jpg",
-              "size": 26172
+              "size": 26172,
+              "uploadSession": "5ca996477242134e2593331d"
             }
 
     + Schema
@@ -7428,6 +7492,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "size": {
                   "type": "integer",
                   "description": "File size in byte."
+                },
+                "uploadSession": {
+                  "type": "string",
+                  "description": "The upload session ID of this file."
                 }
               }
             }
