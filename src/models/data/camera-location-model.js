@@ -162,6 +162,10 @@ model.prototype.dump = function() {
   }
   const doc = {
     id: `${this._id}`,
+    project:
+      this.project && typeof this.project.dump === 'function'
+        ? this.project.dump()
+        : this.project,
     studyArea:
       this.studyArea && typeof this.studyArea.dump === 'function'
         ? this.studyArea.dump()

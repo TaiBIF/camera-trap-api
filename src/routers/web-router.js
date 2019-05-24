@@ -188,6 +188,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/_unlock',
   cameraLocationHandler.unlockCameraLocation,
 );
+apiRouter.get(
+  '/camera-locations/:cameraLocationId([a-f\\d]{24})',
+  cameraLocationHandler.getCameraLocation,
+);
 
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
