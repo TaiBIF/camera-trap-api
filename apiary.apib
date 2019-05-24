@@ -6993,6 +6993,53 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group Calculate
 ## The calculator [/calculator]
+
+### Calculate OI [GET /calculator/oi{?cameraLocation,species,startTime,endTime,validTimeInterval,eventTimeInterval}]
+計算有效照片與目擊事件。 Occurrence index
+- The user's permission should be 'administrator' or 'general-account'.
+- The user is joined the the project.
+
++ Parameters
+    + cameraLocation: `5cdc1a3718ad11d97c794648` (string) - The camera location id.
+    + species: `5cdc121631ff030c7b15a38c` (string) - The species id.
+    + startTime: `2016-05-04T00:00:00.000Z` (string, optional) - The start time.
+    + endTime: `2016-05-04T00:00:00.000Z` (string, optional) - The end time.
+    + validTimeInterval: `60000` (number) - 有效時間判定間隔。單位：毫秒
+    + eventTimeInterval: `60000` (number) - 有效時間判定間隔。單位：毫秒
+
++ Request Calculate OI (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+            
+            {
+              "cameraLocationWorkDuration": 130999854000,
+              "validQuantity": 13,
+              "eventQuantity": 13
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "cameraLocationWorkDuration": {
+                  "type": "integer",
+                  "description": "相機工作時數。單位：毫秒"
+                },
+                "validQuantity": {
+                  "type": "integer",
+                  "description": "有效照片。"
+                },
+                "eventQuantity": {
+                  "type": "integer",
+                  "description": "目擊事件。"
+                }
+              }
+            }
+
 ### Calculate LTD [GET /calculator/ltd{?cameraLocation,species,startTime,endTime}]
 計算初測延遲。
 - The user's permission should be 'administrator' or 'general-account'.

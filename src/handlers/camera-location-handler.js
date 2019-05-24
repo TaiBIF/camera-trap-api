@@ -145,6 +145,29 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
     });
 });
 
+exports.getCameraLocation = auth(UserPermission.all(), (req, res) =>
+  /*
+  GET /api/v1/camera-locations/:cameraLocationId
+   */
+  CameraLocationModel.findById(req.params.cameraLocationId)
+    .where({ state: CameraLocationState.active })
+    .populate('project')
+    .populate('studyArea')
+    .then(cameraLocation => {
+      if (!cameraLocation) {
+        throw new errors.Http404();
+      }
+      if (!cameraLocation.project.canAccessBy(req.user)) {
+        throw new errors.Http403();
+      }
+
+      return StudyAreaModel.populate(cameraLocation, 'studyArea.parent');
+    })
+    .then(cameraLocation => {
+      res.json(cameraLocation.dump());
+    }),
+);
+
 exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
   /*
   PUT /api/v1/projects/:projectId/camera-locations/:cameraLocationId

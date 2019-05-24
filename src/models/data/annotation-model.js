@@ -82,6 +82,16 @@ const schema = utils.generateSchema(
         name: 'Time',
       },
     },
+    hours: {
+      // UTC hour of time
+      // 供拍攝時段搜尋
+      type: Number,
+    },
+    minutes: {
+      // UTC minute of time
+      // 供拍攝時段搜尋
+      type: Number,
+    },
     species: {
       // 物種
       type: Schema.ObjectId,
@@ -153,6 +163,12 @@ schema.index(
     background: true,
   },
 );
+
+schema.pre('save', function(next) {
+  this.hours = this.time.getUTCHours();
+  this.minutes = this.time.getUTCMinutes();
+  next();
+});
 
 schema.method('saveAndAddRevision', function(user) {
   /*
