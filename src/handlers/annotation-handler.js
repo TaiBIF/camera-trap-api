@@ -38,6 +38,12 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       'studyArea and cameraLocations least one should be not empty.',
     );
   }
+  if (form.timeRangeStart != null && form.timeRangeEnd == null) {
+    throw new errors.Http400('timeRangeEnd is required.');
+  }
+  if (form.timeRangeEnd != null && form.timeRangeStart == null) {
+    throw new errors.Http400('timeRangeStart is required.');
+  }
 
   let tasks;
   if (form.studyArea) {
@@ -118,6 +124,50 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       }
       if (form.species.length) {
         query.where({ species: { $in: form.species } });
+      }
+      if (form.timeRangeStart != null) {
+        const dayInMilliseconds = 24 * 60 * 60 * 1000;
+        const duration = form.timeRangeEnd - form.timeRangeStart;
+        let { timeRangeStart } = form;
+        if (form.timeRangeStart < 0) {
+          // The time is offset to the previous day.
+          timeRangeStart += dayInMilliseconds;
+        } else if (form.timeRangeStart >= dayInMilliseconds) {
+          // The time is offset to the next day.
+          timeRangeStart -= dayInMilliseconds;
+        }
+
+        if (timeRangeStart + duration >= dayInMilliseconds) {
+          query.where({
+            $or: [
+              {
+                totalMilliseconds: {
+                  $gte: timeRangeStart,
+                },
+              },
+              {
+                totalMilliseconds: {
+                  $lte: timeRangeStart + duration - dayInMilliseconds,
+                },
+              },
+            ],
+          });
+        } else {
+          query.where({
+            $and: [
+              {
+                totalMilliseconds: {
+                  $gte: timeRangeStart,
+                },
+              },
+              {
+                totalMilliseconds: {
+                  $lte: timeRangeStart + duration,
+                },
+              },
+            ],
+          });
+        }
       }
 
       // 進階篩選 DataField
