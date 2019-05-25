@@ -82,13 +82,8 @@ const schema = utils.generateSchema(
         name: 'Time',
       },
     },
-    hours: {
-      // UTC hour of time
-      // 供拍攝時段搜尋
-      type: Number,
-    },
-    minutes: {
-      // UTC minute of time
+    totalMilliseconds: {
+      // UTC timespan of a day of time
       // 供拍攝時段搜尋
       type: Number,
     },
@@ -165,8 +160,10 @@ schema.index(
 );
 
 schema.pre('save', function(next) {
-  this.hours = this.time.getUTCHours();
-  this.minutes = this.time.getUTCMinutes();
+  this.totalMilliseconds = this.time.getUTCHours() * 60 * 60 * 1000;
+  this.totalMilliseconds += this.time.getUTCMinutes() * 60 * 1000;
+  this.totalMilliseconds += this.time.getUTCSeconds() * 1000;
+  this.totalMilliseconds += this.time.getUTCMilliseconds();
   next();
 });
 
