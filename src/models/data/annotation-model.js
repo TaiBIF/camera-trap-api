@@ -160,10 +160,10 @@ schema.index(
 );
 
 schema.pre('save', function(next) {
-  this.totalMilliseconds = this.getUTCHours() * 60 * 60 * 1000;
-  this.totalMilliseconds += this.getUTCMinutes() * 60 * 1000;
-  this.totalMilliseconds += this.getUTCSeconds() * 1000;
-  this.totalMilliseconds += this.getUTCMilliseconds();
+  this.totalMilliseconds = this.time.getUTCHours() * 60 * 60 * 1000;
+  this.totalMilliseconds += this.time.getUTCMinutes() * 60 * 1000;
+  this.totalMilliseconds += this.time.getUTCSeconds() * 1000;
+  this.totalMilliseconds += this.time.getUTCMilliseconds();
   next();
 });
 
