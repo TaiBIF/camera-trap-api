@@ -74,6 +74,10 @@ AnnotationsSearchForm.define({
       },
     ],
   }),
+  // timeRange 為拍攝時段搜尋條件，傳入 UTC 00:00:00.000 開始後的毫秒
+  // * 可以傳入負數，如 00:00 GMT+8 傳入 -480 * 60 * 1000
+  timeRangeStart: new forms.fields.IntegerField(),
+  timeRangeEnd: new forms.fields.IntegerField(),
   uploadSession: new forms.fields.StringField({
     validators: [forms.validators.id()],
   }),
