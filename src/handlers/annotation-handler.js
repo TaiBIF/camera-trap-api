@@ -288,6 +288,19 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
             });
           });
 
+          const writeHeadRow = () =>
+            /*
+            Write head row data to the response stream.
+            @returns {Promise<>}
+             */
+            utils.csvStringifyAsync([headRow]).then(data => {
+              res.setHeader(
+                'Content-disposition',
+                'attachment; filename=export.csv',
+              );
+              res.contentType('csv');
+              res.write(data);
+            });
           return new Promise((resolve, reject) => {
             query
               .cursor()
@@ -301,8 +314,10 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                     resolve();
                   });
                 } else {
-                  res.end();
-                  resolve();
+                  writeHeadRow().then(() => {
+                    res.end();
+                    resolve();
+                  });
                 }
               })
               .on('data', annotation => {
@@ -406,17 +421,8 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                       res.write(data);
                     });
                 } else {
-                  writePromise = utils
-                    .csvStringifyAsync([headRow])
-                    .then(data => {
-                      res.setHeader(
-                        'Content-disposition',
-                        'attachment; filename=export.csv',
-                      );
-                      res.contentType('csv');
-                      res.write(data);
-                      return utils.csvStringifyAsync([row]);
-                    })
+                  writePromise = writeHeadRow()
+                    .then(() => utils.csvStringifyAsync([row]))
                     .then(data => {
                       res.write(data);
                     });
