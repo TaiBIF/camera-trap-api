@@ -21,9 +21,6 @@ const LogModel = require('./models/data/log-model');
 
 const app = express();
 
-// compress all responses
-app.use(compression());
-
 // hide x-powered-by
 app.locals.settings['x-powered-by'] = false;
 // disable ETag at headers
@@ -115,6 +112,10 @@ if (config.enableLog) {
     next();
   });
 }
+
+// Do compression exclusion export .csv.
+// To export .csv is a stream response. If we do compression, the user will wait the web fetches all data.
+app.use(/(?<!\.csv)$/, compression());
 
 utils.getTaskQueue();
 app.use('/admin/kue', authorization([UserPermission.administrator], kue.app));
