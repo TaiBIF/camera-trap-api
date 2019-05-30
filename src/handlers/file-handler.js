@@ -402,6 +402,10 @@ exports.uploadAnnotationFile = auth(UserPermission.all(), (req, res) => {
       uploadSession.save().catch(error => {
         utils.logError(error, { uploadSession });
       });
-      res.json(annotation.file.dump());
+      const result = annotation.file.dump();
+      if (uploadSession) {
+        result.uploadSession = `${uploadSession._id}`;
+      }
+      res.json(result);
     });
 });
