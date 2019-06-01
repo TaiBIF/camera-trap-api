@@ -23,11 +23,6 @@ exports.retrievedByStudyArea = (req, res) => {
       );
     })
     .then(records => {
-      // const timeUpdated = new Date(Date.now()).toISOString();
-      // const output = {
-      //   timeUpdated,
-      //   items: records,
-      // };
       res.json(records);
     });
 };

@@ -6,7 +6,6 @@ module.exports = async function(projectId, cameraLocationId, year) {
   if (!year) {
     throw new errors.Http400();
   }
-  // const AnnotationModel = this.db.model('AnnotationModel');
   const ProjectModel = this.db.model('ProjectModel');
 
   //
