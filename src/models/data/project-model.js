@@ -7,6 +7,7 @@ const getRetrieved = require('../static/project/static-getRetrieved');
 const getRetrievedByStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
 const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 const getSpeciesGroup = require('../../models/static/project/static-getSpeciesGroup');
+const speciesTimeSeriesByStudyArea = require('../../models/static/project/static-speciesTimeSeriesByStudyArea');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -193,6 +194,7 @@ schema.static('getRetrieved', getRetrieved);
 schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
 schema.static('getRetrievedByCamera', getRetrievedByCamera);
 schema.static('getSpeciesGroup', getSpeciesGroup);
+schema.static('speciesTimeSeriesByStudyArea', speciesTimeSeriesByStudyArea);
 
 //
 const model = mongoose.model('ProjectModel', schema);
