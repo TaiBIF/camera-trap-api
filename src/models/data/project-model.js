@@ -8,6 +8,9 @@ const getRetrievedByStudyArea = require('../../models/static/project/static-getR
 const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 const getSpeciesGroup = require('../../models/static/project/static-getSpeciesGroup');
 const speciesTimeSeriesByStudyArea = require('../../models/static/project/static-speciesTimeSeriesByStudyArea');
+const speciesTimeSeriesByCamera = require('../../models/static/project/static-speciesTimeSeriesByCamera');
+const speciesTimeSeries = require('../../models/static/project/static-speciesTimeSeries');
+const topSpecies = require('../../models/static/project/static-topSpecies');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -195,6 +198,9 @@ schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
 schema.static('getRetrievedByCamera', getRetrievedByCamera);
 schema.static('getSpeciesGroup', getSpeciesGroup);
 schema.static('speciesTimeSeriesByStudyArea', speciesTimeSeriesByStudyArea);
+schema.static('speciesTimeSeriesByCamera', speciesTimeSeriesByCamera);
+schema.static('speciesTimeSeries', speciesTimeSeries);
+schema.static('topSpecies', topSpecies);
 
 //
 const model = mongoose.model('ProjectModel', schema);

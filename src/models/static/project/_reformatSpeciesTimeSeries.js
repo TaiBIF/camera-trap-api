@@ -31,7 +31,6 @@ module.exports = (dataSet, keyName = 'studyArea') => {
           speciesId: row.speciesId,
           numberOfRecords: row.numberOfRecords,
         }));
-        console.log('value', value);
         const target = result[month - 1];
         target.metrics = target.metrics.concat(value);
         return result;

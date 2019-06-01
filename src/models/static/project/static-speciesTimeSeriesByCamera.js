@@ -2,7 +2,7 @@ const errors = require('../../errors');
 const reformatSpeciesTimeSeries = require('./_reformatSpeciesTimeSeries');
 
 // speciesTimeSeriesByCameraLocationId
-module.exports = async function(projectId, studyAreaId, year) {
+module.exports = async function(projectId, cameraLocationId, year) {
   if (!year) {
     throw new errors.Http400();
   }
@@ -12,10 +12,10 @@ module.exports = async function(projectId, studyAreaId, year) {
   //
   const r = await ProjectModel.speciesTimeSeries(
     projectId,
-    'studyArea',
-    studyAreaId,
+    'cameraLocation',
+    cameraLocationId,
     year,
   );
 
-  return reformatSpeciesTimeSeries(r, 'studyArea');
+  return reformatSpeciesTimeSeries(r, 'cameraLocation');
 };

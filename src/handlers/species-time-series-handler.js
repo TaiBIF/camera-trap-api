@@ -47,18 +47,13 @@ exports.retrievedByCameraLocation = (req, res) => {
       if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrievedByCamera(
+      return ProjectModel.speciesTimeSeriesByCamera(
         projectId,
         cameraLocationId,
         year,
       );
     })
     .then(records => {
-      const timeUpdated = new Date(Date.now()).toISOString();
-      const output = {
-        timeUpdated,
-        items: records,
-      };
-      res.json(output);
+      res.json(records);
     });
 };
