@@ -19,7 +19,7 @@ exports.locationMonthRetrieved = (req, res) => {
       return ProjectModel.getRetrieved(projectId, year);
     })
     .then(records => {
-      const timeUpdated = new Date(Date.now()).toISOString();
+      const timeUpdated = new Date();
       const output = {
         timeUpdated,
         items: records,
@@ -46,12 +46,11 @@ exports.retrievedByStudyArea = (req, res) => {
       return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId, year);
     })
     .then(records => {
-      const timeUpdated = new Date(Date.now()).toISOString();
-      const output = {
+      const timeUpdated = new Date();
+      res.json({
         timeUpdated,
         items: records,
-      };
-      res.json(output);
+      });
     });
 };
 
@@ -77,11 +76,10 @@ exports.retrievedByCameraLocation = (req, res) => {
       );
     })
     .then(records => {
-      const timeUpdated = new Date(Date.now()).toISOString();
-      const output = {
+      const timeUpdated = new Date();
+      res.json({
         timeUpdated,
         items: records,
-      };
-      res.json(output);
+      });
     });
 };

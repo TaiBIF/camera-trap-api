@@ -21,7 +21,7 @@ exports.getByProjectId = auth(UserPermission.all(), (req, res) => {
       return ProjectModel.getSpeciesGroup(projectId);
     })
     .then(records => {
-      const timeUpdated = new Date(Date.now()).toISOString();
+      const timeUpdated = new Date();
       res.json({
         records: _.sortBy(records, 'count'),
         total: _.reduce(records, (sum, row) => sum + row.count, 0),
