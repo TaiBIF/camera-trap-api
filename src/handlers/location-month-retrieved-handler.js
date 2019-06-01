@@ -1,5 +1,7 @@
 const errors = require('../models/errors');
 const ProjectModel = require('../models/data/project-model');
+const StudyAreaModel = require('../models/data/study-area-model');
+const CameraLocationModel = require('../models/data/camera-location-model');
 
 exports.locationMonthRetrieved = (req, res) => {
   /*
@@ -35,13 +37,19 @@ exports.retrievedByStudyArea = (req, res) => {
   const { projectId, studyAreaId } = req.params;
   const { year } = req.query;
 
-  return ProjectModel.findById(projectId)
-    .then(project => {
+  return Promise.all([
+    ProjectModel.findById(projectId),
+    StudyAreaModel.findById(studyAreaId).where({ project: projectId }),
+  ])
+    .then(([project, studyArea]) => {
       if (!project) {
         throw new errors.Http404();
       }
       if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
+      }
+      if (!studyArea) {
+        throw new errors.Http404();
       }
       return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId, year);
     })
@@ -61,13 +69,21 @@ exports.retrievedByCameraLocation = (req, res) => {
   const { projectId, cameraLocationId } = req.params;
   const { year } = req.query;
 
-  return ProjectModel.findById(projectId)
-    .then(project => {
+  return Promise.all([
+    ProjectModel.findById(projectId),
+    CameraLocationModel.findById(cameraLocationId).where({
+      project: projectId,
+    }),
+  ])
+    .then(([project, cameraLocation]) => {
       if (!project) {
         throw new errors.Http404();
       }
       if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
+      }
+      if (!cameraLocation) {
+        throw new errors.Http404();
       }
       return ProjectModel.getRetrievedByCamera(
         projectId,
