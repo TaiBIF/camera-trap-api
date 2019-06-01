@@ -403,9 +403,7 @@ exports.uploadAnnotationFile = auth(UserPermission.all(), (req, res) => {
         utils.logError(error, { uploadSession });
       });
       const result = annotation.file.dump();
-      if (uploadSession) {
-        result.uploadSession = `${uploadSession._id}`;
-      }
+      result.uploadSession = `${uploadSession._id}`;
       res.json(result);
     });
 });
