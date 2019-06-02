@@ -1,9 +1,8 @@
-const http = require('http');
 const config = require('config');
-const app = require('./web');
+const web = require('./web');
 
 // launch server
-const server = http.createServer(app);
+const server = web(true);
 
 module.exports = server.listen(config.server.port, config.server.host, () => {
   const { address, port } = server.address();

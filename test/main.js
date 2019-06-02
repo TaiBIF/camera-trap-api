@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../src/web');
+const app = require('../src/web')();
 
 before(() => {
   console.log('before all test');

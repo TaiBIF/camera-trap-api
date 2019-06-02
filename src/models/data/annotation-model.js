@@ -158,6 +158,14 @@ schema.index(
     background: true,
   },
 );
+schema.index(
+  // for GET /api/v1/projects/:projectId/month-retrieved
+  { state: 1, project: 1, time: 1 },
+  {
+    name: 'StateProjectTime',
+    background: true,
+  },
+);
 
 schema.pre('save', function(next) {
   this.totalMilliseconds = this.time.getUTCHours() * 60 * 60 * 1000;

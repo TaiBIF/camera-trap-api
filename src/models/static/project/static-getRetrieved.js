@@ -1,7 +1,9 @@
-const _ = require('lodash');
+const config = require('config');
 const mongoose = require('mongoose');
 const errors = require('../../errors');
 const reformatRetrieved = require('./_reformatRetrieved');
+const AnnotationState = require('../../const/annotation-state');
+const StudyAreaState = require('../../const/study-area-state');
 
 // getRetrievedByProjectStudyArea
 module.exports = async function(projectId, year) {
@@ -9,20 +11,23 @@ module.exports = async function(projectId, year) {
     throw new errors.Http400();
   }
   const AnnotationModel = this.db.model('AnnotationModel');
-  const StudyAreaModel = this.db.model('StudyAreaModel');
 
-  const studyArea = await StudyAreaModel.getByProjectId(projectId);
-  const studyAreaIds = _.map(studyArea, '_id');
+  const timeOffset = new Date(0);
+  timeOffset.setUTCMinutes(timeOffset.getUTCMinutes() - config.defaultTimezone);
 
-  const timeYearStart = new Date(year, 0, 1, 0);
-  const timeYearEnd = new Date(timeYearStart.getFullYear() + 1, 0, 1);
+  const timeYearStart = new Date(Date.UTC(year, 0, 1));
+  timeYearStart.setUTCMinutes(
+    timeYearStart.getUTCMinutes() - config.defaultTimezone,
+  );
+  const timeYearEnd = new Date(timeYearStart);
+  timeYearEnd.setUTCFullYear(timeYearEnd.getUTCFullYear() + 1);
 
   const r = await AnnotationModel.aggregate([
     {
       $match: {
+        state: AnnotationState.active,
         project: mongoose.Types.ObjectId(projectId),
-        studyArea: { $in: studyAreaIds },
-        time: { $gt: timeYearStart, $lt: timeYearEnd },
+        time: { $gte: timeYearStart, $lt: timeYearEnd },
       },
     },
     {
@@ -50,9 +55,12 @@ module.exports = async function(projectId, year) {
       },
     },
     {
+      $match: { 'studyArea.state': StudyAreaState.active },
+    },
+    {
       $group: {
         _id: {
-          month: { $month: '$time' },
+          month: { $month: { $subtract: ['$time', timeOffset.getTime()] } },
           studyArea: '$studyAreaId',
         },
         dataCount: { $sum: 1 },
