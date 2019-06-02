@@ -6569,12 +6569,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Metrics
-## Get retrieval metrics by project [GET /projects/{projectId}/month-retrieved{?year}]
+## Get retrieval metrics 
+### By project [GET /projects/{projectId}/month-retrieved{?year}]
 取得專案下的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by project (application/json)
 
 + Response 200 (application/json)
 
@@ -6697,12 +6700,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get retrieval metrics by study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
+### By study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
 取得特定地區的回收/辨識狀況
-
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by study areas (application/json)
 
 + Response 200 (application/json)
 
@@ -6834,12 +6838,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get retrieval metrics by camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
+### By camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
 取得單一相機的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by camera locations (application/json)
 
 + Response 200 (application/json)
 
@@ -6917,12 +6923,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get identified species by project [GET /projects/{projectId}/image-species-group]
+
+### Get identified species by project [GET /projects/{projectId}/image-species-group]
 取得計畫已辨識的物種資料
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + projectId: `5cd6631299580e3eb17fe0f3` (string, required) - project ID.
+    
++ Request Get identified species by project (application/json)
 
 + Response 200 (application/json)
 
@@ -6990,12 +6999,19 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "time": 1558185524783
             }
             
-## Get top 5 species metrics by study area [GET /projects/{projectId}/study-areas/{studyAreaId}/species-time-series{?year}]
+            
+# Group Species Metrics
+Get species metrics of the top 5 identified ones.
+
+## By study area [GET /projects/{projectId}/study-areas/{studyAreaId}/species-time-series{?year}]
 計畫前五大已辨識物種按樣區的按月動態
+
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+    
++ Request Get top 5 species time series by study area (application/json)
 
 + Response 200 (application/json)
 
@@ -7186,12 +7202,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             ]
 
 
-## Get top 5 species metrics by camera location [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations/{cameraLocationId}/species-time-series{?year}]
-計畫前五大已辨識物種按樣區的按月動態
+## By camera location [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations/{cameraLocationId}/species-time-series{?year}]
+計畫前五大已辨識物種按相機位置的按月動態
+
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+    
++ Request Get top 5 species time series by camera location (application/json)
 
 + Response 200 (application/json)
 
