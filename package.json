@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/TaiBIF/camera-trap-api#readme",
   "dependencies": {
+    "acorn": "^6.1.1",
     "aws-sdk": "^2.438.0",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
