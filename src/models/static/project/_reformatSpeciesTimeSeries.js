@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const errors = require('../../errors');
 
 // input.
 // [
@@ -13,6 +14,10 @@ const _ = require('lodash');
 //   }
 // ]
 module.exports = (dataSet, keyName = 'studyArea') => {
+  if (!dataSet[0]) {
+    throw new errors.Http400('No dataset returned.');
+  }
+
   const { year } = dataSet[0];
 
   const empty12m = _.times(12, key => ({

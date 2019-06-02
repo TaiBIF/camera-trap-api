@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 const errors = require('../../errors');
 
-// speciesTimeSeriesByCameraLocationId
 module.exports = async function(projectId, keyName, keyId, year) {
   if (!year) {
-    throw new errors.Http400();
+    throw new errors.Http400('Missing parameter: year.');
   }
   const AnnotationModel = this.db.model('AnnotationModel');
   const ProjectModel = this.db.model('ProjectModel');

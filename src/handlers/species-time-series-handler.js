@@ -11,10 +11,10 @@ exports.retrievedByStudyArea = (req, res) => {
   return ProjectModel.findById(projectId)
     .then(project => {
       if (!project) {
-        throw new errors.Http404();
+        throw new errors.Http404('Missing project ID.');
       }
       if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
+        throw new errors.Http403('Insufficient privilege.');
       }
       return ProjectModel.speciesTimeSeriesByStudyArea(
         projectId,
@@ -37,10 +37,10 @@ exports.retrievedByCameraLocation = (req, res) => {
   return ProjectModel.findById(projectId)
     .then(project => {
       if (!project) {
-        throw new errors.Http404();
+        throw new errors.Http404('Missing project ID.');
       }
       if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
+        throw new errors.Http403('Insufficient privilege.');
       }
       return ProjectModel.speciesTimeSeriesByCamera(
         projectId,

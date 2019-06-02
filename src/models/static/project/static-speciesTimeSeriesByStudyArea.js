@@ -1,10 +1,10 @@
 const errors = require('../../errors');
 const reformatSpeciesTimeSeries = require('./_reformatSpeciesTimeSeries');
 
-// speciesTimeSeriesByCameraLocationId
+// speciesTimeSeriesByStudyAreaId
 module.exports = async function(projectId, studyAreaId, year) {
   if (!year) {
-    throw new errors.Http400();
+    throw new errors.Http400('Missing parameter: year.');
   }
   const ProjectModel = this.db.model('ProjectModel');
 
