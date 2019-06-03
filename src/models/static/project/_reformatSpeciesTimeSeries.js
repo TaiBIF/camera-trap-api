@@ -37,10 +37,42 @@ const formatMetrics = metrics =>
         }, formatedMonthlyMetrics)
         .value();
 
-      newMetrics.species = _.sortBy(newMetrics.species, 'numberOfRecords');
+      newMetrics.species = _.chain(newMetrics.species)
+        .sortBy('numberOfRecords')
+        .reverse()
+        .value();
 
       result.push(newMetrics);
 
+      return result;
+    }, [])
+    .sortBy(['year', 'month'])
+    .reduce((result, value) => {
+      if (result.length === 0) {
+        result.push(value);
+        return result;
+      }
+
+      const nextMonth = new Date();
+      const lastRow = _.last(result);
+      nextMonth.setUTCFullYear(lastRow.year);
+      nextMonth.setUTCMonth(lastRow.month);
+
+      while (
+        nextMonth.getMonth() + 1 !== value.month &&
+        nextMonth.valueOf() <= Date.now()
+      ) {
+        const newMetrics = {
+          year: nextMonth.getUTCFullYear(),
+          month: nextMonth.getUTCMonth() + 1,
+          species: [],
+        };
+        debug('newMetrics %j', newMetrics);
+        result.push(newMetrics);
+        nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
+      }
+
+      result.push(value);
       return result;
     }, []);
 
@@ -64,11 +96,10 @@ module.exports = (dataSet, keyName) => {
   const newArray = _.chain(dataSet)
     .groupBy(`${subKeyName}Id`)
     .reduce((result, value, key) => {
-      debug('groupby subKeyName', value, key);
       result.push({
         [`${subKeyName}Id`]: key,
         [subKeyName]: _.get(value, `[0].${subKeyName}`),
-        metrics: formatMetrics(value).value(),
+        metrics: formatMetrics(value),
       });
       return result;
     }, []);
