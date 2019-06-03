@@ -42,28 +42,26 @@ module.exports = createServer => {
   app.use((req, res, next) => {
     // add req.startTime
     req.startTime = new Date();
-    if (config.isDebug) {
-      // append end hook
-      const originEndFunc = res.end;
-      res.end = function() {
-        // eslint-disable-next-line prefer-rest-params
-        const result = originEndFunc.apply(this, arguments);
-        const now = new Date();
-        const processTime = `${now - req.startTime}`.replace(
-          /\B(?=(\d{3})+(?!\d))/g,
-          ',',
-        );
-        console.log(
-          `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
-            req.method
-          }      `.substr(0, 6)} ${req.originalUrl}`,
-        );
-        if (res.error) {
-          console.error(res.error.stack);
-        }
-        return result;
-      };
-    }
+    // append end hook
+    const originEndFunc = res.end;
+    res.end = function() {
+      // eslint-disable-next-line prefer-rest-params
+      const result = originEndFunc.apply(this, arguments);
+      const now = new Date();
+      const processTime = `${now - req.startTime}`.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        ',',
+      );
+      console.log(
+        `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
+          req.method
+        }      `.substr(0, 6)} ${req.originalUrl}`,
+      );
+      if (res.error) {
+        console.error(res.error.stack);
+      }
+      return result;
+    };
     next();
   });
 
