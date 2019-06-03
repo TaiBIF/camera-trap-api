@@ -1,18 +1,33 @@
 const mongoose = require('mongoose');
+const config = require('config');
+const debug = require('debug')('app:model:project:speciesTimeSeries');
+const reformatSpeciesTimeSeries = require('./_reformatSpeciesTimeSeries');
 const errors = require('../../errors');
 
-// speciesTimeSeriesByCameraLocationId
-module.exports = async function(projectId, keyName, keyId, year) {
-  if (!year) {
-    throw new errors.Http400();
-  }
+module.exports = async function(projectId, keyName, keyId) {
   const AnnotationModel = this.db.model('AnnotationModel');
   const ProjectModel = this.db.model('ProjectModel');
 
-  const timeYearStart = new Date(year, 0, 1, 0);
-  const timeYearEnd = new Date(timeYearStart.getFullYear() + 1, 0, 1);
-
   const top5Ids = await ProjectModel.topSpecies(projectId, 5);
+  const timeOffset = new Date(0);
+  timeOffset.setUTCMinutes(timeOffset.getUTCMinutes() - config.defaultTimezone);
+
+  debug('top5Ids %j', top5Ids);
+  debug('timeOffset %d', timeOffset);
+  debug('keyName: %s, keyId: %s', keyName, keyId);
+
+  let subKeyName = '';
+
+  switch (keyName) {
+    case 'project':
+      subKeyName = 'studyArea';
+      break;
+    case 'studyArea':
+      subKeyName = 'cameraLocation';
+      break;
+    default:
+      throw new errors.Http400('bad keyName.');
+  }
 
   //
   const r = await AnnotationModel.aggregate([
@@ -20,17 +35,16 @@ module.exports = async function(projectId, keyName, keyId, year) {
       $match: {
         project: mongoose.Types.ObjectId(projectId),
         species: { $in: top5Ids },
-        time: { $gt: timeYearStart, $lt: timeYearEnd },
         [keyName]: mongoose.Types.ObjectId(keyId),
       },
     },
     {
       $group: {
         _id: {
-          month: { $month: '$time' },
-          year: { $year: '$time' },
+          month: { $month: { $subtract: ['$time', timeOffset.getTime()] } },
+          year: { $year: { $subtract: ['$time', timeOffset.getTime()] } },
           species: '$species',
-          [keyName]: `$${[keyName]}`,
+          [subKeyName]: `$${[subKeyName]}`,
         },
         numberOfRecords: { $sum: 1 },
       },
@@ -64,6 +78,7 @@ module.exports = async function(projectId, keyName, keyId, year) {
         _id: 0,
         month: '$_id.month',
         year: '$_id.year',
+        projectId: '$_id.project',
         species: { $arrayElemAt: ['$speciesData.title.zh-TW', 0] },
         speciesId: '$_id.species',
         numberOfRecords: '$numberOfRecords',
@@ -77,5 +92,5 @@ module.exports = async function(projectId, keyName, keyId, year) {
     },
   ]);
 
-  return r;
+  return reformatSpeciesTimeSeries(r, keyName);
 };

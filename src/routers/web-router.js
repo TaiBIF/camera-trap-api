@@ -203,16 +203,16 @@ apiRouter.get(
   locationMonthRetrievedHandler.retrievedByStudyArea,
 );
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/species-time-series',
+  '/projects/:projectId([a-f\\d]{24})/species-time-series',
   speciesTimeSeriesHandler.retrievedByStudyArea,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/species-time-series',
+  speciesTimeSeriesHandler.retrievedByCameraLocation,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/month-retrieved',
   locationMonthRetrievedHandler.retrievedByCameraLocation,
-);
-apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/camera-locations/:cameraLocationId([a-f\\d]{24})/species-time-series',
-  speciesTimeSeriesHandler.retrievedByCameraLocation,
 );
 
 apiRouter.post(

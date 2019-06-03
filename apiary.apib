@@ -6569,12 +6569,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Metrics
-## Get retrieval metrics by project [GET /projects/{projectId}/month-retrieved{?year}]
+## Get retrieval metrics 
+### By project [GET /projects/{projectId}/month-retrieved{?year}]
 取得專案下的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by project (application/json)
 
 + Response 200 (application/json)
 
@@ -6697,12 +6700,13 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get retrieval metrics my study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
+### By study area [GET /projects/{projectId}/study-areas/{studyareaId}/month-retrieved{?year}]
 取得特定地區的回收/辨識狀況
-
 - The user's permission should be 'administrator' or 'general-account'.
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by study areas (application/json)
 
 + Response 200 (application/json)
 
@@ -6834,12 +6838,14 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get retrieval metrics by camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
+### By camera location [GET /projects/{projectId}/camera-locations/{cameraLocationId}/month-retrieved{?year}]
 取得單一相機的回收/辨識狀況
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + year: `2019` (number, required) - year to query.
+
++ Request Get retrieval metrics by camera locations (application/json)
 
 + Response 200 (application/json)
 
@@ -6917,12 +6923,15 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Get identified species by project [GET /projects/{projectId}/image-species-group]
+
+### Get identified species by project [GET /projects/{projectId}/image-species-group]
 取得計畫已辨識的物種資料
 - The user's permission should be 'administrator' or 'general-account'.
 
 + Parameters
     + projectId: `5cd6631299580e3eb17fe0f3` (string, required) - project ID.
+    
++ Request Get identified species by project (application/json)
 
 + Response 200 (application/json)
 
@@ -6990,6 +6999,350 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "time": 1558185524783
             }
             
+            
+# Group Species Metrics
+Get species metrics of the top 5 identified ones.
+
+## By study area [GET /projects/{projectId}/study-areas/{studyAreaId}/species-time-series{?year}]
+計畫前五大已辨識物種按樣區的按月動態
+
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + year: `2019` (number, required) - year to query.
+    
++ Request Get top 5 species time series by study area (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "studyAreaId": "5ceb7925caaeca25bf2d55f1",
+                    "studyArea": "羅東處",
+                    "metrics": [
+                        {
+                            "year": 2015,
+                            "month": 1,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 2,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 3,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 4,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 5,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 6,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 7,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 8,
+                            "metrics": [
+                                {
+                                    "species": "測試",
+                                    "speciesId": "5cd661e332a98b60839c6cab",
+                                    "numberOfRecords": 54
+                                },
+                                {
+                                    "species": "鼬獾",
+                                    "speciesId": "5cd661e332a98b60839c6cb2",
+                                    "numberOfRecords": 81
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 9,
+                            "metrics": [
+                                {
+                                    "species": "山羌",
+                                    "speciesId": "5cd661e332a98b60839c6caf",
+                                    "numberOfRecords": 1408
+                                },
+                                {
+                                    "species": "空拍",
+                                    "speciesId": "5cd661e332a98b60839c6caa",
+                                    "numberOfRecords": 45
+                                },
+                                {
+                                    "species": "測試",
+                                    "speciesId": "5cd661e332a98b60839c6cab",
+                                    "numberOfRecords": 3055
+                                },
+                                {
+                                    "species": "獼猴",
+                                    "speciesId": "5cd661e332a98b60839c6cb1",
+                                    "numberOfRecords": 201
+                                },
+                                {
+                                    "species": "鼬獾",
+                                    "speciesId": "5cd661e332a98b60839c6cb2",
+                                    "numberOfRecords": 335
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 10,
+                            "metrics": [
+                                {
+                                    "species": "山羌",
+                                    "speciesId": "5cd661e332a98b60839c6caf",
+                                    "numberOfRecords": 2497
+                                },
+                                {
+                                    "species": "獼猴",
+                                    "speciesId": "5cd661e332a98b60839c6cb1",
+                                    "numberOfRecords": 423
+                                },
+                                {
+                                    "species": "鼬獾",
+                                    "speciesId": "5cd661e332a98b60839c6cb2",
+                                    "numberOfRecords": 434
+                                },
+                                {
+                                    "species": "空拍",
+                                    "speciesId": "5cd661e332a98b60839c6caa",
+                                    "numberOfRecords": 279
+                                },
+                                {
+                                    "species": "測試",
+                                    "speciesId": "5cd661e332a98b60839c6cab",
+                                    "numberOfRecords": 1944
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 11,
+                            "metrics": [
+                                {
+                                    "species": "空拍",
+                                    "speciesId": "5cd661e332a98b60839c6caa",
+                                    "numberOfRecords": 3481
+                                },
+                                {
+                                    "species": "獼猴",
+                                    "speciesId": "5cd661e332a98b60839c6cb1",
+                                    "numberOfRecords": 424
+                                },
+                                {
+                                    "species": "山羌",
+                                    "speciesId": "5cd661e332a98b60839c6caf",
+                                    "numberOfRecords": 2480
+                                },
+                                {
+                                    "species": "測試",
+                                    "speciesId": "5cd661e332a98b60839c6cab",
+                                    "numberOfRecords": 1944
+                                },
+                                {
+                                    "species": "鼬獾",
+                                    "speciesId": "5cd661e332a98b60839c6cb2",
+                                    "numberOfRecords": 239
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 12,
+                            "metrics": [
+                                {
+                                    "species": "山羌",
+                                    "speciesId": "5cd661e332a98b60839c6caf",
+                                    "numberOfRecords": 2860
+                                },
+                                {
+                                    "species": "測試",
+                                    "speciesId": "5cd661e332a98b60839c6cab",
+                                    "numberOfRecords": 1910
+                                },
+                                {
+                                    "species": "獼猴",
+                                    "speciesId": "5cd661e332a98b60839c6cb1",
+                                    "numberOfRecords": 471
+                                },
+                                {
+                                    "species": "鼬獾",
+                                    "speciesId": "5cd661e332a98b60839c6cb2",
+                                    "numberOfRecords": 178
+                                },
+                                {
+                                    "species": "空拍",
+                                    "speciesId": "5cd661e332a98b60839c6caa",
+                                    "numberOfRecords": 249
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+
+
+## By camera location [GET /projects/{projectId}/study-areas/{studyAreaId}/camera-locations/{cameraLocationId}/species-time-series{?year}]
+計畫前五大已辨識物種按相機位置的按月動態
+
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + year: `2019` (number, required) - year to query.
+    
++ Request Get top 5 species time series by camera location (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            [
+                {
+                    "cameraLocationId": "5ce75c057575450e6d79b84e",
+                    "cameraLocation": "WGS84",
+                    "metrics": [
+                        {
+                            "year": 2015,
+                            "month": 1,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 2,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 3,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 4,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 5,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 6,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 7,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 8,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 9,
+                            "metrics": []
+                        },
+                        {
+                            "year": 2015,
+                            "month": 10,
+                            "metrics": [
+                                {
+                                    "species": "台灣獼猴",
+                                    "speciesId": "5ce4f870cee4bc0aab7ba2d4",
+                                    "numberOfRecords": 2
+                                },
+                                {
+                                    "species": "no",
+                                    "speciesId": "5cdc121831ff03804f15a3ef",
+                                    "numberOfRecords": 6
+                                },
+                                {
+                                    "species": "水鹿",
+                                    "speciesId": "5cd661e332a98b60839c6cb0",
+                                    "numberOfRecords": 3
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 11,
+                            "metrics": [
+                                {
+                                    "species": "no",
+                                    "speciesId": "5cdc121831ff03804f15a3ef",
+                                    "numberOfRecords": 30
+                                },
+                                {
+                                    "species": "水鹿",
+                                    "speciesId": "5cd661e332a98b60839c6cb0",
+                                    "numberOfRecords": 46
+                                },
+                                {
+                                    "species": "黑冠麻鷺",
+                                    "speciesId": "5cdc121931ff03454415a465",
+                                    "numberOfRecords": 37
+                                },
+                                {
+                                    "species": "台灣獼猴",
+                                    "speciesId": "5ce4f870cee4bc0aab7ba2d4",
+                                    "numberOfRecords": 13
+                                }
+                            ]
+                        },
+                        {
+                            "year": 2015,
+                            "month": 12,
+                            "metrics": [
+                                {
+                                    "species": "台灣獼猴",
+                                    "speciesId": "5ce4f870cee4bc0aab7ba2d4",
+                                    "numberOfRecords": 1
+                                },
+                                {
+                                    "species": "黑冠麻鷺",
+                                    "speciesId": "5cdc121931ff03454415a465",
+                                    "numberOfRecords": 6
+                                },
+                                {
+                                    "species": "no",
+                                    "speciesId": "5cdc121831ff03804f15a3ef",
+                                    "numberOfRecords": 3
+                                },
+                                {
+                                    "species": "水鹿",
+                                    "speciesId": "5cd661e332a98b60839c6cb0",
+                                    "numberOfRecords": 7
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+
 
 # Group Calculate
 ## The calculator [/calculator]

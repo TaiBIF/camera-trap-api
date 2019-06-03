@@ -3,24 +3,19 @@ const ProjectModel = require('../models/data/project-model');
 
 exports.retrievedByStudyArea = (req, res) => {
   /*
-  GET /api/v1/projects/:projectId/study-areas/:studyAreaId/species-time-series
+  GET /api/v1/projects/:projectId/species-time-series
    */
-  const { projectId, studyAreaId } = req.params;
-  const { year } = req.query;
+  const { projectId } = req.params;
 
   return ProjectModel.findById(projectId)
     .then(project => {
       if (!project) {
-        throw new errors.Http404();
+        throw new errors.Http404('Missing project ID.');
       }
       if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
+        throw new errors.Http403('Insufficient privilege.');
       }
-      return ProjectModel.speciesTimeSeriesByStudyArea(
-        projectId,
-        studyAreaId,
-        year,
-      );
+      return ProjectModel.speciesTimeSeries(projectId, 'project', projectId);
     })
     .then(records => {
       res.json(records);
@@ -29,23 +24,22 @@ exports.retrievedByStudyArea = (req, res) => {
 
 exports.retrievedByCameraLocation = (req, res) => {
   /*
-  GET /api/v1/projects/:projectId/study-areas/:studyAreaId/camera-locations/:cameraLocationId/species-time-series
+  GET /api/v1/projects/:projectId/study-areas/:studyAreaId/species-time-series
    */
-  const { projectId, cameraLocationId } = req.params;
-  const { year } = req.query;
+  const { projectId, studyAreaId } = req.params;
 
   return ProjectModel.findById(projectId)
     .then(project => {
       if (!project) {
-        throw new errors.Http404();
+        throw new errors.Http404('Missing project ID.');
       }
       if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
+        throw new errors.Http403('Insufficient privilege.');
       }
-      return ProjectModel.speciesTimeSeriesByCamera(
+      return ProjectModel.speciesTimeSeries(
         projectId,
-        cameraLocationId,
-        year,
+        'studyArea',
+        studyAreaId,
       );
     })
     .then(records => {
