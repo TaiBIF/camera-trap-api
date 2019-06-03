@@ -548,10 +548,8 @@ if (op.argv.createCollections) {
           AudioSelectors: {
             'Audio Selector 1': {
               Offset: 0,
-              DefaultSelection: 'NOT_DEFAULT',
+              DefaultSelection: 'DEFAULT',
               ProgramSelection: 1,
-              SelectorType: 'TRACK',
-              Tracks: [1],
             },
           },
           VideoSelector: {

@@ -122,8 +122,8 @@ schema.post('remove', file => {
   }
 });
 
-schema.method('getUrl', function() {
-  return utils.getFileUrl(this.type, this.getFilename());
+schema.method('getUrl', function(extensionName) {
+  return utils.getFileUrl(this.type, this.getFilename(extensionName));
 });
 
 schema.method('getExtensionName', function() {
@@ -137,13 +137,14 @@ schema.method('getExtensionName', function() {
     .toLowerCase();
 });
 
-schema.method('getFilename', function() {
+schema.method('getFilename', function(extensionName) {
   /*
   Get the filename on S3.
+  @param extensionName {string} eg: "mp4"
   @returns {string}
    */
-  if (this.type === FileType.annotationVideo) {
-    return `${this._id}.mp4`;
+  if (extensionName) {
+    return `${this._id}.${extensionName}`;
   }
   return `${this._id}.${this.getExtensionName()}`;
 });
@@ -323,8 +324,14 @@ schema.method('dump', function() {
     id: `${this._id}`,
     type: this.type,
     originalFilename: this.originalFilename,
-    filename: this.getFilename(),
-    url: this.getUrl(),
+    filename:
+      this.type === FileType.annotationVideo
+        ? this.getFilename('mp4')
+        : this.getFilename(),
+    url:
+      this.type === FileType.annotationVideo
+        ? this.getUrl('mp4')
+        : this.getUrl(),
     size: this.size,
   };
   if (this.type === FileType.annotationImage) {
