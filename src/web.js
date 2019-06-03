@@ -37,6 +37,13 @@ module.exports = createServer => {
   app.disable('etag');
   if (!config.isDebug) {
     app.enable('trust proxy');
+    app.use((req, res, next) => {
+      if (req.protocol !== 'https') {
+        // Redirect to https://
+        return res.redirect(`${config.apiServerUrl}/${req.originalUrl}`);
+      }
+      next();
+    });
   }
 
   app.use((req, res, next) => {
