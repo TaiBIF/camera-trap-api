@@ -40,7 +40,7 @@ module.exports = createServer => {
     app.use((req, res, next) => {
       if (req.protocol !== 'https') {
         // Redirect to https://
-        return res.redirect(`${config.apiServerUrl}/${req.originalUrl}`);
+        return res.redirect(`${config.apiServerUrl}${req.originalUrl}`);
       }
       next();
     });
