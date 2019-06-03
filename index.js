@@ -62,7 +62,7 @@ if (op.argv.createCollections) {
         'en-US': 'Study area',
       },
       description: {
-        'zh-TW': '樣區-子樣區',
+        'zh-TW': '樣區,子樣區（若無子樣區，匯入時請留空欄）',
         'en-US': 'Study area (self-referencing possible)',
       },
       widgetType: DataFieldWidgetType.select,
@@ -104,8 +104,8 @@ if (op.argv.createCollections) {
         'en-US': 'Date and time',
       },
       description: {
-        'zh-TW': 'YY-MM-DD hh:mm',
-        'en-US': 'YY-MM-DD hh:mm',
+        'zh-TW': 'YY-MM-DD hh:mm:ss',
+        'en-US': 'YY-MM-DD hh:mm:ss',
       },
       widgetType: DataFieldWidgetType.time,
       state: DataFieldState.approved,
