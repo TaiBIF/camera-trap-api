@@ -5,6 +5,12 @@ module.exports = {
   permissionDenied: 'permission-denied', // 沒有權限
   others: 'others', // 其他錯誤
   all() {
-    return [this.lostExifTime, this.permissionDenied, this.others];
+    return [
+      this.lostExifTime,
+      this.inconsistentQuantity,
+      this.imagesAndCsvNotMatch,
+      this.permissionDenied,
+      this.others,
+    ];
   },
 };
