@@ -795,9 +795,7 @@ exports.logError = (error, extra) => {
   @param extra {Object}
    */
   const LogModel = require('../models/data/log-model');
-  if (config.isDebug) {
-    console.error(error);
-  }
+  console.error(error);
   if (!config.enableLog) {
     return;
   }
