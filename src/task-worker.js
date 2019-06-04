@@ -1,4 +1,3 @@
-const kue = require('kue');
 const utils = require('./common/utils');
 const mediaWorker = require('./tasks/media-worker');
 const updateProjectAnnotationTime = require('./tasks/update-project-annotation-time');
@@ -21,13 +20,6 @@ setTimeout(() => {
     1,
     updateProjectAnnotationTime,
   );
-  queue.on('job complete', (id, result) => {
-    kue.Job.get(id, (error, job) => {
-      if (!error) {
-        job.remove(() => {});
-      }
-    });
-  });
 }, 10000);
 
 process.on('message', message => {

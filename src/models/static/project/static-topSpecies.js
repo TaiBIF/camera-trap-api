@@ -1,15 +1,19 @@
 const _ = require('lodash');
 const mongoose = require('mongoose');
 
-// speciesTimeSeriesByCameraLocationId
+// topSpecies
 module.exports = async function(projectId, limit = 5) {
   const AnnotationModel = this.db.model('AnnotationModel');
+  const ProjectSpeciesModel = this.db.model('ProjectSpeciesModel');
 
+  const projectSpecies = await ProjectSpeciesModel.find({
+    project: projectId,
+  });
   const species = await AnnotationModel.aggregate([
     {
-      // TODO 物種只計算計畫中預設物種清單，去除諸如「空拍」、「測試」、「人」、「定時測試」、「工作照」等
       $match: {
         project: mongoose.Types.ObjectId(projectId),
+        species: { $in: _.map(projectSpecies, 'species') },
       },
     },
     {
