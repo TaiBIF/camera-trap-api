@@ -5,9 +5,14 @@ const mongoose = require('mongoose');
 module.exports = async function(projectId, limit = 5) {
   const AnnotationModel = this.db.model('AnnotationModel');
   const ProjectSpeciesModel = this.db.model('ProjectSpeciesModel');
+  const SpeciesModel = this.db.model('SpeciesModel');
 
+  const excludeSpecies = await SpeciesModel.find({
+    'title.zh-TW': { $in: ['空拍', '測試', '人', '定時測試', '工作照'] },
+  });
   const projectSpecies = await ProjectSpeciesModel.find({
     project: projectId,
+    species: { $nin: _.map(excludeSpecies, '_id') },
   });
   const species = await AnnotationModel.aggregate([
     {
