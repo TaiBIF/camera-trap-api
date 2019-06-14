@@ -57,6 +57,7 @@ exports.connectDatabase = (autoIndex = false) => {
     reconnectTries: Number.MAX_VALUE,
     reconnectInterval: 500,
     autoIndex,
+    dbName: config.database.dbName,
   });
 };
 
