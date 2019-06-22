@@ -65,7 +65,7 @@ orbs:
               name: Build Docker Image
               command: |
                 IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
-                docker build . -t $IMAGE
+                docker build --no-cache . -t $IMAGE
                 docker images $IMAGE
                 docker push $IMAGE
 
