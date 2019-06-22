@@ -145,18 +145,18 @@ workflows:
       - node/build_api_and_deploy:
           filters:
             branches:
-              only: /^(security-enhncm)$/
+              only: /^(dev)$/
           requires:
             - node/lint
       - node/build_task_and_deploy:
           filters:
             branches:
-              only: /^(security-enhncm)$/
+              only: /^(dev)$/
           requires:
             - node/lint
       - node/build_cron_and_deploy:
           filters:
             branches:
-              only: /^(security-enhncm)$/
+              only: /^(dev)$/
           requires:
             - node/lint
