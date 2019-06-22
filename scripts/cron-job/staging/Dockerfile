@@ -3,9 +3,7 @@ LABEL maintainer="rwu823@gmail.com"
 
 WORKDIR /camera-trap-api
 
-RUN apt-get update
-RUN apt-get upgrade -y
-RUN apt-get -y install curl sudo git
+RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 RUN apt-get -y install nodejs
 
