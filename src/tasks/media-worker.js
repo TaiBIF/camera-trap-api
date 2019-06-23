@@ -449,10 +449,14 @@ module.exports = (job, done) => {
 
       return Promise.all([
         annotations,
+        AnnotationModel.where({
+          _id: { $in: annotations.map(x => x._id) },
+          state: AnnotationState.active,
+        }),
         AnnotationModel.find({ $or: statements }),
       ]);
     })
-    .then(([annotations, duplicateAnnotations]) => {
+    .then(([annotations, sameIdAnnotations, duplicateAnnotations]) => {
       /*
       - If the duplicate annotation is exists then update the file of the duplicate one.
       - If there is no duplicate annotation then save a new annotation.
@@ -479,6 +483,10 @@ module.exports = (job, done) => {
           duplicateAnnotationTable[getKey(x)] = [x];
         }
       });
+      const sameIdAnnotationTable = {};
+      sameIdAnnotations.forEach(x => {
+        sameIdAnnotationTable[x.id] = x;
+      });
       const tasks = [];
 
       if (
@@ -504,8 +512,18 @@ module.exports = (job, done) => {
         if (_isZipWithCsv) {
           // This zip file include a csv file.
           annotations.forEach(annotation => {
-            annotation.state = AnnotationState.active;
-            tasks.push(annotation.saveAndAddRevision(_user));
+            const sameIdAnnotation = sameIdAnnotationTable[annotation.id];
+            if (sameIdAnnotation) {
+              sameIdAnnotation.failures = annotation.failures;
+              sameIdAnnotation.file = annotation.file || sameIdAnnotation.file;
+              sameIdAnnotation.species = annotation.species;
+              sameIdAnnotation.fields = annotation.fields;
+              sameIdAnnotation.rawData = annotation.rawData;
+              tasks.push(sameIdAnnotation.saveAndAddRevision(_user));
+            } else {
+              annotation.state = AnnotationState.active;
+              tasks.push(annotation.saveAndAddRevision(_user));
+            }
           });
           _uploadSession.state = UploadSessionState.success;
         } else {
@@ -527,8 +545,18 @@ module.exports = (job, done) => {
         }
       } else if (_file.type === FileType.annotationCSV) {
         annotations.forEach(annotation => {
-          annotation.state = AnnotationState.active;
-          tasks.push(annotation.saveAndAddRevision(_user));
+          const sameIdAnnotation = sameIdAnnotationTable[annotation.id];
+          if (sameIdAnnotation) {
+            sameIdAnnotation.failures = annotation.failures;
+            sameIdAnnotation.file = annotation.file || sameIdAnnotation.file;
+            sameIdAnnotation.species = annotation.species;
+            sameIdAnnotation.fields = annotation.fields;
+            sameIdAnnotation.rawData = annotation.rawData;
+            tasks.push(sameIdAnnotation.saveAndAddRevision(_user));
+          } else {
+            annotation.state = AnnotationState.active;
+            tasks.push(annotation.saveAndAddRevision(_user));
+          }
         });
         _uploadSession.state = UploadSessionState.success;
       }
