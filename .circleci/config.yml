@@ -145,18 +145,18 @@ workflows:
       - node/build_api_and_deploy:
           filters:
             branches:
-              only: /^(dev)$/
+              only: /^(prod|staging|dev)$/
           requires:
             - node/lint
       - node/build_task_and_deploy:
           filters:
             branches:
-              only: /^(dev)$/
+              only: /^(prod|staging|dev)$/
           requires:
             - node/lint
       - node/build_cron_and_deploy:
           filters:
             branches:
-              only: /^(dev)$/
+              only: /^(prod|staging|dev)$/
           requires:
             - node/lint

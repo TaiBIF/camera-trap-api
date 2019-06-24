@@ -1,5 +1,8 @@
 FROM ubuntu:18.04
-LABEL maintainer="rwu823@gmail.com"
+LABEL creator="rwu823@gmail.com"
+LABEL maintainer1="cjk.halodule@gmail.com"
+LABEL maintainer2="dcahsu@gmail.com"
+LABEL maintainer3="kelp404@phate.org"
 
 WORKDIR /camera-trap-api
 
