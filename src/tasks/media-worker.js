@@ -405,32 +405,27 @@ module.exports = (job, done) => {
             species: _allSpecies,
             csvObject,
           });
-          // Validate annotations
-          if (imageAnnotations.length !== result.annotations.length) {
-            _uploadSession.errorType =
-              UploadSessionErrorType.inconsistentQuantity;
-            throw new Error(
-              'The quantity of images and the csv file are not equal.',
-            );
-          }
-          const csvAnnotations = [];
+          const imageAnnotationTable = {};
           imageAnnotations.forEach(imageAnnotation => {
-            const csvAnnotation = result.annotations.find(
-              x =>
-                x.filename === imageAnnotation.filename &&
-                x.time.getTime() === imageAnnotation.time.getTime(),
-            );
-            if (!csvAnnotation) {
+            imageAnnotationTable[imageAnnotation.filename] = imageAnnotation;
+          });
+          result.annotations.forEach(csvAnnotation => {
+            const imageAnnotation =
+              imageAnnotationTable[csvAnnotation.filename];
+            if (!imageAnnotation) {
               _uploadSession.errorType =
                 UploadSessionErrorType.imagesAndCsvNotMatch;
-              throw new Error('Images and csv file are not match.');
+              throw new Error(
+                `Images and csv file are not match. Lost ${
+                  csvAnnotation.filename
+                }`,
+              );
             }
             csvAnnotation.file = imageAnnotation.file;
-            csvAnnotations.push(csvAnnotation);
           });
           // Save new species.
           const tasks = result.newSpecies.map(x => limit(() => x.save()));
-          tasks.unshift(csvAnnotations);
+          tasks.unshift(result.annotations);
           return Promise.all(tasks);
         })
         .then(([annotations]) => annotations);
@@ -454,10 +449,14 @@ module.exports = (job, done) => {
 
       return Promise.all([
         annotations,
+        AnnotationModel.where({
+          _id: { $in: annotations.map(x => x._id) },
+          state: AnnotationState.active,
+        }),
         AnnotationModel.find({ $or: statements }),
       ]);
     })
-    .then(([annotations, duplicateAnnotations]) => {
+    .then(([annotations, sameIdAnnotations, duplicateAnnotations]) => {
       /*
       - If the duplicate annotation is exists then update the file of the duplicate one.
       - If there is no duplicate annotation then save a new annotation.
@@ -466,6 +465,28 @@ module.exports = (job, done) => {
       @param duplicateAnnotations {Array<AnnotationModel>} From database.
       @returns {Promise<[AnnotationModel]>}
        */
+      const getKey = annotation =>
+        /*
+        Generate an annotation key.
+        @param annotation {AnnotationModel}
+        @returns {String}
+         */
+        `${annotation.cameraLocation._id}-${
+          annotation.filename
+        }-${annotation.time.getTime()}`;
+      const duplicateAnnotationTable = {}; // {"cameraLocationId-filename-time": {Array<AnnotationModel>}}
+      duplicateAnnotations.forEach(x => {
+        const items = duplicateAnnotationTable[getKey(x)];
+        if (items) {
+          items.push(x);
+        } else {
+          duplicateAnnotationTable[getKey(x)] = [x];
+        }
+      });
+      const sameIdAnnotationTable = {};
+      sameIdAnnotations.forEach(x => {
+        sameIdAnnotationTable[x.id] = x;
+      });
       const tasks = [];
 
       if (
@@ -474,16 +495,13 @@ module.exports = (job, done) => {
         ) >= 0
       ) {
         annotations.forEach(annotation => {
-          const duplicateAnnotation = duplicateAnnotations.find(
-            x =>
-              `${x.cameraLocation._id}` ===
-                `${annotation.cameraLocation._id}` &&
-              x.time.getTime() === annotation.time.getTime(),
-          );
-          if (duplicateAnnotation) {
+          const items = duplicateAnnotationTable[getKey(annotation)];
+          if (items) {
             // The user upload images so we should replace with a new file.
-            duplicateAnnotation.file = annotation.file;
-            tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+            items.forEach(x => {
+              x.file = annotation.file;
+              tasks.push(x.saveAndAddRevision(_user));
+            });
           } else {
             annotation.state = AnnotationState.active;
             tasks.push(annotation.saveAndAddRevision(_user));
@@ -493,35 +511,31 @@ module.exports = (job, done) => {
       } else if (_file.type === FileType.annotationZIP) {
         if (_isZipWithCsv) {
           // This zip file include a csv file.
-          if (duplicateAnnotations.length) {
-            // The user will chosen overwrite or not.
-            annotations.forEach(annotation => {
-              annotation.state = AnnotationState.waitForReview;
-              tasks.push(annotation.save());
-            });
-            _uploadSession.state = UploadSessionState.waitForReview;
-          } else {
-            // There is no duplicate annotation.
-            annotations.forEach(annotation => {
+          annotations.forEach(annotation => {
+            const sameIdAnnotation = sameIdAnnotationTable[annotation.id];
+            if (sameIdAnnotation) {
+              sameIdAnnotation.failures = annotation.failures;
+              sameIdAnnotation.file = annotation.file || sameIdAnnotation.file;
+              sameIdAnnotation.species = annotation.species;
+              sameIdAnnotation.fields = annotation.fields;
+              sameIdAnnotation.rawData = annotation.rawData;
+              tasks.push(sameIdAnnotation.saveAndAddRevision(_user));
+            } else {
               annotation.state = AnnotationState.active;
               tasks.push(annotation.saveAndAddRevision(_user));
-            });
-            _uploadSession.state = UploadSessionState.success;
-          }
+            }
+          });
+          _uploadSession.state = UploadSessionState.success;
         } else {
           // Just images, videos are in this zip file.
           annotations.forEach(annotation => {
-            const duplicateAnnotation = duplicateAnnotations.find(
-              x =>
-                `${x.cameraLocation._id}` ===
-                  `${annotation.cameraLocation._id}` &&
-                x.filename === annotation.filename &&
-                x.time.getTime() === annotation.time.getTime(),
-            );
-            if (duplicateAnnotation) {
+            const items = duplicateAnnotationTable[getKey(annotation)];
+            if (items) {
               // The user upload images so we should replace with a new file.
-              duplicateAnnotation.file = annotation.file;
-              tasks.push(duplicateAnnotation.saveAndAddRevision(_user));
+              items.forEach(x => {
+                x.file = annotation.file;
+                tasks.push(x.saveAndAddRevision(_user));
+              });
             } else {
               annotation.state = AnnotationState.active;
               tasks.push(annotation.saveAndAddRevision(_user));
@@ -530,20 +544,21 @@ module.exports = (job, done) => {
           _uploadSession.state = UploadSessionState.success;
         }
       } else if (_file.type === FileType.annotationCSV) {
-        if (duplicateAnnotations.length) {
-          // The user will chosen overwrite or not.
-          annotations.forEach(annotation => {
-            annotation.state = AnnotationState.waitForReview;
-            tasks.push(annotation.save());
-          });
-          _uploadSession.state = UploadSessionState.waitForReview;
-        } else {
-          annotations.forEach(annotation => {
+        annotations.forEach(annotation => {
+          const sameIdAnnotation = sameIdAnnotationTable[annotation.id];
+          if (sameIdAnnotation) {
+            sameIdAnnotation.failures = annotation.failures;
+            sameIdAnnotation.file = annotation.file || sameIdAnnotation.file;
+            sameIdAnnotation.species = annotation.species;
+            sameIdAnnotation.fields = annotation.fields;
+            sameIdAnnotation.rawData = annotation.rawData;
+            tasks.push(sameIdAnnotation.saveAndAddRevision(_user));
+          } else {
             annotation.state = AnnotationState.active;
             tasks.push(annotation.saveAndAddRevision(_user));
-          });
-          _uploadSession.state = UploadSessionState.success;
-        }
+          }
+        });
+        _uploadSession.state = UploadSessionState.success;
       }
       return Promise.all(tasks);
     })
