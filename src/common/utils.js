@@ -57,6 +57,7 @@ exports.connectDatabase = (autoIndex = false) => {
     reconnectTries: Number.MAX_VALUE,
     reconnectInterval: 500,
     autoIndex,
+    dbName: config.database.dbName,
   });
 };
 
@@ -473,6 +474,7 @@ exports.convertCsvToAnnotations = ({
 
     let dataOffset = 0;
     const information = {
+      id: null,
       studyArea: null,
       cameraLocation: null,
       filename: null,
@@ -481,6 +483,7 @@ exports.convertCsvToAnnotations = ({
       fields: [],
       failures: [],
     };
+    information.id = items[dataFields.length + 1];
     for (let index = 0; index < dataFields.length; index += 1) {
       const data = (items[index + dataOffset] || '').trim();
       let nextData;
@@ -613,6 +616,7 @@ exports.convertCsvToAnnotations = ({
     }
     result.annotations.push(
       new AnnotationModel({
+        _id: information.id || undefined,
         project,
         studyArea: information.studyArea,
         cameraLocation: information.cameraLocation,

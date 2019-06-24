@@ -1,11 +1,12 @@
 FROM ubuntu:18.04
-LABEL maintainer="rwu823@gmail.com"
+LABEL creator="rwu823@gmail.com"
+LABEL maintainer1="cjk.halodule@gmail.com"
+LABEL maintainer2="dcahsu@gmail.com"
+LABEL maintainer3="kelp404@phate.org"
 
 WORKDIR /camera-trap-api
 
-RUN apt-get update
-RUN apt-get upgrade -y
-RUN apt-get -y install curl sudo git graphicsmagick
+RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git graphicsmagick
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 RUN apt-get -y install nodejs
 

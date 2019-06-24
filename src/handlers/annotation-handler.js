@@ -288,6 +288,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
             });
           });
 
+          // Annotation id
+          headRow.push('Annotation id');
+
           const writeHeadRow = () =>
             /*
             Write head row data to the response stream.
@@ -325,7 +328,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                   x => `${x._id}` === `${annotation.cameraLocation._id}`,
                 );
                 const row = new Array(
-                  systemRowQuantity + customDataFieldIds.length,
+                  systemRowQuantity + customDataFieldIds.length + 1,
                 );
                 cameraLocation.project.dataFields.forEach(dataField => {
                   let annotationField;
@@ -413,6 +416,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                       }
                   }
                 });
+                row[row.length - 1] = annotation.id;
 
                 if (writePromise) {
                   writePromise = writePromise
