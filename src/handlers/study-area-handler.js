@@ -206,3 +206,45 @@ exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
       res.json(studyArea.dump());
     });
 });
+
+exports.updateProjectStudyArea = auth(UserPermission.all(), (req, res) => {
+  /*
+  PUT /api/v1/projects/:projectId/study-areas/:studyAreaId
+   */
+  const form = new StudyAreaForm(req.body);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+
+  const tasks = [
+    ProjectModel.findById(req.params.projectId),
+    StudyAreaModel.findById(req.params.studyAreaId)
+      .where({ project: req.params.projectId })
+      .where({ state: StudyAreaState.active }),
+  ];
+
+  return Promise.all(tasks)
+    .then(([project, studyArea]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!studyArea) {
+        throw new errors.Http404();
+      }
+      if (!project.canManageBy(req.user)) {
+        throw new errors.Http403();
+      }
+
+      // fill parent, prevent Object.assign overwrite studyArea.parent
+      if (studyArea.parent) {
+        form.parent = studyArea.parent
+      }
+      Object.assign(studyArea, form);
+
+      return studyArea.save();
+    })
+    .then(studyArea => {
+      res.json(studyArea.dump());
+    });
+});
