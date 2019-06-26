@@ -238,7 +238,7 @@ exports.updateProjectStudyArea = auth(UserPermission.all(), (req, res) => {
 
       // fill parent, prevent Object.assign overwrite studyArea.parent
       if (studyArea.parent) {
-        form.parent = studyArea.parent
+        form.parent = studyArea.parent;
       }
       Object.assign(studyArea, form);
 
