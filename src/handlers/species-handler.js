@@ -139,7 +139,8 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
         if (!forms.find(x => x.id === `${projectSpecies.species._id}`)) {
           // Missing the species in forms.
           // The user can't delete any exist species.
-          throw new errors.Http400(`Missing ${projectSpecies.species._id}.`);
+          //throw new errors.Http400(`Missing ${projectSpecies.species._id}.`);
+          tasks.push(projectSpecies.delete());
         }
       });
       forms.forEach((form, index) => {
