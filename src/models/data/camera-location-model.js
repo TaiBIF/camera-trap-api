@@ -25,7 +25,7 @@ const schema = utils.generateSchema(
     },
     state: {
       // 狀態
-      // 相機使用軟刪除，因為報表須提供「相機撤除」的資料
+      // 相機位置使用軟刪除，因為報表須提供「相機撤除」的資料
       type: String,
       default: CameraLocationState.active,
       enum: CameraLocationState.all(),
@@ -81,6 +81,10 @@ const schema = utils.generateSchema(
     },
     verbatimLocality: {
       // 地點
+      type: String,
+    },
+    remarks: {
+      // Remarks 備註
       type: String,
     },
     lockExpiredTime: {
@@ -180,6 +184,7 @@ model.prototype.dump = function() {
     vegetation: this.vegetation,
     landCoverType: this.landCoverType,
     verbatimLocality: this.verbatimLocality,
+    remarks: this.remarks,
     isLocked,
     lockUser,
   };
