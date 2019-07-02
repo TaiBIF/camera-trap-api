@@ -586,8 +586,7 @@ exports.convertCsvToAnnotations = ({
     const missingFields = [];
     if (!information.studyArea) {
       missingFields.push('study area');
-      uploadSession.errorType =
-        UploadSessionErrorType.missingFieldsStudyArea;
+      uploadSession.errorType = UploadSessionErrorType.missingFieldsStudyArea;
     }
     if (!information.cameraLocation) {
       missingFields.push('camera location');
