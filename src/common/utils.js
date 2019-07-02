@@ -15,6 +15,7 @@ const FileType = require('../models/const/file-type');
 const DataFieldSystemCode = require('../models/const/data-field-system-code');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
 const AnnotationFailureType = require('../models/const/annotation-failure-type');
+const UploadSessionErrorType = require('../models/const/upload-session-error-type');
 
 const _s3 = new AWS.S3({
   accessKeyId: config.s3.key,
@@ -585,9 +586,13 @@ exports.convertCsvToAnnotations = ({
     const missingFields = [];
     if (!information.studyArea) {
       missingFields.push('study area');
+      uploadSession.errorType =
+        UploadSessionErrorType.missingFieldsStudyArea;
     }
     if (!information.cameraLocation) {
       missingFields.push('camera location');
+      uploadSession.errorType =
+        UploadSessionErrorType.missingFieldsCameraLocation;
     }
     if (!information.filename) {
       missingFields.push('filename');
