@@ -206,15 +206,14 @@ exports.getSpeciesSynonyms = auth(UserPermission.all(), (req, res) => {
   }
   const query = SpeciesModel.where().sort('title.zh-TW');
 
-  const queryName = req.query.title || '';
+  const queryName = req.query.species || '';
   const queryProject = req.query.project || '';
 
-  if (queryName == '') {
+  if (queryName === '') {
     throw new errors.Http400('species is required.');
-  }
-  else {
+  } else {
     let foundSynonyms = [];
-    Object.entries(SpeciesSynonyms).find((item) => {
+    Object.entries(SpeciesSynonyms).find(item => {
       let synonymList = [item[0]];
       if (item[1] !== '') {
         synonymList = synonymList.concat(item[1].split(';'));
@@ -223,38 +222,34 @@ exports.getSpeciesSynonyms = auth(UserPermission.all(), (req, res) => {
         foundSynonyms = synonymList;
         return true;
       }
+      return false;
     });
-    query.where({'title.zh-TW': {$in: foundSynonyms}});
+    query.where({ 'title.zh-TW': { $in: foundSynonyms } });
   }
   return SpeciesModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,
   })
     .then(speciesList => {
-      const speciesIds = speciesList.docs.map((x) => x.id);
-      const queryProjectSpecies = ProjectSpeciesModel
-            .where({
-              species: {
-                $in: speciesIds,
-              }
-            })
-            .populate('species');
+      const speciesIds = speciesList.docs.map(x => x.id);
+      const queryProjectSpecies = ProjectSpeciesModel.where({
+        species: {
+          $in: speciesIds,
+        },
+      }).populate('species');
       if (queryProject) {
-        queryProjectSpecies.where({project: queryProject})
+        queryProjectSpecies.where({ project: queryProject });
       }
-      return Promise.all([
-        speciesList,
-        queryProjectSpecies,
-      ]);
+      return Promise.all([speciesList, queryProjectSpecies]);
     })
     .then(([speciesList, projectSpecies]) => {
-      let relatedProjectSpecies = {};
-      projectSpecies.forEach((species) => {
+      const relatedProjectSpecies = {};
+      projectSpecies.forEach(species => {
         if (!relatedProjectSpecies[species._id]) {
           relatedProjectSpecies[species._id] = [];
         }
         relatedProjectSpecies[species._id].push(species);
       });
       res.json(relatedProjectSpecies);
-  });
+    });
 });
