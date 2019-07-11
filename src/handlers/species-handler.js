@@ -8,6 +8,7 @@ const ProjectSpeciesModel = require('../models/data/project-species-model');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
+const SpeciesSynonyms = require('../models/const/species-synonyms');
 
 exports.getSpecies = auth(UserPermission.all(), (req, res) => {
   /*
@@ -139,7 +140,11 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
         if (!forms.find(x => x.id === `${projectSpecies.species._id}`)) {
           // Missing the species in forms.
           // The user can't delete any exist species.
-          throw new errors.Http400(`Missing ${projectSpecies.species._id}.`);
+
+          // TESRI want to delete default species
+          // TODO: use a flag in projectSpecies to hide instead of delete
+          // throw new errors.Http400(`Missing ${projectSpecies.species._id}.`);
+          tasks.push(projectSpecies.delete());
         }
       });
       forms.forEach((form, index) => {
@@ -192,4 +197,63 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
       return Promise.all(tasks);
     })
     .then(() => exports.getProjectSpecies(req, res));
+});
+
+exports.getSpeciesSynonyms = auth(UserPermission.all(), (req, res) => {
+  /*
+  GET /api/v1/species/:speciesName
+    */
+  const form = new SpeciesSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+  const query = SpeciesModel.where().sort('title.zh-TW');
+
+  const queryName = req.query.species || '';
+  const queryProject = req.query.project || '';
+
+  if (queryName === '') {
+    throw new errors.Http400('species is required.');
+  } else {
+    let foundSynonyms = [];
+    Object.entries(SpeciesSynonyms).find(item => {
+      let synonymList = [item[0]];
+      if (item[1] !== '') {
+        synonymList = synonymList.concat(item[1].split(';'));
+      }
+      if (synonymList.indexOf(queryName) >= 0) {
+        foundSynonyms = synonymList;
+        return true;
+      }
+      return false;
+    });
+    query.where({ 'title.zh-TW': { $in: foundSynonyms } });
+  }
+  return SpeciesModel.paginate(query, {
+    offset: form.index * form.size,
+    limit: form.size,
+  })
+    .then(speciesList => {
+      const speciesIds = speciesList.docs.map(x => x.id);
+      const queryProjectSpecies = ProjectSpeciesModel.where({
+        species: {
+          $in: speciesIds,
+        },
+      }).populate('species');
+      if (queryProject) {
+        queryProjectSpecies.where({ project: queryProject });
+      }
+      return Promise.all([speciesList, queryProjectSpecies]);
+    })
+    .then(([speciesList, projectSpecies]) => {
+      const relatedProjectSpecies = {};
+      projectSpecies.forEach(species => {
+        if (!relatedProjectSpecies[species._id]) {
+          relatedProjectSpecies[species._id] = [];
+        }
+        relatedProjectSpecies[species._id].push(species);
+      });
+      res.json(relatedProjectSpecies);
+    });
 });
