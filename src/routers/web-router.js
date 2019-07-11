@@ -161,6 +161,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
   studyAreaHandler.addProjectStudyArea,
 );
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})',
+  studyAreaHandler.updateProjectStudyArea,
+);
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/camera-locations',
   cameraLocationHandler.getProjectCameraLocations,
