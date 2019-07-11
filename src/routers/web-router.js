@@ -98,6 +98,7 @@ apiRouter.get(
   notificationHandler.getSystemAnnouncements,
 );
 apiRouter.get('/species', speciesHandler.getSpecies);
+apiRouter.get('/species/synonyms', speciesHandler.getSpeciesSynonyms);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
@@ -160,6 +161,10 @@ apiRouter.get(
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/study-areas',
   studyAreaHandler.addProjectStudyArea,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})',
+  studyAreaHandler.updateProjectStudyArea,
 );
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/camera-locations',

@@ -785,7 +785,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "altitude": 100,
                 "vegetation": "植被",
                 "landCoverType": "土地覆蓋類型",
-                "verbatimLocality": "傾斜屋對面產道，小池旁"
+                "verbatimLocality": "傾斜屋對面產道，小池旁",
+                "remarks": "備註"
               },
               "file": {
                 "id": "5ca996477242134e2593331c",
@@ -3425,7 +3426,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "altitude": 100,
                       "vegetation": "植被",
                       "landCoverType": "土地覆蓋類型",
-                      "verbatimLocality": "傾斜屋對面產道，小池旁"
+                      "verbatimLocality": "傾斜屋對面產道，小池旁",
+                      "remarks": "備註"
                     }
                   },
                   {
@@ -3551,6 +3553,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                             "verbatimLocality": {
                               "type": "string",
                               "description": "地點"
+                            },
+                            "remarks": {
+                              "type": "string",
+                              "description": "備註"
                             }
                           }
                         },
@@ -3613,6 +3619,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "verbatimLocality": {
                         "type": "string",
                         "description": "地點"
+                      },
+                      "remarks": {
+                        "type": "string",
+                        "description": "備註"
                       }
                     }
                   }
@@ -3635,6 +3645,148 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "zh-TW": "台北"
               },
               "parent": "5c9d9428e7462d3d989cb69b"
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                },
+                "parent": {
+                  "type": "string",
+                  "description": "母樣區 id，新增子樣區時使用。"
+                }
+              }
+            }
+
++ Response 200 (applition/json)
+
+    + Body
+
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "title": {
+                "zh-TW": "台北"
+              }
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "本樣區 id。"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                }
+              }
+            }
+
+## Add a study area [POST /projects/{projectId}/study-areas/studyAreaId]
+修改樣區。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Request Update a study area of the project (application/json)
+
+    + Body
+
+            {
+              "title": {
+                "zh-TW": "台北"
+              },
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                },
+                "parent": {
+                  "type": "string",
+                  "description": "母樣區 id，新增子樣區時使用。"
+                }
+              }
+            }
+
++ Response 200 (applition/json)
+
+    + Body
+
+            {
+              "id": "5c949bbbe5d5377f98c81ab0",
+              "title": {
+                "zh-TW": "台北"
+              }
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "本樣區 id。"
+                },
+                "title": {
+                  "type": "object",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "Study area name 樣區名稱 in Traditional Chinese."
+                    }
+                  }
+                }
+              }
+            }
+
+## Add a study area [POST /projects/{projectId}/study-areas/studyAreaId]
+修改樣區。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Request Update a study area of the project (application/json)
+
+    + Body
+
+            {
+              "title": {
+                "zh-TW": "台北"
+              },
             }
 
     + Schema
@@ -3747,7 +3899,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "altitude": 100,
                   "vegetation": "植被",
                   "landCoverType": "土地覆蓋類型",
-                  "verbatimLocality": "傾斜屋對面產道，小池旁"
+                  "verbatimLocality": "傾斜屋對面產道，小池旁",
+                  "remarks": "備註"
                 }
               ]
             }
@@ -3824,6 +3977,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "verbatimLocality": {
                         "type": "string",
                         "description": "地點"
+                      },
+                      "remarks": {
+                        "type": "string",
+                        "description": "備註"
                       }
                     }
                   }
@@ -3856,7 +4013,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "altitude": 100,
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
-              "verbatimLocality": "傾斜屋對面產道，小池旁"
+              "verbatimLocality": "傾斜屋對面產道，小池旁",
+              "remarks": "備註"
             }
 
     + Schema
@@ -3907,6 +4065,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "verbatimLocality": {
                   "type": "string",
                   "description": "地點"
+                },
+                "remarks": {
+                  "type": "string",
+                  "description": "備註"
                 }
               }
             }
@@ -3932,7 +4094,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "altitude": 100,
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
-              "verbatimLocality": "傾斜屋對面產道，小池旁"
+              "verbatimLocality": "傾斜屋對面產道，小池旁",
+              "remarks": "備註"
             }
 
     + Schema
@@ -4005,6 +4168,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "verbatimLocality": {
                   "type": "string",
                   "description": "地點"
+                },
+                "remarks": {
+                  "type": "string",
+                  "description": "備註"
                 }
               }
             }
@@ -4054,6 +4221,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
               "verbatimLocality": "傾斜屋對面產道，小池旁",
+              "remarks": "備註",
               "isLocked": true,
               "lockUser": {
                 "id": "5c949bbbe5d5377f98c81ab0",
@@ -4118,6 +4286,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "type": "string",
                   "description": "地點"
                 },
+                "remarks": {
+                  "type": "string",
+                  "description": "備註"
+                },
                 "isLocked": {
                   "type": "boolean",
                   "description": "是否已鎖定進入編輯模式"
@@ -4171,6 +4343,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               "vegetation": "植被",
               "landCoverType": "土地覆蓋類型",
               "verbatimLocality": "傾斜屋對面產道，小池旁",
+              "remarks": "備註",
               "isLocked": false
             }
 
@@ -4228,6 +4401,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                 "verbatimLocality": {
                   "type": "string",
                   "description": "地點"
+                },
+                "remarks": {
+                  "type": "string",
+                  "description": "備註"
                 },
                 "isLocked": {
                   "type": "boolean",
