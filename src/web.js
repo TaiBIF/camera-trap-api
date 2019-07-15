@@ -129,6 +129,8 @@ module.exports = createServer => {
     res.send('User-agent: *\nDisallow: /');
   });
 
+  app.get('/favicon.ico', (req, res) => res.status(204));
+
   app.use('/api/v1', cors(config.corsOptions), nocache(), webRouter.api);
   app.use('/callback', nocache(), webRouter.callback);
 
