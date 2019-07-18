@@ -1,13 +1,13 @@
 const SpeciesModel = require('../models/data/species-model');
-const ProjectSpeciesModel = require('../models/data/project-species-model');
+// const ProjectSpeciesModel = require('../models/data/project-species-model');
 const SpeciesSynonyms = require('../models/const/species-synonyms');
 
-exports.findSynonymSpecies = (speciesIds) => {
-  return SpeciesModel.where({
-      '_id': { $in: speciesIds }
-  }).then((speciesList) => {
+exports.findSynonymSpecies = speciesIds =>
+  SpeciesModel.where({
+    _id: { $in: speciesIds },
+  }).then(speciesList => {
     let foundSynonyms = [];
-    speciesList.forEach( (species) => {
+    speciesList.forEach(species => {
       Object.entries(SpeciesSynonyms).find(item => {
         let synonymList = [item[0]];
         if (item[1] !== '') {
@@ -21,12 +21,9 @@ exports.findSynonymSpecies = (speciesIds) => {
       });
     });
     return SpeciesModel.where({
-      'title.zh-TW': { $in: foundSynonyms }
-    }).then((speciesList) => {
-      const mappedSpeciesIds = speciesList.map((species)=> {
-        return species['_id'];
-      });
+      'title.zh-TW': { $in: foundSynonyms },
+    }).then(mappedSpeciesList => {
+      const mappedSpeciesIds = mappedSpeciesList.map(species => species._id);
       return mappedSpeciesIds;
     });
   });
-}

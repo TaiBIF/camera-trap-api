@@ -22,7 +22,7 @@ const AnnotationState = require('../models/const/annotation-state');
 const AnnotationFailureType = require('../models/const/annotation-failure-type');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
-const Helpers = require('../common/helpers.js')
+const Helpers = require('../common/helpers.js');
 
 exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
   /*
@@ -78,7 +78,13 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
   tasks.push(Helpers.findSynonymSpecies(form.species));
 
   return Promise.all(tasks).then(
-    ([studyArea, childStudyAreas, cameraLocations, dataFields, synonymSpeciesIds]) => {
+    ([
+      studyArea,
+      childStudyAreas,
+      cameraLocations,
+      dataFields,
+      synonymSpeciesIds,
+    ]) => {
       if (form.studyArea) {
         if (!studyArea) {
           throw new errors.Http404();
@@ -127,15 +133,14 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       }
       if (form.species.length) {
         if (synonymSpeciesIds.length > 0) {
-          const projectIds = cameraLocations.map((cameraLocation)=> {
-            return cameraLocation.project['_id'];
-          });
+          const projectIds = cameraLocations.map(
+            cameraLocation => cameraLocation.project._id,
+          );
           query.where({
             species: { $in: synonymSpeciesIds },
             project: { $in: projectIds },
           });
-        }
-        else {
+        } else {
           query.where({ species: { $in: form.species } });
         }
       }
