@@ -22,6 +22,9 @@ const schema = utils.generateSchema(
       type: Schema.ObjectId,
       ref: 'StudyAreaModel',
       required: true,
+      index: {
+        name: 'StudyArea',
+      },
     },
     state: {
       // 狀態
@@ -105,7 +108,7 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
-  { project: 1, name: 1 },
+  { project: 1, studyArea: 1, 'studyArea.parent': 1, name: 1 },
   {
     name: 'UniqueName',
     background: true,
