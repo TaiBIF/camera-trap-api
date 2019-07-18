@@ -202,7 +202,8 @@ exports.updateProjectSpeciesList = auth(UserPermission.all(), (req, res) => {
 exports.getSpeciesSynonyms = auth(UserPermission.all(), (req, res) => {
   /*
   GET /api/v1/species/:speciesName
-    */
+  DEPRICATED 
+  */
   const form = new SpeciesSearchForm(req.query);
   const errorMessage = form.validate();
   if (errorMessage) {

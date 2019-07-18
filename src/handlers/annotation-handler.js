@@ -22,6 +22,7 @@ const AnnotationState = require('../models/const/annotation-state');
 const AnnotationFailureType = require('../models/const/annotation-failure-type');
 const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
+const Helpers = require('../common/helpers.js');
 
 exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
   /*
@@ -74,8 +75,16 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       state: DataFieldState.approved,
     }),
   );
+  tasks.push(Helpers.findSynonymSpecies(form.species));
+
   return Promise.all(tasks).then(
-    ([studyArea, childStudyAreas, cameraLocations, dataFields]) => {
+    ([
+      studyArea,
+      childStudyAreas,
+      cameraLocations,
+      dataFields,
+      synonymSpeciesIds,
+    ]) => {
       if (form.studyArea) {
         if (!studyArea) {
           throw new errors.Http404();
@@ -123,7 +132,17 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
         query.where({ time: { $lte: form.endTime } });
       }
       if (form.species.length) {
-        query.where({ species: { $in: form.species } });
+        if (synonymSpeciesIds.length > 0) {
+          const projectIds = cameraLocations.map(
+            cameraLocation => cameraLocation.project._id,
+          );
+          query.where({
+            species: { $in: synonymSpeciesIds },
+            project: { $in: projectIds },
+          });
+        } else {
+          query.where({ species: { $in: form.species } });
+        }
       }
       if (form.timeRangeStart != null) {
         const dayInMilliseconds = 24 * 60 * 60 * 1000;
