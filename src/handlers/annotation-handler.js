@@ -477,7 +477,7 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
   ])
     .then(([annotation, species]) => {
       if (!annotation) {
-        throw new errors.Http404();
+        throw new errors.Http404("Annotation not found.");
       }
 
       return Promise.all([
@@ -504,7 +504,7 @@ exports.updateAnnotation = auth(UserPermission.all(), (req, res) => {
         projectSpeciesQuantity,
       ]) => {
         if (!project.canAccessBy(req.user)) {
-          throw new errors.Http403();
+          throw new errors.Http403("Insufficient privilege.");
         }
 
         // Validate form.fields.
