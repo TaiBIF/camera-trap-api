@@ -20,7 +20,6 @@ RUN echo $CONTAINER_IMAGE_VER
 # install the tooks i wish to use
 RUN apt-get update && \
   apt-get install -y sudo \
-  apt-utils \
   openssh-server \
   unzip \
   pkg-config \
