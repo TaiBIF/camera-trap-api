@@ -6,6 +6,12 @@ CMD ["/sbin/my_init"]
 
 # https://gist.github.com/MichalZalecki/4a87880bbe7a3a5428b5aebebaa5cd97
 
+RUN mkdir -p /etc/my_init.d
+COPY logtime.sh /etc/my_init.d/logtime.sh
+RUN chmod +x /etc/my_init.d/logtime.sh
+
+RUN echo /root > /etc/container_environment/HOME
+
 ARG USER_NAME="cjk"
 ARG USER_PASSWORD="38383838"
 
@@ -25,7 +31,6 @@ RUN apt-get update && \
   pkg-config \
   curl \
   git-core \
-  gnupg \
   linuxbrew-wrapper \
   locales \
   zsh \
