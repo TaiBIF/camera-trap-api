@@ -23,6 +23,8 @@ const StudyAreaState = require('../models/const/study-area-state');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
+const AnnotationModel = require('../models/data/annotation-model');
+const AnnotationState = require('../models/const/annotation-state');
 
 exports.getProjects = auth(UserPermission.all(), (req, res) => {
   /*
@@ -461,3 +463,106 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
       res.send(csv);
     }),
 );
+
+exports.getProjectDarwinCoreArchive = auth(UserPermission.all(), (req, res) => {
+  /**
+     GET /api/v1/projects/:projectId/dwca.zip
+  */
+  return Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    AnnotationModel.where({
+      state: AnnotationState.active,
+      project: req.params.projectId
+    }).limit(20),
+  ])
+    .then(([project, projectAnnotations]) => {
+      if (!project) {
+        throw new errors.Http404();
+      }
+      if (!project.canAccessBy(req.user)) {
+        throw new errors.Http403();
+      }
+      /*
+      project.populate('coverImageFile')
+        .populate('areas')
+        .populate('members.user')
+        .populate('dataFields')
+      */
+
+      /*
+      project.populate('species');
+      const data = projectAnnotations.map((x) => {
+        const row = [x.createTime,
+                     x._id
+                    ]
+        return utils.csvStringifyAsync(row);
+        //return row
+      });
+      //res.json({foo:'bar'})
+      return data;
+    })
+    .then( csv => {
+      res.setHeader('Content-disposition', 'attachment; filename=example.csv');
+      res.contentType('csv');
+      res.send(csv);
+      });*/
+      const headRow = ['foo', 'bar']
+      let writePromise;
+      const writeHeadRow = () =>
+            /*
+              Write head row data to the response stream.
+            @returns {Promise<>}
+            */
+
+            utils.csvStringifyAsync([headRow]).then(data => {
+              res.setHeader(
+                'Content-disposition',
+                'attachment; filename=export.csv',
+              );
+              res.contentType('csv');
+              res.write(data);
+            });
+      const query = AnnotationModel.where({
+        state: AnnotationState.active,
+        project: req.params.projectId
+      }).limit(20);
+        //    .populate('species');
+      return new Promise((resolve, reject) => {
+        query
+          .cursor()
+          .on('error', error => {
+            reject(error);
+          })
+          .on('close', () => {
+            if (writePromise) {
+              writePromise.then(() => {
+                res.end();
+                resolve();
+              });
+            } else {
+              writeHeadRow().then(() => {
+                res.end();
+                resolve();
+              });
+            }
+          })
+          .on('data', annotation => {
+            // TODO-start
+            const row = [annotation.createTime, annotation.filename];
+                if (writePromise) {
+                  writePromise = writePromise
+                    .then(() => utils.csvStringifyAsync([row]))
+                    .then(data => {
+                      res.write(data);
+                    });
+                } else {
+                  writePromise = writeHeadRow()
+                    .then(() => utils.csvStringifyAsync([row]))
+                    .then(data => {
+                      res.write(data);
+                    });
+                }
+          });
+      }); // promise
+    });
+});
