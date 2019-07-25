@@ -247,11 +247,9 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       });
       if (dataFieldFilters.length > 0) {
         query.where({
-          $and: dataFieldFilters
-        })
+          $and: dataFieldFilters,
+        });
       }
-
-
 
       if (!/\.csv$/i.test(req.path)) {
         // return json
