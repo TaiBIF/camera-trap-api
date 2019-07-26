@@ -190,6 +190,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
       }
 
       // 進階篩選 DataField
+      const dataFieldFilters = [];
       dataFields.forEach(dataField => {
         let date;
         switch (dataField.widgetType) {
@@ -202,7 +203,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                 } should be a date.`,
               );
             }
-            query.where({
+            dataFieldFilters.push({
               fields: {
                 $elemMatch: {
                   dataField: dataField._id,
@@ -223,7 +224,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                 } not in the field ${dataField._id}.`,
               );
             }
-            query.where({
+            dataFieldFilters.push({
               fields: {
                 $elemMatch: {
                   dataField: dataField._id,
@@ -234,7 +235,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
             break;
           case DataFieldWidgetType.text:
           default:
-            query.where({
+            dataFieldFilters.push({
               fields: {
                 $elemMatch: {
                   dataField: dataField._id,
@@ -244,6 +245,11 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
             });
         }
       });
+      if (dataFieldFilters.length > 0) {
+        query.where({
+          $and: dataFieldFilters,
+        });
+      }
 
       if (!/\.csv$/i.test(req.path)) {
         // return json
