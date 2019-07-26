@@ -23,6 +23,9 @@ const StudyAreaState = require('../models/const/study-area-state');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
 const DataFieldWidgetType = require('../models/const/data-field-widget-type');
+const AnnotationModel = require('../models/data/annotation-model');
+const AnnotationState = require('../models/const/annotation-state');
+const Helpers = require('../common/helpers.js');
 
 exports.getProjects = auth(UserPermission.all(), (req, res) => {
   /*
@@ -460,4 +463,68 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
       res.contentType('csv');
       res.send(csv);
     }),
+);
+
+exports.getProjectDarwinCoreArchive = auth(UserPermission.all(), (req, res) =>
+  /**
+     GET /api/v1/projects/:projectId/dwca.zip
+  */
+  Promise.all([
+    ProjectModel.findById(req.params.projectId),
+    AnnotationModel.where({
+      state: AnnotationState.active,
+      project: req.params.projectId,
+    })
+      .populate('species')
+      .populate('cameraLocation'),
+    CameraLocationModel.where({
+      project: req.params.projectId,
+      state: CameraLocationState.active,
+    }),
+  ]).then(([project, projectAnnotations, projectCameraLocations]) => {
+    if (!project) {
+      throw new errors.Http404();
+    }
+    if (!project.canAccessBy(req.user)) {
+      throw new errors.Http403();
+    }
+
+    const occuranceData = [
+      [
+        'occurrenceID',
+        'basisOfRecord',
+        'eventTime',
+        'country',
+        'countryCode',
+        'verbatimElevation',
+        'decimalLatitude',
+        'decimalLongitude',
+        'geodeticDatum',
+        'vernacularName',
+      ],
+    ];
+    projectAnnotations.forEach(x => {
+      const speciesName = x.species ? x.species.title['zh-TW'] : "''";
+      occuranceData.push([
+        x._id.toString(),
+        'MachineObservation',
+        x.createTime,
+        'Taiwan',
+        'TW',
+        x.cameraLocation.altitude,
+        x.cameraLocation.latitude,
+        x.cameraLocation.longitude,
+        x.cameraLocation.geodeticDatum,
+        speciesName,
+      ]);
+    });
+
+    utils.csvStringifyAsync(occuranceData).then(data => {
+      const dwcZipFiles = Helpers.createDwCA(project, data);
+      res.zip({
+        files: dwcZipFiles,
+        filename: `dwca-camera-trap-${project.shortTitle}.zip`,
+      });
+    });
+  }),
 );

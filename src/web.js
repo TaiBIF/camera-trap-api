@@ -12,6 +12,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const KueAdminPanel = require('kue-admin-panel');
 const nocache = require('nocache');
+const zip = require('express-easy-zip');
 const utils = require('./common/utils');
 const errors = require('./models/errors');
 const authentication = require('./auth/authentication');
@@ -30,6 +31,8 @@ module.exports = createServer => {
   if (createServer) {
     server = http.createServer(app);
   }
+
+  app.use(zip());
 
   // hide x-powered-by
   app.locals.settings['x-powered-by'] = false;

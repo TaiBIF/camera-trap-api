@@ -138,6 +138,10 @@ apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/example.csv',
   projectHandler.getProjectExampleCsv,
 );
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/dwca',
+  projectHandler.getProjectDarwinCoreArchive,
+);
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/members',
   projectHandler.addProjectMember,
