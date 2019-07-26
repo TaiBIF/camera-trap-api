@@ -19,6 +19,7 @@ const authorization = require('./auth/authorization');
 const UserPermission = require('./models/const/user-permission');
 const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
+const zip = require('express-easy-zip');
 
 module.exports = createServer => {
   /*
@@ -30,6 +31,8 @@ module.exports = createServer => {
   if (createServer) {
     server = http.createServer(app);
   }
+
+  app.use(zip());
 
   // hide x-powered-by
   app.locals.settings['x-powered-by'] = false;

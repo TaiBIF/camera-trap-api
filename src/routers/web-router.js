@@ -139,7 +139,7 @@ apiRouter.get(
   projectHandler.getProjectExampleCsv,
 );
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/dwca.zip',
+  '/projects/:projectId([a-f\\d]{24})/dwca',
   projectHandler.getProjectDarwinCoreArchive,
 );
 apiRouter.post(
