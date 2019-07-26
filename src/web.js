@@ -12,6 +12,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const KueAdminPanel = require('kue-admin-panel');
 const nocache = require('nocache');
+const zip = require('express-easy-zip');
 const utils = require('./common/utils');
 const errors = require('./models/errors');
 const authentication = require('./auth/authentication');
@@ -19,7 +20,6 @@ const authorization = require('./auth/authorization');
 const UserPermission = require('./models/const/user-permission');
 const webRouter = require('./routers/web-router');
 const LogModel = require('./models/data/log-model');
-const zip = require('express-easy-zip');
 
 module.exports = createServer => {
   /*
