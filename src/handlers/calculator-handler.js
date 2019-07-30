@@ -11,6 +11,7 @@ const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const Helpers = require('../common/helpers.js');
 
 exports.calculateOI = auth(UserPermission.all(), (req, res) => {
   /*
@@ -42,7 +43,6 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
       if (!species) {
         throw new errors.Http400('Not found the species.');
       }
-
       return Promise.all([
         cameraLocation,
         species,
@@ -51,9 +51,10 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
           project: cameraLocation.project._id,
           species: species._id,
         }),
+        Helpers.findSynonymSpecies(form.species),
       ]);
     })
-    .then(([cameraLocation, species, project, projectSpecies]) => {
+    .then(([cameraLocation, species, project, projectSpecies, synonymSpeciesIds]) => {
       if (!project) {
         throw new errors.Http400('The project is not exists.');
       }
@@ -67,7 +68,8 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
       const matchCondition = {
         state: AnnotationState.active,
         cameraLocation: cameraLocation._id,
-        species: species._id,
+        //species: species._id,
+        species: { $in: synonymSpeciesIds },
       };
       if (form.startTime || form.endTime) {
         matchCondition.time = {};
@@ -177,9 +179,10 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
           project: cameraLocation.project._id,
           species: species._id,
         }),
+        Helpers.findSynonymSpecies(form.species),
       ]);
     })
-    .then(([cameraLocation, species, project, projectSpecies]) => {
+    .then(([cameraLocation, species, project, projectSpecies, synonymSpeciesIds]) => {
       if (!project) {
         throw new errors.Http400('The project is not exists.');
       }
@@ -193,7 +196,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
       const matchCondition = {
         state: AnnotationState.active,
         cameraLocation: cameraLocation._id,
-        species: species._id,
+        //species: species._id,
+        species: { $in: synonymSpeciesIds },
       };
       if (form.startTime || form.endTime) {
         matchCondition.time = {};
