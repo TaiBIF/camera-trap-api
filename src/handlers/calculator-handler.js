@@ -11,6 +11,7 @@ const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const Helpers = require('../common/helpers.js');
 
 exports.calculateOI = auth(UserPermission.all(), (req, res) => {
   /*
@@ -42,7 +43,6 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
       if (!species) {
         throw new errors.Http400('Not found the species.');
       }
-
       return Promise.all([
         cameraLocation,
         species,
@@ -51,46 +51,56 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
           project: cameraLocation.project._id,
           species: species._id,
         }),
+        Helpers.findSynonymSpecies(form.species),
       ]);
     })
-    .then(([cameraLocation, species, project, projectSpecies]) => {
-      if (!project) {
-        throw new errors.Http400('The project is not exists.');
-      }
-      if (!projectSpecies) {
-        throw new errors.Http400('The species is not belong to the project.');
-      }
-      if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
-      }
-
-      const matchCondition = {
-        state: AnnotationState.active,
-        cameraLocation: cameraLocation._id,
-        species: species._id,
-      };
-      if (form.startTime || form.endTime) {
-        matchCondition.time = {};
-        if (form.startTime) {
-          matchCondition.time.$gte = form.startTime;
+    .then(
+      ([
+        cameraLocation,
+        species,
+        project,
+        projectSpecies,
+        synonymSpeciesIds,
+      ]) => {
+        if (!project) {
+          throw new errors.Http400('The project is not exists.');
         }
-        if (form.endTime) {
-          matchCondition.time.$lte = form.endTime;
+        if (!projectSpecies) {
+          throw new errors.Http400('The species is not belong to the project.');
         }
-      }
-      const matchConditionWithoutSpecies = Object.assign({}, matchCondition);
-      delete matchConditionWithoutSpecies.species;
+        if (!project.canAccessBy(req.user)) {
+          throw new errors.Http403();
+        }
 
-      return Promise.all([
-        AnnotationModel.where(matchConditionWithoutSpecies)
-          .sort({ time: 1 })
-          .findOne(),
-        AnnotationModel.where(matchConditionWithoutSpecies)
-          .sort({ time: -1 })
-          .findOne(),
-        AnnotationModel.where(matchCondition).sort({ time: 1 }),
-      ]);
-    })
+        const matchCondition = {
+          state: AnnotationState.active,
+          cameraLocation: cameraLocation._id,
+          // species: species._id,
+          species: { $in: synonymSpeciesIds },
+        };
+        if (form.startTime || form.endTime) {
+          matchCondition.time = {};
+          if (form.startTime) {
+            matchCondition.time.$gte = form.startTime;
+          }
+          if (form.endTime) {
+            matchCondition.time.$lte = form.endTime;
+          }
+        }
+        const matchConditionWithoutSpecies = Object.assign({}, matchCondition);
+        delete matchConditionWithoutSpecies.species;
+
+        return Promise.all([
+          AnnotationModel.where(matchConditionWithoutSpecies)
+            .sort({ time: 1 })
+            .findOne(),
+          AnnotationModel.where(matchConditionWithoutSpecies)
+            .sort({ time: -1 })
+            .findOne(),
+          AnnotationModel.where(matchCondition).sort({ time: 1 }),
+        ]);
+      },
+    )
     .then(([firstAnnotation, lastAnnotation, annotations]) => {
       let lastValidAnnotation;
       let lastEventAnnotation;
@@ -177,63 +187,73 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
           project: cameraLocation.project._id,
           species: species._id,
         }),
+        Helpers.findSynonymSpecies(form.species),
       ]);
     })
-    .then(([cameraLocation, species, project, projectSpecies]) => {
-      if (!project) {
-        throw new errors.Http400('The project is not exists.');
-      }
-      if (!projectSpecies) {
-        throw new errors.Http400('The species is not belong to the project.');
-      }
-      if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
-      }
+    .then(
+      ([
+        cameraLocation,
+        species,
+        project,
+        projectSpecies,
+        synonymSpeciesIds,
+      ]) => {
+        if (!project) {
+          throw new errors.Http400('The project is not exists.');
+        }
+        if (!projectSpecies) {
+          throw new errors.Http400('The species is not belong to the project.');
+        }
+        if (!project.canAccessBy(req.user)) {
+          throw new errors.Http403();
+        }
 
-      const matchCondition = {
-        state: AnnotationState.active,
-        cameraLocation: cameraLocation._id,
-        species: species._id,
-      };
-      if (form.startTime || form.endTime) {
-        matchCondition.time = {};
-        if (form.startTime) {
-          matchCondition.time.$gte = form.startTime;
+        const matchCondition = {
+          state: AnnotationState.active,
+          cameraLocation: cameraLocation._id,
+          // species: species._id,
+          species: { $in: synonymSpeciesIds },
+        };
+        if (form.startTime || form.endTime) {
+          matchCondition.time = {};
+          if (form.startTime) {
+            matchCondition.time.$gte = form.startTime;
+          }
+          if (form.endTime) {
+            matchCondition.time.$lte = form.endTime;
+          }
         }
-        if (form.endTime) {
-          matchCondition.time.$lte = form.endTime;
-        }
-      }
-      return AnnotationModel.aggregate([
-        {
-          $match: matchCondition,
-        },
-        {
-          $sort: { time: 1 },
-        },
-        {
-          // Group result by 24hours time interval.
-          // The time base is config.defaultTimezone.
-          $group: {
-            _id: {
-              $subtract: [
-                { $toLong: '$time' },
-                {
-                  $mod: [
-                    { $subtract: ['$time', timeOffset] },
-                    aDayInMilliseconds,
-                  ],
-                },
-              ],
-            },
-            annotation: { $first: '$$ROOT' },
+        return AnnotationModel.aggregate([
+          {
+            $match: matchCondition,
           },
-        },
-        {
-          $sort: { _id: 1 },
-        },
-      ]);
-    })
+          {
+            $sort: { time: 1 },
+          },
+          {
+            // Group result by 24hours time interval.
+            // The time base is config.defaultTimezone.
+            $group: {
+              _id: {
+                $subtract: [
+                  { $toLong: '$time' },
+                  {
+                    $mod: [
+                      { $subtract: ['$time', timeOffset] },
+                      aDayInMilliseconds,
+                    ],
+                  },
+                ],
+              },
+              annotation: { $first: '$$ROOT' },
+            },
+          },
+          {
+            $sort: { _id: 1 },
+          },
+        ]);
+      },
+    )
     .then(items => {
       const result = [];
       let startTime;
