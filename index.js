@@ -104,8 +104,8 @@ if (op.argv.createCollections) {
         'en-US': 'Date and time',
       },
       description: {
-        'zh-TW': 'YY-MM-DD hh:mm:ss',
-        'en-US': 'YY-MM-DD hh:mm:ss',
+        'zh-TW': 'YYYY-MM-DD hh:mm:ss',
+        'en-US': 'YYYY-MM-DD hh:mm:ss',
       },
       widgetType: DataFieldWidgetType.time,
       state: DataFieldState.approved,
