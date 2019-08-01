@@ -28,12 +28,10 @@ const schema = utils.generateSchema(
     funder: {
       // 委辦單位
       type: String,
-      required: true,
     },
     code: {
       // 計畫編號
       type: String,
-      required: true,
     },
     principalInvestigator: {
       // 計畫主持人

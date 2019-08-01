@@ -12,11 +12,9 @@ ProjectForm.define({
     validators: [forms.validators.length({ max: 4 })],
   }),
   funder: new forms.fields.StringField({
-    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
   code: new forms.fields.StringField({
-    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
   principalInvestigator: new forms.fields.StringField({
