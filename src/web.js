@@ -185,7 +185,10 @@ module.exports = createServer => {
     res.status(error.status);
     res.error = error;
     res.json({
+      status: error.status,
       message: error.message,
+      code: error.code || 4004,
+      error,
     });
   });
 
