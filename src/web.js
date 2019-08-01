@@ -188,7 +188,6 @@ module.exports = createServer => {
       status: error.status,
       message: error.message,
       code: error.code || 4004,
-      error,
     });
   });
 
