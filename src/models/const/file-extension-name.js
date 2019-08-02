@@ -1,9 +1,9 @@
 module.exports = {
-  annotationImage: ['jpg', 'png'],
+  annotationImage: ['jpg', 'jpeg', 'png'],
   annotationVideo: ['avi', 'm4v', 'mov', 'mp4'],
   annotationZip: ['zip'],
   annotationCsv: ['csv'],
-  projectCoverImage: ['jpg', 'png'],
+  projectCoverImage: ['jpg', 'jpeg', 'png'],
   issueAttachment: [
     'csv',
     'tsv',
@@ -12,6 +12,7 @@ module.exports = {
     'xls',
     'xlsx',
     'jpg',
+    'jpeg',
     'png',
     'mp4',
     'avi',
