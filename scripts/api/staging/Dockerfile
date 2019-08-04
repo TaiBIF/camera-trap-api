@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.11
+FROM ubuntu:18.04
 LABEL creator="rwu823@gmail.com"
 LABEL maintainer1="cjk.halodule@gmail.com"
 LABEL maintainer2="dcahsu@gmail.com"
