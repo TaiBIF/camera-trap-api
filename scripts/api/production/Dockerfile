@@ -6,7 +6,7 @@ LABEL maintainer3="kelp404@phate.org"
 
 WORKDIR /camera-trap-api
 
-RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git graphicsmagick
+RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git graphicsmagick imagemagick
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 RUN apt-get -y install nodejs
 
