@@ -9,6 +9,7 @@ module.exports = {
   newCameraLocationAbnormality: 'new-camera-location-abnormality', // 回報相機異常
   newIssue: 'new-issue', // 問題回報
   newSuggestion: 'new-suggestion', // 意見反饋
+  dwcFilesReady: 'dwc-files-ready', // Dwc-a 上傳至 S3
   all() {
     return [
       this.system,
@@ -21,6 +22,7 @@ module.exports = {
       this.newCameraLocationAbnormality,
       this.newIssue,
       this.newSuggestion,
+      this.dwcFilesReady,
     ];
   },
 };
