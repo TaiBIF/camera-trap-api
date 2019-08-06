@@ -46,6 +46,6 @@ module.exports = async (req, res) => {
         type: 'file',
       },
     ],
-    filename: 'test.zip',
+    filename: `dwca-camera-trap-${encodeURIComponent(project.shortTitle)}.zip`,
   });
 };
