@@ -169,7 +169,7 @@ exports.createDwCA = (project, occuranceData) => {
   const zipFiles = [
     {
       content: occuranceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
-      name: 'occurance.txt',
+      name: 'occurance.csv',
       mode: '0755',
       date: new Date(),
       type: 'file',
