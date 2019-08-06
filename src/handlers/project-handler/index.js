@@ -1,31 +1,32 @@
 const config = require('config');
-const auth = require('../auth/authorization');
-const errors = require('../models/errors');
-const PageList = require('../models/page-list');
-const Mail = require('../common/mail');
-const utils = require('../common/utils');
-const UserPermission = require('../models/const/user-permission');
-const ProjectRole = require('../models/const/project-role');
-const ProjectAreaModel = require('../models/data/project-area-model');
-const ProjectModel = require('../models/data/project-model');
-const ProjectSpeciesModel = require('../models/data/project-species-model');
-const ProjectsSearchForm = require('../forms/project/projects-search-form');
-const ProjectMemberForm = require('../forms/project/project-member-form');
-const ProjectForm = require('../forms/project/project-form');
-const UserModel = require('../models/data/user-model');
-const DataFieldModel = require('../models/data/data-field-model');
-const DataFieldSystemCode = require('../models/const/data-field-system-code');
-const SpeciesModel = require('../models/data/species-model');
-const FileModel = require('../models/data/file-model');
-const FileType = require('../models/const/file-type');
-const StudyAreaModel = require('../models/data/study-area-model');
-const StudyAreaState = require('../models/const/study-area-state');
-const CameraLocationModel = require('../models/data/camera-location-model');
-const CameraLocationState = require('../models/const/camera-location-state');
-const DataFieldWidgetType = require('../models/const/data-field-widget-type');
-const AnnotationModel = require('../models/data/annotation-model');
-const AnnotationState = require('../models/const/annotation-state');
-const Helpers = require('../common/helpers.js');
+
+const auth = require('../../auth/authorization');
+const errors = require('../../models/errors');
+const PageList = require('../../models/page-list');
+const Mail = require('../../common/mail');
+const utils = require('../../common/utils');
+const UserPermission = require('../../models/const/user-permission');
+const ProjectRole = require('../../models/const/project-role');
+const ProjectAreaModel = require('../../models/data/project-area-model');
+const ProjectModel = require('../../models/data/project-model');
+const ProjectSpeciesModel = require('../../models/data/project-species-model');
+const ProjectsSearchForm = require('../../forms/project/projects-search-form');
+const ProjectMemberForm = require('../../forms/project/project-member-form');
+const ProjectForm = require('../../forms/project/project-form');
+const UserModel = require('../../models/data/user-model');
+const DataFieldModel = require('../../models/data/data-field-model');
+const DataFieldSystemCode = require('../../models/const/data-field-system-code');
+const SpeciesModel = require('../../models/data/species-model');
+const FileModel = require('../../models/data/file-model');
+const FileType = require('../../models/const/file-type');
+const StudyAreaModel = require('../../models/data/study-area-model');
+const StudyAreaState = require('../../models/const/study-area-state');
+const CameraLocationModel = require('../../models/data/camera-location-model');
+const CameraLocationState = require('../../models/const/camera-location-state');
+const DataFieldWidgetType = require('../../models/const/data-field-widget-type');
+const prepareProjectDwca = require('./prepareProjectDwcArchive');
+const getProjectDwca = require('./getProjectDwcArchive');
+const getProject = require('./getProject');
 
 exports.getProjects = auth(UserPermission.all(), (req, res) => {
   /*
@@ -54,26 +55,7 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
   });
 });
 
-exports.getProject = auth(UserPermission.all(), (req, res) =>
-  /*
-  GET /api/v1/projects/:projectId
-   */
-  ProjectModel.findById(req.params.projectId)
-    .populate('coverImageFile')
-    .populate('areas')
-    .populate('members.user')
-    .populate('dataFields')
-    .then(project => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (!project.canAccessBy(req.user)) {
-        throw new errors.Http403();
-      }
-
-      res.json(project.dump());
-    }),
-);
+exports.getProject = auth(UserPermission.all(), getProject);
 
 exports.addProject = auth(UserPermission.all(), (req, res) => {
   /*
@@ -465,66 +447,12 @@ exports.getProjectExampleCsv = auth(UserPermission.all(), (req, res) =>
     }),
 );
 
-exports.getProjectDarwinCoreArchive = auth(UserPermission.all(), (req, res) =>
-  /**
-     GET /api/v1/projects/:projectId/dwca.zip
-  */
-  Promise.all([
-    ProjectModel.findById(req.params.projectId),
-    AnnotationModel.where({
-      state: AnnotationState.active,
-      project: req.params.projectId,
-    })
-      .populate('species')
-      .populate('cameraLocation'),
-    CameraLocationModel.where({
-      project: req.params.projectId,
-      state: CameraLocationState.active,
-    }),
-  ]).then(([project, projectAnnotations, projectCameraLocations]) => {
-    if (!project) {
-      throw new errors.Http404();
-    }
-    if (!project.canAccessBy(req.user)) {
-      throw new errors.Http403();
-    }
+exports.getProjectDarwinCoreArchive = auth(
+  UserPermission.all(),
+  getProjectDwca,
+);
 
-    const occuranceData = [
-      [
-        'occurrenceID',
-        'basisOfRecord',
-        'eventTime',
-        'country',
-        'countryCode',
-        'verbatimElevation',
-        'decimalLatitude',
-        'decimalLongitude',
-        'geodeticDatum',
-        'vernacularName',
-      ],
-    ];
-    projectAnnotations.forEach(x => {
-      const speciesName = x.species ? x.species.title['zh-TW'] : "''";
-      occuranceData.push([
-        x._id.toString(),
-        'MachineObservation',
-        x.createTime,
-        'Taiwan',
-        'TW',
-        x.cameraLocation.altitude,
-        x.cameraLocation.latitude,
-        x.cameraLocation.longitude,
-        x.cameraLocation.geodeticDatum,
-        speciesName,
-      ]);
-    });
-
-    utils.csvStringifyAsync(occuranceData).then(data => {
-      const dwcZipFiles = Helpers.createDwCA(project, data);
-      res.zip({
-        files: dwcZipFiles,
-        filename: `dwca-camera-trap-${project.shortTitle}.zip`,
-      });
-    });
-  }),
+exports.prepareProjectDarwinCoreArchive = auth(
+  UserPermission.all(),
+  prepareProjectDwca,
 );
