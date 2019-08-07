@@ -32,7 +32,7 @@ exports.findSynonymSpecies = speciesIds =>
     });
   });
 
-exports.createDwCA = (project, occuranceData) => {
+exports.createDwCA = (project, occurrenceData) => {
   const projectId = project._id.toString();
 
   // meta.xml
@@ -171,8 +171,8 @@ exports.createDwCA = (project, occuranceData) => {
 
   const zipFiles = [
     {
-      content: occuranceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
-      name: 'occurance.csv',
+      content: occurrenceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
+      name: 'occurrence.csv',
       mode: '0755',
       date: new Date(),
       type: 'file',

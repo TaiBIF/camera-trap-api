@@ -20,12 +20,12 @@ module.exports = async (req, res) => {
 
   const folder = config.s3.folders.annotationDWCAs;
 
-  let [meta, eml, occurance] = [];
+  let [meta, eml, occurrence] = [];
   try {
-    [meta, eml, occurance] = await Promise.all([
+    [meta, eml, occurrence] = await Promise.all([
       utils.getS3Object(`${folder}/${projectId}/meta.xml`),
       utils.getS3Object(`${folder}/${projectId}/eml.xml`),
-      utils.getS3Object(`${folder}/${projectId}/occurance.csv`),
+      utils.getS3Object(`${folder}/${projectId}/occurrence.csv`),
     ]);
   } catch (e) {
     throw new errors.Http404();
@@ -34,8 +34,8 @@ module.exports = async (req, res) => {
   res.zip({
     files: [
       {
-        content: occurance.Body.toString('utf-8'),
-        name: 'occurance.csv',
+        content: occurrence.Body.toString('utf-8'),
+        name: 'occurrence.csv',
         date: new Date(),
         type: 'file',
       },
