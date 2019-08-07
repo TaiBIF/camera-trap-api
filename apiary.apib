@@ -3773,7 +3773,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Add a study area [POST /projects/{projectId}/study-areas/studyAreaId]
+## Add a study area [POST /projects/{projectId}/study-areas/{studyAreaId}]
 修改樣區。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -6720,7 +6720,9 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
-## Update multiple annotations
+### Update multiple annotations [POST /annotations/{annotationIds}]
+To be implemented.
++ response 200 (application/json)
 
 ## Export annotations [/annotations.csv]
 ### Export annotations to .csv [GET /annotations.csv{?studyArea,cameraLocations,startTime,endTime,sort,fields,species}]
