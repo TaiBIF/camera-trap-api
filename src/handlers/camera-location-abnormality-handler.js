@@ -40,7 +40,7 @@ exports.addCameraLocationAbnormality = auth(
           throw new errors.Http403();
         }
         if (!cameraLocation) {
-          throw new errors.Http400('The camera location is not exists.');
+          throw new errors.Http400('The camera location does not exists.');
         }
 
         const cameraLocationAbnormality = new CameraLocationAbnormalityModel({
