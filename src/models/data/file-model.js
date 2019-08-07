@@ -134,8 +134,7 @@ schema.method('getExtensionName', function() {
   return path
     .extname(this.originalFilename)
     .replace('.', '')
-    .toLowerCase()
-    .replace('jpg', 'jpeg');
+    .toLowerCase();
 });
 
 schema.method('getFilename', function(extensionName) {
