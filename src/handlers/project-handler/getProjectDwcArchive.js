@@ -19,11 +19,17 @@ module.exports = async (req, res) => {
   }
 
   const folder = config.s3.folders.annotationDWCAs;
-  const meta = await utils.getS3Object(`${folder}/${projectId}/meta.xml`);
-  const eml = await utils.getS3Object(`${folder}/${projectId}/eml.xml`);
-  const occurance = await utils.getS3Object(
-    `${folder}/${projectId}/occurance.csv`,
-  );
+
+  let [meta, eml, occurance] = [];
+  try {
+    [meta, eml, occurance] = await Promise.all([
+      utils.getS3Object(`${folder}/${projectId}/meta.xml`),
+      utils.getS3Object(`${folder}/${projectId}/eml.xml`),
+      utils.getS3Object(`${folder}/${projectId}/occurance.csv`),
+    ]);
+  } catch (e) {
+    throw new errors.Http404();
+  }
 
   res.zip({
     files: [
@@ -46,6 +52,6 @@ module.exports = async (req, res) => {
         type: 'file',
       },
     ],
-    filename: 'test.zip',
+    filename: `dwca-camera-trap-${encodeURIComponent(project.shortTitle)}.zip`,
   });
 };
