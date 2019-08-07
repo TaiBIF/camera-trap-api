@@ -255,7 +255,11 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
       },
     )
     .then(items => {
-      const result = [];
+      const result = {
+        byDate: [],
+        byMonth: [],
+      };
+      const resultByMonth = {};
       let startTime;
       let endTime;
 
@@ -286,12 +290,30 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         time += aDayInMilliseconds
       ) {
         const item = items.find(x => x._id === time);
-        result.push({
-          time: new Date(time),
-          duration: item ? item.annotation.time - item._id : null,
+        const itemDate = new Date(time);
+        const itemDuration = item ? item.annotation.time - item._id : null;
+        const month = `0${itemDate.getMonth() + 1}`.slice(-2);
+        const yearMonth = `${itemDate.getFullYear()}-${month}`;
+
+        if (itemDuration) {
+          resultByMonth[yearMonth] =
+            resultByMonth[yearMonth] !== undefined
+              ? itemDuration + resultByMonth[yearMonth]
+              : itemDuration;
+        }
+
+        result.byDate.push({
+          time: itemDate,
+          duration: itemDuration,
         });
       }
 
+      Object.keys(resultByMonth).forEach(key => {
+        result.byMonth.push({
+          time: key,
+          duration: resultByMonth[key],
+        });
+      });
       res.json(result);
     });
 });
