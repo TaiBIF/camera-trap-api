@@ -256,10 +256,10 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
     )
     .then(items => {
       const result = {
-        'byDate': [],
-        'byMonth': [],
-      }
-      let resultByMonth = {};
+        byDate: [],
+        byMonth: [],
+      };
+      const resultByMonth = {};
       let startTime;
       let endTime;
 
@@ -292,26 +292,31 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         const item = items.find(x => x._id === time);
         const itemDate = new Date(time);
         const itemDuration = item ? item.annotation.time - item._id : null;
-        const month = ('0' + (itemDate.getMonth() + 1)).slice(-2);
+        const month = `0${itemDate.getMonth() + 1}`.slice(-2);
         const yearMonth = `${itemDate.getFullYear()}-${month}`;
-        if (parseInt(itemDuration) > 0) {
-          const n = parseInt(itemDuration);
-          resultByMonth[yearMonth] = resultByMonth.hasOwnProperty(yearMonth) ?
-            resultByMonth[yearMonth] + n : n
+
+        if (itemDuration) {
+          resultByMonth[yearMonth] =
+            resultByMonth[yearMonth] !== undefined
+              ? itemDuration + resultByMonth[yearMonth]
+              : itemDuration;
         }
 
-        result['byDate'].push({
+        result.byDate.push({
           time: itemDate,
           duration: itemDuration,
         });
       }
 
-      for (let i in resultByMonth) {
-        result['byMonth'].push({
-          time: i,
-          duration: resultByMonth[i]
+      Object.keys(resultByMonth).forEach(key => {
+        result.byMonth.push({
+          time: key,
+          duration: resultByMonth[key],
         });
-      }
+      });
+      /* for (const [key, value] of Object.entries(resultByMonth)) {
+
+      } */
       res.json(result);
     });
 });
