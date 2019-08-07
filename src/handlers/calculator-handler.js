@@ -296,10 +296,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         const yearMonth = `${itemDate.getFullYear()}-${month}`;
 
         if (itemDuration) {
-          resultByMonth[yearMonth] =
-            resultByMonth[yearMonth] !== undefined
-              ? itemDuration + resultByMonth[yearMonth]
-              : itemDuration;
+          resultByMonth[yearMonth] = (resultByMonth[yearMonth] !== undefined)  ?
+            itemDuration + resultByMonth[yearMonth]: itemDuration;
         }
 
         result.byDate.push({
@@ -314,9 +312,6 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
           duration: resultByMonth[key],
         });
       });
-      /* for (const [key, value] of Object.entries(resultByMonth)) {
-
-      } */
       res.json(result);
     });
 });
