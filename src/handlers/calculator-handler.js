@@ -63,10 +63,12 @@ exports.calculateOI = auth(UserPermission.all(), (req, res) => {
         synonymSpeciesIds,
       ]) => {
         if (!project) {
-          throw new errors.Http400('The project is not exists.');
+          throw new errors.Http400('The project does not exist.');
         }
         if (!projectSpecies) {
-          throw new errors.Http400('The species is not belong to the project.');
+          throw new errors.Http400(
+            'The species does not belong to the project.',
+          );
         }
         if (!project.canAccessBy(req.user)) {
           throw new errors.Http403();
@@ -199,10 +201,12 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         synonymSpeciesIds,
       ]) => {
         if (!project) {
-          throw new errors.Http400('The project is not exists.');
+          throw new errors.Http400('The project does not exists.');
         }
         if (!projectSpecies) {
-          throw new errors.Http400('The species is not belong to the project.');
+          throw new errors.Http400(
+            'The species does not belong to the project.',
+          );
         }
         if (!project.canAccessBy(req.user)) {
           throw new errors.Http403();
