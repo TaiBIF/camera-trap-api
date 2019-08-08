@@ -598,7 +598,9 @@ exports.convertCsvToAnnotations = ({
     }
     if (missingFields.length) {
       uploadSession.errorType = UploadSessionErrorType.missingFields;
-      uploadSession.errorMessage = `Missing required fields ${missingFields.join(', ')}`;
+      uploadSession.errorMessage = `Missing required fields ${missingFields.join(
+        ', ',
+      )}`;
       throw new Error(
         `Missing required fields ${missingFields.join(
           ', ',
