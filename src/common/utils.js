@@ -586,12 +586,9 @@ exports.convertCsvToAnnotations = ({
     const missingFields = [];
     if (!information.studyArea) {
       missingFields.push('study area');
-      uploadSession.errorType = UploadSessionErrorType.missingFieldsStudyArea;
     }
     if (!information.cameraLocation) {
       missingFields.push('camera location');
-      uploadSession.errorType =
-        UploadSessionErrorType.missingFieldsCameraLocation;
     }
     if (!information.filename) {
       missingFields.push('filename');
@@ -600,6 +597,8 @@ exports.convertCsvToAnnotations = ({
       missingFields.push('time');
     }
     if (missingFields.length) {
+      uploadSession.errorType = UploadSessionErrorType.missingFields;
+      uploadSession.errorMessage = `Missing required fields ${missingFields.join(', ')}`;
       throw new Error(
         `Missing required fields ${missingFields.join(
           ', ',
