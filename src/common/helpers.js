@@ -14,8 +14,8 @@ exports.findSynonymSpecies = speciesIds =>
       // found synonyms
       Object.entries(SpeciesSynonyms).forEach(([showName, sameNames]) => {
         const synonymList = [
-          ...showName,
-          sameNames ? sameNames.split(';') : [],
+          showName,
+          ...(sameNames ? sameNames.split(';') : []),
         ];
 
         if (synonymList.indexOf(species.title['zh-TW']) >= 0) {
