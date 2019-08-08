@@ -305,7 +305,7 @@ exports.updateProjectMembers = auth(UserPermission.all(), (req, res) => {
 
         if (!updateMember) {
           throw new errors.Http400(
-            `User ${updateMemberDTO.user} is not exists.`,
+            `User ${updateMemberDTO.user} does not exist.`,
           );
         }
         updateMember.role = updateMemberDTO.role;
