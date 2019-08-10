@@ -60,6 +60,7 @@ exports.uploadFile = auth(UserPermission.all(), (req, res) => {
   Content-Type: multipart/form-data
   The input name is "file" of the form.
    */
+  process.setMaxListeners(0);
   const form = new FileForm(req.query);
   const errorMessage = form.validate();
   if (errorMessage) {

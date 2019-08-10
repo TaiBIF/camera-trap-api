@@ -18,6 +18,9 @@ const model = mongoose.model(
         type: String,
         enum: UploadSessionErrorType.all(),
       },
+      errorMessage: {
+        type: String,
+      },
       project: {
         type: Schema.ObjectId,
         ref: 'ProjectModel',
@@ -56,6 +59,7 @@ model.prototype.dump = function() {
     id: `${this._id}`,
     state: this.state,
     errorType: this.errorType,
+    errorMessage: this.errorMessage,
     project:
       this.project && typeof this.project.dump === 'function'
         ? this.project.dump()
