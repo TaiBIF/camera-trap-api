@@ -179,7 +179,7 @@ schema.method('saveWithContent', function(source, lastModified) {
             width: 383,
             height: 185,
             isFillUp: true,
-            isPublic: true,
+            isPublic: process.env.NODE_ENV === 'prod', // @todo temporary for staging.
           })
           .then(result => {
             this.size = result.buffer.length;
@@ -206,7 +206,7 @@ schema.method('saveWithContent', function(source, lastModified) {
             width: 1280,
             height: 1280,
             isFillUp: false,
-            isPublic: true,
+            isPublic: process.env.NODE_ENV === 'prod', // @todo temporary for staging.
           }),
           utils.resizeImageAndUploadToS3({
             buffer:
@@ -218,7 +218,7 @@ schema.method('saveWithContent', function(source, lastModified) {
             width: 640,
             height: 640,
             isFillUp: false,
-            isPublic: true,
+            isPublic: process.env.NODE_ENV === 'prod', // @todo temporary for staging.
           }),
           utils.getExif(
             typeof source === 'string'
