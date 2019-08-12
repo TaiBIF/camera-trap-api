@@ -610,6 +610,7 @@ exports.convertCsvToAnnotations = ({
       );
     }
 
+    // Alert duplicates but not omitting the annotation.
     const findExist = result.annotations.find(
       x =>
         `${x.studyArea._id}` === `${information.studyArea._id}` &&
@@ -619,8 +620,7 @@ exports.convertCsvToAnnotations = ({
     );
     if (findExist) {
       // This annotation is duplicated.
-      console.error(findExist);
-      return;
+      console.error(findExist.rawData.join(','));
     }
 
     result.annotations.push(
