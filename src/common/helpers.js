@@ -44,7 +44,7 @@ exports.createDwCA = (project, occurrenceData) => {
     })
     .ele('core', {
       encoding: 'UTF-8',
-      fieldsTerminatedBy: '\\t',
+      fieldsTerminatedBy: ',',
       linesTerminatedBy: '\\n',
       fieldsEnclosedBy: '',
       ignoreHeaderLines: '1',
