@@ -670,13 +670,15 @@ exports.stringifyTimeToCSV = (time, timezone) => {
     .replace('T', ' ');
 };
 
-exports.csvStringifyAsync = data =>
+exports.csvStringifyAsync = (data, options = {}) =>
   /*
-  @param data {Array<Array<any>>}
-  @returns {Promise<string>}
-   */
+    @param data {Array<Array<any>>}
+    @returns {Promise<string>}
+  */
   new Promise((resolve, reject) => {
-    csvStringify(data, (error, output) => {
+    const csvOptions = { ...options };
+
+    csvStringify(data, csvOptions, (error, output) => {
       if (error) {
         return reject(error);
       }
