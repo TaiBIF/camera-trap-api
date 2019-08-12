@@ -5,6 +5,7 @@ module.exports = {
   permissionDenied: 'permission-denied', // 沒有權限
   missingFieldsStudyArea: 'missing-fields-study-area', // 沒有子樣區
   missingFieldsCameraLocation: 'missing-fields-camera-location', // 相機位置(多筆)
+  missingFields: 'missing-fields',
   others: 'others', // 其他錯誤
   all() {
     return [
@@ -14,6 +15,7 @@ module.exports = {
       this.permissionDenied,
       this.missingFieldsStudyArea,
       this.missingFieldsCameraLocation,
+      this.missingFields,
       this.others,
     ];
   },
