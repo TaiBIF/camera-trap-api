@@ -28,20 +28,7 @@ module.exports = async (req, res) => {
   }
 
   // titles
-  const occurrenceData = [
-    [
-      'occurrenceID',
-      'basisOfRecord',
-      'eventTime',
-      'country',
-      'countryCode',
-      'verbatimElevation',
-      'decimalLatitude',
-      'decimalLongitude',
-      'geodeticDatum',
-      'vernacularName',
-    ],
-  ];
+  const occurrenceData = [];
 
   const speciesRawData = await SpeciesModel.find().select({
     'title.zh-TW': true,
@@ -87,11 +74,27 @@ module.exports = async (req, res) => {
     ]);
   });
 
+  const csvOptions = {
+    header: true,
+    columns: [
+      'occurrenceID',
+      'basisOfRecord',
+      'eventTime',
+      'country',
+      'countryCode',
+      'verbatimElevation',
+      'decimalLatitude',
+      'decimalLongitude',
+      'geodeticDatum',
+      'vernacularName',
+    ],
+  };
+
   annotationsCursor.on('end', () => {
     utils
-      .csvStringifyAsync(occurrenceData)
-      .then(archiveData => {
-        const dwcFiles = Helpers.createDwCA(project, archiveData);
+      .csvStringifyAsync(occurrenceData, csvOptions)
+      .then(occurrenceCsvData => {
+        const dwcFiles = Helpers.createDwCA(project, occurrenceCsvData);
         const folder = config.s3.folders.annotationDWCAs;
 
         dwcFiles.forEach(f => {
