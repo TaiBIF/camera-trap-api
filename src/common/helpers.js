@@ -58,7 +58,7 @@ exports.createDwCA = (project, occurrenceData) => {
     .up()
     .ele('field', {
       index: '1',
-      term: 'http://rs.tdwg.org/dwc/terms/occurrenceId',
+      term: 'http://rs.tdwg.org/dwc/terms/occurrenceID',
     })
     .up()
     .ele('field', {
