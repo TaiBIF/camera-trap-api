@@ -610,6 +610,7 @@ exports.convertCsvToAnnotations = ({
       );
     }
 
+    // Alert duplicates but not omitting the annotation.
     const findExist = result.annotations.find(
       x =>
         `${x.studyArea._id}` === `${information.studyArea._id}` &&
@@ -619,8 +620,7 @@ exports.convertCsvToAnnotations = ({
     );
     if (findExist) {
       // This annotation is duplicated.
-      console.error(findExist);
-      return;
+      console.error(findExist.rawData.join(','));
     }
 
     result.annotations.push(
@@ -670,13 +670,15 @@ exports.stringifyTimeToCSV = (time, timezone) => {
     .replace('T', ' ');
 };
 
-exports.csvStringifyAsync = data =>
+exports.csvStringifyAsync = (data, options = {}) =>
   /*
-  @param data {Array<Array<any>>}
-  @returns {Promise<string>}
-   */
+    @param data {Array<Array<any>>}
+    @returns {Promise<string>}
+  */
   new Promise((resolve, reject) => {
-    csvStringify(data, (error, output) => {
+    const csvOptions = { ...options };
+
+    csvStringify(data, csvOptions, (error, output) => {
       if (error) {
         return reject(error);
       }
