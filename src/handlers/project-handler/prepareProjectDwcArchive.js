@@ -59,7 +59,8 @@ module.exports = async (req, res) => {
     const cameraLocation = cameraLocations[annotation.cameraLocation] || {};
 
     occurrenceData.push([
-      id,
+      id, // id
+      id, // occurrenceID
       'MachineObservation',
       moment(annotation.createTime).format('YYYY-MM-DD HH:mm:ss'),
       'Taiwan',
@@ -78,6 +79,7 @@ module.exports = async (req, res) => {
   const csvOptions = {
     header: true,
     columns: [
+      'id',
       'occurrenceID',
       'basisOfRecord',
       'eventTime',
