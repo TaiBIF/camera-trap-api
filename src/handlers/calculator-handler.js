@@ -299,11 +299,11 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         const month = `0${itemDate.getMonth() + 1}`.slice(-2);
         const yearMonth = `${itemDate.getFullYear()}-${month}`;
 
-        if (itemDuration) {
-          resultByMonth[yearMonth] =
-            resultByMonth[yearMonth] !== undefined
-              ? itemDuration + resultByMonth[yearMonth]
-              : itemDuration;
+        if (itemDuration && resultByMonth[yearMonth] === undefined) {
+          resultByMonth[yearMonth] = {
+            duration: itemDuration,
+            days: itemDate.getDate() - 1
+          }
         }
 
         result.byDate.push({
@@ -315,7 +315,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
       Object.keys(resultByMonth).forEach(key => {
         result.byMonth.push({
           time: key,
-          duration: resultByMonth[key],
+          duration: resultByMonth[key]['duration'],
+          days: resultByMonth[key]['days']
         });
       });
       res.json(result);
