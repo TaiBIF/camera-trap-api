@@ -118,7 +118,8 @@ exports.createDwCA = (project, occurrenceData) => {
   const ccLabel = project.interpretiveDataLicense
     ? CC_MAP[project.interpretiveDataLicense]
     : '';
-  const eml = xmlbuilder
+
+  let eml = xmlbuilder
     .create('eml:eml', { headless: true })
     .att({
       'xmlns:eml': 'eml://ecoinformatics.org/eml-2.1.1',
@@ -160,18 +161,48 @@ exports.createDwCA = (project, occurrenceData) => {
     .ele('para', {}, project.description)
     .up()
     .up()
-    .up()
-    .ele('intellectualRights')
-    .ele('para', {}, 'This work is licensed under a')
-    .ele('ulink', {
-      url: 'http://creativecommons.org/licenses/by/4.0/legalcode',
-    })
-    .ele(
-      'citetitle',
-      {},
-      `Creative Commons Attribution (${ccLabel}) 4.0 License`,
-    )
-    .end({ pretty: true });
+    .ele('intellectualRights');
+
+  if (project.interpretiveDataLicense === 'cc0') {
+    eml = eml
+      .ele(
+        'para',
+        {},
+        `To the extent possible under law, the publisher has waived all rights to these data and has dedicated them to the`,
+      )
+      .ele('ulink', {
+        url: 'http://creativecommons.org/publicdomain/zero/1.0/legalcode',
+      })
+      .ele('citetitle', `Public Domain (${ccLabel})`)
+      .up()
+      .up()
+      .text(
+        '. Users may copy, modify, distribute and use the work, including for commercial purposes, without restriction.',
+      );
+  } else if (project.interpretiveDataLicense === 'by') {
+    eml = eml
+      .ele('para', {}, `This work is licensed under a`)
+      .ele('ulink', {
+        url: 'http://creativecommons.org/licenses/by/4.0/legalcode',
+      })
+      .ele('citetitle', `Creative Commons Attribution (${ccLabel}) 4.0 License`)
+      .up()
+      .text('.');
+  } else if (project.interpretiveDataLicense === 'by-nc') {
+    eml = eml
+      .ele('para', {}, `This work is licensed under a`)
+      .ele('ulink', {
+        url: 'http://creativecommons.org/licenses/by-nc/4.0/legalcode',
+      })
+      .ele(
+        'citetitle',
+        `Creative Commons Attribution Non Commercial (${ccLabel}) 4.0 License`,
+      )
+      .up()
+      .text('.');
+  }
+
+  eml = eml.end({ pretty: true });
 
   const zipFiles = [
     {
