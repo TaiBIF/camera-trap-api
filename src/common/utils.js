@@ -485,6 +485,8 @@ exports.convertCsvToAnnotations = ({
       failures: [],
     };
     information.id = items[dataFields.length + 1];
+
+    // Validate field values.
     for (let index = 0; index < dataFields.length; index += 1) {
       const data = (items[index + dataOffset] || '').trim();
       let nextData;
@@ -607,18 +609,20 @@ exports.convertCsvToAnnotations = ({
         )} at row ${row}.\n${JSON.stringify(information)}`,
       );
     }
-    if (
-      result.annotations.find(
-        x =>
-          `${x.studyArea._id}` === `${information.studyArea._id}` &&
-          `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
-          x.filename === information.filename &&
-          x.time.getTime() === information.time.getTime(),
-      )
-    ) {
+
+    const findExist = result.annotations.find(
+      x =>
+        `${x.studyArea._id}` === `${information.studyArea._id}` &&
+        `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
+        x.filename === information.filename &&
+        x.time.getTime() === information.time.getTime(),
+    );
+    if (findExist) {
       // This annotation is duplicated.
+      console.error(findExist);
       return;
     }
+
     result.annotations.push(
       new AnnotationModel({
         _id: information.id || undefined,
