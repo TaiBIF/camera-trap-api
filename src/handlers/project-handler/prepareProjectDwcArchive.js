@@ -1,5 +1,6 @@
 const config = require('config');
 const { keyBy } = require('lodash');
+const moment = require('moment');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
 const CameraLocationModel = require('../../models/data/camera-location-model');
@@ -73,7 +74,7 @@ module.exports = async (req, res) => {
     occurrenceData.push([
       id,
       'MachineObservation',
-      annotation.createTime,
+      moment(annotation.createTime).format('YYYY-MM-DD HH:mm:ss'),
       'Taiwan',
       'TW',
       cameraLocation.altitude,
