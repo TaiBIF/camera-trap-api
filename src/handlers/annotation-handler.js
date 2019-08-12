@@ -327,7 +327,7 @@ exports.getAnnotations = auth(UserPermission.all(), (req, res) => {
                 'attachment; filename=export.csv',
               );
               res.contentType('csv');
-              res.write(data);
+              res.write(`\ufeff${data}\n`);
             });
           return new Promise((resolve, reject) => {
             query
