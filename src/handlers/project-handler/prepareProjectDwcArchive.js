@@ -1,5 +1,6 @@
 const config = require('config');
 const { keyBy } = require('lodash');
+const moment = require('moment');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
 const CameraLocationModel = require('../../models/data/camera-location-model');
@@ -27,20 +28,7 @@ module.exports = async (req, res) => {
   }
 
   // titles
-  const occurrenceData = [
-    [
-      'occurrenceID',
-      'basisOfRecord',
-      'eventTime',
-      'country',
-      'countryCode',
-      'verbatimElevation',
-      'decimalLatitude',
-      'decimalLongitude',
-      'geodeticDatum',
-      'vernacularName',
-    ],
-  ];
+  const occurrenceData = [];
 
   const speciesRawData = await SpeciesModel.find().select({
     'title.zh-TW': true,
@@ -63,7 +51,7 @@ module.exports = async (req, res) => {
     state: AnnotationState.active,
     project: projectId,
   })
-    .select(['_id', 'createTime', 'cameraLocation'])
+    .select(['_id', 'createTime', 'cameraLocation', 'species'])
     .cursor();
 
   annotationsCursor.on('data', annotation => {
@@ -71,9 +59,10 @@ module.exports = async (req, res) => {
     const cameraLocation = cameraLocations[annotation.cameraLocation] || {};
 
     occurrenceData.push([
-      id,
+      id, // id
+      id, // occurrenceID
       'MachineObservation',
-      annotation.createTime,
+      moment(annotation.createTime).format('YYYY-MM-DD HH:mm:ss'),
       'Taiwan',
       'TW',
       cameraLocation.altitude,
@@ -82,15 +71,34 @@ module.exports = async (req, res) => {
       cameraLocation.geodeticDatum,
       species[annotation.species]
         ? species[annotation.species].title['zh-TW']
-        : "''",
+        : '',
+      '',
     ]);
   });
 
+  const csvOptions = {
+    header: true,
+    columns: [
+      'id',
+      'occurrenceID',
+      'basisOfRecord',
+      'eventTime',
+      'country',
+      'countryCode',
+      'verbatimElevation',
+      'decimalLatitude',
+      'decimalLongitude',
+      'geodeticDatum',
+      'vernacularName',
+      'scientificName',
+    ],
+  };
+
   annotationsCursor.on('end', () => {
     utils
-      .csvStringifyAsync(occurrenceData)
-      .then(archiveData => {
-        const dwcFiles = Helpers.createDwCA(project, archiveData);
+      .csvStringifyAsync(occurrenceData, csvOptions)
+      .then(occurrenceCsvData => {
+        const dwcFiles = Helpers.createDwCA(project, occurrenceCsvData);
         const folder = config.s3.folders.annotationDWCAs;
 
         dwcFiles.forEach(f => {

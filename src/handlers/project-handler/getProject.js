@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
   try {
     const folder = config.s3.folders.annotationDWCAs;
     occurrence = await utils.getS3Object(
-      `${folder}/${project._id}/occurrence.csv`,
+      `${folder}/${project._id}/occurrence.txt`,
     );
   } catch (e) {
     // file not exist
