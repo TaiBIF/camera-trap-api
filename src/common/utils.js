@@ -485,6 +485,8 @@ exports.convertCsvToAnnotations = ({
       failures: [],
     };
     information.id = items[dataFields.length + 1];
+
+    // Validate field values.
     for (let index = 0; index < dataFields.length; index += 1) {
       const data = (items[index + dataOffset] || '').trim();
       let nextData;
@@ -606,6 +608,8 @@ exports.convertCsvToAnnotations = ({
         )} at row ${row}.\n${JSON.stringify(information)}`,
       );
     }
+
+    //
     if (
       result.annotations.find(
         x =>
