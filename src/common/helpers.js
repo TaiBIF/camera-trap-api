@@ -142,7 +142,7 @@ exports.createDwCA = (project, occurrenceData) => {
     .up()
     .up()
     .up()
-    .ele('metadataProvider')
+    .ele('contact')
     .ele('individualName')
     .ele('surName', {}, project.principalInvestigator)
     .up()
