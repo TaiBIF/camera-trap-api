@@ -71,6 +71,7 @@ module.exports = async (req, res) => {
       species[annotation.species]
         ? species[annotation.species].title['zh-TW']
         : '',
+      '',
     ]);
   });
 
@@ -87,6 +88,7 @@ module.exports = async (req, res) => {
       'decimalLongitude',
       'geodeticDatum',
       'vernacularName',
+      'scientificName',
     ],
   };
 

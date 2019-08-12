@@ -102,6 +102,10 @@ exports.createDwCA = (project, occurrenceData) => {
       index: '10',
       term: 'http://rs.tdwg.org/dwc/terms/vernacularName',
     })
+    .ele('field', {
+      index: '11',
+      term: 'http://rs.tdwg.org/dwc/terms/scientificName',
+    })
     .up()
     .end({ pretty: true });
 
