@@ -51,14 +51,14 @@ exports.createDwCA = (project, occurrenceData) => {
       rowType: 'http://rs.tdwg.org/dwc/terms/Occurrence',
     })
     .ele('files')
-    .ele('location', {}, 'occurence.txt')
+    .ele('location', {}, 'occurrence.txt')
     .up()
     .up()
     .ele('id', { index: 0 })
     .up()
     .ele('field', {
       index: '1',
-      term: 'http://rs.tdwg.org/dwc/terms/occurenceId',
+      term: 'http://rs.tdwg.org/dwc/terms/occurrenceId',
     })
     .up()
     .ele('field', {
