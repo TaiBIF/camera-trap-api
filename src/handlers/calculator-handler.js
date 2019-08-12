@@ -302,8 +302,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
         if (itemDuration && resultByMonth[yearMonth] === undefined) {
           resultByMonth[yearMonth] = {
             duration: itemDuration,
-            days: itemDate.getDate() - 1
-          }
+            days: itemDate.getDate() - 1,
+          };
         }
 
         result.byDate.push({
@@ -315,8 +315,8 @@ exports.calculateLTD = auth(UserPermission.all(), (req, res) => {
       Object.keys(resultByMonth).forEach(key => {
         result.byMonth.push({
           time: key,
-          duration: resultByMonth[key]['duration'],
-          days: resultByMonth[key]['days']
+          duration: resultByMonth[key].duration,
+          days: resultByMonth[key].days,
         });
       });
       res.json(result);
