@@ -17,10 +17,10 @@ module.exports = (permissions = [], func) =>
     ) {
       // req.user isn't administrator and not in the white list.
       if (req.user.isLogin()) {
-        next(new errors.Http403());
+        next(new errors.Http403('Privilege insufficient.'));
       } else {
         // Redirect the user to the login page.
-        next(new errors.Http401());
+        next(new errors.Http401('Login required.'));
       }
     } else {
       // eslint-disable-next-line prefer-rest-params

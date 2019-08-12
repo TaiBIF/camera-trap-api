@@ -7,29 +7,32 @@ exports.findSynonymSpecies = speciesIds =>
   SpeciesModel.where({
     _id: { $in: speciesIds },
   }).then(speciesList => {
-    let foundSynonyms = [];
+    let synonyms = [];
     speciesList.forEach(species => {
-      Object.entries(SpeciesSynonyms).find(item => {
-        let synonymList = [item[0]];
-        if (item[1] !== '') {
-          synonymList = synonymList.concat(item[1].split(';'));
-        }
+      synonyms.push(species.title['zh-TW']);
+
+      // found synonyms
+      Object.entries(SpeciesSynonyms).forEach(([showName, sameNames]) => {
+        const synonymList = [
+          showName,
+          ...(sameNames ? sameNames.split(';') : []),
+        ];
+
         if (synonymList.indexOf(species.title['zh-TW']) >= 0) {
-          foundSynonyms = synonymList;
-          return true;
+          synonyms = [...synonyms, ...synonymList];
         }
-        return false;
       });
     });
+
     return SpeciesModel.where({
-      'title.zh-TW': { $in: foundSynonyms },
+      'title.zh-TW': { $in: synonyms },
     }).then(mappedSpeciesList => {
       const mappedSpeciesIds = mappedSpeciesList.map(species => species._id);
       return mappedSpeciesIds;
     });
   });
 
-exports.createDwCA = (project, occuranceData) => {
+exports.createDwCA = (project, occurrenceData) => {
   const projectId = project._id.toString();
 
   // meta.xml
@@ -168,8 +171,8 @@ exports.createDwCA = (project, occuranceData) => {
 
   const zipFiles = [
     {
-      content: occuranceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
-      name: 'occurance.csv',
+      content: occurrenceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
+      name: 'occurrence.csv',
       mode: '0755',
       date: new Date(),
       type: 'file',

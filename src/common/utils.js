@@ -588,12 +588,9 @@ exports.convertCsvToAnnotations = ({
     const missingFields = [];
     if (!information.studyArea) {
       missingFields.push('study area');
-      uploadSession.errorType = UploadSessionErrorType.missingFieldsStudyArea;
     }
     if (!information.cameraLocation) {
       missingFields.push('camera location');
-      uploadSession.errorType =
-        UploadSessionErrorType.missingFieldsCameraLocation;
     }
     if (!information.filename) {
       missingFields.push('filename');
@@ -602,6 +599,10 @@ exports.convertCsvToAnnotations = ({
       missingFields.push('time');
     }
     if (missingFields.length) {
+      uploadSession.errorType = UploadSessionErrorType.missingFields;
+      uploadSession.errorMessage = `Missing required fields ${missingFields.join(
+        ', ',
+      )}`;
       throw new Error(
         `Missing required fields ${missingFields.join(
           ', ',
@@ -609,19 +610,19 @@ exports.convertCsvToAnnotations = ({
       );
     }
 
-    //
-    if (
-      result.annotations.find(
-        x =>
-          `${x.studyArea._id}` === `${information.studyArea._id}` &&
-          `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
-          x.filename === information.filename &&
-          x.time.getTime() === information.time.getTime(),
-      )
-    ) {
+    const findExist = result.annotations.find(
+      x =>
+        `${x.studyArea._id}` === `${information.studyArea._id}` &&
+        `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
+        x.filename === information.filename &&
+        x.time.getTime() === information.time.getTime(),
+    );
+    if (findExist) {
       // This annotation is duplicated.
+      console.error(findExist);
       return;
     }
+
     result.annotations.push(
       new AnnotationModel({
         _id: information.id || undefined,

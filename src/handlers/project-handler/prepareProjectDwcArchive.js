@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
   }
 
   // titles
-  const occuranceData = [
+  const occurrenceData = [
     [
       'occurrenceID',
       'basisOfRecord',
@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
     const id = annotation._id.toString();
     const cameraLocation = cameraLocations[annotation.cameraLocation] || {};
 
-    occuranceData.push([
+    occurrenceData.push([
       id,
       'MachineObservation',
       annotation.createTime,
@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
 
   annotationsCursor.on('end', () => {
     utils
-      .csvStringifyAsync(occuranceData)
+      .csvStringifyAsync(occurrenceData)
       .then(archiveData => {
         const dwcFiles = Helpers.createDwCA(project, archiveData);
         const folder = config.s3.folders.annotationDWCAs;
