@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
     state: AnnotationState.active,
     project: projectId,
   })
-    .select(['_id', 'createTime', 'cameraLocation'])
+    .select(['_id', 'createTime', 'cameraLocation', 'species'])
     .cursor();
 
   annotationsCursor.on('data', annotation => {
@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
       cameraLocation.geodeticDatum,
       species[annotation.species]
         ? species[annotation.species].title['zh-TW']
-        : "''",
+        : '',
     ]);
   });
 
