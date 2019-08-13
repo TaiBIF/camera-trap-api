@@ -1,4 +1,4 @@
-const { ERROR_MAP, ERROR } = require('./errors-code');
+const { ERROR_MAP, ERROR, HTTP_STATUS } = require('./errors-code');
 
 // 1
 exports.Http400 = class Http400 extends Error {
@@ -7,7 +7,7 @@ exports.Http400 = class Http400 extends Error {
       statusCode: ERROR.DEFAULT_STATUS,
     },
   ) {
-    super();
+    super(message);
     this.status = 400;
     this.message = `${message || 'bad request'}`;
     this.code = ERROR_MAP[statusCode].code;
@@ -20,7 +20,7 @@ exports.Http401 = class Http401 extends Error {
       statusCode: ERROR.DEFAULT_STATUS,
     },
   ) {
-    super();
+    super(message);
     this.status = 401;
     this.message = `${message || 'unauthorized'}`;
     this.code = ERROR_MAP[statusCode].code;
@@ -72,13 +72,18 @@ exports.Http500 = class Http500 extends Error {
 // approach 2
 exports.HttpStatusError = class HttpStatusError extends Error {
   constructor(
-    { message, status, statusMap = ERROR.DEFAULT_STATUS } = {
-      statusCode: ERROR.DEFAULT_STATUS,
+    {
+      message,
+      status = HTTP_STATUS.DEFAULT,
+      errorMap = ERROR.DEFAULT_STATUS,
+    } = {
+      status: HTTP_STATUS.DEFAULT,
+      errorMap: ERROR.DEFAULT_STATUS,
     },
   ) {
     super();
-    this.status = status || ERROR_MAP[statusMap].status;
-    this.message = `${message || ERROR_MAP[statusMap].message}`;
-    this.code = ERROR_MAP[statusMap].code;
+    this.status = status;
+    this.message = `${message || ERROR_MAP[status][errorMap].message}`;
+    this.code = ERROR_MAP[status][errorMap].code;
   }
 };
