@@ -204,9 +204,10 @@ exports.createDwCA = (project, occurrenceData) => {
 
   eml = eml.end({ pretty: true });
 
+  // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
   const zipFiles = [
     {
-      content: occurrenceData, // options can refer to [http://archiverjs.com/zip-stream/ZipStream.html#entry](http://archiverjs.com/zip-stream/ZipStream.html#entry)
+      content: `\ufeff${occurrenceData}\n`, // csv add content with bom
       name: 'occurrence.txt',
       mode: '0755',
       date: new Date(),

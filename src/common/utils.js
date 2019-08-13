@@ -473,6 +473,11 @@ exports.convertCsvToAnnotations = ({
       return;
     }
 
+    // 略過空值(樣區)
+    if (items[0] === '') {
+      return;
+    }
+
     let dataOffset = 0;
     const information = {
       id: null,
