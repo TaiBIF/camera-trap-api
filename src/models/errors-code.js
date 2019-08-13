@@ -7,6 +7,7 @@ exports.ERROR = {
   PERMISSION_DENIED: 'PERMISSION_DENIED',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
   DEFAULT_STATUS: 'DEFAULT_STATUS',
+  UNAUTHORIZED: 'UNAUTHORIZED',
 };
 
 exports.HTTP_STATUS = {
@@ -37,6 +38,12 @@ exports.ERROR_MAP = {
     LOGIN_REQUIRED: {
       code: 10004,
       message: 'Please login first',
+    },
+  },
+  [this.HTTP_STATUS.UNAUTHORIZED]: {
+    UNAUTHORIZED: {
+      code: 10010,
+      message: 'You have unauthorization',
     },
   },
   [this.HTTP_STATUS.FORBIDDEN]: {
