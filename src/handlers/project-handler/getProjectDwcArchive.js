@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     [meta, eml, occurrence] = await Promise.all([
       utils.getS3Object(`${folder}/${projectId}/meta.xml`),
       utils.getS3Object(`${folder}/${projectId}/eml.xml`),
-      utils.getS3Object(`${folder}/${projectId}/occurrence.csv`),
+      utils.getS3Object(`${folder}/${projectId}/occurrence.txt`),
     ]);
   } catch (e) {
     throw new errors.Http404();
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
     files: [
       {
         content: occurrence.Body.toString('utf-8'),
-        name: 'occurrence.csv',
+        name: 'occurrence.txt',
         date: new Date(),
         type: 'file',
       },

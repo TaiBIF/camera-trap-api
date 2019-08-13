@@ -473,6 +473,11 @@ exports.convertCsvToAnnotations = ({
       return;
     }
 
+    // 略過空值(樣區)
+    if (items[0] === '') {
+      return;
+    }
+
     let dataOffset = 0;
     const information = {
       id: null,
@@ -485,6 +490,8 @@ exports.convertCsvToAnnotations = ({
       failures: [],
     };
     information.id = items[dataFields.length + 1];
+
+    // Validate field values.
     for (let index = 0; index < dataFields.length; index += 1) {
       const data = (items[index + dataOffset] || '').trim();
       let nextData;
@@ -607,18 +614,20 @@ exports.convertCsvToAnnotations = ({
         )} at row ${row}.\n${JSON.stringify(information)}`,
       );
     }
-    if (
-      result.annotations.find(
-        x =>
-          `${x.studyArea._id}` === `${information.studyArea._id}` &&
-          `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
-          x.filename === information.filename &&
-          x.time.getTime() === information.time.getTime(),
-      )
-    ) {
+
+    // Alert duplicates but not omitting the annotation.
+    const findExist = result.annotations.find(
+      x =>
+        `${x.studyArea._id}` === `${information.studyArea._id}` &&
+        `${x.cameraLocation._id}` === `${information.cameraLocation._id}` &&
+        x.filename === information.filename &&
+        x.time.getTime() === information.time.getTime(),
+    );
+    if (findExist) {
       // This annotation is duplicated.
-      return;
+      console.error(findExist.rawData.join(','));
     }
+
     result.annotations.push(
       new AnnotationModel({
         _id: information.id || undefined,
@@ -666,13 +675,15 @@ exports.stringifyTimeToCSV = (time, timezone) => {
     .replace('T', ' ');
 };
 
-exports.csvStringifyAsync = data =>
+exports.csvStringifyAsync = (data, options = {}) =>
   /*
-  @param data {Array<Array<any>>}
-  @returns {Promise<string>}
-   */
+    @param data {Array<Array<any>>}
+    @returns {Promise<string>}
+  */
   new Promise((resolve, reject) => {
-    csvStringify(data, (error, output) => {
+    const csvOptions = { ...options };
+
+    csvStringify(data, csvOptions, (error, output) => {
       if (error) {
         return reject(error);
       }

@@ -334,9 +334,9 @@ module.exports = (job, done) => {
           .getS3Object(
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
           )
-          .then(data => csvParseAsync(data.Body))
+          .then(data => csvParseAsync(data.Body, { bom: true }))
           .then(csvObject => {
-            const limit = pLimit(5); // Save 5 new species in the same time.
+            const limit = pLimit(5); // Save max 5 new species at once.
             const result = utils.convertCsvToAnnotations({
               project: _project,
               studyAreas: _allStudyAreas,
@@ -416,7 +416,7 @@ module.exports = (job, done) => {
               _uploadSession.errorType =
                 UploadSessionErrorType.imagesAndCsvNotMatch;
               throw new Error(
-                `Images and csv file are not match. Lost ${
+                `Images and csv file do not match. Missing: ${
                   csvAnnotation.filename
                 }`,
               );
