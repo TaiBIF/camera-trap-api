@@ -51,6 +51,6 @@ exports.ERROR_MAP = {
   DEFAULT_STATUS: {
     status: 400,
     code: 99999,
-    message: 'statusCode not giving value',
+    message: 'statusMap not giving value',
   },
 };

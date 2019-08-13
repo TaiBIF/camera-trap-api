@@ -71,11 +71,7 @@ exports.Http500 = class Http500 extends Error {
 
 // approach 2
 exports.HttpStatusError = class HttpStatusError extends Error {
-  constructor(
-    { message, status, statusMap } = {
-      statusCode: ERROR.DEFAULT_STATUS,
-    },
-  ) {
+  constructor({ message, status, statusMap = ERROR.DEFAULT_STATUS }) {
     super();
     this.status = status || ERROR_MAP[statusMap].status;
     this.message = `${message || ERROR_MAP[statusMap].message}`;
