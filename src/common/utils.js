@@ -620,7 +620,7 @@ exports.convertCsvToAnnotations = ({
     );
     if (findExist) {
       // This annotation is duplicated.
-      console.error(findExist.rawData.join(','));
+      console.error(`Duplicate: ${findExist.rawData.join(',')}`);
     }
 
     result.annotations.push(
