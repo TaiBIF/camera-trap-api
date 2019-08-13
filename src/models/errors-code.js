@@ -6,7 +6,7 @@ exports.ERROR = {
   LOGIN_REQUIRED: 'LOGIN_REQUIRED',
   PERMISSION_DENIED: 'PERMISSION_DENIED',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
-  DEFAULT_STATUSCODE: 'DEFAULT_STATUSCODE',
+  DEFAULT_STATUS: 'DEFAULT_STATUS',
 };
 
 exports.ERROR_MAP = {
@@ -48,7 +48,7 @@ exports.ERROR_MAP = {
   },
 
   // default status
-  DEFAULT_STATUSCODE: {
+  DEFAULT_STATUS: {
     status: 400,
     code: 99999,
     message: 'statusCode not giving value',

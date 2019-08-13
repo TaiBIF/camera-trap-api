@@ -70,15 +70,15 @@ exports.Http500 = class Http500 extends Error {
 };
 
 // approach 2
-exports.HttpError = class HttpError extends Error {
+exports.HttpStatusError = class HttpStatusError extends Error {
   constructor(
-    { message, status, statusCode } = {
-      statusCode: ERROR.DEFAULT_STATUSCODE,
+    { message, status, statusMap } = {
+      statusCode: ERROR.DEFAULT_STATUS,
     },
   ) {
-    super(message);
-    this.status = status || ERROR_MAP[statusCode].status;
-    this.message = `${message || ERROR_MAP[statusCode].message}`;
-    this.code = ERROR_MAP[statusCode].code;
+    super();
+    this.status = status || ERROR_MAP[statusMap].status;
+    this.message = `${message || ERROR_MAP[statusMap].message}`;
+    this.code = ERROR_MAP[statusMap].code;
   }
 };
