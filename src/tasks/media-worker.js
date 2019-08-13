@@ -330,11 +330,17 @@ module.exports = (job, done) => {
       const csvParseAsync = util.promisify(csvParse);
 
       if (_file.type === FileType.annotationCSV) {
+        console.error(
+          `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
+        );
         return utils
           .getS3Object(
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
           )
-          .then(data => csvParseAsync(data.Body, { bom: true }))
+          .then(data => {
+            console.error(data.Body);
+            return csvParseAsync(data.Body, { bom: true });
+          })
           .then(csvObject => {
             const limit = pLimit(5); // Save max 5 new species at once.
             const result = utils.convertCsvToAnnotations({
@@ -355,6 +361,7 @@ module.exports = (job, done) => {
           .then(([result]) => result.annotations); // Annotations are missing .file.
       }
 
+      console.error(`find index`);
       // _file.type === FileType.annotationImage
       // _file.type === FileType.annotationVideo
       // _file.type === FileType.annotationZIP
@@ -380,6 +387,7 @@ module.exports = (job, done) => {
       // _file.type === FileType.annotationZIP with csv
       _isZipWithCsv = true;
       const [csvFile] = files.splice(csvFileIndex, 1);
+      console.error(`add annotation`);
       const imageAnnotations = files.map(
         file =>
           new AnnotationModel({
@@ -392,7 +400,7 @@ module.exports = (job, done) => {
             time: file.exif.dateTime,
           }),
       );
-      return csvParseAsync(csvFile.content)
+      return csvParseAsync(csvFile.content, { bom: true })
         .then(csvObject => {
           const limit = pLimit(5); // Save 5 new species in the same time.
           const result = utils.convertCsvToAnnotations({
@@ -440,6 +448,7 @@ module.exports = (job, done) => {
       @returns {Promise<[{AnnotationModel}, {AnnotationModel}]>}
         (new annotations, duplicate annotations)
        */
+      console.error(`Find the duplicate annotation`);
       const statements = annotations.map(annotation => ({
         state: AnnotationState.active,
         cameraLocation: annotation.cameraLocation._id,
@@ -465,6 +474,7 @@ module.exports = (job, done) => {
       @param duplicateAnnotations {Array<AnnotationModel>} From database.
       @returns {Promise<[AnnotationModel]>}
        */
+      console.error(`Generate an annotation key`);
       const getKey = annotation =>
         /*
         Generate an annotation key.
