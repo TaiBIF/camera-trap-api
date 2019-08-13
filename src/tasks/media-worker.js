@@ -334,7 +334,7 @@ module.exports = (job, done) => {
           .getS3Object(
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
           )
-          .then(data => csvParseAsync(data.Body))
+          .then(data => csvParseAsync(data.Body, { bom: true }))
           .then(csvObject => {
             const limit = pLimit(5); // Save max 5 new species at once.
             const result = utils.convertCsvToAnnotations({
