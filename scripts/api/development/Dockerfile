@@ -20,4 +20,4 @@ COPY config ./config
 
 EXPOSE 3000
 
-CMD ["node", "src/web-starter"]
+CMD ["npm", "start"]
