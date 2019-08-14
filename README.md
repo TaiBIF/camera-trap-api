@@ -70,6 +70,13 @@ $ node . -u
 5. **uat**: user acceptance testing branch. Will merge into _prod_ when ready.
 6. **prod**: production version.
 
+## Local Develop By Docker
+> start container 
+> 
+``` docker-compose up ```
+
+
+
 ## Note
 + What is brew?  
 The missing package manager for macOS. [https://brew.sh](https://brew.sh)
