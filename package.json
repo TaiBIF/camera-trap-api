@@ -4,11 +4,18 @@
   "description": "Camera Trap RESTful API",
   "main": "index.js",
   "scripts": {
+    "precommit": "lint-staged",
     "start": "concurrently --kill-others \"./node_modules/nodemon/bin/nodemon.js src/web-starter.js --watch src\" \"./node_modules/nodemon/bin/nodemon.js src/task-worker.js --watch src\"",
     "lint": "eslint src/",
     "db:init": "NODE_ENV=test node . -c; NODE_ENV=test node . -i",
     "test": "NODE_ENV=test ./node_modules/.bin/mocha test",
     "ncu": "./node_modules/npm-check-updates/bin/ncu"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
@@ -65,6 +72,8 @@
     "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#8b78404b348d6d89b9645e1d2e4a286d40f7284c",
     "concurrently": "^4.1.0",
     "eslint-plugin-mocha": "^5.3.0",
+    "husky": "^3.0.3",
+    "lint-staged": "^9.2.1",
     "mocha": "^6.1.4",
     "mongoose-profiler": "^0.1.0",
     "nodemon": "^1.19.1",
