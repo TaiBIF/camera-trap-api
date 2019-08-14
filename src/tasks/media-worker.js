@@ -31,6 +31,7 @@ const NotificationModel = require('../models/data/notification-model');
 const NotificationType = require('../models/const/notification-type');
 
 module.exports = (job, done) => {
+  process.setMaxListeners(0);
   const workerData = new MediaWorkerData(job.data);
   let _user;
   let _project;
