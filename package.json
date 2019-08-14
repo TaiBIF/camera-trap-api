@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
-    "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#3c4410d446796ec57508735bba00dd3b2dd73019",
+    "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#8b78404b348d6d89b9645e1d2e4a286d40f7284c",
     "concurrently": "^4.1.0",
     "eslint-plugin-mocha": "^5.3.0",
     "mocha": "^6.1.4",

@@ -320,7 +320,7 @@ exports.uploadAnnotationFile = auth(UserPermission.all(), (req, res) => {
       multipart = multers.video;
       break;
     default:
-      throw new errors.Http400('The type not allow.');
+      throw new errors.Http400('File type disallowed.');
   }
   return multipart(req, res)
     .then(() => {
@@ -349,7 +349,7 @@ exports.uploadAnnotationFile = auth(UserPermission.all(), (req, res) => {
       }
       if (allowExtensionNames.indexOf(file.getExtensionName()) < 0) {
         throw new errors.Http400(
-          `Just allow ${allowExtensionNames.join(', ')} files.`,
+          `Only allow ${allowExtensionNames.join(', ')} files.`,
         );
       }
 
