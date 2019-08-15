@@ -328,6 +328,27 @@ exports.getS3Object = filename =>
 
 exports.getS3 = () => _s3;
 
+const gmToBuffer = data => {
+  return new Promise((resolve, reject) => {
+    data.stream((err, stdout, stderr) => {
+      if (err) {
+        console.log('----- buffer error ------');
+        return reject(err);
+      }
+      const chunks = [];
+      stdout.on('data', chunk => {
+        chunks.push(chunk);
+      });
+      stdout.once('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      stderr.once('data', d => {
+        console.log('----- gm stderr error ------');
+        reject(String(d));
+      });
+    });
+  });
+};
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
@@ -351,13 +372,9 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     .then(
       result =>
         new Promise((resolve, reject) => {
-          result.gm
-            .quality(args.quality)
-            .toBuffer(args.format, (error, buffer) => {
-              if (error) {
-                console.log('gm reject error');
-                return reject(error);
-              }
+          const gmData = result.gm.quality(args.quality).setFormat(args.format);
+          gmToBuffer(gmData)
+            .then(buffer => {
               Promise.all([
                 result,
                 exports.uploadToS3({
@@ -368,6 +385,10 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
+            })
+            .catch(err => {
+              console.log('gm reject error');
+              return reject(err);
             });
         }),
     )
