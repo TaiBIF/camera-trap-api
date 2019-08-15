@@ -295,6 +295,7 @@ module.exports = (job, done) => {
                 }
 
                 return file.saveWithContent(source).then(() => {
+                  console.log(`----------save file success ${filename}`);
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   if (
                     file.type === FileType.annotationImage &&

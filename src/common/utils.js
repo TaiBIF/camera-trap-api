@@ -328,22 +328,23 @@ exports.getS3Object = filename =>
 
 exports.getS3 = () => _s3;
 
-const gmToBuffer = data =>
+const gmToBuffer = (data, name) =>
   new Promise((resolve, reject) => {
     data.stream((err, stdout, stderr) => {
       if (err) {
-        console.log('----- buffer error ------');
+        console.log(`----- buffer file ${name} error ------`);
         return reject(err);
       }
       const chunks = [];
       stdout.on('data', chunk => {
         chunks.push(chunk);
       });
-      stdout.once('end', () => {
+      stdout.on('end', () => {
+        console.log(`------ buffer file ${name} end`);
         resolve(Buffer.concat(chunks));
       });
       stderr.once('data', d => {
-        console.log('----- gm stderr error ------');
+        console.log(`----- gm stderr file ${name} error ------`);
         reject(String(d));
       });
     });
@@ -373,7 +374,7 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
       result =>
         new Promise((resolve, reject) => {
           const gmData = result.gm.quality(args.quality).setFormat(args.format);
-          gmToBuffer(gmData)
+          gmToBuffer(gmData, args.filename)
             .then(buffer => {
               Promise.all([
                 result,
