@@ -6,6 +6,7 @@ const csvParse = require('csv-parse');
 const extract = require('extract-zip');
 const pLimit = require('p-limit');
 const tmp = require('tmp');
+const Promise = require('bluebird');
 const utils = require('../common/utils');
 const errors = require('../models/errors');
 const MediaWorkerData = require('../models/dto/media-worker-data');
@@ -250,10 +251,10 @@ module.exports = (job, done) => {
           @returns {Promise<[{FileModel}]>}
            */
           console.log(tempDir.name);
-          const limit = pLimit(5); // Upload 5 files to S3 in the same time.
-          return Promise.all(
-            fs.readdirSync(tempDir.name).map(filename =>
-              limit(() => {
+          return new Promise((resolve, reject) => {
+            const finalResults = [];
+            Promise.resolve(fs.readdirSync(tempDir.name))
+              .each(filename => {
                 console.log('-----start iterate folder-----');
                 const file = new FileModel({
                   type: FileType.annotationImage,
@@ -294,7 +295,9 @@ module.exports = (job, done) => {
                   file.type = FileType.annotationVideo;
                 }
 
+                finalResults.push(file);
                 return file.saveWithContent(source).then(() => {
+                  console.log(`----------save file success ${filename}`);
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   if (
                     file.type === FileType.annotationImage &&
@@ -308,9 +311,10 @@ module.exports = (job, done) => {
                   }
                   return file;
                 });
-              }),
-            ),
-          );
+              })
+              .then(() => resolve(finalResults))
+              .catch(() => reject(new Error('parallels fails')));
+          });
         })
         .then(files => {
           /*
