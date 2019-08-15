@@ -12,7 +12,7 @@
     "ncu": "./node_modules/npm-check-updates/bin/ncu"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js}": [
       "eslint --fix",
       "git add"
     ]
@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
-    "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#8b78404b348d6d89b9645e1d2e4a286d40f7284c",
+    "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#2a5309579e93a20af64313891003f9e8b1d74a37",
     "concurrently": "^4.1.0",
     "eslint-plugin-mocha": "^5.3.0",
     "husky": "^3.0.3",
@@ -79,11 +79,5 @@
     "nodemon": "^1.19.1",
     "npm-check-updates": "^3.1.10",
     "supertest": "^4.0.2"
-  },
-  "lint-staged": {
-    "*.{js}": [
-      "eslint --fix",
-      "git add"
-    ]
   }
 }
