@@ -511,9 +511,15 @@ exports.convertCsvToAnnotations = ({
           dataOffset = 1;
           break;
         case DataFieldSystemCode.cameraLocation:
-          information.cameraLocation = cameraLocations.find(
-            x => x.name === data,
-          );
+          // Filter cameraLocations by both the location name and its studyArea.
+          // The uniqueness of studyArea and cameraLocation is guarded by compound key. Hence pop().
+          information.cameraLocation = cameraLocations
+            .filter(
+              x =>
+                x.name === data &&
+                x.studyArea.toString() === information.studyArea._id.toString(),
+            )
+            .pop();
           break;
         case DataFieldSystemCode.fileName:
           information.filename = data;

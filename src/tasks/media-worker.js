@@ -150,16 +150,18 @@ module.exports = (job, done) => {
 
         // Check user, project, file, uploadSession isn't null.
         if (!user) {
-          throw new errors.Http400();
+          throw new errors.Http400('[media-worker.js: 152] no user data.');
         }
         if (!project) {
-          throw new errors.Http400();
+          throw new errors.Http400('[media-worker.js: 155] no project data.');
         }
         if (!file) {
-          throw new errors.Http400();
+          throw new errors.Http400('[media-worker.js: 158] no file data.');
         }
         if (!uploadSession) {
-          throw new errors.Http400();
+          throw new errors.Http400(
+            '[media-worker.js: 161] no upload session data.',
+          );
         }
         // Check the user is a member of the project.
         if (!project.canAccessBy(user)) {
