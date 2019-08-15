@@ -166,6 +166,7 @@ schema.method('saveWithContent', function(source, lastModified) {
   }
 
   return this.save().then(() => {
+    console.log(this.type);
     switch (this.type) {
       case FileType.projectCoverImage:
         return utils

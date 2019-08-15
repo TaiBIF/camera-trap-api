@@ -242,10 +242,12 @@ module.exports = (job, done) => {
           - Check image files have exif.
           @returns {Promise<[{FileModel}]>}
            */
+          console.log(tempDir.name);
           const limit = pLimit(5); // Upload 5 files to S3 in the same time.
           return Promise.all(
             fs.readdirSync(tempDir.name).map(filename =>
               limit(() => {
+                console.log('-----start iterate folder-----');
                 const file = new FileModel({
                   type: FileType.annotationImage,
                   project: _project,
@@ -253,6 +255,8 @@ module.exports = (job, done) => {
                   originalFilename: filename,
                 });
                 const fileExtensionName = file.getExtensionName();
+                console.log(filename);
+                console.log(fileExtensionName);
                 if (
                   FileExtensionName.annotationImage.indexOf(fileExtensionName) <
                     0 &&
