@@ -212,8 +212,10 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
     height: {Number}
    */
   new Promise((resolve, reject) => {
+    console.log('gm resize');
     gm(buffer).size({ bufferStream: true }, function(error, size) {
       if (error) {
+        console.log('utils.js 218 gm error');
         return reject(error);
       }
       if (isFillUp) {
@@ -353,6 +355,7 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
             .quality(args.quality)
             .toBuffer(args.format, (error, buffer) => {
               if (error) {
+                console.log('gm reject error');
                 return reject(error);
               }
               Promise.all([
