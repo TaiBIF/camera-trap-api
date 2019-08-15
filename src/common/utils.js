@@ -212,8 +212,10 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
     height: {Number}
    */
   new Promise((resolve, reject) => {
+    console.log('gm resize');
     gm(buffer).size({ bufferStream: true }, function(error, size) {
       if (error) {
+        console.log('utils.js 218 gm error');
         return reject(error);
       }
       if (isFillUp) {
@@ -326,6 +328,33 @@ exports.getS3Object = filename =>
 
 exports.getS3 = () => _s3;
 
+const gmToBuffer = (data, name) =>
+  new Promise((resolve, reject) => {
+    data.stream((err, stdout, stderr) => {
+      if (err) {
+        console.log(`----- buffer file ${name} error ------`);
+        return reject(err);
+      }
+      const chunks = [];
+      stdout.on('data', chunk => {
+        chunks.push(chunk);
+      });
+      stdout.on('end', () => {
+        console.log(`------ buffer file ${name} end`);
+        resolve(Buffer.concat(chunks));
+      });
+
+      stdout.on('error', () => {
+        console.log(`----- gm stdout file ${name} error ------`);
+      });
+
+      stderr.once('data', d => {
+        console.log(`----- gm stderr file ${name} error ------`);
+        reject(String(d));
+      });
+    });
+  });
+
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
@@ -349,12 +378,9 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
     .then(
       result =>
         new Promise((resolve, reject) => {
-          result.gm
-            .quality(args.quality)
-            .toBuffer(args.format, (error, buffer) => {
-              if (error) {
-                return reject(error);
-              }
+          const gmData = result.gm.quality(args.quality).setFormat(args.format);
+          gmToBuffer(gmData, args.filename)
+            .then(buffer => {
               Promise.all([
                 result,
                 exports.uploadToS3({
@@ -365,6 +391,10 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
               ])
                 .then(results => resolve(results))
                 .catch(errors => reject(errors));
+            })
+            .catch(err => {
+              console.log('gm reject error');
+              return reject(err);
             });
         }),
     )

@@ -6,6 +6,7 @@ const csvParse = require('csv-parse');
 const extract = require('extract-zip');
 const pLimit = require('p-limit');
 const tmp = require('tmp');
+const Promise = require('bluebird');
 const utils = require('../common/utils');
 const errors = require('../models/errors');
 const MediaWorkerData = require('../models/dto/media-worker-data');
@@ -44,10 +45,9 @@ module.exports = (job, done) => {
   let _allSpecies; // only for zip or csv type.
   let _isZipWithCsv; // The user upload a zip file include images and a csv.
 
-  if (config.isDebug) {
-    console.log(`media-worker job[${job.id}] start.`);
-    console.log(JSON.stringify(job.data, null, 2));
-  }
+  console.log(`media-worker job[${job.id}] start.`);
+  console.log(JSON.stringify(job.data, null, 2));
+
   Promise.all([
     UserModel.findById(workerData.userId),
     (() => {
@@ -178,6 +178,8 @@ module.exports = (job, done) => {
         ) {
           throw new errors.Http404('Study area is not found.');
         }
+
+        console.log('---finish validation-----');
       },
     )
     .then(() => {
@@ -190,9 +192,13 @@ module.exports = (job, done) => {
         return [_file];
       }
 
+      console.log('---start handle file-----');
+      console.log(`file type: ${_file.type}`);
+
       // _file.type === FileType.annotationZIP
       const tempFile = tmp.fileSync();
       const tempDir = tmp.dirSync();
+      console.log(`temp file: ${tempDir.name}, temp dir: ${tempFile.name}`);
       return new Promise((resolve, reject) => {
         /*
         - Download the zip file from S3.
@@ -203,6 +209,7 @@ module.exports = (job, done) => {
         const file = fs.createWriteStream(tempFile.name);
 
         file.on('close', () => {
+          console.log('---finish get file from s3-----');
           extract(
             tempFile.name,
             {
@@ -218,6 +225,7 @@ module.exports = (job, done) => {
               },
             },
             error => {
+              console.log('---extract files down-----');
               if (error) {
                 return reject(error);
               }
@@ -242,10 +250,12 @@ module.exports = (job, done) => {
           - Check image files have exif.
           @returns {Promise<[{FileModel}]>}
            */
-          const limit = pLimit(5); // Upload 5 files to S3 in the same time.
-          return Promise.all(
-            fs.readdirSync(tempDir.name).map(filename =>
-              limit(() => {
+          console.log(tempDir.name);
+          return new Promise((resolve, reject) => {
+            const finalResults = [];
+            Promise.resolve(fs.readdirSync(tempDir.name))
+              .each(filename => {
+                console.log('-----start iterate folder-----');
                 const file = new FileModel({
                   type: FileType.annotationImage,
                   project: _project,
@@ -253,6 +263,8 @@ module.exports = (job, done) => {
                   originalFilename: filename,
                 });
                 const fileExtensionName = file.getExtensionName();
+                console.log(filename);
+                console.log(fileExtensionName);
                 if (
                   FileExtensionName.annotationImage.indexOf(fileExtensionName) <
                     0 &&
@@ -283,7 +295,9 @@ module.exports = (job, done) => {
                   file.type = FileType.annotationVideo;
                 }
 
+                finalResults.push(file);
                 return file.saveWithContent(source).then(() => {
+                  console.log(`----------save file success ${filename}`);
                   fs.unlinkSync(path.join(tempDir.name, filename));
                   if (
                     file.type === FileType.annotationImage &&
@@ -297,9 +311,10 @@ module.exports = (job, done) => {
                   }
                   return file;
                 });
-              }),
-            ),
-          );
+              })
+              .then(() => resolve(finalResults))
+              .catch(() => reject(new Error('parallels fails')));
+          });
         })
         .then(files => {
           /*
