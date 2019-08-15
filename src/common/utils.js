@@ -343,6 +343,11 @@ const gmToBuffer = (data, name) =>
         console.log(`------ buffer file ${name} end`);
         resolve(Buffer.concat(chunks));
       });
+
+      stdout.on('error', () => {
+        console.log(`----- gm stdout file ${name} error ------`);
+      });
+
       stderr.once('data', d => {
         console.log(`----- gm stderr file ${name} error ------`);
         reject(String(d));
