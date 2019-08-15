@@ -328,8 +328,8 @@ exports.getS3Object = filename =>
 
 exports.getS3 = () => _s3;
 
-const gmToBuffer = data => {
-  return new Promise((resolve, reject) => {
+const gmToBuffer = data =>
+  new Promise((resolve, reject) => {
     data.stream((err, stdout, stderr) => {
       if (err) {
         console.log('----- buffer error ------');
@@ -348,7 +348,7 @@ const gmToBuffer = data => {
       });
     });
   });
-};
+
 exports.resizeImageAndUploadToS3 = (args = {}) => {
   /*
   Resize and upload the image to storage.
