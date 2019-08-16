@@ -8,18 +8,19 @@ module.exports = (req, res, next) => {
   // append end hook
   const originEndFunc = res.end;
   res.end = function() {
+    const { statusCode } = res;
+    const { method, originalUrl: requestUrl, startTime } = req;
+
     // eslint-disable-next-line prefer-rest-params
     const result = originEndFunc.apply(this, arguments);
     const now = new Date();
-    const processTime = `${now - req.startTime}`.replace(
-      /\B(?=(\d{3})+(?!\d))/g,
-      ',',
+    const processTime = `${now - startTime}`;
+    const msTime = leftPad(
+      processTime.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
+      7,
     );
-    logger.info(
-      `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
-        req.method
-      }      `.substr(0, 6)} ${req.originalUrl}`,
-    );
+
+    logger.info(`[${statusCode}] ${msTime}ms ${method}\t ${requestUrl}`);
 
     if (res.error) {
       logger.error(res.error.stack);
