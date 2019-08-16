@@ -20,11 +20,14 @@ module.exports = (req, res, next) => {
       7,
     );
 
-    logger.info(`[${statusCode}] ${msTime}ms ${method}\t ${requestUrl}`);
+    const logMessage = `[${statusCode}] ${msTime}ms ${method}\t ${requestUrl}`;
 
     if (res.error) {
-      logger.error(res.error.stack);
+      logger.error(`${logMessage} \n%s`, res.error.stack);
+    } else {
+      logger.info(logMessage);
     }
+
     return result;
   };
   next();
