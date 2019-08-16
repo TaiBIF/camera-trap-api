@@ -30,6 +30,7 @@ const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const NotificationModel = require('../models/data/notification-model');
 const NotificationType = require('../models/const/notification-type');
+const logger = require('./../logger');
 
 module.exports = (job, done) => {
   process.setMaxListeners(0);
@@ -45,8 +46,8 @@ module.exports = (job, done) => {
   let _allSpecies; // only for zip or csv type.
   let _isZipWithCsv; // The user upload a zip file include images and a csv.
 
-  console.log(`media-worker job[${job.id}] start.`);
-  console.log(JSON.stringify(job.data, null, 2));
+  logger.info(`media-worker job[${job.id}] start.`);
+  logger.info(JSON.stringify(job.data, null, 2));
 
   Promise.all([
     UserModel.findById(workerData.userId),
