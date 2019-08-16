@@ -296,8 +296,9 @@ schema.method('saveWithContent', function(source, lastModified) {
                 utils.logError(error, { file: this });
               });
               const exif = new ExchangeableImageFileModel({
-                dateTime: lastModified || fileStat.mtime,
+                dateTime: lastModified || new Date(fileStat.mtime),
               });
+              console.log(`----------------${exif}${fileStat.mtime}`);
               this.exif = exif;
               return Promise.all([this.save(), exif.save()]);
             })

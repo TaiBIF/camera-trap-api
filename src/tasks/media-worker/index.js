@@ -7,29 +7,30 @@ const extract = require('extract-zip');
 const pLimit = require('p-limit');
 const tmp = require('tmp');
 const Promise = require('bluebird');
-const utils = require('../common/utils');
-const errors = require('../models/errors');
-const MediaWorkerData = require('../models/dto/media-worker-data');
-const UserModel = require('../models/data/user-model');
-const FileModel = require('../models/data/file-model');
-const FileType = require('../models/const/file-type');
-const FileExtensionName = require('../models/const/file-extension-name');
-require('../models/data/exchangeable-image-file-model'); // for populate
-const UploadSessionModel = require('../models/data/upload-session-model');
-const UploadSessionState = require('../models/const/upload-session-state');
-const UploadSessionErrorType = require('../models/const/upload-session-error-type');
-const ProjectModel = require('../models/data/project-model');
-const ProjectSpeciesModel = require('../models/data/project-species-model');
-require('../models/data/data-field-model'); // for populate
-const CameraLocationModel = require('../models/data/camera-location-model');
-const CameraLocationState = require('../models/const/camera-location-state');
-const StudyAreaModel = require('../models/data/study-area-model');
-const StudyAreaState = require('../models/const/study-area-state');
-const SpeciesModel = require('../models/data/species-model');
-const AnnotationModel = require('../models/data/annotation-model');
-const AnnotationState = require('../models/const/annotation-state');
-const NotificationModel = require('../models/data/notification-model');
-const NotificationType = require('../models/const/notification-type');
+const utils = require('../../common/utils');
+const errors = require('../../models/errors');
+const MediaWorkerData = require('../../models/dto/media-worker-data');
+const UserModel = require('../../models/data/user-model');
+const FileModel = require('../../models/data/file-model');
+const FileType = require('../../models/const/file-type');
+const FileExtensionName = require('../../models/const/file-extension-name');
+require('../../models/data/exchangeable-image-file-model'); // for populate
+const UploadSessionModel = require('../../models/data/upload-session-model');
+const UploadSessionState = require('../../models/const/upload-session-state');
+const UploadSessionErrorType = require('../../models/const/upload-session-error-type');
+const ProjectModel = require('../../models/data/project-model');
+const ProjectSpeciesModel = require('../../models/data/project-species-model');
+require('../../models/data/data-field-model'); // for populate
+const CameraLocationModel = require('../../models/data/camera-location-model');
+const CameraLocationState = require('../../models/const/camera-location-state');
+const StudyAreaModel = require('../../models/data/study-area-model');
+const StudyAreaState = require('../../models/const/study-area-state');
+const SpeciesModel = require('../../models/data/species-model');
+const AnnotationModel = require('../../models/data/annotation-model');
+const AnnotationState = require('../../models/const/annotation-state');
+const NotificationModel = require('../../models/data/notification-model');
+const NotificationType = require('../../models/const/notification-type');
+const logger = require('./../../logger');
 
 module.exports = (job, done) => {
   process.setMaxListeners(0);
@@ -45,8 +46,8 @@ module.exports = (job, done) => {
   let _allSpecies; // only for zip or csv type.
   let _isZipWithCsv; // The user upload a zip file include images and a csv.
 
-  console.log(`media-worker job[${job.id}] start.`);
-  console.log(JSON.stringify(job.data, null, 2));
+  logger.info(`media-worker job[${job.id}] start.`);
+  logger.info(JSON.stringify(job.data, null, 2));
 
   Promise.all([
     UserModel.findById(workerData.userId),
