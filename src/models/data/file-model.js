@@ -189,7 +189,7 @@ schema.method('saveWithContent', function(source, lastModified) {
             .then(result => {
               this.size = result.buffer.length;
               this.save();
-              resolve();
+              resolve(this);
             });
           break;
         case FileType.annotationImage:
