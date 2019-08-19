@@ -20,5 +20,6 @@ COPY src ./src
 COPY config ./config
 
 ENV NODE_ENV="production"
+ENV TZ="Asia/Taipei"
 
 CMD ["node", "src/task-worker"]
