@@ -4,6 +4,8 @@ const path = require('path');
 const config = require('config');
 const csvParse = require('csv-parse');
 const extract = require('extract-zip');
+const iconv = require('iconv-lite');
+const detectCharacterEncoding = require('detect-character-encoding');
 const pLimit = require('p-limit');
 const tmp = require('tmp');
 const Promise = require('bluebird');
@@ -357,8 +359,14 @@ module.exports = (job, done) => {
             `${config.s3.folders.annotationCSVs}/${_file.getFilename()}`,
           )
           .then(data => {
-            console.error(data.Body);
-            return csvParseAsync(data.Body, { bom: true });
+            const { encoding } = detectCharacterEncoding(data.Body);
+            let body = data.Body;
+            if (encoding === 'Big5') {
+              body = iconv.decode(data.Body, 'big5');
+            }
+            return csvParseAsync(body, {
+              bom: true,
+            });
           })
           .then(csvObject => {
             const limit = pLimit(5); // Save max 5 new species at once.
