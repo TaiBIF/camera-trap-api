@@ -1,8 +1,6 @@
-const os = require('os');
 const http = require('http');
 const util = require('util');
 const config = require('config');
-const leftPad = require('left-pad');
 const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -19,7 +17,8 @@ const authentication = require('./auth/authentication');
 const authorization = require('./auth/authorization');
 const UserPermission = require('./models/const/user-permission');
 const webRouter = require('./routers/web-router');
-const LogModel = require('./models/data/log-model');
+const logRequest = require('./middlewares/logRequest');
+const logToDatabase = require('./middlewares/logToDatabase');
 
 module.exports = createServer => {
   /*
@@ -42,31 +41,7 @@ module.exports = createServer => {
     app.enable('trust proxy');
   }
 
-  app.use((req, res, next) => {
-    // add req.startTime
-    req.startTime = new Date();
-    // append end hook
-    const originEndFunc = res.end;
-    res.end = function() {
-      // eslint-disable-next-line prefer-rest-params
-      const result = originEndFunc.apply(this, arguments);
-      const now = new Date();
-      const processTime = `${now - req.startTime}`.replace(
-        /\B(?=(\d{3})+(?!\d))/g,
-        ',',
-      );
-      console.log(
-        `[${res.statusCode}] ${leftPad(processTime, 7)}ms ${`${
-          req.method
-        }      `.substr(0, 6)} ${req.originalUrl}`,
-      );
-      if (res.error) {
-        console.error(res.error.stack);
-      }
-      return result;
-    };
-    next();
-  });
+  app.use(logRequest);
 
   app.use(cookieParser()); // setup req.cookies
   app.use(bodyParser.json()); // setup req.body
@@ -85,43 +60,7 @@ module.exports = createServer => {
 
   // write log
   if (config.enableLog) {
-    app.use((req, res, next) => {
-      const originEndFunc = res.end;
-      const log = new LogModel({
-        hostname: os.hostname(),
-        user: req.user.isLogin() ? req.user : undefined,
-        ip: req.ip,
-        method: req.method,
-        path: req.originalUrl,
-        headers: (() => {
-          if (req.headers && typeof req.body === 'object') {
-            const headers = util._extend({}, req.headers);
-            delete headers.cookie; // Don't log user's cookie.
-            return JSON.stringify(headers);
-          }
-        })(),
-        requestBody: (() => {
-          if (req.body && typeof req.body === 'object') {
-            return JSON.stringify(req.body);
-          }
-        })(),
-        createTime: req.startTime,
-      });
-      const logPromise = log.save();
-      res.end = function() {
-        // eslint-disable-next-line prefer-rest-params
-        const result = originEndFunc.apply(this, arguments);
-        const now = new Date();
-        logPromise.then(() => {
-          log.processTime = now - req.startTime;
-          log.responseStatus = res.statusCode;
-          log.errorStack = res.error ? res.error.stack : undefined;
-          return log.save();
-        });
-        return result;
-      };
-      next();
-    });
+    app.use(logToDatabase);
   }
 
   // Do compression exclusion export .csv.
