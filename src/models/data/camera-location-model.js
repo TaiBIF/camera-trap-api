@@ -75,7 +75,7 @@ const schema = utils.generateSchema(
       type: Number,
     },
     vegetation: {
-      // 植被
+      // 植被類型
       type: String,
     },
     landCoverType: {
