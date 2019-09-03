@@ -63,12 +63,9 @@ $ node . -u
 
 ## Branching strategy
 1. **master**: main development branch. No CI workflow connected.
-2. **dev**: connedted to dev CI workflow. Will merge into _uat_ when ready for User Acceptance Testing.
-2. **dev-[personID]**: personal working branch. **Only the creator can commit to this branch**. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.
-3. **feature-[featureID]**: feature working branch. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.
-4. **issue-[issueID]**: issue working branch. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.
-5. **uat**: user acceptance testing branch. Will merge into _prod_ when ready.
-6. **prod**: production version.
+2. **dev**: Merge into _master_ when ready.
+3. **feature/[title]**: feature working branch. Will merge into _dev_ when complete. Should be deleted once merged into _dev_.
+4. **prod**: production version.
 
 ## Local Develop By Docker
 > start container 
