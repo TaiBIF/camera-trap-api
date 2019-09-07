@@ -3844,6 +3844,539 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Camera [/projects/{projectId}/cameras]
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+
+### List project cameras [GET /projects/{projectId}/cameras{?index,size,sort,name}]
+取得專案底下使用的相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
+    + sort: `name` (enum[string], optional) ...
+        + Default: `name`
+        + Members
+            + `name`
+
+
+    
++ Request Get cameras of the project (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 100,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "PT02A",
+                  "nickname": "PT02A",
+                  "sn": "MX3862A",
+                  "vn": "BRN00012",
+                  "propertyNumber": "AB12345",
+                  "manufacturer": "Browning",
+                  "model": "BR5PXD",
+                  "state": "維修中",
+                  ...
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機編號"
+                      },
+                      "nickname": {
+                        "type": "string",
+                        "description": "自訂相機編號"
+                      },
+                      "sn": {
+                        "type": "string",
+                        "description": "相機序號"
+                      },
+                      "vn": {
+                        "type": "string",
+                        "description": "廠商維護編號"
+                      },
+                      "propertyNumber": {
+                        "type": "string",
+                        "description": "相機財產編號"
+                      },
+                      "manufacturer": {
+                        "type": "string",
+                        "description": "廠牌"
+                      },
+                      "model": {
+                        "type": "string",
+                        "description": "型號"
+                      },
+                      "state": {
+                        "type": "string",
+                        "description": "狀態",
+                        "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+### Get project camera by cameraId [GET /projects/{projectId}/cameras/{cameraId}]
+取得專案下使用的某個相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraId: `5c9...` (string) - The camera ID.
+    
++ Request Get project camera by cameraId (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                    "id": "5c9f28070d9cee99f8a11a12",
+                    "name": "PT02A",
+                    "nickname": "PT02A",
+                    "sn": "MX3862A",
+                    "vn": "BRN00012",
+                    "propertyNumber": "AB12345",
+                    "manufacturer": "Browning",
+                    "model": "BR5PXD",
+                    "state": "維修中",
+                    "batteryType": "鹼性電池",
+                    "brightness": "自動",
+                    "sensitivity": "自動",
+                    "videoLength": "600",
+                    "continuousShots": 12,
+                    ...
+            }
+            
+    + Schema
+
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "自訂相機編號"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "相機序號"
+                  },
+                  "vn": {
+                    "type": "string",
+                    "description": "廠商維護編號"
+                  },
+                  "propertyNumber": {
+                    "type": "string",
+                    "description": "相機財產編號"
+                  },
+                  "manufacturer": {
+                    "type": "string",
+                    "description": "廠牌"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "型號"
+                  },
+                  "state": {
+                    "type": "string",
+                    "description": "狀態",
+                    "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                  },
+                  "batteryType": {
+                    "type" : "string",
+                    "description": "鹼性電池"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": 600
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": 12
+                  }
+                }
+            }
+
+### Update project camera by cameraId [PUT /projects/{projectId}/cameras/{cameraId}]
+更新專案下的某個相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraId: `5c9...` (string) - The camera ID.
+    
++ Request Update project camera by cameraId (application/json)
+
+    + Body
+    
+            {
+                    "nickname": "PT02A",
+                    "batteryType": "鹼性電池",
+                    "brightness": "自動",
+                    "sensitivity": "自動",
+                    "videoLength": "600",
+                    "continuousShots": 12,
+                    ...
+            }
+            
+    + Schema
+
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "nickname": {
+                    "type": "string",
+                    "description": "自訂相機編號"
+                  },
+                  "batteryType": {
+                    "type" : "string",
+                    "description": "鹼性電池"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": 600
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": 12
+                  }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                    "id": "5c9f28070d9cee99f8a11a12",
+                    "name": "PT02A",
+                    "nickname": "PT02A",
+                    "sn": "MX3862A",
+                    "vn": "BRN00012",
+                    "propertyNumber": "AB12345",
+                    "manufacturer": "Browning",
+                    "model": "BR5PXD",
+                    "state": "維修中",
+                    "batteryType": "鹼性電池",
+                    "brightness": "自動",
+                    "sensitivity": "自動",
+                    "videoLength": "600",
+                    "continuousShots": 12,
+                    ...
+            }
+            
+    + Schema
+
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "自訂相機編號"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "相機序號"
+                  },
+                  "vn": {
+                    "type": "string",
+                    "description": "廠商維護編號"
+                  },
+                  "propertyNumber": {
+                    "type": "string",
+                    "description": "相機財產編號"
+                  },
+                  "manufacturer": {
+                    "type": "string",
+                    "description": "廠牌"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "型號"
+                  },
+                  "state": {
+                    "type": "string",
+                    "description": "狀態",
+                    "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                  },
+                  "batteryType": {
+                    "type" : "string",
+                    "description": "鹼性電池"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": 600
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": 12
+                  }
+              }
+            }
+            
+### Create project camera by cameraId [POST /projects/{projectId}/cameras]
+新增專案下的相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    
++ Request Update project camera by cameraId (application/json)
+
+    + Body
+    
+            {
+                    "name": "PT02A",
+                    "sn": "MX3862A",
+                    "vn": "BRN00012",
+                    "propertyNumber": "AB12345",
+                    "manufacturer": "Browning",
+                    "model": "BR5PXD",
+                    "state": "維修中",
+            }
+            
+    + Schema
+
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "相機序號"
+                  },
+                  "vn": {
+                    "type": "string",
+                    "description": "廠商維護編號"
+                  },
+                  "propertyNumber": {
+                    "type": "string",
+                    "description": "相機財產編號"
+                  },
+                  "manufacturer": {
+                    "type": "string",
+                    "description": "廠牌"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "型號"
+                  },
+                  "state": {
+                    "type": "string",
+                    "description": "狀態",
+                    "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                  },
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                    "id": "5c9f28070d9cee99f8a11a12",
+                    "name": "PT02A",
+                    "nickname": "PT02A",
+                    "sn": "MX3862A",
+                    "vn": "BRN00012",
+                    "propertyNumber": "AB12345",
+                    "manufacturer": "Browning",
+                    "model": "BR5PXD",
+                    "state": "維修中",
+                    "batteryType": "鹼性電池",
+                    "brightness": "自動",
+                    "sensitivity": "自動",
+                    "videoLength": "600",
+                    "continuousShots": 12,
+                    ...
+            }
+            
+    + Schema
+
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "description": "自訂相機編號"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "相機序號"
+                  },
+                  "vn": {
+                    "type": "string",
+                    "description": "廠商維護編號"
+                  },
+                  "propertyNumber": {
+                    "type": "string",
+                    "description": "相機財產編號"
+                  },
+                  "manufacturer": {
+                    "type": "string",
+                    "description": "廠牌"
+                  },
+                  "model": {
+                    "type": "string",
+                    "description": "型號"
+                  },
+                  "state": {
+                    "type": "string",
+                    "description": "狀態",
+                    "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                  },
+                  "batteryType": {
+                    "type" : "string",
+                    "description": "鹼性電池"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "自動"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": 600
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": 12
+                  }
+              }
+            }
+    
+### Delete a Camera [DELETE /projects/{projectId}/cameras/{cameraId}]
+刪除專案下的某個相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    + cameraId: `5c9...` (string) - The camera ID.
+    
++ Request Delete project camera by cameraId (application/json)
+
++ Response 204 (application/json)
+
+### Delete Cameras [DELETE /projects/{projectId}/cameras]
+刪除專案下的相機
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and who is a project manager.
+
++ Parameters
+    + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
+    
++ Request Delete project camera (application/json)
+
++ Response 204 (application/json)
+
+
 ## Camera Locations [/projects/{projectId}/camera-locations]
 + Parameters
     + projectId: `5c99e565fa899867c32377cf` (string) - The project ID.
@@ -8086,6 +8619,319 @@ Get species metrics of the top 5 identified ones.
                 "uploadSession": {
                   "type": "string",
                   "description": "The upload session ID of this file."
+                }
+              }
+            }
+
+#Group Cameras
+## List Cameras  [GET /cameras{?index,size,sort,manufacturer,model,sn,vn}]
+取得相機
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 100
+    + sort: `name` (enum[string], optional) 
+        + Default: `name`
+        + Members
+            + `name`
+    + manufacturer: `Browning` (string, optional) - 使用廠牌搜尋條件
+    + model: `BR5PXD` (string, optional) - 使用型號搜尋
+    + sn: `MX3862A` (string, optional) - 搜尋相機序號
+    + vn: `BRN00012` (string, optional) - 搜尋廠商維護編號
+
++ Request List Cameras (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 100,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "PT02A",
+                  "sn": "MX3862A",
+                  "vn": "BRN00012",
+                  "propertyNumber": "AB12345",
+                  "manufacturer": "Browning",
+                  "model": "BR5PXD",
+                  "state": "維修中",
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機編號"
+                      },
+                      "sn": {
+                        "type": "string",
+                        "description": "相機序號"
+                      },
+                      "vn": {
+                        "type": "string",
+                        "description": "廠商維護編號"
+                      },
+                      "propertyNumber": {
+                        "type": "string",
+                        "description": "相機財產編號"
+                      },
+                      "manufacturer": {
+                        "type": "string",
+                        "description": "廠牌"
+                      },
+                      "model": {
+                        "type": "string",
+                        "description": "型號"
+                      },
+                      "state": {
+                        "type": "string",
+                        "description": "狀態",
+                        "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+#Group Camera Manufacturers
+## List Camera Manufacturers  [GET /cameras-manufacturers{?name}]
+取得相機廠牌
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + name: `Browning` (string, optional) - 使用 name  搜尋
+
++ Request List Camera Manufacturers (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "Browning",
+                  "dataCount": "100",
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機廠商名稱"
+                      },
+                      "dataCount": {
+                        "type": "number",
+                        "description": "此廠商有多少個"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+
+#Group Camera Models
+## List Camera Models  [GET /cameras-models{?name}]
+取得相機廠牌
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + name: `BR5PXD` (string, optional) - 使用 name  搜尋
+
++ Request List Camera Models (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "BR5PXD",
+                  "dataCount": "100",
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機型號名稱"
+                      },
+                      "dataCount": {
+                        "type": "number",
+                        "description": "此型號有多少個"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+            
+#Group Camera Serial Numbers
+## List Camera Serial Numbers  [GET /cameras-sn{?name}]
+取得相機廠牌
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + name: `MX3862A` (string, optional) - 使用 name  搜尋
+
++ Request List Camera Models (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "MX3862A",
+                  "dataCount": "100",
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機序號名稱"
+                      },
+                      "dataCount": {
+                        "type": "number",
+                        "description": "此序號有多少個"
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+#Group Camera Vendor maintenance Numbers
+## List Camera Vendor maintenance numbers  [GET /cameras-vn{?name}]
+取得相機廠牌
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + name: `BRN00012` (string, optional) - 使用 name  搜尋
+
++ Request List Camera Models (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "BRN00012",
+                  "dataCount": "100",
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機廠商維護編號名稱"
+                      },
+                      "dataCount": {
+                        "type": "number",
+                        "description": "此編號有多少個"
+                      },
+                    }
+                  }
                 }
               }
             }
