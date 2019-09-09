@@ -19,7 +19,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'Camera-Serial-Numbers',
+    collection: 'CameraSerialNumbers',
   },
 );
 schema.index(

@@ -75,7 +75,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'Project-Cameras',
+    collection: 'ProjectCameras',
   },
 );
 schema.index(

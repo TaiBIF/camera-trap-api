@@ -19,7 +19,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'Camera-Manufacturers',
+    collection: 'CameraManufacturers',
   },
 );
 schema.index(

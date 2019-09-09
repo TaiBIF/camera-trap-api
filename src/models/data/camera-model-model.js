@@ -19,7 +19,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'Camera-Models',
+    collection: 'CameraModels',
   },
 );
 schema.index(

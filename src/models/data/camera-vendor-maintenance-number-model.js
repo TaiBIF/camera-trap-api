@@ -19,7 +19,7 @@ const schema = utils.generateSchema(
     },
   },
   {
-    collection: 'Camera-Vendor-Maintenance-Numbers',
+    collection: 'CameraVendorMaintenanceNumbers',
   },
 );
 schema.index(
