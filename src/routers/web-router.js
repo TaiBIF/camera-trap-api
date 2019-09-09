@@ -22,6 +22,7 @@ const locationMonthRetrievedHandler = require('../handlers/location-month-retrie
 const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
 const imageSpeciesGroup = require('../handlers/image-species-group-handler');
 const speciesTimeSeriesHandler = require('../handlers/species-time-series-handler');
+const cameraHandler = require('../handlers/camera-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -205,6 +206,19 @@ apiRouter.post(
 apiRouter.get(
   '/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.getCameraLocation,
+);
+// camera
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/camera-management',
+  cameraHandler.getMyCamera,
+);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/camera-management',
+  cameraHandler.addCameraData,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/camera-management/:cameraId',
+  cameraHandler.updateCamera,
 );
 
 apiRouter.get(
