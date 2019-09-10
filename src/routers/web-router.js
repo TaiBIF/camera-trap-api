@@ -207,20 +207,36 @@ apiRouter.get(
   '/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.getCameraLocation,
 );
+
 // camera
+apiRouter.get('/cameras', cameraHandler.getCameras);
+apiRouter.get('/cameras-manufacturers', cameraHandler.getCameraManufacturers);
+apiRouter.get('/cameras-models', cameraHandler.getCameraModels);
+apiRouter.get('/cameras-sn', cameraHandler.getCameraSNs);
+apiRouter.get('/cameras-vn', cameraHandler.getCameraVNs);
+
+// project camera
 apiRouter.get(
-  '/projects/:projectId([a-f\\d]{24})/camera-management',
+  '/projects/:projectId([a-f\\d]{24})/cameras',
   cameraHandler.getMyCamera,
 );
 apiRouter.post(
-  '/projects/:projectId([a-f\\d]{24})/camera-management',
+  '/projects/:projectId([a-f\\d]{24})/cameras',
   cameraHandler.addCameraData,
 );
 apiRouter.put(
-  '/projects/:projectId([a-f\\d]{24})/camera-management/:cameraId',
+  '/projects/:projectId([a-f\\d]{24})/camera/:cameraId',
   cameraHandler.updateCamera,
 );
-
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/camera/:cameraId',
+  cameraHandler.updateCamera,
+);
+apiRouter.delete(
+  '/projects/:projectId([a-f\\d]{24})/camera/:cameraId',
+  cameraHandler.updateCamera,
+);
+//
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
   locationMonthRetrievedHandler.locationMonthRetrieved,
