@@ -12,7 +12,7 @@ ProjectCameraForm.define({
   vn: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  factory: new forms.fields.StringField({
+  manufacturer: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
   model: new forms.fields.StringField({
