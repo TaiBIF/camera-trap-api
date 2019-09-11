@@ -6,6 +6,14 @@ const CameraState = require('../const/camera-state');
 utils.connectDatabase();
 const schema = utils.generateSchema(
   {
+    name: {
+      // index: UniqueName
+      type: String,
+      required: true,
+      index: {
+        name: 'Name',
+      },
+    },
     state: {
       // 狀態
       // 相機使用軟刪除，因為報表須提供「相機撤除」的資料
@@ -14,14 +22,6 @@ const schema = utils.generateSchema(
       enum: CameraState.all(),
       index: {
         name: 'State',
-      },
-    },
-    name: {
-      // index: UniqueName
-      type: String,
-      required: true,
-      index: {
-        name: 'Name',
       },
     },
     sn: {
@@ -46,7 +46,7 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
-  { project: 1, name: 1 },
+  { name: 1, state: 1 },
   {
     name: 'CamerasName',
     background: true,
@@ -62,10 +62,6 @@ const model = mongoose.model('CameraModel', schema);
 model.prototype.dump = function() {
   const doc = {
     id: `${this._id}`,
-    project:
-      this.project && typeof this.project.dump === 'function'
-        ? this.project.dump()
-        : this.project,
     name: this.name,
     nickname: this.nickname,
     sn: this.sn,
