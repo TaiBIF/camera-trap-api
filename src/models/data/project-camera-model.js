@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
-const CameraState = require('../const/camera-state');
+const ProjectCameraState = require('../const/project-camera-state');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -18,8 +18,8 @@ const schema = utils.generateSchema(
       // 狀態
       // 相機使用軟刪除，因為報表須提供「相機撤除」的資料
       type: String,
-      default: CameraState.active,
-      enum: CameraState.all(),
+      default: ProjectCameraState.active,
+      enum: ProjectCameraState.all(),
     },
     name: {
       // index: UniqueName
@@ -32,25 +32,28 @@ const schema = utils.generateSchema(
     nickname: {
       // 自訂相機名稱
       type: String,
-      required: true,
       index: {
         name: 'Nickname',
       },
     },
     sn: {
       // 相機序號
+      required: true,
       type: String,
     },
     vn: {
       // 廠商維護編號
+      required: true,
       type: String,
     },
     manufacturer: {
       // 廠牌
+      required: true,
       type: String,
     },
     model: {
       // 型號
+      required: true,
       type: String,
     },
     batteryType: {
@@ -85,7 +88,7 @@ schema.index(
     background: true,
     unique: true,
     partialFilterExpression: {
-      state: CameraState.active,
+      state: ProjectCameraState.active,
     },
   },
 );
@@ -99,6 +102,7 @@ model.prototype.dump = function() {
       this.project && typeof this.project.dump === 'function'
         ? this.project.dump()
         : this.project,
+    state: this.state,
     name: this.name,
     nickname: this.nickname,
     sn: this.sn,
@@ -106,7 +110,6 @@ model.prototype.dump = function() {
     propertyNumber: this.propertyNumber,
     manufacturer: this.manufacturer,
     model: this.model,
-    state: this.state,
     batteryType: this.batteryType,
     brightness: this.brightness,
     sensitivity: this.sensitivity,
