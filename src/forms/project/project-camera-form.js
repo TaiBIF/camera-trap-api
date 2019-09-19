@@ -27,6 +27,7 @@ ProjectCameraForm.define({
   sensitivity: new forms.fields.StringField(),
   videoLength: new forms.fields.IntegerField(),
   continuousShots: new forms.fields.IntegerField(),
+  sensingDistance: new forms.fields.IntegerField(),
   state: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),

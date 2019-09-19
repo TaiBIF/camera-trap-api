@@ -76,6 +76,10 @@ const schema = utils.generateSchema(
       // 連拍張數
       type: Number,
     },
+    sensingDistance: {
+      // 感應距離
+      type: Number,
+    },
   },
   {
     collection: 'ProjectCameras',
@@ -115,6 +119,7 @@ model.prototype.dump = function() {
     sensitivity: this.sensitivity,
     videoLength: this.videoLength,
     continuousShots: this.continuousShots,
+    sensingDistance: this.sensingDistance,
   };
 
   return doc;
