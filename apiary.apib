@@ -5892,6 +5892,80 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "startActiveDate": "有效開始時間",
                     "endActiveDate": "有效結束時間"
             }
+            
+    + Schema 
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "cameraLocationMark": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "cameraSn": {
+                    "type": "string",
+                    "description": "行程日期"
+                  },
+                  "cameraState": {
+                    "type": "number",
+                    "description": "相機狀態"
+                  },
+                  "cameraMark": {
+                    "type": "string",
+                    "description": "相機註記"
+                  },
+                  "memoryCardNumber": {
+                    "type": "number",
+                    "description": "記憶卡檔案數"
+                  },
+                  "batteryType": {
+                    "type": "string",
+                    "description": "電池類型"
+                  },
+                  "batteryElectricity": {
+                    "type": "number",
+                    "description": "電池電量"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "光強度"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "敏感度"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": "影片長度"
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": "連拍張數"
+                  },
+                  "cameraPosition": {
+                    "type": "string",
+                    "description": "相機方位"
+                  },
+                  "cameraDepressionAngle": {
+                    "type": "string",
+                    "description": "相機俯角"
+                  },
+                  "sensingDistance": {
+                    "type": "number",
+                    "description": "感應距離"
+                  },
+                  "startActiveDate": {
+                    "type": "Date",
+                    "description": "有效開始時間"
+                  },
+                  "endActiveDate": {
+                    "type": "number",
+                    "description": "有效結束時間"
+                  },
+                }
+            
+            }
 
 + Response 200 (application/json)
 
@@ -5915,6 +5989,83 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "sensingDistance": "感應距離",
                     "startActiveDate": "有效開始時間",
                     "endActiveDate": "有效結束時間"
+            }
+            
+    + Schema 
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                "id": {
+                    "type": "number",
+                  },
+                  "cameraLocationMark": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "cameraSn": {
+                    "type": "string",
+                    "description": "行程日期"
+                  },
+                  "cameraState": {
+                    "type": "number",
+                    "description": "相機狀態"
+                  },
+                  "cameraMark": {
+                    "type": "string",
+                    "description": "相機註記"
+                  },
+                  "memoryCardNumber": {
+                    "type": "number",
+                    "description": "記憶卡檔案數"
+                  },
+                  "batteryType": {
+                    "type": "string",
+                    "description": "電池類型"
+                  },
+                  "batteryElectricity": {
+                    "type": "number",
+                    "description": "電池電量"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "光強度"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "敏感度"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": "影片長度"
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": "連拍張數"
+                  },
+                  "cameraPosition": {
+                    "type": "string",
+                    "description": "相機方位"
+                  },
+                  "cameraDepressionAngle": {
+                    "type": "string",
+                    "description": "相機俯角"
+                  },
+                  "sensingDistance": {
+                    "type": "number",
+                    "description": "感應距離"
+                  },
+                  "startActiveDate": {
+                    "type": "Date",
+                    "description": "有效開始時間"
+                  },
+                  "endActiveDate": {
+                    "type": "number",
+                    "description": "有效結束時間"
+                  },
+                }
+            
             }
     
 
