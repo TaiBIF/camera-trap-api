@@ -22,6 +22,8 @@ const locationMonthRetrievedHandler = require('../handlers/location-month-retrie
 const forestCompartmentBoundary = require('../handlers/forest-compartment-boundary-handler');
 const imageSpeciesGroup = require('../handlers/image-species-group-handler');
 const speciesTimeSeriesHandler = require('../handlers/species-time-series-handler');
+const cameraHandler = require('../handlers/camera-handler');
+const projectCameraHandler = require('../handlers/project-camera-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -207,6 +209,35 @@ apiRouter.get(
   cameraLocationHandler.getCameraLocation,
 );
 
+// camera
+apiRouter.get('/cameras', cameraHandler.getCameras);
+apiRouter.get('/cameras-manufacturers', cameraHandler.getCameraManufacturers);
+apiRouter.get('/cameras-models', cameraHandler.getCameraModels);
+apiRouter.get('/cameras-sn', cameraHandler.getCameraSNs);
+apiRouter.get('/cameras-vn', cameraHandler.getCameraVNs);
+
+// project camera
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/cameras',
+  projectCameraHandler.getProjectCameras,
+);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/cameras',
+  projectCameraHandler.addProjectCamera,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/cameras/:cameraId([a-f\\d]{24})',
+  projectCameraHandler.updateProjectCamera,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/cameras/:cameraId([a-f\\d]{24})',
+  projectCameraHandler.getProjectCameraByCameraId,
+);
+apiRouter.delete(
+  '/projects/:projectId([a-f\\d]{24})/cameras/:cameraId([a-f\\d]{24})',
+  projectCameraHandler.deleteProjectCameraByCameraId,
+);
+//
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
   locationMonthRetrievedHandler.locationMonthRetrieved,
