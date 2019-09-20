@@ -7,7 +7,6 @@ const ProjectCameraForm = require('../forms/project/project-camera-form');
 const ProjectCamerasSearchForm = require('../forms/project/project-camera-search-form');
 const CameraModel = require('../models/data/camera-model');
 const CameraState = require('../models/const/camera-state');
-const ProjectCameraState = require('../models/const/project-camera-state');
 const ProjectModel = require('../models/data/project-model');
 
 exports.getProjectCameras = auth(UserPermission.all(), (req, res) => {
@@ -23,7 +22,7 @@ exports.getProjectCameras = auth(UserPermission.all(), (req, res) => {
 
   const query = ProjectCameraModel.where({
     project: projectId,
-    state: ProjectCameraState.active,
+    // state: ProjectCameraState.active,
   }).sort(form.sort);
   return ProjectCameraModel.paginate(query, {
     offset: form.index * form.size,
@@ -49,7 +48,7 @@ exports.getProjectCameraByCameraId = auth(UserPermission.all(), (req, res) => {
   const query = ProjectCameraModel.where({
     project: projectId,
     _id: cameraId,
-    state: ProjectCameraState.active,
+    // state: ProjectCameraState.active,
   }).sort(form.sort);
   return ProjectCameraModel.paginate(query, {
     offset: form.index * form.size,

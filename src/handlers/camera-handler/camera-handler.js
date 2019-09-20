@@ -3,7 +3,6 @@ const UserPermission = require('../../models/const/user-permission');
 const errors = require('../../models/errors');
 const CameraSearchForm = require('../../forms/camera/camera-search-form');
 const CameraModel = require('../../models/data/camera-model');
-const CameraState = require('../../models/const/camera-state');
 const PageList = require('../../models/page-list');
 
 exports.getCameras = auth(UserPermission.all(), (req, res) => {
@@ -16,7 +15,7 @@ exports.getCameras = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = CameraModel.where({ state: CameraState.active });
+  const query = CameraModel.where();
   if (form.manufacturer) {
     query.where({
       manufacturer: { $regex: `${form.manufacturer}`, $options: 'i' },
