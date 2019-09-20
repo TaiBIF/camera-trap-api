@@ -14,12 +14,12 @@ exports.getSNs = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
+  const query = CameraSNModel.where();
+  if (form.name) {
+    query.where({ name: { $regex: `${form.name}`, $options: 'i' } });
+  }
 
-  const query = CameraSNModel.where().sort(form.sort);
-  return CameraSNModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
+  return CameraSNModel.paginate(query.sort(form.sort)).then(result => {
     res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );

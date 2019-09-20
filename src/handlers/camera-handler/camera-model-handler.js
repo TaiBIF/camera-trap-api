@@ -15,11 +15,11 @@ exports.getModels = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = CameraModelModel.where().sort(form.sort);
-  return CameraModelModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
+  const query = CameraModelModel.where();
+  if (form.name) {
+    query.where({ name: { $regex: `${form.name}`, $options: 'i' } });
+  }
+  return CameraModelModel.paginate(query.sort(form.sort)).then(result => {
     res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );

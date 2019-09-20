@@ -14,12 +14,11 @@ exports.getVNs = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-
-  const query = CameraVNModel.where().sort(form.sort);
-  return CameraVNModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
+  const query = CameraVNModel.where();
+  if (form.name) {
+    query.where({ name: { $regex: `${form.name}`, $options: 'i' } });
+  }
+  return CameraVNModel.paginate(query.sort(form.sort)).then(result => {
     res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );

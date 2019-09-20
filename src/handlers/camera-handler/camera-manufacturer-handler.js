@@ -14,14 +14,15 @@ exports.getManufacturers = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-
-  const query = CameraManufacturerModel.where().sort(form.sort);
-  return CameraManufacturerModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
-    res.json(
-      new PageList(form.index, form.size, result.totalDocs, result.docs),
-    );
-  });
+  const query = CameraManufacturerModel.where();
+  if (form.name) {
+    query.where({ name: { $regex: `${form.name}`, $options: 'i' } });
+  }
+  return CameraManufacturerModel.paginate(query.sort(form.sort)).then(
+    result => {
+      res.json(
+        new PageList(form.index, form.size, result.totalDocs, result.docs),
+      );
+    },
+  );
 });
