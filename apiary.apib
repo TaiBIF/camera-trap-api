@@ -5493,7 +5493,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "member": "成員",
                     "studyAreas": [{
                         "studyAreaId": "5c9d95acea5c9b4036d97c88",
-                        "projectCameraId": "1232",
+                        "cameraLocations": {
+                            "cameraLocationId": "1232",
+                            "projectCameras": [],
+                        }
                     }],
                     "mark": "註記",
                 }
@@ -5527,23 +5530,27 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "description": "行程人員"
                       },
                       "studyAreas": {
-                        "type": "object",
-                        "properties": {
-                          "title": {
+                        "type": "array",
+                        "item": {
                             "type": "object",
                             "properties": {
-                                "zh-TW": {
-                                    "type": "string",
-                                    "description": "繁體中文相機位置名稱"
+                              "studyAreaId": {
+                                "type": "string",
+                                "description": "as123",
+                              },
+                              "cameraLocations": {
+                                "type": "array",
+                                "item": {
+                                    "type": "object",
+                                    "properties": {
+                                        "projectCameras": {
+                                            type: "array",
+                                            description: "[]"
+                                        }
+                                    }   
                                 }
+                              }
                             }
-                          },
-                          "cameraLocationState": {
-                            "type": "object",
-                            "properties": {
-                                "cameras": {}
-                            }
-                          }
                         }
                       },
                       "mark": {
@@ -5890,7 +5897,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 + Response 204 (application/json)
 
-### Update project trip studyArea cameraLocationState [PUT /projects/{projectId}/trips/{tripId}/studyAreas/{studyAreaId}/cameraLocations/{cameraLocationId}/cameras/{cameraId}]
+### Update project trip studyArea cameraLocation camera [PUT /projects/{projectId}/trips/{tripId}/studyAreas/{studyAreaId}/cameraLocations/{cameraLocationId}/cameras/{cameraId}]
 更新行程相機狀態
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
