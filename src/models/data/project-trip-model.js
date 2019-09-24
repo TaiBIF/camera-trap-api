@@ -81,7 +81,7 @@ schema.method('dump', function() {
         ? this.project.dump()
         : this.project,
     sn: this.sn,
-    data: this.data,
+    date: this.date,
     member: this.member,
     studyAreas: this.studyAreas,
   };
