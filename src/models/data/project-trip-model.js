@@ -29,12 +29,13 @@ const schema = utils.generateSchema(
       },
     },
     member: {
+      // 行程人員
       type: String,
       required: true,
     },
     studyAreas: [
       {
-        // 行程日期
+        // 行程樣區
         title: {
           type: String,
         },

@@ -2,6 +2,9 @@ const forms = require('../');
 
 class ProjectTripCameraForm extends forms.Form {}
 ProjectTripCameraForm.define({
+  cameraLocationMark: new forms.fields.StringField({
+    validators: [forms.validators.length({ max: 1024 })],
+  }),
   projectCameras: new forms.fields.ArrayField({
     subField: new forms.fields.StringField({
       required: true,
