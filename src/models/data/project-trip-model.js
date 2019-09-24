@@ -23,6 +23,14 @@ const schema = utils.generateSchema(
     date: {
       // 行程日期
       type: Date,
+      required: true,
+      index: {
+        name: 'date',
+      },
+    },
+    member: {
+      type: String,
+      required: true,
     },
     studyAreas: [
       {
@@ -57,7 +65,7 @@ const schema = utils.generateSchema(
   },
 );
 schema.index(
-  { project: 1, sn: 1 },
+  { project: 1, sn: 1, date: '2019' },
   {
     name: 'ProjectTrips',
     background: true,
