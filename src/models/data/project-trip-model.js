@@ -39,12 +39,12 @@ const schema = utils.generateSchema(
         title: {
           type: String,
         },
-        studyAreaId: {
+        studyArea: {
           type: Schema.ObjectId,
         },
         cameraLocations: [
           {
-            cameraLocationId: {
+            cameraLocation: {
               type: Schema.ObjectId,
             },
             cameraLocationMark: {

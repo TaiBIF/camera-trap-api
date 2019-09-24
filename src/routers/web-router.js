@@ -24,6 +24,7 @@ const imageSpeciesGroup = require('../handlers/image-species-group-handler');
 const speciesTimeSeriesHandler = require('../handlers/species-time-series-handler');
 const cameraHandler = require('../handlers/camera-handler');
 const projectCameraHandler = require('../handlers/project-camera-handler');
+const projectTripHandler = require('../handlers/project-trip-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -237,6 +238,28 @@ apiRouter.delete(
   '/projects/:projectId([a-f\\d]{24})/cameras/:cameraId([a-f\\d]{24})',
   projectCameraHandler.deleteProjectCameraByCameraId,
 );
+
+// project trip
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/trips',
+  projectTripHandler.getProjectTrips,
+);
+apiRouter.post(
+  '/projects/:projectId([a-f\\d]{24})/trips',
+  projectTripHandler.addProjectTrip,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
+  projectTripHandler.updateProjectTripByTripId,
+);
+apiRouter.delete(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
+  projectTripHandler.deleteProjectTrapByTrapId,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})/studyAreas/:studyAreaId([a-f\\d]{24})/cameraLocations/:cameraLocationId/cameras/:cameraId([a-f\\d]{24})',
+);
+
 //
 apiRouter.get(
   '/projects/:projectId([a-f\\d]{24})/month-retrieved',
