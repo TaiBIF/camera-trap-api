@@ -74,6 +74,7 @@ schema.method('dump', function() {
         : this.project,
     sn: this.sn,
     data: this.data,
+    member: this.member,
     studyAreas: this.studyAreas,
   };
 });
