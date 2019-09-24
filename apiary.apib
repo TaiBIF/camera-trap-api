@@ -3958,6 +3958,93 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+### Search project camera [GET /projects/{projectId}/cameras{?nickname}]
+搜尋專案下的相機。
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + nickname: `MX3862A` (string, optional) - 使用相機編號 搜尋。
+    
+
++ Request Search project cameras (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "items": [
+                {
+                  "id": "5c9f28070d9cee99f8a11a12",
+                  "name": "PT02A",
+                  "nickname": "PT02A",
+                  "sn": "MX3862A",
+                  "vn": "BRN00012",
+                  "propertyNumber": "AB12345",
+                  "manufacturer": "Browning",
+                  "model": "BR5PXD",
+                  "state": "維修中",
+                  ...
+                }
+              ]
+            }
+            
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "相機編號"
+                      },
+                      "nickname": {
+                        "type": "string",
+                        "description": "自訂相機編號"
+                      },
+                      "sn": {
+                        "type": "string",
+                        "description": "相機序號"
+                      },
+                      "vn": {
+                        "type": "string",
+                        "description": "廠商維護編號"
+                      },
+                      "propertyNumber": {
+                        "type": "string",
+                        "description": "相機財產編號"
+                      },
+                      "manufacturer": {
+                        "type": "string",
+                        "description": "廠牌"
+                      },
+                      "model": {
+                        "type": "string",
+                        "description": "型號"
+                      },
+                      "state": {
+                        "type": "string",
+                        "description": "狀態",
+                        "enum": ["維修中", "使用中", "停用中", "已撤除"]
+                      },
+                    }
+                  }
+                }
+              }
+            }
+
+
 ### Get project camera by cameraId [GET /projects/{projectId}/cameras/{cameraId}]
 取得專案下使用的某個相機
 - The user's permission should be 'administrator' or 'general-account'.
@@ -5397,6 +5484,650 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               }
             }
 
+## Trip [/projects/{projectId}/trips]
+### List Project Trips [GET /projects/{projectId}/trips{?sn,member,mark}]
+取得(搜尋)行程
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + projectId: `5c9af1d2403d37067adadbc5` (string) - 計畫 id。
+    + sn: `Trip j` (string, optional) - 使用 編號 搜尋
+    + member: `xxx` (string, optional) - 搜尋成員姓名
+    + mark: `15好樣區路斷取消前往` (string, optional) - 搜尋行程註記
+
++ Request List project Trips (application/json)
+
++ Response 200 (text/csv)
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 100,
+              "total": 7,
+              "items": [
+                {
+                    "id": "id",
+                    "sn": "編號",
+                    "date": "行程日期",
+                    "member": "成員",
+                    "studyAreas": [{
+                        "studyAreaId": "5c9d95acea5c9b4036d97c88",
+                        "cameraLocations": {
+                            "cameraLocationId": "1232",
+                            "projectCameras": [],
+                        }
+                    }],
+                    "mark": "註記",
+                }
+              ]
+            }
+            
+    + Schema
+            
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "sn": {
+                        "type": "string",
+                        "description": "行程編號"
+                      },
+                      "date": {
+                        "type": "Date",
+                        "description": "行程日期"
+                      },
+                      "member": {
+                        "type": "string",
+                        "description": "行程人員"
+                      },
+                      "studyAreas": {
+                        "type": "array",
+                        "item": {
+                            "type": "object",
+                            "properties": {
+                              "studyAreaId": {
+                                "type": "string",
+                                "description": "as123",
+                              },
+                              "cameraLocations": {
+                                "type": "array",
+                                "item": {
+                                    "type": "object",
+                                    "properties": {
+                                        "projectCameras": {
+                                            type: "array",
+                                            description: "[]"
+                                        }
+                                    }   
+                                }
+                              }
+                            }
+                        }
+                      },
+                      "mark": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+### Add project trip [POST /projects/{projectId}/trips]
+新增專案行程
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + projectId: `5c9af1d2403d37067adadbc5` (string) - 計畫 id。
+
++ Request Add project trip (application/json)
+
+    + Body
+        
+            {
+                    "sn": "編號",
+                    "date": "行程日期",
+                    "member": "成員",
+                    "studyAreas": [{
+                        "studyAreaId": "5c9d95acea5c9b4036d97c88",
+                        "cameraLocations": {
+                            "cameraLocationId": "5c9d95acea5c9b4036d97c88",
+                            "projectCameras": [{
+                                "cameraId": "213as",
+                            }]
+                        }
+                    }],
+                    "mark": "註記",
+            }
+    
+    + Schema
+            
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "sn": {
+                    "type": "string",
+                    "description": "行程編號"
+                  },
+                  "date": {
+                    "type": "Date",
+                    "description": "行程日期"
+                  },
+                  "member": {
+                    "type": "string",
+                    "description": "行程人員"
+                  },
+                  "studyAreas": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                            "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文相機位置名稱"
+                            }
+                        }
+                      },
+                      "cameraLocations": {
+                        "type": "object",
+                        "properties": {
+                            "cameraLocationId": {
+                                "type": "string",
+                                "description": "cameraLocation id"
+                            },
+                            "projectCameras": {
+                                "type": "array",
+                                "description": "array object"
+                            }
+                        }
+                      }
+                    }
+                  },
+                  "mark": {
+                    "type": "string"
+                  }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+        
+            {
+                    "id": "id",
+                    "sn": "編號",
+                    "date": "行程日期",
+                    "member": "成員",
+                    "studyAreas": [{
+                        "id": "5c9d95acea5c9b4036d97c88",
+                        "title": {
+                            "zh-TW": "titleX"
+                        },
+                        "cameraLocations": {
+                            "cameraLocationId": "5c9d95acea5c9b4036d97c88",
+                            "projectCameras": [{
+                                "cameraId": "213as",
+                            }]
+                        }
+                    }],
+                    "mark": "註記",
+            }
+            
+    + Schema
+            
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "行程編號"
+                  },
+                  "date": {
+                    "type": "Date",
+                    "description": "行程日期"
+                  },
+                  "member": {
+                    "type": "string",
+                    "description": "行程人員"
+                  },
+                  "studyAreas": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                            "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文相機位置名稱"
+                            }
+                        }
+                      },
+                      "cameraLocations": {
+                        "type": "object",
+                        "properties": {
+                            "cameraLocationId": {
+                                "type": "string",
+                                "description": "cameraLocation id"
+                            },
+                            "projectCameras": {
+                                "type": "array",
+                                "description": "array object"
+                            }
+                        }
+                      }
+                    }
+                  },
+                  "mark": {
+                    "type": "string"
+                  }
+              }
+            }
+
+### Update project trip By tripId [PUT /projects/{projectId}/trips/{tripId}]
+更新專案行程
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + projectId: `5c9af1d2403d37067adadbc5` (string) - 計畫 id。
+    + tripId: `5c9af1d2403d37067adadbc6` (string) - 行程 id
+
++ Request Update project trip (application/json)
+
+    + Body
+        
+            {
+                    "sn": "編號",
+                    "date": "行程日期",
+                    "member": "成員",
+                    "studyAreas": [{
+                        "id": "5c9d95acea5c9b4036d97c88",
+                        "title": {
+                            "zh-TW": "titleX"
+                        },
+                        "cameraLocations": {
+                            "cameraLocationId": "5c9d95acea5c9b4036d97c88",
+                            "projectCameras": [{
+                                "cameraId": "213as",
+                            }]
+                        }
+                    }],
+                    "mark": "註記",
+            }
+    
+    + Schema
+            
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "sn": {
+                    "type": "string",
+                    "description": "行程編號"
+                  },
+                  "date": {
+                    "type": "Date",
+                    "description": "行程日期"
+                  },
+                  "member": {
+                    "type": "string",
+                    "description": "行程人員"
+                  },
+                  "studyAreas": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                            "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文相機位置名稱"
+                            }
+                        }
+                      },
+                      "cameraLocations": {
+                        "type": "object",
+                        "properties": {
+                            "cameraLocationId": {
+                                "type": "string",
+                                "description": "cameraLocation id"
+                            },
+                            "projectCameras": {
+                                "type": "array",
+                                "description": "array object"
+                            }
+                        }
+                      }
+                    }
+                  },
+                  "mark": {
+                    "type": "string"
+                  }
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+        
+            {
+                    "id": "id",
+                    "sn": "編號",
+                    "date": "行程日期",
+                    "member": "成員",
+                    "studyAreas": [{
+                        "id": "5c9d95acea5c9b4036d97c88",
+                        "title": {
+                            "zh-TW": "titleX"
+                        },
+                        "cameraLocations": {
+                            "cameraLocationId": "5c9d95acea5c9b4036d97c88",
+                            "projectCameras": [{
+                                "cameraId": "213as",
+                            }]
+                        }
+                    }],
+                    "mark": "註記",
+            }
+            
+    + Schema
+            
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "sn": {
+                    "type": "string",
+                    "description": "行程編號"
+                  },
+                  "date": {
+                    "type": "Date",
+                    "description": "行程日期"
+                  },
+                  "member": {
+                    "type": "string",
+                    "description": "行程人員"
+                  },
+                  "studyAreas": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "object",
+                        "properties": {
+                            "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文相機位置名稱"
+                            }
+                        }
+                      },
+                      "cameraLocations": {
+                        "type": "object",
+                        "properties": {
+                            "cameraLocationId": {
+                                "type": "string",
+                                "description": "cameraLocation id"
+                            },
+                            "projectCameras": {
+                                "type": "array",
+                                "description": "array object"
+                            }
+                        }
+                      }
+                    }
+                  },
+                  "mark": {
+                    "type": "string"
+                  }
+                }
+            
+            }
+
+### Delete project trip By tripId [DELETE /projects/{projectId}/trips/{tripId}]
+刪除單一行程
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + projectId: `5cd25d0100407e2fea3fcf63` (string) - The project ID.
+    + tripId: `5cd25d0100407e2fea3fcf63` (string) - The trip ID.
+
++ Request Delete an trip (application/json)
+
++ Response 204 (application/json)
+
+### Update project trip studyArea cameraLocation camera [PUT /projects/{projectId}/trips/{tripId}/studyAreas/{studyAreaId}/cameraLocations/{cameraLocationId}/cameras/{cameraId}]
+更新行程相機狀態
+- The user's permission should be 'administrator' or 'general-account'.
+- The administrator gets all projects.
+- The general-account gets the project who joined.
+
++ Parameters
+    + projectId: `5c9af1d2403d37067adadbc5` (string) - 計畫 id。
+    + tripId: `5c9af1d2403d37067adadbc5` (string) - 行程 id。
+    + studyAreaId: `5c9af1d2403d37067adadbc5` (string) - 樣區 id。
+    + cameraLocationId: `5c9af1d2403d37067adadbc5` (string) - 相機位置 id。
+    + cameraId: `5c9af1d2403d37067adadbc5` (string) - 相機 id。
+
++ Request update project trip studyArea cameraLocationState (application/json)
+
+    + Body 
+    
+            {
+                    "cameraLocationMark": "相機位置註記",
+                    "cameraSn": "相機編號",
+                    "cameraState": "相機狀態",
+                    "cameraMark": "相機註記",
+                    "memoryCardNumber": "記憶卡檔案數",
+                    "batteryType": "電池類型",
+                    "batteryElectricity": "電池電量",
+                    "brightness": "光強度",
+                    "sensitivity": "敏感度",
+                    "videoLength": "影片長度",
+                    "continuousShots": "連拍張數",
+                    "cameraPosition": "相機方位",
+                    "cameraDepressionAngle": "相機俯角",
+                    "sensingDistance": "感應距離",
+                    "startActiveDate": "有效開始時間",
+                    "endActiveDate": "有效結束時間"
+            }
+            
+    + Schema 
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                  "cameraLocationMark": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "cameraSn": {
+                    "type": "string",
+                    "description": "行程日期"
+                  },
+                  "cameraState": {
+                    "type": "number",
+                    "description": "相機狀態"
+                  },
+                  "cameraMark": {
+                    "type": "string",
+                    "description": "相機註記"
+                  },
+                  "memoryCardNumber": {
+                    "type": "number",
+                    "description": "記憶卡檔案數"
+                  },
+                  "batteryType": {
+                    "type": "string",
+                    "description": "電池類型"
+                  },
+                  "batteryElectricity": {
+                    "type": "number",
+                    "description": "電池電量"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "光強度"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "敏感度"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": "影片長度"
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": "連拍張數"
+                  },
+                  "cameraPosition": {
+                    "type": "string",
+                    "description": "相機方位"
+                  },
+                  "cameraDepressionAngle": {
+                    "type": "string",
+                    "description": "相機俯角"
+                  },
+                  "sensingDistance": {
+                    "type": "number",
+                    "description": "感應距離"
+                  },
+                  "startActiveDate": {
+                    "type": "Date",
+                    "description": "有效開始時間"
+                  },
+                  "endActiveDate": {
+                    "type": "number",
+                    "description": "有效結束時間"
+                  },
+                }
+            
+            }
+
++ Response 200 (application/json)
+
+    + Body
+        
+            {
+                    "id": "id",
+                    "cameraLocationMark": "相機位置註記",
+                    "cameraSn": "相機編號",
+                    "cameraState": "相機狀態",
+                    "cameraMark": "相機註記",
+                    "memoryCardNumber": "記憶卡檔案數",
+                    "batteryType": "電池類型",
+                    "batteryElectricity": "電池電量",
+                    "brightness": "光強度",
+                    "sensitivity": "敏感度",
+                    "videoLength": "影片長度",
+                    "continuousShots": "連拍張數",
+                    "cameraPosition": "相機方位",
+                    "cameraDepressionAngle": "相機俯角",
+                    "sensingDistance": "感應距離",
+                    "startActiveDate": "有效開始時間",
+                    "endActiveDate": "有效結束時間"
+            }
+            
+    + Schema 
+    
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": {
+                "id": {
+                    "type": "number",
+                  },
+                  "cameraLocationMark": {
+                    "type": "string",
+                    "description": "相機編號"
+                  },
+                  "cameraSn": {
+                    "type": "string",
+                    "description": "行程日期"
+                  },
+                  "cameraState": {
+                    "type": "number",
+                    "description": "相機狀態"
+                  },
+                  "cameraMark": {
+                    "type": "string",
+                    "description": "相機註記"
+                  },
+                  "memoryCardNumber": {
+                    "type": "number",
+                    "description": "記憶卡檔案數"
+                  },
+                  "batteryType": {
+                    "type": "string",
+                    "description": "電池類型"
+                  },
+                  "batteryElectricity": {
+                    "type": "number",
+                    "description": "電池電量"
+                  },
+                  "brightness": {
+                    "type": "string",
+                    "description": "光強度"
+                  },
+                  "sensitivity": {
+                    "type": "string",
+                    "description": "敏感度"
+                  },
+                  "videoLength": {
+                    "type": "number",
+                    "description": "影片長度"
+                  },
+                  "continuousShots": {
+                    "type": "number",
+                    "description": "連拍張數"
+                  },
+                  "cameraPosition": {
+                    "type": "string",
+                    "description": "相機方位"
+                  },
+                  "cameraDepressionAngle": {
+                    "type": "string",
+                    "description": "相機俯角"
+                  },
+                  "sensingDistance": {
+                    "type": "number",
+                    "description": "感應距離"
+                  },
+                  "startActiveDate": {
+                    "type": "Date",
+                    "description": "有效開始時間"
+                  },
+                  "endActiveDate": {
+                    "type": "number",
+                    "description": "有效結束時間"
+                  },
+                }
+            
+            }
+    
 
 ## Download example csv [/projects/{projectId}/example.csv]
 ### Download the example csv file [GET /projects/{projectId}/example.csv]
