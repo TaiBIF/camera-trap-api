@@ -6,6 +6,10 @@ ProjectCameraForm.define({
     required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
+  nickname: new forms.fields.StringField({
+    required: true,
+    validators: [forms.validators.length({ max: 1024 })],
+  }),
   sn: new forms.fields.StringField({
     required: true,
     validators: [forms.validators.length({ max: 1024 })],
