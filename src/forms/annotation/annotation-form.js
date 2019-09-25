@@ -22,9 +22,8 @@ CameraLocationForm.define({
     subField: new forms.fields.Field({
       validators: [
         (field = {}) => {
-          const idValidator = forms.validators.id();
           const lengthValidator = forms.validators.length({ max: 1024 });
-          return idValidator(field.dataField) || lengthValidator(field.value);
+          return lengthValidator(field.value);
         },
       ],
     }),

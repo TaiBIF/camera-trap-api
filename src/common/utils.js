@@ -212,7 +212,6 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
     height: {Number}
    */
   new Promise((resolve, reject) => {
-    console.log('gm resize');
     gm(buffer).size({ bufferStream: true }, function(error, size) {
       if (error) {
         console.log('utils.js 218 gm error');
@@ -402,7 +401,11 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
       buffer,
       width: result.width,
       height: result.height,
-    }));
+    }))
+    .catch(e => {
+      console.log('fail resize');
+      throw e;
+    });
 };
 
 exports.getAnonymous = () => ({ isLogin: () => false });
