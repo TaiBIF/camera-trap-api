@@ -47,12 +47,68 @@ const schema = utils.generateSchema(
             cameraLocation: {
               type: Schema.ObjectId,
             },
-            cameraLocationMark: {
-              type: String,
-            },
-            projectCameras: {
-              type: Array,
-            },
+            projectCameras: [
+              {
+                cameraLocationMark: {
+                  type: String,
+                },
+                cameraSn: {
+                  type: String,
+                },
+                cameraBatteryType: {
+                  type: String,
+                },
+                // 電池剩餘電量
+                cameraBatteryRemainingCapacity: {
+                  type: String,
+                },
+                cameraBrightness: {
+                  type: String,
+                },
+                cameraSensitivity: {
+                  type: String,
+                },
+                cameraVideoLength: {
+                  type: Number,
+                },
+                cameraContinuousShots: {
+                  type: Number,
+                },
+                cameraSensingDistance: {
+                  type: Number,
+                },
+                cameraState: {
+                  type: String,
+                },
+                // 相機註記
+                cameraMark: {
+                  type: String,
+                },
+                // 記憶卡檔案數
+                cameraMemoryCardNumber: {
+                  type: Number,
+                },
+                // 相機方位
+                cameraPosition: {
+                  type: String,
+                },
+                // 相機俯角
+                cameraDepressionAngle: {
+                  type: String,
+                },
+                // 感應距離
+                sensingDistance: {
+                  type: String,
+                },
+                // 有效開始時間
+                startActiveDate: {
+                  type: Date,
+                },
+                endActiveDate: {
+                  type: Date,
+                },
+              },
+            ],
           },
         ],
       },

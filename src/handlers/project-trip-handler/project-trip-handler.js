@@ -4,6 +4,7 @@ const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
 const ProjectTripStudyAreaForm = require('../../forms/project/project-trip-study-area.form');
 const ProjectTripForm = require('../../forms/project/project-trip-form');
+const ProjectTripCameraForm = require('../../forms/project/project-trip-camera-form');
 const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-form');
 const ProjectTripModel = require('../../models/data/project-trip-model');
 const ProjectModel = require('../../models/data/project-model');
@@ -134,3 +135,87 @@ exports.deleteProjectTrapByTrapId = auth(UserPermission.all(), (req, res) => {
       res.status(204).send();
     });
 });
+
+exports.updateProjectTripCameraByTripId = auth(
+  UserPermission.all(),
+  (req, res) => {
+    /*
+      PUT /api/v1/projects/{projectId}/trips/{tripId}/cameraLocations/{cameraLocationId}/camera
+ */
+    const form = new ProjectTripCameraForm(req.body);
+    const { projectId, tripId, studyAreaId, cameraLocationId } = req.params;
+    const errorMessage = form.validate();
+    if (errorMessage) {
+      throw new errors.Http400(errorMessage);
+    }
+
+    return Promise.all([
+      ProjectModel.findById(projectId),
+      ProjectTripModel.findById(tripId).where({ project: projectId }),
+    ])
+      .then(async ([project, projectTrip]) => {
+        if (!projectTrip) {
+          throw new errors.Http404('Cannot find project trip');
+        }
+        if (!project.canManageBy(req.user)) {
+          throw new errors.Http403();
+        }
+
+        // eslint-disable-next-line no-plusplus
+        for (let i = 0, max = projectTrip.studyAreas.length; i < max; i++) {
+          // eslint-disable-next-line eqeqeq
+          if (projectTrip.studyAreas[i].studyArea == studyAreaId) {
+            for (
+              let j = 0,
+                maxJ = projectTrip.studyAreas[i].cameraLocations.length;
+              j < maxJ;
+              // eslint-disable-next-line no-plusplus
+              j++
+            ) {
+              if (
+                // eslint-disable-next-line eqeqeq
+                projectTrip.studyAreas[i].cameraLocations[j].cameraLocation ==
+                cameraLocationId
+              ) {
+                for (
+                  let z = 0,
+                    maxZ =
+                      projectTrip.studyAreas[i].cameraLocations[j]
+                        .projectCameras.length;
+                  i < maxZ;
+                  // eslint-disable-next-line no-plusplus
+                  z++
+                ) {
+                  if (
+                    projectTrip.studyAreas[i].cameraLocations[j].projectCameras[
+                      z
+                    ]
+                  ) {
+                    if (
+                      projectTrip.studyAreas[i].cameraLocations[j]
+                        .projectCameras[z].cameraSn === form.cameraSn
+                    ) {
+                      throw new errors.Http400('Camera sn re-create');
+                    }
+                  } else {
+                    break;
+                  }
+                }
+                Object.assign(
+                  projectTrip.studyAreas[i].cameraLocations[j].projectCameras,
+                  projectTrip.studyAreas[i].cameraLocations[
+                    j
+                  ].projectCameras.push(form),
+                );
+                break;
+              }
+            }
+          }
+        }
+        return projectTrip.save();
+      })
+      .then(projectTrip => {
+        res.json(projectTrip.dump());
+      });
+  },
+);

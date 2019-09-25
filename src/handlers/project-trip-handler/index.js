@@ -18,3 +18,7 @@ exports.deleteProjectTrapByTrapId = auth(
   UserPermission.all(),
   ProjectTripHandler.deleteProjectTrapByTrapId,
 );
+exports.updateProjectTripCameraByTripId = auth(
+  UserPermission.all(),
+  ProjectTripHandler.updateProjectTripCameraByTripId,
+);

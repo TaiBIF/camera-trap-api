@@ -1,4 +1,5 @@
 const forms = require('../');
+const ProjectCameraState = require('../../models/const/project-camera-state');
 
 class ProjectTripStudyAreaForm extends forms.Form {}
 ProjectTripStudyAreaForm.define({
@@ -6,6 +7,7 @@ ProjectTripStudyAreaForm.define({
     validators: [forms.validators.length({ max: 1024 })],
   }),
   cameraSn: new forms.fields.StringField({
+    required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
   cameraBatteryType: new forms.fields.StringField(),
@@ -16,8 +18,12 @@ ProjectTripStudyAreaForm.define({
   cameraVideoLength: new forms.fields.IntegerField(),
   cameraContinuousShots: new forms.fields.IntegerField(),
   cameraSensingDistance: new forms.fields.IntegerField(),
-  cameraState: new forms.fields.StringField({
-    validators: [forms.validators.length({ max: 1024 })],
+  cameraState: new forms.fields.IntegerField({
+    required: true,
+    filter: value => {
+      const result = ProjectCameraState.all().includes(value);
+      return result ? value : ProjectCameraState.active;
+    },
   }),
   // 相機註記
   cameraMark: new forms.fields.StringField(),
