@@ -161,57 +161,31 @@ exports.updateProjectTripCameraByTripId = auth(
           throw new errors.Http403();
         }
 
-        // eslint-disable-next-line no-plusplus
-        for (let i = 0, max = projectTrip.studyAreas.length; i < max; i++) {
+        // 比對studyArea 是否符合 studyAreaId
+        projectTrip.studyAreas.forEach(studyAreaVal => {
           // eslint-disable-next-line eqeqeq
-          if (projectTrip.studyAreas[i].studyArea == studyAreaId) {
-            for (
-              let j = 0,
-                maxJ = projectTrip.studyAreas[i].cameraLocations.length;
-              j < maxJ;
-              // eslint-disable-next-line no-plusplus
-              j++
-            ) {
-              if (
-                // eslint-disable-next-line eqeqeq
-                projectTrip.studyAreas[i].cameraLocations[j].cameraLocation ==
-                cameraLocationId
-              ) {
-                for (
-                  let z = 0,
-                    maxZ =
-                      projectTrip.studyAreas[i].cameraLocations[j]
-                        .projectCameras.length;
-                  i < maxZ;
-                  // eslint-disable-next-line no-plusplus
-                  z++
-                ) {
-                  if (
-                    projectTrip.studyAreas[i].cameraLocations[j].projectCameras[
-                      z
-                    ]
-                  ) {
-                    if (
-                      projectTrip.studyAreas[i].cameraLocations[j]
-                        .projectCameras[z].cameraSn === form.cameraSn
-                    ) {
+          if (studyAreaVal.studyArea == studyAreaId) {
+            // cameralocations 是否符合 cameraLocationId
+            studyAreaVal.cameraLocations.forEach(cameraLocationVal => {
+              // eslint-disable-next-line eqeqeq
+              if (cameraLocationVal.cameraLocation == cameraLocationId) {
+                // projectCamera 是否存在 與 projectCamera sn 唯一 若存在則拋出錯誤
+                cameraLocationVal.projectCameras.forEach(projectCameraVal => {
+                  if (projectCameraVal) {
+                    if (projectCameraVal.cameraSn === form.cameraSn) {
                       throw new errors.Http400('Camera sn re-create');
                     }
-                  } else {
-                    break;
                   }
-                }
+                });
+                // 若不存在 則array push
                 Object.assign(
-                  projectTrip.studyAreas[i].cameraLocations[j].projectCameras,
-                  projectTrip.studyAreas[i].cameraLocations[
-                    j
-                  ].projectCameras.push(form),
+                  cameraLocationVal.projectCameras,
+                  cameraLocationVal.projectCameras.push(form),
                 );
-                break;
               }
-            }
+            });
           }
-        }
+        });
         return projectTrip.save();
       })
       .then(projectTrip => {

@@ -9,11 +9,7 @@ ProjectTripStudyAreaForm.define({
     cameraLocations: new forms.fields.ArrayField({
       filter: value => value || [],
       subField: new forms.fields.Field({
-        validators: [
-          (field = {}) =>
-            // const idValidator = forms.validators.id();
-            field.projectCameras,
-        ],
+        validators: [(field = {}) => field.projectCameras],
       }),
     }),
   }),
