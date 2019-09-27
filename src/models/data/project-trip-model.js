@@ -47,11 +47,11 @@ const schema = utils.generateSchema(
             cameraLocation: {
               type: Schema.ObjectId,
             },
+            cameraLocationMark: {
+              type: String,
+            },
             projectCameras: [
               {
-                cameraLocationMark: {
-                  type: String,
-                },
                 cameraSn: {
                   type: String,
                 },

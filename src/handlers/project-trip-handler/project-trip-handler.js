@@ -182,6 +182,8 @@ exports.updateProjectTripCameraByTripId = auth(
                   cameraLocationVal.projectCameras,
                   cameraLocationVal.projectCameras.push(form),
                 );
+                cameraLocationVal.cameraLocationMark = form.cameraLocationMark;
+                Object.assign(cameraLocationVal.cameraLocationMark);
               }
             });
           }
