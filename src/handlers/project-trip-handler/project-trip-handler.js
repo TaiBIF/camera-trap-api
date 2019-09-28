@@ -48,6 +48,7 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
       POST /api/v1/projects/{projectId}/trips
    */
   const form = new ProjectTripForm(req.body);
+  const studyAreaForm = new ProjectTripStudyAreaForm(req.body);
   const { projectId } = req.params;
   const errorMessage = form.validate();
   if (errorMessage) {
@@ -58,8 +59,8 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
     ProjectModel.findById(projectId),
     ProjectTripModel.where({ project: projectId, sn: form.sn }).findOne(),
   ])
-    .then(([project, projectTrapExist]) => {
-      if (projectTrapExist) {
+    .then(([project, projectTripExist]) => {
+      if (projectTripExist) {
         throw new errors.Http400(
           'Cannot use the same "sn" to create project Trip',
         );
@@ -70,6 +71,7 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
       const result = new ProjectTripModel({
         project: projectId,
         ...form,
+        ...studyAreaForm,
       });
       return Promise.all([result.save()]);
     })
