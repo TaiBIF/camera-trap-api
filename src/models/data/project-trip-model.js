@@ -16,6 +16,7 @@ const schema = utils.generateSchema(
     sn: {
       type: String,
       required: true,
+      unique: true,
       index: {
         name: 'sn',
       },
@@ -54,6 +55,7 @@ const schema = utils.generateSchema(
               {
                 cameraSn: {
                   type: String,
+                  unique: true,
                 },
                 cameraBatteryType: {
                   type: String,

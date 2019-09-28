@@ -256,8 +256,12 @@ apiRouter.delete(
   '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
   projectTripHandler.deleteProjectTrapByTrapId,
 );
-apiRouter.put(
+apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})/studyAreas/:studyAreaId([a-f\\d]{24})/cameraLocations/:cameraLocationId/cameras',
+  projectTripHandler.addProjectTripCameraByTripId,
+);
+apiRouter.put(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})/studyAreas/:studyAreaId([a-f\\d]{24})/cameraLocations/:cameraLocationId/cameras/:cameraId([a-f\\d]{24})',
   projectTripHandler.updateProjectTripCameraByTripId,
 );
 
