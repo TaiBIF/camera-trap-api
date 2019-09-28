@@ -32,11 +32,19 @@ CameraLocationsSearchForm.define({
   model: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
-  sn: new forms.fields.StringField({
-    validators: [forms.validators.length({ max: 1024 })],
+  sns: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.length({ max: 1024 })],
+    }),
   }),
-  vn: new forms.fields.StringField({
-    validators: [forms.validators.length({ max: 1024 })],
+  vns: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.length({ max: 1024 })],
+    }),
   }),
 });
 module.exports = CameraLocationsSearchForm;

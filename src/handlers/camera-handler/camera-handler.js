@@ -24,11 +24,11 @@ exports.getCameras = auth(UserPermission.all(), (req, res) => {
   if (form.model) {
     query.where({ model: { $regex: `${form.model}`, $options: 'i' } });
   }
-  if (form.sn) {
-    query.where({ sn: { $regex: `${form.sn}`, $options: 'i' } });
+  if (form.sns && form.sns.length > 0) {
+    query.where({ sn: { $in: `${form.sns}` } });
   }
-  if (form.vn) {
-    query.where({ vn: { $regex: `${form.vn}`, $options: 'i' } });
+  if (form.vns && form.vns.length > 0) {
+    query.where({ vn: { $in: `${form.vns}` } });
   }
   return CameraModel.paginate(query.sort(form.sort), {
     offset: form.index * form.size,
