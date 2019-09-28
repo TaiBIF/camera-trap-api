@@ -141,6 +141,7 @@ schema.method('dump', function() {
     date: this.date,
     member: this.member,
     studyAreas: this.studyAreas,
+    mark: this.mark,
   };
 });
 
