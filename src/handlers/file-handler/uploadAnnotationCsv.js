@@ -2,21 +2,16 @@
 const { keyBy } = require('lodash');
 const csvParse = require('csv-parse/lib/sync');
 const Promise = require('bluebird');
-const utils = require('../../common/utils');
+const moment = require('moment');
 const FileModel = require('../../models/data/file-model');
 const FileType = require('../../models/const/file-type');
 const AnnotationState = require('../../models/const/annotation-state');
 const AnnotationModel = require('../../models/data/annotation-model');
-const ProjectSpeciesModel = require('../../models/data/project-species-model');
 const UploadSessionModel = require('../../models/data/upload-session-model');
 const UploadSessionState = require('../../models/const/upload-session-state');
 const UploadSessionErrorType = require('../../models/const/upload-session-error-type');
-const StudyAreaModel = require('../../models/data/study-area-model');
-const StudyAreaState = require('../../models/const/study-area-state');
 const fetchCameraLocation = require('./fetchCameraLocation');
 const DataFieldModel = require('../../models/data/data-field-model');
-const CameraLocationModel = require('../../models/data/camera-location-model');
-const CameraLocationState = require('../../models/const/camera-location-state');
 const SpeciesModel = require('../../models/data/species-model');
 const logger = require('../../logger');
 
@@ -64,11 +59,11 @@ const rawDataToObject = (csvArray, dataFields) => {
     return data;
   });
 
-  return keyBy(rawData, 'annotationId');
+  return rawData;
 };
 
 module.exports = async (user, file, cameraLocationId) => {
-  logger.info('start import csv');
+  logger.info('Start import csv');
   const type = FileType.annotationCSV;
   const csvObject = csvParse(await fetchFileContent(file.path), { bom: true });
 
@@ -94,24 +89,11 @@ module.exports = async (user, file, cameraLocationId) => {
   await uploadSession.save();
   await fileObject.saveWithContent(file.path);
 
-  const projectSpecies = await ProjectSpeciesModel.where({
-    project: project._id,
-  });
-
   const dataFields = await DataFieldModel.where({
     _id: { $in: project.dataFields },
   });
 
-  const studyAreas = await StudyAreaModel.where({ project: project._id })
-    .where({ state: StudyAreaState.active })
-    .find();
-
   const species = await SpeciesModel.where();
-  const cameraLocations = await CameraLocationModel.where({
-    project: project._id,
-  })
-    .where({ state: CameraLocationState.active })
-    .find();
 
   const csvHeaderRow = csvObject[0];
 
@@ -119,16 +101,54 @@ module.exports = async (user, file, cameraLocationId) => {
     row => row === 'Annotation id',
   );
 
-  if (!annotationIndex) {
-    const { annotations } = utils.convertCsvToAnnotations({
-      project: project._id,
-      studyAreas,
-      dataFields,
-      cameraLocations,
-      uploadSession,
-      projectSpecies,
-      species,
-      csvObject,
+  const csvContentRows = rawDataToObject(csvObject, dataFields);
+
+  if (annotationIndex < 0) {
+    const annotations = csvContentRows.map(data => {
+      // 組 fields
+      const fields = dataFields.map(({ _id, options }) => {
+        const tempValue = data[_id];
+        let value = {};
+
+        if (options.length) {
+          const option =
+            options.find(
+              opt =>
+                `${opt._id}` === tempValue || `${opt['zh-TW']}` === tempValue,
+            ) || {};
+
+          value = {
+            selectId: option._id,
+            text: option._id || tempValue,
+            selectLabel: option['zh-TW'],
+          };
+        } else {
+          value = {
+            text: tempValue,
+          };
+        }
+
+        return {
+          dataField: _id,
+          value,
+        };
+      });
+
+      const annotationSpecies = species.find(
+        x => x.title['zh-TW'] === data.species,
+      );
+
+      return new AnnotationModel({
+        project,
+        cameraLocation,
+        studyArea: cameraLocation.studyArea,
+        time: moment(data.time).toISOString(),
+        filename: data.fileName,
+        species: annotationSpecies || null,
+        failures: annotationSpecies ? [] : ['new-species'],
+        fields,
+        rawData: data.origin,
+      });
     });
 
     try {
@@ -150,9 +170,9 @@ module.exports = async (user, file, cameraLocationId) => {
       uploadSession.state = UploadSessionState.failure;
     }
   } else {
-    const csvContentRowsWithAnnotationId = rawDataToObject(
-      csvObject,
-      dataFields,
+    const csvContentRowsWithAnnotationId = keyBy(
+      csvContentRows,
+      'annotationId',
     );
     const annotationIds = Object.keys(csvContentRowsWithAnnotationId);
     const annotations = await AnnotationModel.where({
