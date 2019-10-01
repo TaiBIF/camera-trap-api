@@ -310,6 +310,12 @@ module.exports = async (req, res) => {
     .map(f => (f.title['zh-TW'] === '樣區' ? '樣區,子樣區' : f.title['zh-TW']))
     .join(',');
 
+  let parentArea;
+  if (cameraLocation.studyArea.parent) {
+    const { parent: parentId } = cameraLocation.studyArea;
+    parentArea = await StudyAreaModel.findById(parentId);
+  }
+
   const data = annotationDocs.map(a => {
     const t = moment(a.time).format('YYYY-MM-DD hh:mm:ss');
     const annotationFields = keyBy(a.fields, 'dataField');
@@ -319,10 +325,14 @@ module.exports = async (req, res) => {
       switch (key) {
         case 'Study area':
           // 樣區
-          rowDataString += `${cameraLocation.studyArea.title['zh-TW']}`;
+          if (parentArea) {
+            rowDataString += `${parentArea.title['zh-TW']},${
+              cameraLocation.studyArea.title['zh-TW']
+            }`;
+          } else {
+            rowDataString += `${cameraLocation.studyArea.title['zh-TW']},`;
+          }
 
-          // 子樣區
-          rowDataString += `,${''}`;
           break;
         case 'Camera Location':
           rowDataString += `,${cameraLocation.name}`;
