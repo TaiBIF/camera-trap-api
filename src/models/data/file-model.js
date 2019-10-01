@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
 const ExchangeableImageFileModel = require('./exchangeable-image-file-model');
+const uploadZipToS3 = require('./file-model/uploadZipToS3');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -168,7 +169,6 @@ schema.method('saveWithContent', function(source, lastModified) {
     }
 
     return this.save().then(() => {
-      console.log(this.type);
       switch (this.type) {
         case FileType.projectCoverImage:
           utils
@@ -277,7 +277,8 @@ schema.method('saveWithContent', function(source, lastModified) {
                 return Promise.all([this.save(), exif ? exif.save() : null]);
               },
             )
-            .then(() => resolve(this));
+            .then(() => resolve(this))
+            .catch(e => reject(e));
           break;
         case FileType.annotationVideo:
           utils
@@ -305,16 +306,9 @@ schema.method('saveWithContent', function(source, lastModified) {
             .then(() => resolve(this));
           break;
         case FileType.annotationZIP:
-          utils
-            .uploadToS3({
-              Key: `${config.s3.folders.annotationZIPs}/${this.getFilename()}`,
-              Body:
-                typeof source === 'string'
-                  ? fs.createReadStream(source)
-                  : source,
-              StorageClass: 'STANDARD_IA',
-            })
-            .then(() => resolve(this));
+          uploadZipToS3(source, this.getFilename())
+            .then(() => resolve(this))
+            .catch(e => reject(e));
           break;
         case FileType.annotationCSV:
           utils
