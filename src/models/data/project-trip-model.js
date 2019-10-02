@@ -16,6 +16,7 @@ const schema = utils.generateSchema(
     sn: {
       type: String,
       required: true,
+      unique: true,
       index: {
         name: 'sn',
       },
@@ -47,13 +48,14 @@ const schema = utils.generateSchema(
             cameraLocation: {
               type: Schema.ObjectId,
             },
+            cameraLocationMark: {
+              type: String,
+            },
             projectCameras: [
               {
-                cameraLocationMark: {
-                  type: String,
-                },
                 cameraSn: {
                   type: String,
+                  unique: true,
                 },
                 cameraBatteryType: {
                   type: String,
@@ -141,6 +143,7 @@ schema.method('dump', function() {
     date: this.date,
     member: this.member,
     studyAreas: this.studyAreas,
+    mark: this.mark,
   };
 });
 

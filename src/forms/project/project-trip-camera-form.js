@@ -13,10 +13,13 @@ ProjectTripStudyAreaForm.define({
   cameraBatteryType: new forms.fields.StringField(),
   // 電池剩餘電量
   cameraBatteryRemainingCapacity: new forms.fields.StringField(),
+  // 光強度
   cameraBrightness: new forms.fields.StringField(),
+  // 敏感度
   cameraSensitivity: new forms.fields.StringField(),
   cameraVideoLength: new forms.fields.IntegerField(),
   cameraContinuousShots: new forms.fields.IntegerField(),
+  // 感應距離
   cameraSensingDistance: new forms.fields.IntegerField(),
   cameraState: new forms.fields.IntegerField({
     required: true,
@@ -33,8 +36,6 @@ ProjectTripStudyAreaForm.define({
   cameraPosition: new forms.fields.StringField(),
   // 相機俯角
   cameraDepressionAngle: new forms.fields.StringField(),
-  // 感應距離
-  sensingDistance: new forms.fields.StringField(),
   // 有效開始時間
   startActiveDate: new forms.fields.DateField(),
   endActiveDate: new forms.fields.DateField(),

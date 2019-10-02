@@ -22,3 +22,7 @@ exports.updateProjectTripCameraByTripId = auth(
   UserPermission.all(),
   ProjectTripHandler.updateProjectTripCameraByTripId,
 );
+exports.addProjectTripCameraByTripId = auth(
+  UserPermission.all(),
+  ProjectTripHandler.addProjectTripCameraByTripId,
+);
