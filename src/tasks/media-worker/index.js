@@ -1,3 +1,4 @@
+const tmp = require('tmp');
 const utils = require('../../common/utils');
 const MediaWorkerData = require('../../models/dto/media-worker-data');
 require('../../models/data/exchangeable-image-file-model'); // for populate
@@ -29,8 +30,11 @@ module.exports = async ({ id: jobId, data: jobData }, done) => {
     uploadSession,
   });
 
+  const tempFile = tmp.fileSync();
+  const tempDir = tmp.dirSync();
+
   try {
-    await handleZipFile(workerData, uploadSession, user);
+    await handleZipFile(workerData, uploadSession, user, tempDir, tempFile);
 
     uploadSession.state = UploadSessionState.success;
     await uploadSession.save();
@@ -42,8 +46,12 @@ module.exports = async ({ id: jobId, data: jobData }, done) => {
       `zip worker job[${jobId}] end. ${fileType}, projectId: ${projectId}`,
     );
 
+    tempDir.removeCallback();
+    tempFile.removeCallback();
     done();
   } catch (error) {
+    tempDir.removeCallback();
+    tempFile.removeCallback();
     done(error);
     utils.logError(error, jobData);
 

@@ -1,62 +1,105 @@
 ﻿const Promise = require('bluebird');
-const utils = require('../../common/utils');
-const CameraLocationModel = require('../../models/data/camera-location-model');
-const CameraLocationState = require('../../models/const/camera-location-state');
-const ProjectSpeciesModel = require('../../models/data/project-species-model');
-const SpeciesModel = require('../../models/data/species-model');
-const StudyAreaModel = require('../../models/data/study-area-model');
-const StudyAreaState = require('../../models/const/study-area-state');
+const moment = require('moment');
+const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
-const logger = require('../../logger');
+const SpeciesModel = require('../../models/data/species-model');
 
-module.exports = async (
-  csvContentArray,
-  files,
-  project,
-  user,
-  uploadSession,
-) => {
-  const projectId = project._id;
-  const allCameraLocations = await CameraLocationModel.where({
-    project: projectId,
-  })
-    .where({ state: CameraLocationState.active })
-    .find();
+const fileNameIndex = 3;
+const saveAnnotationConcurrency = 6;
 
-  const allProjectSpecies = await ProjectSpeciesModel.where({
-    project: projectId,
-  });
+const rawDataToObject = (csvArray, dataFields) => {
+  const csvHeaderRow = csvArray[0];
+  const csvContentRows = csvArray.slice(1);
 
-  const allSpecies = await SpeciesModel.where();
-  const allStudyAreas = await StudyAreaModel.where({
-    project: projectId,
-  })
-    .where({ state: StudyAreaState.active })
-    .find();
-
-  const { annotations } = utils.convertCsvToAnnotations({
-    project,
-    studyAreas: allStudyAreas,
-    dataFields: project.dataFields,
-    cameraLocations: allCameraLocations,
-    uploadSession,
-    projectSpecies: allProjectSpecies,
-    species: allSpecies,
-    csvObject: csvContentArray,
-  });
-
-  logger.info(
-    `zip worker job processing. save ${
-      annotations.length
-    } annotations, projectId: ${project._id}`,
+  const annotationIndex = csvHeaderRow.findIndex(
+    row => row === 'Annotation id',
   );
 
-  await Promise.resolve(annotations).map(
-    annotation => {
+  const indexes = {};
+
+  dataFields.forEach(({ _id, title: { 'zh-TW': CName } }) => {
+    const index = csvHeaderRow.findIndex(row => row === CName);
+    if (index) {
+      indexes[_id] = index;
+    }
+  });
+
+  const rawData = csvContentRows.map(raw => {
+    const data = {
+      cameraLocation: raw[2],
+      fileName: raw[fileNameIndex],
+      time: raw[4],
+      species: raw[5],
+      annotationId: raw[annotationIndex],
+      origin: raw,
+    };
+
+    Object.keys(indexes).forEach(id => {
+      data[id] = raw[indexes[id]];
+    });
+    return data;
+  });
+
+  return rawData;
+};
+
+module.exports = async (csvArray, files, project, user, cameraLocation) => {
+  const { dataFields } = project;
+  const species = await SpeciesModel.where();
+  const csvContentRows = rawDataToObject(csvArray, dataFields);
+
+  await Promise.resolve(csvContentRows).map(
+    row => {
+      const data = row;
+
+      // 組 fields
+      const fields = dataFields.map(({ _id, options }) => {
+        const tempValue = data[_id];
+        let value = {};
+
+        if (options.length) {
+          const option =
+            options.find(
+              opt =>
+                `${opt._id}` === tempValue || `${opt['zh-TW']}` === tempValue,
+            ) || {};
+
+          value = {
+            selectId: option._id,
+            text: option._id || tempValue,
+            selectLabel: option['zh-TW'],
+          };
+        } else {
+          value = {
+            text: tempValue,
+          };
+        }
+
+        return {
+          dataField: _id,
+          value,
+        };
+      });
+
+      const annotationSpecies = species.find(
+        x => x.title['zh-TW'] === data.species,
+      );
+
+      const annotation = new AnnotationModel();
+      annotation.project = project;
+      annotation.studyArea = cameraLocation.studyArea;
+      annotation.cameraLocation = cameraLocation;
+      annotation.filename = data.fileName;
+      annotation.time = moment(data.time).format('YYYY-MM-DD hh:mm:ss');
+      annotation.file = files[data.fileName];
       annotation.state = AnnotationState.active;
-      annotation.file = files[annotation.filename];
-      return annotation.saveAndAddRevision(user);
+      annotation.species = annotationSpecies || null;
+      annotation.failures = annotation.species === null ? ['new-species'] : [];
+      annotation.fields = fields;
+      annotation.rawData = data.origin;
+      annotation.saveAndAddRevision(user);
+      return annotation;
     },
-    { concurrency: 20 },
+    { concurrency: saveAnnotationConcurrency },
   );
 };

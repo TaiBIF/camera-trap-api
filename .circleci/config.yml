@@ -15,7 +15,7 @@ orbs:
     orbs:
       aws-ecr: circleci/aws-ecr@4.0.1
       aws-cli: circleci/aws-cli@0.1.13
-      aws-ecs: circleci/aws-ecs@0.0.8
+      aws-ecs: circleci/aws-ecs@0.0.11
     executors:
       aws:
         environment:
@@ -29,6 +29,18 @@ orbs:
         docker:
           - image: circleci/node:10
     commands:
+      set-env:
+        description: Set Up Env
+        steps:
+          - run:
+              name: Set ENV
+              command: |
+                if [ $CIRCLE_BRANCH -eq "prod" ];then
+                  echo "export ENV='prod'" >> $BASH_ENV
+                else
+                  echo "export ENV='staging'" >> $BASH_ENV
+                fi
+                source $BASH_ENV
       use-node:
         description: Install Node
         parameters:
@@ -68,7 +80,6 @@ orbs:
                 docker build --no-cache . -t $IMAGE
                 docker images $IMAGE
                 docker push $IMAGE
-
       checkout-install:
         description: Checkout sources and install node_modules
         steps:
@@ -86,50 +97,50 @@ orbs:
                 echo "$(node scripts/export-env)" >> $BASH_ENV
                 source $BASH_ENV
     jobs:
-      build_api_and_deploy:
+      build_api:
         executor: aws
         steps:
           - use-node
           - run: node -v
           - checkout-install
           - aws-ecr/build-and-push-image:
-              repo: $AWS_API_PREFIX
+              repo: ct-api-$ENV
               tag: $CIRCLE_SHA1
               dockerfile: 'scripts/api/$ENV/Dockerfile'
-          - aws-ecs/update-service:
-              family: $AWS_API_PREFIX-service
-              cluster-name: $AWS_APP_PREFIX-cluster
-              container-image-name-updates: 'container=$AWS_API_PREFIX-service,image-and-tag=$IMAGE'
-
-      build_task_and_deploy:
+      build_task:
         executor: aws
         steps:
           - use-node
           - run: node -v
           - checkout-install
           - aws-ecr/build-and-push-image:
-              repo: $AWS_TASK_PREFIX
+              repo: ct-task-$ENV
               tag: $CIRCLE_SHA1
               dockerfile: 'scripts/task-worker/$ENV/Dockerfile'
-          - aws-ecs/update-service:
-              family: $AWS_TASK_PREFIX-service
-              cluster-name: $AWS_APP_PREFIX-cluster
-              container-image-name-updates: 'container=$AWS_TASK_PREFIX-service,image-and-tag=$TASK_IMAGE'
-
-      build_cron_and_deploy:
+      deploy_api:
         executor: aws
         steps:
-          - use-node
-          - run: node -v
-          - checkout-install
-          - aws-ecr/build-and-push-image:
-              repo: $AWS_CRON_PREFIX
-              tag: $CIRCLE_SHA1
-              dockerfile: 'scripts/cron-job/$ENV/Dockerfile'
+          - set-env
+          - aws-cli/install
+          - aws-cli/configure:
+              aws-access-key-id: AWS_ACCESS_KEY_ID
+              aws-region: AWS_REGION
           - aws-ecs/update-service:
-              family: $AWS_CRON_PREFIX-service
-              cluster-name: $AWS_APP_PREFIX-cluster
-              container-image-name-updates: 'container=$AWS_CRON_PREFIX-service,image-and-tag=$CRON_IMAGE'
+              family: ct-api-$ENV-service
+              cluster-name: camera-trap-$ENV-cluster
+              container-image-name-updates: 'container=ct-api-$ENV-service,image-and-tag=$AWS_ECR_ACCOUNT_URL/ct-api-$ENV:$CIRCLE_SHA1'
+      deploy_task:
+        executor: aws
+        steps:
+          - set-env
+          - aws-cli/install
+          - aws-cli/configure:
+              aws-access-key-id: AWS_ACCESS_KEY_ID
+              aws-region: AWS_REGION
+          - aws-ecs/update-service:
+              family: ct-task-$ENV-service
+              cluster-name: camera-trap-$ENV-cluster
+              container-image-name-updates: 'container=ct-task-$ENV-service,image-and-tag=$AWS_ECR_ACCOUNT_URL/ct-task-$ENV:$CIRCLE_SHA1'
 
       lint:
         executor: default
@@ -142,21 +153,37 @@ workflows:
   Test & Lint & Build:
     jobs:
       - node/lint
-      - node/build_api_and_deploy:
+      - node/build_api:
           filters:
             branches:
-              only: /^(prod|staging|dev)$/
+              only: 
+                - prod
+                - dev
           requires:
             - node/lint
-      - node/build_task_and_deploy:
+      - node/build_task:
           filters:
             branches:
-              only: /^(prod|staging|dev)$/
+              only: 
+                - prod
+                - dev
           requires:
             - node/lint
-      - node/build_cron_and_deploy:
+      - node/deploy_api:
           filters:
             branches:
-              only: /^(prod|staging|dev)$/
+              only:
+                - prod
+                - dev
           requires:
             - node/lint
+            - node/build_api
+      - node/deploy_task:
+          filters:
+            branches:
+              only:
+                - prod
+                - dev
+          requires:
+            - node/lint
+            - node/build_task

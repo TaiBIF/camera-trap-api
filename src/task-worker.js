@@ -16,6 +16,7 @@ const queue = utils.getTaskQueue();
 const mediaWorkerConcurrency = 1;
 
 setTimeout(() => {
+  console.log(`Task worker is start.`);
   queue.process(TaskWorker.mediaWorker, mediaWorkerConcurrency, mediaWorker);
   queue.process(
     TaskWorker.updateProjectAnnotationTime,
