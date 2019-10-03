@@ -1,5 +1,4 @@
 ﻿const fs = require('fs');
-const tmp = require('tmp');
 const config = require('config');
 const moment = require('moment');
 const csvParse = require('csv-parse/lib/sync');
@@ -73,7 +72,7 @@ const saveAllFileObjectWithNewAnnotaions = (
     { concurrency: saveAnnotationConcurrency },
   );
 
-module.exports = async (workerData, uploadSession, user) => {
+module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   const project = await ProjectModel.findById(workerData.projectId).populate(
     'dataFields',
   );
@@ -113,10 +112,6 @@ module.exports = async (workerData, uploadSession, user) => {
   ) {
     throw new errors.Http404(`Study area is not found`);
   }
-
-  // start zip
-  const tempFile = tmp.fileSync();
-  const tempDir = tmp.dirSync();
 
   const startFetchZipTime = moment();
   await fetchZipToTargetFromS3(keyname, tempFile.name);
