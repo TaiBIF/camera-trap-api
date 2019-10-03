@@ -4,6 +4,7 @@ const utils = require('../../common/utils');
 const AnnotationState = require('../const/annotation-state');
 const CameraLocationState = require('../const/camera-location-state');
 const GeodeticDatum = require('../const/geodetic-datum');
+const StudyAreaModel = require('./study-area-model');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -20,7 +21,7 @@ const schema = utils.generateSchema(
     studyArea: {
       // 樣區
       type: Schema.ObjectId,
-      ref: 'StudyAreaModel',
+      ref: StudyAreaModel,
       required: true,
       index: {
         name: 'StudyArea',

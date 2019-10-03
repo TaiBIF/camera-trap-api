@@ -6,13 +6,14 @@ const FileModel = require('../../models/data/file-model');
 const FileType = require('../../models/const/file-type');
 const logger = require('../../logger');
 
-const saveConcurrency = 8;
+const saveConcurrency = 5;
 
 module.exports = (files, dirname, project, user) =>
   new Promise((resolve, reject) => {
     Promise.resolve(files)
       .map(
-        filename => {
+        (filename, index, length) => {
+          logger.info(`zip worker job. [create file] start: ${filename}`);
           const fileObject = new FileModel({
             project,
             user,
@@ -31,18 +32,31 @@ module.exports = (files, dirname, project, user) =>
           }
 
           const source = path.join(dirname, filename);
-          return fileObject.saveWithContent(source).catch(e => {
-            // catch fail convert
-            logger.error(`zip worker job. ${filename} failed, ${e.message}`);
-          });
+          return fileObject
+            .saveWithContent(source)
+            .then(data => {
+              logger.info(
+                `zip worker job. [create file] ${index}/${length} finish: ${filename}`,
+              );
+              return data;
+            })
+            .catch(e => {
+              // catch fail convert
+              logger.error(`zip worker job. ${filename} failed, ${e.message}`);
+            });
         },
         { concurrency: saveConcurrency },
       )
+      .then(object => {
+        logger.info('create file end');
+        return object;
+      })
       .filter(object => !!object)
       .then(fileObjects =>
         resolve(keyBy(fileObjects, fileObject => fileObject.originalFilename)),
       )
       .catch(e => {
+        reject(e);
         logger.error(`zip worker job. ${e.message}`);
       });
   });

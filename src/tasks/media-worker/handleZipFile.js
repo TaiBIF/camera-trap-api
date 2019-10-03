@@ -190,7 +190,9 @@ module.exports = async (workerData, uploadSession, user) => {
     throw new uploadErrors.ConvertFilesFailed(e.message);
   }
 
-  logger.info(`zip worker job. Convert files done: ${fileObjects.length}`);
+  logger.info(
+    `zip worker job. Convert files done: ${Object.keys(fileObjects).length}`,
+  );
 
   if (withAnntationId) {
     await saveAllFileObjectWithAnnotationCsv(
@@ -205,7 +207,7 @@ module.exports = async (workerData, uploadSession, user) => {
       fileObjects,
       project,
       user,
-      uploadSession,
+      cameraLocation,
     );
   }
 };

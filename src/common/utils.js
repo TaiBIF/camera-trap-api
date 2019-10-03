@@ -94,7 +94,7 @@ exports.generateSchema = (model, options) => {
     options,
   );
   schema.plugin(mongoosePaginate);
-  if (config.isDebug) {
+  if (config.isDebugDB) {
     schema.plugin(require('mongoose-profiler')());
   }
   schema.pre('save', function(next) {
@@ -213,10 +213,11 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
    */
   new Promise((resolve, reject) => {
     gm(buffer).size({ bufferStream: true }, function(error, size) {
-      if (error) {
+      if (error || !size) {
         console.log('utils.js 218 gm error');
-        return reject(error);
+        reject(error);
       }
+
       if (isFillUp) {
         const newSize = exports.calculateNewSizeWhenOversize(
           size,
@@ -228,7 +229,7 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
           this.resize(newSize.width, newSize.height, '!');
           this.gravity('Center');
           this.crop(width, height);
-          return resolve({
+          resolve({
             gm: this,
             width,
             height,
@@ -243,7 +244,7 @@ exports.resize = (buffer, width, height, isFillUp = true) =>
         );
         if (newSize) {
           this.resize(newSize.width, newSize.height, '!');
-          return resolve({
+          resolve({
             gm: this,
             width: newSize.width,
             height: newSize.height,
@@ -279,7 +280,7 @@ exports.uploadToS3 = (args = {}) =>
         args.Body.close();
       }
       if (error) {
-        return reject(error);
+        reject(error);
       }
       resolve(args.Body);
     });
@@ -331,26 +332,12 @@ const gmToBuffer = (data, name) =>
   new Promise((resolve, reject) => {
     data.stream((err, stdout, stderr) => {
       if (err) {
-        console.log(`----- buffer file ${name} error ------`);
-        return reject(err);
+        reject(err);
       }
       const chunks = [];
-      stdout.on('data', chunk => {
-        chunks.push(chunk);
-      });
-      stdout.on('end', () => {
-        console.log(`------ buffer file ${name} end`);
-        resolve(Buffer.concat(chunks));
-      });
-
-      stdout.on('error', () => {
-        console.log(`----- gm stdout file ${name} error ------`);
-      });
-
-      stderr.once('data', d => {
-        console.log(`----- gm stderr file ${name} error ------`);
-        reject(String(d));
-      });
+      stdout.on('data', chunk => chunks.push(chunk));
+      stdout.once('end', () => resolve(Buffer.concat(chunks)));
+      stderr.once('data', d => reject(String(d)));
     });
   });
 
@@ -392,8 +379,8 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
                 .catch(errors => reject(errors));
             })
             .catch(err => {
-              console.log('gm reject error');
-              return reject(err);
+              console.log(`gm reject error ${err}`);
+              reject(err);
             });
         }),
     )
@@ -403,7 +390,7 @@ exports.resizeImageAndUploadToS3 = (args = {}) => {
       height: result.height,
     }))
     .catch(e => {
-      console.log('fail resize');
+      console.log(`fail resize ${e}`);
       throw e;
     });
 };
