@@ -44,7 +44,7 @@ module.exports = async ({ body, params, user }, res) => {
     res.json(studyArea.dump());
   } catch (e) {
     if (e.code === 11000) {
-      throw new errors.Http409('名稱重複');
+      throw new errors.Http409('同計畫下相機名稱已存在');
     }
 
     throw e;
