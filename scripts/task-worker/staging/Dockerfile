@@ -17,5 +17,6 @@ COPY config ./config
 
 ENV NODE_ENV="staging"
 ENV MAGICK_THREAD_LIMIT=1
+ENV TZ="Asia/Taipei"
 
 CMD ["node", "--max-old-space-size=8192", "src/task-worker"] & ["node", "src/cron-job"]
