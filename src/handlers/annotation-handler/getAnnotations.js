@@ -317,7 +317,7 @@ module.exports = async (req, res) => {
   }
 
   const data = annotationDocs.map(a => {
-    const t = moment(a.time).format('YYYY-MM-DD hh:mm:ss');
+    const t = moment(a.time).format('YYYY-MM-DD HH:mm:ss');
     const annotationFields = keyBy(a.fields, 'dataField');
     let rowDataString = '';
     fieldsObjects.forEach(f => {

@@ -90,7 +90,7 @@ module.exports = async (csvArray, files, project, user, cameraLocation) => {
       annotation.studyArea = cameraLocation.studyArea;
       annotation.cameraLocation = cameraLocation;
       annotation.filename = data.fileName;
-      annotation.time = moment(data.time).format('YYYY-MM-DD hh:mm:ss');
+      annotation.time = moment(data.time).format('YYYY-MM-DD HH:mm:ss');
       annotation.file = files[data.fileName];
       annotation.state = AnnotationState.active;
       annotation.species = annotationSpecies || null;
