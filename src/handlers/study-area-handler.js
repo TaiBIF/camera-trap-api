@@ -9,6 +9,7 @@ const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const CameraLocationState = require('../models/const/camera-location-state');
+const addProjectStudyArea = require('./study-area-handlers/addProdjectStudyArea');
 
 exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
   /*
@@ -162,50 +163,7 @@ exports.getProjectStudyAreas = auth(UserPermission.all(), (req, res) =>
     ),
 );
 
-exports.addProjectStudyArea = auth(UserPermission.all(), (req, res) => {
-  /*
-  POST /api/v1/projects/:projectId/study-areas
-   */
-  const form = new StudyAreaForm(req.body);
-  const errorMessage = form.validate();
-  if (errorMessage) {
-    throw new errors.Http400(errorMessage);
-  }
-
-  const tasks = [ProjectModel.findById(req.params.projectId)];
-  if (form.parent) {
-    tasks.push(
-      StudyAreaModel.findById(form.parent)
-        .where({ project: req.params.projectId })
-        .where({ state: StudyAreaState.active }),
-    );
-  }
-  return Promise.all(tasks)
-    .then(([project, parent]) => {
-      if (!project) {
-        throw new errors.Http404();
-      }
-      if (form.parent && !parent) {
-        throw new errors.Http404();
-      }
-      if (parent && parent.parent) {
-        throw new errors.Http400('Can not add the three-tier study-area.');
-      }
-      if (!project.canManageBy(req.user)) {
-        throw new errors.Http403();
-      }
-
-      const studyArea = new StudyAreaModel({
-        ...form,
-        project,
-        parent: parent || undefined,
-      });
-      return studyArea.save();
-    })
-    .then(studyArea => {
-      res.json(studyArea.dump());
-    });
-});
+exports.addProjectStudyArea = auth(UserPermission.all(), addProjectStudyArea);
 
 exports.updateProjectStudyArea = auth(UserPermission.all(), (req, res) => {
   /*

@@ -30,6 +30,14 @@ exports.Http404 = class Http404 extends Error {
   }
 };
 
+exports.Http409 = class Http409 extends Error {
+  constructor(message) {
+    super(message);
+    this.status = 409;
+    this.message = `${message || 'duplicate'}`;
+  }
+};
+
 exports.Http500 = class Http500 extends Error {
   /*
   Server error.
