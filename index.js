@@ -52,6 +52,12 @@ if (op.argv.createCollections) {
   const ProjectAreaModel = require('./src/models/data/project-area-model');
   const SpeciesModel = require('./src/models/data/species-model');
   const SpeciesCode = require('./src/models/const/species-code');
+  const CameraModel = require('./src/models/data/camera-model');
+  const CameraState = require('./src/models/const/camera-state');
+  const CameraManufacturer = require('./src/models/data/camera-manufacturer-model');
+  const CameraModelModel = require('./src/models/data/camera-model-model');
+  const CameraSNModel = require('./src/models/data/camera-serial-number-model');
+  const CameraVNModel = require('./src/models/data/camera-vendor-maintenance-number-model');
 
   const data = [
     new DataFieldModel({
@@ -414,16 +420,89 @@ if (op.argv.createCollections) {
     new ProjectAreaModel({
       title: { 'zh-TW': '連江縣', 'en-US': 'Lienchiang County' },
     }),
+    new CameraModel({
+      name: '草坔C01',
+      sn: 'MX3862A',
+      vn: 'BRN00012',
+      manufacturer: 'Browning',
+      model: 'BR5PXD',
+      state: CameraState.active,
+    }),
+    new CameraModel({
+      name: '草坔C02',
+      sn: 'MX2862A',
+      vn: 'BRN00012',
+      manufacturer: 'Browning',
+      model: 'BR5PXD',
+      state: CameraState.active,
+    }),
+    new CameraModel({
+      name: '草坔C03',
+      sn: 'MX3863A',
+      vn: 'BRN00112',
+      manufacturer: 'Browning',
+      model: 'BR5PXD',
+      state: CameraState.active,
+    }),
+    new CameraModel({
+      name: '草坔C04',
+      sn: 'MX3812A',
+      vn: 'BRN01012',
+      manufacturer: 'Browning',
+      model: 'BR5PXD',
+      state: CameraState.active,
+    }),
+    new CameraManufacturer({
+      name: 'Browning',
+      dataCount: 4,
+    }),
+    new CameraModelModel({
+      name: 'BR5PXD',
+      dataCount: 4,
+    }),
+    new CameraSNModel({
+      name: 'MX3812A',
+      dataCount: 1,
+    }),
+    new CameraSNModel({
+      name: 'MX3863A',
+      dataCount: 1,
+    }),
+    new CameraSNModel({
+      name: 'MX2862A',
+      dataCount: 1,
+    }),
+    new CameraSNModel({
+      name: 'MX3862A',
+      dataCount: 1,
+    }),
+    new CameraVNModel({
+      name: 'BRN00012',
+      dataCount: 2,
+    }),
+    new CameraVNModel({
+      name: 'BRN00112',
+      dataCount: 1,
+    }),
+    new CameraVNModel({
+      name: 'BRN01012',
+      dataCount: 1,
+    }),
   ];
   Promise.all(
     data.map(item =>
       limit(() =>
-        item.save().then(document => {
-          console.log(
-            `Inserted: ${document.constructor.modelName}(${document._id})`,
-          );
-          return document;
-        }),
+        item
+          .save()
+          .then(document => {
+            console.log(
+              `Inserted: ${document.constructor.modelName}(${document._id})`,
+            );
+            return document;
+          })
+          .catch(e => {
+            throw e;
+          }),
       ),
     ),
   ).then(() => {

@@ -2,6 +2,7 @@ const utils = require('./common/utils');
 const mediaWorker = require('./tasks/media-worker');
 const updateProjectAnnotationTime = require('./tasks/update-project-annotation-time');
 const TaskWorker = require('./models/const/task-worker');
+const logger = require('./logger');
 
 /*
 pm2 gracefulReload flow:
@@ -12,9 +13,11 @@ pm2 gracefulReload flow:
 
 const queue = utils.getTaskQueue();
 
+const mediaWorkerConcurrency = 1;
+
 setTimeout(() => {
-  console.log('task-worker is start.');
-  queue.process(TaskWorker.mediaWorker, 1, mediaWorker);
+  console.log(`Task worker is start.`);
+  queue.process(TaskWorker.mediaWorker, mediaWorkerConcurrency, mediaWorker);
   queue.process(
     TaskWorker.updateProjectAnnotationTime,
     1,
@@ -26,8 +29,8 @@ process.on('message', message => {
   if (message !== 'shutdown') {
     return;
   }
-  // pm2 gracefulReload
-  console.log('task-worker is shutting down.');
+
+  logger.info('task-worker is shutting down');
   queue.shutdown(2000, error => {
     utils.logError(error);
   });

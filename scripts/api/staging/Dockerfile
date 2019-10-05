@@ -1,8 +1,4 @@
-FROM ubuntu:18.04
-LABEL creator="rwu823@gmail.com"
-LABEL maintainer1="cjk.halodule@gmail.com"
-LABEL maintainer2="dcahsu@gmail.com"
-LABEL maintainer3="kelp404@phate.org"
+FROM phusion/baseimage:0.11
 WORKDIR /camera-trap-api
 
 RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git graphicsmagick imagemagick make g++
@@ -12,14 +8,14 @@ RUN apt-get -y install nodejs
 COPY package.json package-lock.json ./
 COPY node_modules/camera-trap-credentials ./node_modules/camera-trap-credentials
 
-RUN npm i --production && \
+RUN npm i && \
   rm -rf ~/.npm package-lock.json
 
 COPY src ./src
 COPY config ./config
 
-ENV NODE_ENV="staging"
-
 EXPOSE 3000
 
-CMD ["node", "src/web-starter"]
+ENV NODE_ENV="staging"
+
+CMD ["node", "--max-old-space-size=8192", "src/web-starter"]

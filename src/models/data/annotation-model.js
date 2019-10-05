@@ -3,6 +3,7 @@ const utils = require('../../common/utils');
 const AnnotationFailureType = require('../const/annotation-failure-type');
 const AnnotationState = require('../const/annotation-state');
 const AnnotationRevisionModel = require('./annotation-revision-model');
+require('../../models/data/file-model');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
