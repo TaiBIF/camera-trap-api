@@ -15,7 +15,7 @@ RUN npm i --production && \
 COPY src ./src
 COPY config ./config
 
-ENV NODE_ENV="staging"
+ENV NODE_ENV="production"
 ENV MAGICK_THREAD_LIMIT=1
 ENV TZ="Asia/Taipei"
 
