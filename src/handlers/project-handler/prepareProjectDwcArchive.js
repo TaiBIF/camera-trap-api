@@ -62,7 +62,9 @@ module.exports = async (req, res) => {
       id, // id
       id, // occurrenceID
       'MachineObservation',
-      moment(annotation.createTime).format('YYYY-MM-DD HH:mm:ss'),
+      moment
+        .tz(annotation.createTime, 'Asia/Taipei')
+        .format('YYYY-MM-DD HH:mm:ss'),
       'Taiwan',
       'TW',
       cameraLocation.altitude,

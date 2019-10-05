@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 const { keyBy } = require('lodash');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
@@ -317,7 +317,7 @@ module.exports = async (req, res) => {
   }
 
   const data = annotationDocs.map(a => {
-    const t = moment(a.time).format('YYYY-MM-DD HH:mm:ss');
+    const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
     const annotationFields = keyBy(a.fields, 'dataField');
     let rowDataString = '';
     fieldsObjects.forEach(f => {
