@@ -1,8 +1,4 @@
 FROM ubuntu:18.04
-LABEL creator="rwu823@gmail.com"
-LABEL maintainer1="cjk.halodule@gmail.com"
-LABEL maintainer2="dcahsu@gmail.com"
-LABEL maintainer3="kelp404@phate.org"
 
 WORKDIR /camera-trap-api
 
@@ -19,7 +15,8 @@ RUN npm i --production && \
 COPY src ./src
 COPY config ./config
 
-ENV NODE_ENV="production"
+ENV NODE_ENV="staging"
+ENV MAGICK_THREAD_LIMIT=1
 ENV TZ="Asia/Taipei"
 
-CMD ["node", "src/task-worker"]
+CMD ["node", "--max-old-space-size=8192", "src/task-worker"] & ["node", "src/cron-job"]
