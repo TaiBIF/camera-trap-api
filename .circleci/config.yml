@@ -36,7 +36,7 @@ orbs:
               name: Set ENV
               command: |
                 if [ $CIRCLE_BRANCH = "prod" ];then
-                  echo "export ENV='prod'" >> $BASH_ENV
+                  echo "export ENV='production'" >> $BASH_ENV
                 else
                   echo "export ENV='staging'" >> $BASH_ENV
                 fi
