@@ -1,9 +1,10 @@
 ﻿const Promise = require('bluebird');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
 const SpeciesModel = require('../../models/data/species-model');
 
+const dataTimeZone = 'Asia/Taipei';
 const fileNameIndex = 3;
 const saveAnnotationConcurrency = 6;
 
@@ -90,7 +91,7 @@ module.exports = async (csvArray, files, project, user, cameraLocation) => {
       annotation.studyArea = cameraLocation.studyArea;
       annotation.cameraLocation = cameraLocation;
       annotation.filename = data.fileName;
-      annotation.time = moment(data.time).format('YYYY-MM-DD hh:mm:ss');
+      annotation.time = moment.tz(data.time, dataTimeZone).toISOString();
       annotation.file = files[data.fileName];
       annotation.state = AnnotationState.active;
       annotation.species = annotationSpecies || null;
