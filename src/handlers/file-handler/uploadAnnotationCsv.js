@@ -2,7 +2,7 @@
 const { keyBy } = require('lodash');
 const csvParse = require('csv-parse/lib/sync');
 const Promise = require('bluebird');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const FileModel = require('../../models/data/file-model');
 const FileType = require('../../models/const/file-type');
 const AnnotationState = require('../../models/const/annotation-state');
@@ -142,7 +142,7 @@ module.exports = async (user, file, cameraLocationId) => {
         project,
         cameraLocation,
         studyArea: cameraLocation.studyArea,
-        time: moment(data.time).toISOString(),
+        time: moment.tz(data.time, 'Asia/Taipei').toISOString(),
         filename: data.fileName,
         species: annotationSpecies || null,
         failures: annotationSpecies ? [] : ['new-species'],
