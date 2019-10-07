@@ -8,6 +8,7 @@ const CameraLocationModel = require('../../models/data/camera-location-model');
 const CameraLocationState = require('../../models/const/camera-location-state');
 const StudyAreaState = require('../../models/const/study-area-state');
 const UploadSessionModel = require('../../models/data/upload-session-model');
+const UploadSessionState = require('../../models/const/upload-session-state');
 const AnnotationModel = require('../../models/data/annotation-model');
 
 const {
@@ -65,12 +66,6 @@ module.exports = async (user, file, cameraLocationId) => {
     'YYYY:MM:DD HH:mm:ss',
   ).toISOString();
 
-  if (!exif || !fileDateTime) {
-    uploadSession.errorType = lostExifTime;
-    await uploadSession.save();
-    throw new errors.Http400(`Can't get the time information in the exif.`);
-  }
-
   const fileObject = new FileModel({
     type,
     user,
@@ -79,8 +74,14 @@ module.exports = async (user, file, cameraLocationId) => {
   });
 
   await fileObject.saveWithContent(file.buffer);
+  uploadSession.file = fileObject;
 
-  uploadSession.file = fileObject._id;
+  if (!exif || !fileDateTime) {
+    uploadSession.state = UploadSessionState.failure;
+    uploadSession.errorType = lostExifTime;
+    await uploadSession.save();
+    throw new errors.Http400(`無法取得圖片 Exif 時間`);
+  }
 
   const annotation = new AnnotationModel({
     project,
@@ -94,6 +95,7 @@ module.exports = async (user, file, cameraLocationId) => {
   });
 
   await annotation.save();
+  uploadSession.state = UploadSessionState.success;
   await uploadSession.save();
 
   return { ...fileObject.dump(), uploadSession: uploadSession._id };
