@@ -6,6 +6,7 @@ const utils = require('../../common/utils');
 const FileType = require('../const/file-type');
 const ExchangeableImageFileModel = require('./exchangeable-image-file-model');
 const uploadZipToS3 = require('./file-model/uploadZipToS3');
+const logger = require('./../../logger');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -279,7 +280,11 @@ schema.method('saveWithContent', function(source, lastModified) {
                 },
               )
               .then(() => resolve(this))
-              .catch(e => reject(e));
+              .catch(e => {
+                logger.error(`convert image fail`);
+                logger.error(e);
+                reject(e);
+              });
             break;
           case FileType.annotationVideo:
             utils
