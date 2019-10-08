@@ -14,7 +14,7 @@ const UploadSessionErrorType = require('../../models/const/upload-session-error-
 const StudyAreaState = require('../../models/const/study-area-state');
 const logger = require('../../logger');
 const extractFileByPath = require('./extractFileByPath');
-const fetchFileContent = require('./fetchFileContent');
+const fetchCsvFileContent = require('./fetchCsvFileContent');
 const createFileModels = require('./createFileModels');
 const uploadErrors = require('./errors');
 
@@ -149,7 +149,8 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   }
 
   const csvFilePath = `${tempDir.name}/${csvFiles[0]}`;
-  const csvArray = csvParse(await fetchFileContent(csvFilePath), csvOptions);
+
+  const csvArray = csvParse(await fetchCsvFileContent(csvFilePath), csvOptions);
 
   if (csvArray.length !== filesPath.length) {
     throw new uploadErrors.InconsistentQuantity(
@@ -165,10 +166,17 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   const withAnntationId =
     csvHeaderRow.filter(row => row === 'Annotation id').length > 0;
 
+  // check csv validate
+  const timePattern =
+    '/20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/';
   csvContentArray.forEach(
-    ([studyAreaName, subStudyAreaName, cameraLocationName, filename]) => {
+    ([studyAreaName, subStudyAreaName, cameraLocationName, filename, time]) => {
       if (!filesPath.includes(filename)) {
         throw new uploadErrors.ImagesAndCsvNotMatch();
+      }
+
+      if (!time.match(timePattern)) {
+        throw new uploadErrors.CsvTimeFormatUnValid();
       }
     },
   );
