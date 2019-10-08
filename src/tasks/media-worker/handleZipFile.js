@@ -14,7 +14,7 @@ const UploadSessionErrorType = require('../../models/const/upload-session-error-
 const StudyAreaState = require('../../models/const/study-area-state');
 const logger = require('../../logger');
 const extractFileByPath = require('./extractFileByPath');
-const fetchFileContent = require('./fetchFileContent');
+const fetchCsvFileContent = require('./fetchCsvFileContent');
 const createFileModels = require('./createFileModels');
 const uploadErrors = require('./errors');
 
@@ -149,7 +149,8 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   }
 
   const csvFilePath = `${tempDir.name}/${csvFiles[0]}`;
-  const csvArray = csvParse(await fetchFileContent(csvFilePath), csvOptions);
+
+  const csvArray = csvParse(await fetchCsvFileContent(csvFilePath), csvOptions);
 
   if (csvArray.length !== filesPath.length) {
     throw new uploadErrors.InconsistentQuantity(
