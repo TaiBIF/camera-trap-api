@@ -19,7 +19,7 @@ module.exports = async ({ body, params, user }, res) => {
 
   let parent;
   if (form.parent) {
-    parent = StudyAreaModel.findById(form.parent)
+    parent = await StudyAreaModel.findById(form.parent)
       .where({ project: params.projectId })
       .where({ state: StudyAreaState.active });
   }
