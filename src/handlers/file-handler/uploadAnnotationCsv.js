@@ -81,8 +81,7 @@ module.exports = async (user, file, cameraLocationId) => {
   });
 
   // check csv validate
-  const timePattern =
-    '/20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/';
+  const timePattern = /20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
   csvObject.forEach(
     ([studyAreaName, subStudyAreaName, cameraLocationName, filename, time]) => {
       if (!time.match(timePattern)) {
