@@ -1,6 +1,10 @@
 version: 2.1
 
 vars:
+  setup_docker: &setup_docker
+    setup_remote_docker:
+      docker_layer_caching: true
+
   branch_is_deploy: &branch_is_deploy
     filters:
       branches:
@@ -68,6 +72,7 @@ orbs:
             type: string
             default: $CIRCLE_SHA1
         steps:
+          - *setup_docker
           - run:
               name: Build Docker Image
               command: |
