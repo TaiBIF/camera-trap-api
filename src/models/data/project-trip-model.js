@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const utils = require('../../common/utils');
+const CameraLocationState = require('../const/project-trip-camera-location-state');
 
 const { Schema } = mongoose;
 utils.connectDatabase();
@@ -47,6 +48,11 @@ const schema = utils.generateSchema(
           {
             cameraLocation: {
               type: Schema.ObjectId,
+            },
+            cameraLocationEvent: {
+              // 相機位置設置
+              type: String,
+              enum: CameraLocationState.all(),
             },
             cameraLocationMark: {
               type: String,

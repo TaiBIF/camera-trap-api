@@ -10,6 +10,10 @@ ProjectTripStudyAreaForm.define({
     required: true,
     validators: [forms.validators.length({ max: 1024 })],
   }),
+  cameraLocationEvent: new forms.fields.StringField({
+    required: true,
+    validators: [forms.validators.length({ max: 1024 })],
+  }),
   cameraBatteryType: new forms.fields.StringField(),
   // 電池剩餘電量
   cameraBatteryRemainingCapacity: new forms.fields.StringField(),
