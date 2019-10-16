@@ -49,7 +49,7 @@ const schema = utils.generateSchema(
             cameraLocation: {
               type: Schema.ObjectId,
             },
-            carameLocationEvent: {
+            cameraLocationEvent: {
               // 相機位置設置
               type: String,
               enum: CameraLocationState.all(),

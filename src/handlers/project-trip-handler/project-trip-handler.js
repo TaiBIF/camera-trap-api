@@ -56,6 +56,10 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
+  const errorStudyAreaMessage = studyAreaForm.validate();
+  if (errorStudyAreaMessage) {
+    throw new errors.Http400(errorStudyAreaMessage);
+  }
 
   return Promise.all([
     ProjectModel.findById(projectId),
@@ -202,6 +206,9 @@ exports.updateProjectTripCameraByTripId = auth(
                     Object.assign(projectCameraVal, form);
                   }
                 });
+                // 設置 相機事件
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
 
                 // 新增判斷 cameraLocationMark 才去更新
                 if (form.cameraLocationMark) {
@@ -266,6 +273,8 @@ exports.addProjectTripCameraByTripId = auth(
                 // 新增行程相機
 
                 // 若不存在
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
                 Object.assign(
                   cameraLocationVal.projectCameras,
                   cameraLocationVal.projectCameras.push(form),
