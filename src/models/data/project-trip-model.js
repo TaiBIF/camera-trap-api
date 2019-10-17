@@ -46,6 +46,9 @@ const schema = utils.generateSchema(
         },
         cameraLocations: [
           {
+            title: {
+              type: String,
+            },
             cameraLocation: {
               type: Schema.ObjectId,
             },
