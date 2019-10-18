@@ -11,6 +11,7 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 const DataFieldState = require('../../models/const/data-field-state');
 const StudyAreaModel = require('../../models/data/study-area-model');
 const StudyAreaState = require('../../models/const/study-area-state');
+const ProjectTripModel = require('../../models/data/project-trip-model');
 const AnnotationsSearchForm = require('../../forms/annotation/annotations-search-form');
 const Helpers = require('../../common/helpers.js');
 
@@ -135,6 +136,7 @@ const getAnnotationQuery = (
   studyArea,
   childStudyAreas = [],
   cameraLocations = [],
+  projectId = [],
   dataFields,
   synonymSpeciesIds,
 ) => {
@@ -153,6 +155,29 @@ const getAnnotationQuery = (
     query.where({
       cameraLocation: { $in: cameraLocations.map(x => x._id) },
     });
+  }
+
+  if (form.projectId) {
+    const projectTripQuery = ProjectTripModel.where({
+      project: form.projectId,
+    });
+    if (projectTripQuery) {
+      query.where({
+        cameraLocation: {
+          // eslint-disable-next-line no-shadow,array-callback-return
+          $in: projectTripQuery.map(project =>
+            // eslint-disable-next-line no-shadow
+            project.studyAreas.map(studyArea =>
+              studyArea.cameraLocations.map(
+                cameraLocation => cameraLocation.cameraLocation,
+              ),
+            ),
+          ),
+        },
+      });
+    } else {
+      throw new errors.Http400('projectId is need ObjectId');
+    }
   }
 
   if (form.uploadSession) {
@@ -353,7 +378,6 @@ module.exports = async (req, res) => {
           break;
       }
     });
-
     rowDataString += `,${a.id}`;
     return rowDataString;
   });
