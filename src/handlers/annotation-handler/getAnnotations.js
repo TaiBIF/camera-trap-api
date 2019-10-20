@@ -48,6 +48,25 @@ const fetchCameraLocations = async (formCameraLocations, reqUser) => {
   return cameraLocations;
 };
 
+const fetchProjectTripId = async projectTripId => {
+  const cameraLocations = await ProjectTripModel.where({
+    project: projectTripId,
+  });
+  if (cameraLocations) {
+    const result = [];
+    cameraLocations.forEach(project =>
+      // eslint-disable-next-line no-shadow
+      project.studyAreas.forEach(studyArea =>
+        studyArea.cameraLocations.forEach(cameraLocation =>
+          result.push(cameraLocation),
+        ),
+      ),
+    );
+    return result;
+  }
+  return null;
+};
+
 const fetchChildAreas = studyAreaId =>
   StudyAreaModel.where({
     parent: studyAreaId,
@@ -136,7 +155,7 @@ const getAnnotationQuery = (
   studyArea,
   childStudyAreas = [],
   cameraLocations = [],
-  projectId = [],
+  projectTrips = null,
   dataFields,
   synonymSpeciesIds,
 ) => {
@@ -150,33 +169,29 @@ const getAnnotationQuery = (
       studyArea: { $in: [studyArea._id, ...childStudyAreas.map(x => x._id)] },
     });
   }
-
+  console.log('\x1b[32m', '\n---------- DEBUG ----------\n');
+  console.log('\x1b[36m', ' projectTrips = ', projectTrips);
+  console.log('\x1b[32m', '\n---------------------------', '\x1b[0m');
   if (cameraLocations.length) {
-    query.where({
-      cameraLocation: { $in: cameraLocations.map(x => x._id) },
-    });
-  }
-
-  if (form.projectId) {
-    const projectTripQuery = ProjectTripModel.where({
-      project: form.projectId,
-    });
-    if (projectTripQuery) {
-      query.where({
-        cameraLocation: {
-          // eslint-disable-next-line no-shadow,array-callback-return
-          $in: projectTripQuery.map(project =>
-            // eslint-disable-next-line no-shadow
-            project.studyAreas.map(studyArea =>
-              studyArea.cameraLocations.map(
-                cameraLocation => cameraLocation.cameraLocation,
-              ),
-            ),
-          ),
-        },
-      });
+    if (projectTrips) {
+      if (projectTrips.length) {
+        query.where({
+          $and: [
+            {
+              cameraLocation: { $in: projectTrips.map(x => x.cameraLocation) },
+            },
+            {
+              cameraLocation: { $in: cameraLocations.map(x => x._id) },
+            },
+          ],
+        });
+      } else {
+        throw new errors.Http400('The project not have cameraLocation');
+      }
     } else {
-      throw new errors.Http400('projectId is need ObjectId');
+      query.where({
+        cameraLocation: { $in: cameraLocations.map(x => x._id) },
+      });
     }
   }
 
@@ -259,7 +274,7 @@ module.exports = async (req, res) => {
   }
   const { studyArea: studyAreaId } = form;
 
-  let [studyArea, childStudyAreas, cameraLocations] = [];
+  let [studyArea, childStudyAreas, cameraLocations, projectTrips] = [];
 
   if (studyAreaId) {
     studyArea = await fetchStudyArea(studyAreaId, req.user);
@@ -273,6 +288,10 @@ module.exports = async (req, res) => {
     );
   }
 
+  if (form.projectTripId) {
+    projectTrips = await fetchProjectTripId(form.projectTripId);
+  }
+
   const synonymSpeciesIds = await Helpers.findSynonymSpecies(form.species);
   const dataFields = await fetchDataField(form.fields);
 
@@ -282,6 +301,7 @@ module.exports = async (req, res) => {
     studyArea,
     childStudyAreas || [],
     cameraLocations,
+    projectTrips,
     dataFields,
     synonymSpeciesIds,
   );
