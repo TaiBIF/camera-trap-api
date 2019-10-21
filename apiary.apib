@@ -5534,6 +5534,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                                 "endActiveDate": "2019-01-01T00:00:00.000Z"
                             }],
                             "cameraLocationMark": "相機位置註記"
+                            "cameraLocationEvent": "相機位置事件"
                         }
                     }],
                     "mark": "註記",
@@ -7089,7 +7090,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession, projectId}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -7112,6 +7113,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value} (JSON)
     + species: `5cd795a461a221310e546b58` (string, optional) - 使用物種 id 搜尋標註。<br/>多個物種：?species=5c9f28070d9cee99f8a11a12&species=5c9f28070d9cee99f8a11a13
     + uploadSession: `5cdd1fdbf65647074718202b` (string, optional) - 使用上傳紀錄 id 搜尋標註。
+    + projectTripId: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用行程 id 搜尋標註
 
 + Request Get annotations (application/json)
 
@@ -7128,6 +7130,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "id": "5cbabb2c84bf6a8dc5ccf960",
                   "studyArea": "5c9d95acea5c9b4036d97c88",
                   "cameraLocation": "5c9f28070d9cee99f8a11a12",
+                  "projectTrip": '5c9f28070d9cee99f8a11a12',
                   "failures": [
                   ],
                   "filename": "IMG_7191.JPG",
@@ -7205,6 +7208,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "cameraLocation": {
                         "type": "string",
                         "description": "相機位置 id"
+                      },
+                      "projectTrip": {
+                        "type": "string",
+                        "description": "專案行程 id"
                       },
                       "failures": {
                         "type": "string",
