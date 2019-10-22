@@ -50,7 +50,7 @@ const fetchCameraLocations = async (formCameraLocations, reqUser) => {
 
 const fetchProjectTripId = async projectTripId => {
   const cameraLocations = await ProjectTripModel.where({
-    project: projectTripId,
+    _id: projectTripId,
   });
   if (cameraLocations) {
     const result = [];
@@ -169,9 +169,7 @@ const getAnnotationQuery = (
       studyArea: { $in: [studyArea._id, ...childStudyAreas.map(x => x._id)] },
     });
   }
-  console.log('\x1b[32m', '\n---------- DEBUG ----------\n');
-  console.log('\x1b[36m', ' projectTrips = ', projectTrips);
-  console.log('\x1b[32m', '\n---------------------------', '\x1b[0m');
+
   if (cameraLocations.length) {
     if (projectTrips) {
       if (projectTrips.length) {
