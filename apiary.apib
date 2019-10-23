@@ -9968,3 +9968,366 @@ Get species metrics of the top 5 identified ones.
                 }
               }
             }
+#Group Statistics
+## Get county statistics [GET /statistics/county/{countyName}]
+取得指定縣市的統計資料．
+
++ Parameters
+    + countyName: `台北市` (string) - 縣市名稱
+
++ Request Get annotations (application/json)
++ Response 200  (application/json)
+
+    + Body
+
+            {
+              "id": "5c9af16a4ee1b606477f9236",
+              "title": {
+                "zh-TW": "台北市",
+              },
+              "project": {
+                "total": 75,
+              },
+              "cameraLocation": {
+                "total": 537,
+              },
+              "identifiedSpecies": {
+                "percentage": 65,
+                items: [
+                  {
+                    "species": "5ce6cfe80a75171f55b5de9c",
+                    "name": "石虎",
+                  },
+                ],
+              },
+              "picture": {
+                "total": 3076233
+              },
+              "camera": {
+                "totalWorkHour": 3479760
+              },
+              "studyArea": {
+                "items": [
+                  {
+                    "studyArea": "5ceb7ce7f974a98dacbb3a7d",
+                    "title": {
+                      "zh-TW": "玉里站",
+                    },
+                    "cameraLocation": {
+                      "total": 9,
+                      "items": [
+                        {
+                          "cameraLocation": "5ceb7ce7f974a91218bb3a7f",
+                          "name": "PT01A",
+                          "settingTime": "2019-01-01T00:00:00.000Z",
+                          "latitude": 58.28,
+                          "longitude": 121.462417,
+                          "altitude": 100,
+                          "landCoverType": "農地",
+                          "vegetation": "闊葉林",
+                          "data": {
+                            "total": 10500,
+                          },
+                        },
+                      ],
+                    },
+                    "data": {
+                      "total": 15000,
+                    },
+                  },
+                ],
+              },
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "縣市id"
+                },
+                "title": {
+                  "type": "object",
+                  "description": "縣市名稱",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文縣市名稱"
+                    }
+                  },
+                },
+                "project": {
+                  "type": "object",
+                  "description": "計畫"
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "計畫總數"
+                    },
+                  },
+                },
+                "cameraLocation": {
+                  "type": "object",
+                  "description": "相機位置"
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "相機位置總數"
+                    },
+                  },
+                },
+                "identifiedSpecies": {
+                  "type": "object",
+                  "description": "已辨識物種",
+                  "properties": {
+                    "percentage": {
+                      "type": "integer",
+                      "description": "已辨識物種百分比",
+                    },
+                    "items": {
+                      "type": "array",
+                      "description": "已辨識物種列表",
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "species": {
+                            "type": "string",
+                            "description": "物種id",
+                          },
+                          "name": {
+                            "type": "string",
+                            "desctiption": "物種名稱",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "picture": {
+                  "type": "object",
+                  "description": "照片",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "照片總數",
+                    },
+                  },
+                },
+                "camera": {
+                  "type": "object",
+                  "description": "相機",
+                  "properties": {
+                    "totalWorkHour": {
+                      "type": "integer",
+                      "description": "相機總工時",
+                    },
+                  },
+                },
+                "studyArea": {
+                  "type": "object",
+                  "description": "樣區",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "description": "樣區列表",
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "studyArea": {
+                            "type": "string",
+                            "description": "樣區id"
+                          },
+                          "title": {
+                            "type": "object",
+                            "description": "樣區名稱",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文樣區名稱"
+                              }
+                            },
+                          },
+                          "cameraLocation": {
+                            "type": "object",
+                            "desctiption": "相機位置",
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "description": "相機位置總數",
+                              },
+                              "items": {
+                                "type": "array",
+                                "description": "相機位置列表",
+                                "item": {
+                                  "type": "object",
+                                  "properties": {
+                                    "cameraLocation": {
+                                      "type": "string",
+                                      "desctiption": "相機位置id",
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "desctiption": "相機位置名稱",
+                                    },
+                                    "settingTime": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "desctiption": "架設日期",
+                                    },
+                                    "latitude": {
+                                      "type": "number",
+                                      "desctiption": "十進位緯度 (WGS84)",
+                                      },
+                                    "longitude": {
+                                      "type": "number",
+                                      "desctiption": "十進位經度 (WGS84)",
+                                    },
+                                    "altitude": {
+                                      "type": "string",
+                                      "desctiption": "海拔",
+                                    },
+                                    "landCoverType": {
+                                      "type": "string",
+                                      "desctiption": "土地覆蓋類型",
+                                    },
+                                    "vegetation": {
+                                      "type": "string",
+                                      "desctiption": "植被類型",
+                                    },
+                                    "data": {
+                                      "type": "object",
+                                      "desctiption": "相機位置資料",
+                                      "properties": {
+                                        "total": {
+                                          "type": "integer",
+                                          "description": "相機位置資料總數",
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                          "data": {
+                            "type": "object",
+                            "desctiption": "樣區資料",
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "description": "樣區資料總數",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                }
+
+## Get data statistics [GET /statistics]
+取得統計資料．
+
++ Request Get annotations (application/json)
++ Response 200  (application/json)
+
+    + Body
+
+            {
+              "year": [
+                {
+                  "year": "101",
+                  "totalPicture": 300000,
+                  "totalCameraLocation": 80,
+                },
+              ],
+              "species": [
+                {
+                  "species": "5ce6cfe80a75171f55b5de9c",
+                  "name": "石虎",
+                  "totalLocation": 152,
+                  "totalPicture": 350000
+                },
+              ],
+              "funder": [
+                {
+                  "name": "林務局",
+                  "totalData": 750
+                },
+              ],
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "year": {
+                  "type": "array",
+                  "description": "年度資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "year": {
+                        "type": "string",
+                        "description": "年度",
+                      },
+                      "totalPicture": {
+                        "type": "integer",
+                        "description": "照片總數",
+                      },
+                      "totalCameraLocation": {
+                        "type": "integer",
+                        "description": "相機位置總數",
+                      },
+                    },
+                  },
+                },
+                "species": {
+                  "type": "array",
+                  "description": "物種資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "species": {
+                        "type": "string",
+                        "description": "物種id",
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "物種名稱",
+                      },
+                      "totalLocation": {
+                        "type": "integer",
+                        "description": "照片總數",
+                      },
+                      "totalPicture": {
+                        "type": "integer",
+                        "description": "分佈位置總數",
+                      },
+                    },
+                  },
+                },
+                "funder": {
+                  "type": "array",
+                  "description": "單位資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "單位名稱",
+                      },
+                      "totalData": {
+                        "type": "integer",
+                        "description": "資料量總數",
+                      },
+                    },
+                  },
+                },
+              },
+            }
