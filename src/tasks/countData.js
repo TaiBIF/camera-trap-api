@@ -5,6 +5,8 @@ const StudyAreaModel = require('../models/data/study-area-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const StatisticModel = require('../models/data/statistic-model');
 const AnnotationModel = require('../models/data/annotation-model');
+const ProjectTripModel = require('../models/data/project-trip-model');
+const StatisticCameraModel = require('../models/data/statistic-camera-model');
 
 const StudyAreaState = require('../models/const/study-area-state');
 const AnnotationState = require('../models/const/annotation-state');
@@ -91,6 +93,54 @@ const countData = async (job, done) => {
   });
 };
 
+const countCamera = async () => {
+  // 清除舊資料
+  await StatisticCameraModel.collection.drop();
+  await StatisticCameraModel.createIndexes();
+
+  const projectTripData = await ProjectTripModel.find({});
+  projectTripData.forEach(projectTrip => {
+    if (projectTrip.studyAreas && projectTrip.studyAreas.length > 0) {
+      projectTrip.studyAreas.forEach(studyArea => {
+        if (studyArea.cameraLocations && studyArea.cameraLocations.length > 0) {
+          studyArea.cameraLocations.forEach(cameraLocation => {
+            if (
+              cameraLocation.projectCameras &&
+              cameraLocation.projectCameras.length > 0
+            ) {
+              cameraLocation.projectCameras.forEach(async projectCamera => {
+                // 計算工時
+                let workHour = 0;
+                if (
+                  projectCamera.startActiveDate &&
+                  projectCamera.endActiveDate
+                ) {
+                  const startDate = new Date(projectCamera.startActiveDate);
+                  const endDate = new Date(projectCamera.endActiveDate);
+
+                  workHour = parseInt(endDate - startDate, 10) / 1000 / 60 / 60;
+                }
+
+                const statisticCamera = new StatisticCameraModel({
+                  trip: projectTrip._id,
+                  camera: {
+                    _id: projectCamera._id,
+                    sn: projectCamera.cameraSn,
+                    workHour,
+                  },
+                });
+
+                await statisticCamera.save();
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+};
+
 countData();
+countCamera();
 
 module.exports = countData;
