@@ -131,6 +131,7 @@ apiRouter.post(
 );
 apiRouter.get('/project-areas', projectAreaHandler.getProjectAreas);
 apiRouter.get('/projects', projectHandler.getProjects);
+apiRouter.get('/projects/public', projectHandler.getProjectsPublic);
 apiRouter.post('/projects', projectHandler.addProject);
 apiRouter.get('/projects/:projectId([a-f\\d]{24})', projectHandler.getProject);
 apiRouter.put(
