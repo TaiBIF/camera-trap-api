@@ -1661,7 +1661,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group Projects
 ## Overview [/projects]
-### List projects [GET /projects{?index,size,sort}]
+### List projects [GET /projects{?index,size,sort,species,projectAreas,startDate,endDate}]
 取得計畫列表。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -1679,6 +1679,259 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `latestAnnotationTime`
             + `funder`
             + `title`
+    + species: `5ce2cc7215168c78484b11e1` (string, optional) - 搜尋專案底下物種
+    + projectAreas: `5ce2cc7215168c78484b11f5` (stinrg, optional) - 搜尋專案底下區域
+    + startDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋開始日期
+    + endDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋結束日期
+
++ Request Get projects (application/json)
+
++ Response 200
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 24,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c99e565fa899867c32377cf",
+                  "title": "計畫名稱",
+                  "shortTitle": "計畫簡稱",
+                  "funder": "委辦單位",
+                  "code": "計畫編號",
+                  "principalInvestigator": "計畫主持人",
+                  "startTime": "2019-01-01T00:00:00.000Z",
+                  "endTime": "2029-01-01T00:00:00.000Z",
+                  "areas": [
+                    "5c9af16a4ee1b606477f9236"
+                  ],
+                  "description": "計畫摘要",
+                  "note": "備註",
+                  "coverImageFile": {
+                    "id": "5c9b1dfafc43be12b823b7b2",
+                    "type": "project-cover-image",
+                    "originalFilename": "432x324c.jpg",
+                    "filename": "5c9b1dfafc43be12b823b7b2.jpg",
+                    "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9b1dfafc43be12b823b7b2.jpg",
+                    "size": 26172
+                  },
+                  "publishTime": "2029-01-01T00:00:00.000Z",
+                  "interpretiveDataLicense": "cc0",
+                  "identificationInformationLicense": "by",
+                  "videoMaterialLicense": "by",
+                  "members": [
+                    {
+                      "user": "5c949bbbe5d5377f98c81ab0",
+                      "role": "manager"
+                    }
+                  ],
+                  "dataFields": ["5c99bece337ea758248ffd5b"],
+                  "dailyTestTime": "13:00:00",
+                  "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
+                  "oldestAnnotationTime": "2019-01-01T00:00:00.000Z"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "number",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "object",
+                        "description": "計畫名稱"
+                      },
+                      "shortTitle": {
+                        "type": "string",
+                        "description": "計畫簡稱"
+                      },
+                      "funder": {
+                        "type": "string",
+                        "description": "委辦單位"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "計畫編號"
+                      },
+                      "principalInvestigator": {
+                        "type": "string",
+                        "description": "計畫主持人"
+                      },
+                      "startTime": {
+                        "type": "Date",
+                        "description": "計畫時間（開始）"
+                      },
+                      "endTime": {
+                        "type": "Date",
+                        "description": "計畫時間（結束）"
+                      },
+                      "areas": {
+                        "type": "array",
+                        "description": "計畫地區",
+                        "item": {
+                          "title": "id",
+                          "type": "string"
+                        }
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "計畫摘要"
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "備註"
+                      },
+                      "coverImageFile": {
+                        "type": "object",
+                        "description": "計畫封面圖片檔案，物件內容參照 FileModel",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "File id string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "影像類型",
+                            "enum": ["project-cover-image"]
+                          },
+                          "originalFilename": {
+                            "type": "string",
+                            "description": "原始檔案名"
+                          },
+                          "filename": {
+                            "type": "string",
+                            "description": "系統編碼後之檔案名稱"
+                          },
+                          "url": {
+                            "type": "string",
+                            "description": "公開存取網址"
+                          },
+                          "size": {
+                            "type": "integer",
+                            "description": "File size in byte."
+                          }
+                        }
+                      },
+                      "publishTime": {
+                        "type": "string",
+                        "format": "data-time",
+                        "description": "公開日期"
+                      },
+                      "interpretiveDataLicense": {
+                        "type": "string",
+                        "description": "詮釋資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "identificationInformationLicense": {
+                        "type": "string",
+                        "description": "鑑定資訊創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "videoMaterialLicense": {
+                        "type": "string",
+                        "description": "影像資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "members": {
+                        "type": "array",
+                        "description": "計畫成員",
+                        "item": {
+                          "type": "object",
+                          "properties": {
+                            "user": {
+                              "type": "string",
+                              "description": "成員 ID"
+                            },
+                            "role": {
+                              "type": "string",
+                              "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                              "enum": ["manager", "researcher", "executor"]
+                            }
+                          }
+                        }
+                      },
+                      "dataFields": {
+                        "type": "array",
+                        "description": "資料欄位",
+                        "item": {
+                          "type": "string",
+                          "description": "欄位名稱"
+                        }
+                      },
+                      "dailyTestTime": {
+                        "type": "string",
+                        "format": "time",
+                        "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                        "enum": ["null", ""]
+                      },
+                      "latestAnnotationTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "資料最後更新時間"
+                      },
+                      "oldestAnnotationTime": {
+                        "type": "string",
+                        "format": "data-time",
+                        "description": "資料起始年份"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+       
+
+### List public projects [GET /projects{?index,size,sort,species,projectAreas,startDate,endDate}/public]
+取得計畫列表。
+- The user's permission should be 'administrator' or 'general-account' or 'guest'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and public projects.
+- The guest gets public projects.
+
++ Parameters
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 24
+    + sort: `oldestAnnotationTime` (enum[string], optional) ...
+        + Default: `oldestAnnotationTime`
+        + Members
+            + `oldestAnnotationTime`
+            + `latestAnnotationTime`
+            + `funder`
+            + `title`
+    + species: `5ce2cc7215168c78484b11e1` (string, optional) - 搜尋專案底下物種
+    + projectAreas: `5ce2cc7215168c78484b11f5` (stinrg, optional) - 搜尋專案底下區域
+    + startDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋開始日期
+    + endDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋結束日期
 
 + Request Get projects (application/json)
 
@@ -2906,7 +3159,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "空拍"
                   },
                   "index": 0,
-                  "code": "empty-shot"
+                  "code": "empty-shot",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e565fa899867c32377d1",
@@ -2914,7 +3168,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "測試"
                   },
                   "index": 1,
-                  "code": "test"
+                  "code": "test",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e565fa899867c32377d2",
@@ -2922,14 +3177,16 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "人"
                   },
                   "index": 2,
-                  "code": "people"
+                  "code": "people",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e9f772033c68e65592fb",
                   "title": {
                     "zh-TW": "test"
                   },
-                  "index": 3
+                  "index": 3,
+                  "dataCount": 0
                 }
               ]
             }
@@ -2977,6 +3234,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "code": {
                         "type": "string",
                         "description": "Machine code for internal referencing."
+                      },
+                      "dataCount": {
+                        "type": "integer",
+                        "description": "計數器"
                       }
                     }
                   }
@@ -7090,7 +7351,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession, projectId}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession,projectTripId}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -9237,23 +9498,35 @@ Get species metrics of the top 5 identified ones.
                   "title": {
                     "zh-TW": "南投縣",
                     "en-US": "Nantou County"
-                  }
+                  },
+                  "type": "north|south|east|west",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c9af16a4ee1b606477f9239",
                   "title": {
                     "zh-TW": "台中市",
-                    "en-US": "Taichung City"
+                    "en-US": "Taichung City",
+                    "type": "north|south|east|west",
+                    "dataCount": 0
                   }
                 },
                 {
                   "id": "5c9af16a4ee1b606477f9236",
                   "title": {
                     "zh-TW": "台北市",
-                    "en-US": "Taipei City"
+                    "en-US": "Taipei City",
+                    "type": "north|south|east|west",
+                    "dataCount": 0
                   }
                 }
-              ]
+              ],
+              "location": {
+                "north": 0,
+                "south": 0,
+                "east": 0,
+                "west": 0
+              }
             }
 
     + Schema
@@ -9295,6 +9568,12 @@ Get species metrics of the top 5 identified ones.
                             "description": "Title in English."
                           }
                         }
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "dataCount": {
+                        "type": "integer"
                       }
                     }
                   }
