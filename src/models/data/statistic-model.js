@@ -33,11 +33,16 @@ const schema = utils.generateSchema(
     },
     cameraLocation: {
       // 相機位置
-      type: Schema.ObjectId,
-      ref: 'CameraLocationModel',
-      required: true,
-      index: {
-        name: 'CameraLocation',
+      detail: {
+        type: Schema.ObjectId,
+        ref: 'CameraLocationModel',
+        required: true,
+        index: {
+          name: 'CameraLocation',
+        },
+      },
+      createTime: {
+        type: Date,
       },
     },
     species: {
@@ -57,6 +62,9 @@ const schema = utils.generateSchema(
       size: {
         // 容量
         type: Number,
+      },
+      createTime: {
+        type: Date,
       },
     },
   },

@@ -77,11 +77,15 @@ const countData = async (job, done) => {
               funder: project.funder,
               county,
               studyArea,
-              cameraLocation,
+              cameraLocation: {
+                detail: cameraLocation,
+                createTime: cameraLocation.createTime,
+              },
               species: annotation.species,
               picture: {
                 fileName: annotation.filename,
                 size: annotation.filename ? 1 : 0,
+                createTime: annotation.createTime,
               },
             });
 
