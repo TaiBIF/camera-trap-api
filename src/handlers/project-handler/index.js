@@ -70,17 +70,20 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
     query.where({ areas: { $in: form.projectAreas } });
   }
 
+  if ((form.startDate && !form.endDate) || (!form.startDate && form.endDate)) {
+    throw new errors.Http400(`startDate or endDate must be two have value .`);
+  }
   if (form.startDate && form.endDate) {
     query.where({
       $and: [
         {
           startTime: {
-            $gte: form.endDate,
+            $lte: form.endDate,
           },
         },
         {
           endTime: {
-            $lte: form.startDate,
+            $gte: form.startDate,
           },
         },
       ],
@@ -141,18 +144,20 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
   if (form.projectAreas && form.projectAreas.length > 0) {
     query.where({ areas: { $in: form.projectAreas } });
   }
-
+  if ((form.startDate && !form.endDate) || (!form.startDate && form.endDate)) {
+    throw new errors.Http400(`startDate or endDate must be two have value .`);
+  }
   if (form.startDate && form.endDate) {
     query.where({
       $and: [
         {
           startTime: {
-            $gte: form.endDate,
+            $lte: form.endDate,
           },
         },
         {
           endTime: {
-            $lte: form.startDate,
+            $gte: form.startDate,
           },
         },
       ],
