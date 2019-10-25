@@ -105,8 +105,23 @@ const countCamera = async () => {
   const projectTripData = await ProjectTripModel.find({});
   projectTripData.forEach(projectTrip => {
     if (projectTrip.studyAreas && projectTrip.studyAreas.length > 0) {
-      projectTrip.studyAreas.forEach(studyArea => {
-        if (studyArea.cameraLocations && studyArea.cameraLocations.length > 0) {
+      projectTrip.studyAreas.forEach(async studyArea => {
+        const studyAreaData = await StudyAreaModel.findById(
+          studyArea.studyArea,
+        );
+        let county = '';
+        countCounty.some(c => {
+          if (studyAreaData.title['zh-TW'].indexOf(c.substr(0, 2)) > -1) {
+            county = c;
+            return true;
+          }
+          return false;
+        });
+        if (
+          county !== '' &&
+          studyArea.cameraLocations &&
+          studyArea.cameraLocations.length > 0
+        ) {
           studyArea.cameraLocations.forEach(cameraLocation => {
             if (
               cameraLocation.projectCameras &&
@@ -126,6 +141,7 @@ const countCamera = async () => {
                 }
 
                 const statisticCamera = new StatisticCameraModel({
+                  county,
                   trip: projectTrip._id,
                   camera: {
                     _id: projectCamera._id,
