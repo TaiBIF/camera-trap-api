@@ -26,6 +26,7 @@ const cameraHandler = require('../handlers/camera-handler');
 const projectCameraHandler = require('../handlers/project-camera-handler');
 const projectTripHandler = require('../handlers/project-trip-handler');
 const photoHandler = require('../handlers/photo-handler');
+const statisticHandler = require('../handlers/statistic-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -331,6 +332,13 @@ apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
+
+// statistics
+apiRouter.get('/statistics', statisticHandler.getStatistics);
+apiRouter.get(
+  '/statistics/county/:countyName',
+  statisticHandler.getStatisticsByCounty,
+);
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
