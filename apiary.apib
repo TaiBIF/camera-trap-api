@@ -10272,10 +10272,12 @@ Get species metrics of the top 5 identified ones.
               },
               "identifiedSpecies": {
                 "percentage": 65,
-                items: [
+                "items": [
                   {
                     "species": "5ce6cfe80a75171f55b5de9c",
-                    "name": "石虎",
+                    "name": {
+                      "zh-TW": "石虎",
+                    },
                   },
                 ],
               },
@@ -10377,8 +10379,14 @@ Get species metrics of the top 5 identified ones.
                             "description": "物種id",
                           },
                           "name": {
-                            "type": "string",
-                            "desctiption": "物種名稱",
+                            "type": "object",
+                            "description": "物種名稱",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文物種名稱"
+                              }
+                            },
                           },
                         },
                       },
