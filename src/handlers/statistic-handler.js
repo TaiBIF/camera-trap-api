@@ -1,4 +1,5 @@
 const StatisticModel = require('../models/data/statistic-model');
+const StatisticCameraModel = require('../models/data/statistic-camera-model');
 
 exports.getStatistics = async (req, res) => {
   /*
@@ -108,9 +109,168 @@ exports.getStatistics = async (req, res) => {
   res.json({ year: yearArr, species: speciesArr, funder: funderArr });
 };
 
-exports.getStatisticsByCounty = (req, res) => {
+exports.getStatisticsByCounty = async (req, res) => {
   /*
     GET /api/v1/statistics/county/{countyName}
   */
-  // req.params.countyName
+  const projectTotal = (await StatisticModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $group: {
+        _id: '$project',
+      },
+    },
+  ])).length;
+
+  const cameraLocationTotal = (await StatisticModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $group: {
+        _id: '$cameraLocation.detail',
+      },
+    },
+  ])).length;
+
+  const identifiedSpeciesData = await StatisticModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $lookup: {
+        from: 'Species',
+        localField: 'species',
+        foreignField: '_id',
+        as: 'species',
+      },
+    },
+    {
+      $group: {
+        _id: '$species._id',
+        count: { $sum: 1 },
+        name: { $push: '$species.title' },
+      },
+    },
+  ]);
+  const dataTotal = await StatisticModel.find({
+    county: req.params.countyName,
+  }).countDocuments();
+  let identifiedSpeciesTotal = 0;
+  const identifiedSpeciesItems = identifiedSpeciesData.reduce(
+    (pre, identifiedSpecies) => {
+      if (identifiedSpecies._id[0]) {
+        identifiedSpeciesTotal += identifiedSpecies.count;
+        return [
+          ...pre,
+          {
+            species: identifiedSpecies._id[0],
+            name: identifiedSpecies.name[0][0],
+          },
+        ];
+      }
+      return pre;
+    },
+    [],
+  );
+
+  const pictureTotal = (await StatisticModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $group: {
+        _id: '$picture.fileName',
+      },
+    },
+  ])).length;
+
+  const cameraTotalWorkHour = (await StatisticCameraModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $group: {
+        _id: '$county',
+        count: { $sum: '$camera.workHour' },
+      },
+    },
+  ]))[0].count;
+
+  const statisticData = await StatisticModel.aggregate([
+    { $match: { county: req.params.countyName } },
+    {
+      $lookup: {
+        from: 'StudyAreas',
+        localField: 'studyArea',
+        foreignField: '_id',
+        as: 'studyArea',
+      },
+    },
+    {
+      $lookup: {
+        from: 'CameraLocations',
+        localField: 'cameraLocation.detail',
+        foreignField: '_id',
+        as: 'cameraLocation.detail',
+      },
+    },
+    {
+      $group: {
+        _id: '$studyArea._id',
+        studyAreaCount: { $sum: 1 },
+        studyAreaTitle: { $push: '$studyArea.title' },
+        cameraLocation: { $push: '$cameraLocation.detail' },
+      },
+    },
+  ]);
+
+  const studyAreaItems = statisticData.map(statistic => {
+    const cameraLocation = statistic.cameraLocation.reduce((pre, cur) => {
+      const curCameraLocation = cur[0];
+      if (Object.keys(pre).indexOf(curCameraLocation.name) === -1)
+        return {
+          ...pre,
+          [curCameraLocation.name]: {
+            cameraLocation: curCameraLocation._id,
+            name: curCameraLocation.name,
+            settingTime: curCameraLocation.settingTime,
+            latitude: curCameraLocation.latitude,
+            longitude: curCameraLocation.longitude,
+            altitude: curCameraLocation.altitude,
+            landCoverType: curCameraLocation.landCoverType,
+            vegetation: curCameraLocation.vegetation,
+            data: {
+              total: 1,
+            },
+          },
+        };
+
+      const addDataTotal = pre[curCameraLocation.name];
+      addDataTotal.data.total += 1;
+      return {
+        ...pre,
+        [curCameraLocation.name]: addDataTotal,
+      };
+    }, {});
+
+    return {
+      studyArea: statistic._id[0],
+      title: statistic.studyAreaTitle[0],
+      cameraLocation: {
+        total: Object.values(cameraLocation).length,
+        items: Object.values(cameraLocation),
+      },
+      data: {
+        total: statistic.studyAreaCount,
+      },
+    };
+  });
+
+  res.json({
+    title: { 'zh-TW': req.params.countyName },
+    project: { total: projectTotal },
+    cameraLocation: { total: cameraLocationTotal },
+    identifiedSpecies: {
+      percentage: (identifiedSpeciesTotal / dataTotal) * 100,
+      items: identifiedSpeciesItems,
+    },
+    picture: { total: pictureTotal },
+    camera: { totalWorkHour: cameraTotalWorkHour },
+    studyArea: {
+      items: studyAreaItems,
+    },
+  });
 };
