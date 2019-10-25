@@ -31,19 +31,31 @@ exports.getStatistics = async (req, res) => {
     });
 
     // eslint-disable-next-line no-await-in-loop
-    const totalPicture = await StatisticModel.find({
-      'picture.createTime': {
-        $gt: startDate,
-        $lt: endDate,
-      },
-    }).countDocuments();
+    const totalPicture = new Set(
+      // eslint-disable-next-line no-await-in-loop
+      (await StatisticModel.find(
+        {
+          'picture.createTime': {
+            $gt: startDate,
+            $lt: endDate,
+          },
+        },
+        'picture',
+      )).map(({ picture }) => picture.fileName),
+    ).size;
     // eslint-disable-next-line no-await-in-loop
-    const totalCameraLocation = await StatisticModel.find({
-      'cameraLocation.createTime': {
-        $gt: startDate,
-        $lt: endDate,
-      },
-    }).countDocuments();
+    const totalCameraLocation = new Set(
+      // eslint-disable-next-line no-await-in-loop
+      (await StatisticModel.find(
+        {
+          'cameraLocation.createTime': {
+            $gt: startDate,
+            $lt: endDate,
+          },
+        },
+        'cameraLocation',
+      )).map(({ cameraLocation }) => `${cameraLocation.detail}`),
+    ).size;
 
     yearArr.push({ year, totalPicture, totalCameraLocation });
   }
@@ -97,7 +109,7 @@ exports.getStatistics = async (req, res) => {
     {
       $group: {
         _id: '$project.funder',
-        count: { $sum: 1 },
+        count: { $sum: '$picture.size' },
       },
     },
   ]);
@@ -179,7 +191,7 @@ exports.getStatisticsByCounty = async (req, res) => {
     },
   ])).length;
 
-  const cameraTotalWorkHour = (await StatisticCameraModel.aggregate([
+  const cameraTotalWorkHourCount = (await StatisticCameraModel.aggregate([
     { $match: { county: req.params.countyName } },
     {
       $group: {
@@ -187,7 +199,10 @@ exports.getStatisticsByCounty = async (req, res) => {
         count: { $sum: '$camera.workHour' },
       },
     },
-  ]))[0].count;
+  ]))[0];
+  const cameraTotalWorkHour = cameraTotalWorkHourCount
+    ? cameraTotalWorkHourCount.count
+    : 0;
 
   const statisticData = await StatisticModel.aggregate([
     { $match: { county: req.params.countyName } },
@@ -248,7 +263,7 @@ exports.getStatisticsByCounty = async (req, res) => {
 
     return {
       studyArea: statistic._id[0],
-      title: statistic.studyAreaTitle[0],
+      title: statistic.studyAreaTitle[0][0],
       cameraLocation: {
         total: Object.values(cameraLocation).length,
         items: Object.values(cameraLocation),
@@ -264,7 +279,7 @@ exports.getStatisticsByCounty = async (req, res) => {
     project: { total: projectTotal },
     cameraLocation: { total: cameraLocationTotal },
     identifiedSpecies: {
-      percentage: (identifiedSpeciesTotal / dataTotal) * 100,
+      percentage: (identifiedSpeciesTotal / dataTotal) * 100 || 0,
       items: identifiedSpeciesItems,
     },
     picture: { total: pictureTotal },
