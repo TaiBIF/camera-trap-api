@@ -1,5 +1,6 @@
 const config = require('config');
 
+const moment = require('moment');
 const auth = require('../../auth/authorization');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
@@ -28,7 +29,7 @@ const prepareProjectDwca = require('./prepareProjectDwcArchive');
 const getProjectDwca = require('./getProjectDwcArchive');
 const getProject = require('./getProject');
 
-exports.getProjects = auth(UserPermission.all(), (req, res) => {
+exports.getProjects = auth(UserPermission.all(), async (req, res) => {
   /*
   GET /api/v1/projects
    */
@@ -38,17 +39,138 @@ exports.getProjects = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = ProjectModel.where()
-    .sort(form.sort)
-    .populate('coverImageFile');
+  const query = ProjectModel.where();
   if (req.user.permission !== UserPermission.administrator) {
     // General accounts just fetch hims' projects. (Administrator fetch all projects.)
     query.where({ 'members.user': req.user._id });
   }
-  return ProjectModel.paginate(query, {
-    offset: form.index * form.size,
-    limit: form.size,
-  }).then(result => {
+
+  if (form.species && form.species.length > 0) {
+    const projects = [];
+    await query.map(async projectModel => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const pm of projectModel) {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await ProjectSpeciesModel.findOne({
+          project: pm._id,
+          species: { $in: form.species },
+        });
+
+        if (result) {
+          projects.push(result.project);
+        }
+      }
+    });
+
+    await query.where({ _id: { $in: projects } });
+    // query.where({ sn: { $in: `${form.species}` } });
+  }
+
+  if (form.projectAreas && form.projectAreas.length > 0) {
+    query.where({ areas: { $in: form.projectAreas } });
+  }
+
+  if ((form.startDate && !form.endDate) || (!form.startDate && form.endDate)) {
+    throw new errors.Http400(`startDate or endDate must be two have value .`);
+  }
+  if (form.startDate && form.endDate) {
+    query.where({
+      $and: [
+        {
+          startTime: {
+            $lte: form.endDate,
+          },
+        },
+        {
+          endTime: {
+            $gte: form.startDate,
+          },
+        },
+      ],
+    });
+  }
+
+  return ProjectModel.paginate(
+    query.sort(form.sort).populate('coverImageFile'),
+    {
+      offset: form.index * form.size,
+      limit: form.size,
+    },
+  ).then(result => {
+    res.json(
+      new PageList(form.index, form.size, result.totalDocs, result.docs),
+    );
+  });
+});
+
+exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
+  /*
+  GET /api/v1/projects/public
+   */
+  const form = new ProjectsSearchForm(req.query);
+  const errorMessage = form.validate();
+  if (errorMessage) {
+    throw new errors.Http400(errorMessage);
+  }
+  const query = ProjectModel.where({
+    publishTime: {
+      $lte: moment()
+        .startOf('day')
+        .toDate(),
+    },
+  });
+
+  if (form.species && form.species.length > 0) {
+    const projects = [];
+    await query.map(async projectModel => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const pm of projectModel) {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await ProjectSpeciesModel.findOne({
+          project: pm._id,
+          species: { $in: form.species },
+        });
+
+        if (result) {
+          projects.push(result.project);
+        }
+      }
+    });
+
+    await query.where({ _id: { $in: projects } });
+    // query.where({ sn: { $in: `${form.species}` } });
+  }
+
+  if (form.projectAreas && form.projectAreas.length > 0) {
+    query.where({ areas: { $in: form.projectAreas } });
+  }
+  if ((form.startDate && !form.endDate) || (!form.startDate && form.endDate)) {
+    throw new errors.Http400(`startDate or endDate must be two have value .`);
+  }
+  if (form.startDate && form.endDate) {
+    query.where({
+      $and: [
+        {
+          startTime: {
+            $lte: form.endDate,
+          },
+        },
+        {
+          endTime: {
+            $gte: form.startDate,
+          },
+        },
+      ],
+    });
+  }
+
+  return ProjectModel.paginate(
+    query.sort(form.sort).populate('coverImageFile'),
+    {
+      offset: form.index * form.size,
+      limit: form.size,
+    },
+  ).then(result => {
     res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );
@@ -69,7 +191,7 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
 
   return Promise.all([
     DataFieldModel.where({ systemCode: { $exists: true } }),
-    ProjectAreaModel.find({ _id: { $in: form.areas } }),
+    ProjectAreaModel.where({ _id: { $in: form.areas } }),
     FileModel.findById(form.coverImageFile).where({
       type: FileType.projectCoverImage,
     }),
@@ -89,7 +211,12 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
       if (form.coverImageFile && !coverImageFile) {
         throw new errors.Http400('The cover image file is not found.');
       }
-
+      // eslint-disable-next-line array-callback-return
+      projectAreas.map(projectArea => {
+        // const data = ProjectAreaModel.findById(projectArea._id);
+        projectArea.dataCount += 1;
+        projectArea.save();
+      });
       const project = new ProjectModel({
         ...form,
         coverImageFile,
@@ -110,9 +237,14 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
           dataFields.find(x => x.systemCode === DataFieldSystemCode.species),
         ],
       });
-      return Promise.all([project.save(), coverImageFile, speciesList]);
+      return Promise.all([
+        project.save(),
+        projectAreas,
+        coverImageFile,
+        speciesList,
+      ]);
     })
-    .then(([project, coverImageFile, speciesList]) => {
+    .then(([project, projectAreas, coverImageFile, speciesList]) => {
       /*
       - Add default species into the project.
       - Add coverImageFile.project and save it.
@@ -121,20 +253,22 @@ exports.addProject = auth(UserPermission.all(), (req, res) => {
       @returns {Promises<[{ProjectModel}]>}
        */
       // Add default species.
-      const speciesReference = speciesList.map(
-        (species, index) =>
-          new ProjectSpeciesModel({
-            project,
-            species,
-            index,
-          }),
-      );
+      const speciesReference = speciesList.map((species, index) => {
+        species.dataCount += 1;
+        species.save();
+        return new ProjectSpeciesModel({
+          project,
+          species,
+          index,
+        });
+      });
       const tasks = speciesReference.map(x => x.save());
       if (coverImageFile) {
         coverImageFile.project = project;
         tasks.push(coverImageFile.save());
       }
       tasks.unshift(project);
+
       return Promise.all(tasks);
     })
     .then(([project]) => {

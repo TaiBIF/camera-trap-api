@@ -13,7 +13,8 @@ module.exports = (permissions = [], func) =>
   function(req, res, next) {
     if (
       req.user.permission !== UserPermission.administrator &&
-      permissions.indexOf(req.user.permission) < 0
+      (permissions.indexOf(req.user.permission) < 0 &&
+        permissions.indexOf(UserPermission.guest) < 0)
     ) {
       // req.user isn't administrator and not in the white list.
       if (req.user.isLogin()) {

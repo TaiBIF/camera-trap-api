@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const AreaType = require('../const/area-type');
 const utils = require('../../common/utils');
 
 utils.connectDatabase();
@@ -27,6 +28,15 @@ const model = mongoose.model(
           },
         },
       },
+      // 專案區域
+      type: {
+        type: String,
+        enum: AreaType.all(),
+      },
+      dataCount: {
+        type: Number,
+        default: 0,
+      },
     },
     {
       collection: 'ProjectAreas',
@@ -38,6 +48,8 @@ model.prototype.dump = function() {
   return {
     id: `${this._id}`,
     title: this.title,
+    type: this.type,
+    dataCount: this.dataCount,
   };
 };
 
