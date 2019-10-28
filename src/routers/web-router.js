@@ -25,6 +25,7 @@ const speciesTimeSeriesHandler = require('../handlers/species-time-series-handle
 const cameraHandler = require('../handlers/camera-handler');
 const projectCameraHandler = require('../handlers/project-camera-handler');
 const projectTripHandler = require('../handlers/project-trip-handler');
+const photoHandler = require('../handlers/photo-handler');
 
 exports.api = express.Router();
 exports.callback = express.Router();
@@ -74,6 +75,8 @@ class CustomRouter {
 
 // /api/v1
 const apiRouter = new CustomRouter(exports.api);
+apiRouter.get('/carousel', photoHandler.getCarousels);
+apiRouter.post('/carousel', photoHandler.postCarousel);
 apiRouter.get('/config', systemHandler.getConfig);
 apiRouter.get('/me', accountHandler.getMyProfile);
 apiRouter.put('/me', accountHandler.updateMyProfile);

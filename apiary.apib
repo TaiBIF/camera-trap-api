@@ -7349,6 +7349,20 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               ]
             }
 
+# List photos
+### Get photos [GET /getCarousels]
+得到輪播相片
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "uri": "http://www.google.com/",
+              "name": 'cat',
+              "file_extension": 'jpg',
+            }
+
 
 # Group Annotations
 ### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession,projectTripId}]
