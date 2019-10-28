@@ -301,6 +301,11 @@ apiRouter.get(
   imageSpeciesGroup.getByProjectId,
 );
 
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/study-areas/:studyAreaId([a-f\\d]{24})/image-species-group',
+  imageSpeciesGroup.getByProjectIdAndStudyAreaId,
+);
+
 apiRouter.get('/users', userHandler.getUsers);
 apiRouter.get('/data-fields', dataFieldHandler.getPublishedDataFields);
 apiRouter.post('/data-fields', dataFieldHandler.addDataField);

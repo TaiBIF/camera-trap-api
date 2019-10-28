@@ -7,6 +7,7 @@ const getRetrieved = require('../static/project/static-getRetrieved');
 const getRetrievedByStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
 const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 const getSpeciesGroup = require('../../models/static/project/static-getSpeciesGroup');
+const getStudyAreaSpeciesGroup = require('../../models/static/project/static-getStudyAreaSpeciesGroup');
 const speciesTimeSeries = require('../../models/static/project/static-speciesTimeSeries');
 const topSpecies = require('../../models/static/project/static-topSpecies');
 
@@ -193,6 +194,7 @@ schema.static('getRetrieved', getRetrieved);
 schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
 schema.static('getRetrievedByCamera', getRetrievedByCamera);
 schema.static('getSpeciesGroup', getSpeciesGroup);
+schema.static('getStudyAreaSpeciesGroup', getStudyAreaSpeciesGroup);
 schema.static('speciesTimeSeries', speciesTimeSeries);
 schema.static('topSpecies', topSpecies);
 
