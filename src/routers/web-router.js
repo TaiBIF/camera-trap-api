@@ -1,4 +1,7 @@
 const express = require('express');
+const apicache = require('apicache');
+const config = require('config');
+const redis = require('redis');
 const errors = require('../models/errors');
 const accountHandler = require('../handlers/account-handler');
 const annotationHandler = require('../handlers/annotation-handler');
@@ -26,7 +29,14 @@ const cameraHandler = require('../handlers/camera-handler');
 const projectCameraHandler = require('../handlers/project-camera-handler');
 const projectTripHandler = require('../handlers/project-trip-handler');
 const photoHandler = require('../handlers/photo-handler');
+const statisticHandler = require('../handlers/statistic-handler');
 
+const { port, db, host } = config.taskWorker.redis;
+const redisClient = redis.createClient({
+  port,
+  db,
+  host,
+});
 exports.api = express.Router();
 exports.callback = express.Router();
 
@@ -57,7 +67,11 @@ class CustomRouter {
   }
 
   get(path, handler) {
-    this.router.get(path, CustomRouter.promiseErrorHandler(handler));
+    // eslint-disable-next-line prefer-rest-params
+    const functions = Object.values(arguments)
+      .filter((it, index) => index !== 0)
+      .map(it => CustomRouter.promiseErrorHandler(it));
+    this.router.get(path, ...functions);
   }
 
   post(path, handler) {
@@ -331,6 +345,21 @@ apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
 // multipart/form-data
 apiRouter.post('/files', fileHandler.uploadFile);
+
+// statistics
+const cache = apicache.options({
+  debug: config.isDebug,
+  defaultDuration: '2 day',
+  redisClient,
+}).middleware;
+
+apiRouter.get('/statistics', cache(), statisticHandler.getStatistics);
+
+apiRouter.get(
+  '/statistics/county/:countyName',
+  cache(),
+  statisticHandler.getStatisticsByCounty,
+);
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
