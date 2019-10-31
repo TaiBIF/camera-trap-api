@@ -28,6 +28,7 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 const prepareProjectDwca = require('./prepareProjectDwcArchive');
 const getProjectDwca = require('./getProjectDwcArchive');
 const getProject = require('./getProject');
+const StatisticModel = require('../../models/data/statistic-model');
 
 exports.getProjects = auth(UserPermission.all(), async (req, res) => {
   /*
@@ -90,6 +91,44 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
     });
   }
 
+  const projectData = await StatisticModel.aggregate([
+    {
+      $group: {
+        _id: '$project',
+        studyAreas: { $push: '$studyArea' },
+        cameraLocations: { $push: '$cameraLocation.detail' },
+        dataCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const totalData = projectData.reduce((pre, project) => {
+    const totalStudyArea = project.studyAreas.reduce((preData, curData) => {
+      if (preData.indexOf(`${curData}`) === -1) {
+        return [...preData, `${curData}`];
+      }
+      return preData;
+    }, []).length;
+    const totalLcameraLocation = project.cameraLocations.reduce(
+      (preData, curData) => {
+        if (preData.indexOf(`${curData}`) === -1) {
+          return [...preData, `${curData}`];
+        }
+        return preData;
+      },
+      [],
+    ).length;
+
+    return {
+      ...pre,
+      [project._id]: {
+        totalStudyArea,
+        totalLcameraLocation,
+        totalData: project.dataCount,
+      },
+    };
+  }, {});
+
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
@@ -97,9 +136,22 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
       limit: form.size,
     },
   ).then(result => {
-    res.json(
-      new PageList(form.index, form.size, result.totalDocs, result.docs),
-    );
+    const items = result.docs.map(doc => {
+      doc = doc.toJSON();
+      doc.id = doc._id;
+      doc.totalStudyArea = totalData[doc._id]
+        ? totalData[doc._id].totalStudyArea || 0
+        : 0;
+      doc.totalLcameraLocation = totalData[doc._id]
+        ? totalData[doc._id].totalLcameraLocation || 0
+        : 0;
+      doc.totalData = totalData[doc._id]
+        ? totalData[doc._id].totalData || 0
+        : 0;
+      return doc;
+    });
+
+    res.json(new PageList(form.index, form.size, result.totalDocs, items));
   });
 });
 
@@ -164,6 +216,44 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
     });
   }
 
+  const projectData = await StatisticModel.aggregate([
+    {
+      $group: {
+        _id: '$project',
+        studyAreas: { $push: '$studyArea' },
+        cameraLocations: { $push: '$cameraLocation.detail' },
+        dataCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const totalData = projectData.reduce((pre, project) => {
+    const totalStudyArea = project.studyAreas.reduce((preData, curData) => {
+      if (preData.indexOf(`${curData}`) === -1) {
+        return [...preData, `${curData}`];
+      }
+      return preData;
+    }, []).length;
+    const totalLcameraLocation = project.cameraLocations.reduce(
+      (preData, curData) => {
+        if (preData.indexOf(`${curData}`) === -1) {
+          return [...preData, `${curData}`];
+        }
+        return preData;
+      },
+      [],
+    ).length;
+
+    return {
+      ...pre,
+      [project._id]: {
+        totalStudyArea,
+        totalLcameraLocation,
+        totalData: project.dataCount,
+      },
+    };
+  }, {});
+
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
@@ -171,9 +261,22 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
       limit: form.size,
     },
   ).then(result => {
-    res.json(
-      new PageList(form.index, form.size, result.totalDocs, result.docs),
-    );
+    const items = result.docs.map(doc => {
+      doc = doc.toJSON();
+      doc.id = doc._id;
+      doc.totalStudyArea = totalData[doc._id]
+        ? totalData[doc._id].totalStudyArea || 0
+        : 0;
+      doc.totalLcameraLocation = totalData[doc._id]
+        ? totalData[doc._id].totalLcameraLocation || 0
+        : 0;
+      doc.totalData = totalData[doc._id]
+        ? totalData[doc._id].totalData || 0
+        : 0;
+      return doc;
+    });
+
+    res.json(new PageList(form.index, form.size, result.totalDocs, items));
   });
 });
 
