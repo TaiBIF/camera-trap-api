@@ -100,6 +100,9 @@ orbs:
       build_api:
         executor: aws
         steps:
+          - add_ssh_keys:
+              fingerprints:
+                - "SO:2c:52:a7:73:52:6f:e3:d4:9f:f0:7c:96:c1:4b:4a:d1"
           - use-node
           - run: node -v
           - checkout-install
@@ -110,6 +113,9 @@ orbs:
       build_task:
         executor: aws
         steps:
+          - add_ssh_keys:
+              fingerprints:
+                - "SO:2c:52:a7:73:52:6f:e3:d4:9f:f0:7c:96:c1:4b:4a:d1"
           - use-node
           - run: node -v
           - checkout-install
