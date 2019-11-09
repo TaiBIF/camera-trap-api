@@ -102,7 +102,7 @@ orbs:
         steps:
           - add_ssh_keys:
               fingerprints:
-                - "6e:5d:1e:b4:d1:9b:04:c1:f4:f9:38:fa:cb:6d:c4:e4"
+                - "07:38:69:80:a9:81:54:19:7d:bf:cb:73:7a:34:64:24"
           - use-node
           - run: node -v
           - checkout-install
@@ -115,7 +115,7 @@ orbs:
         steps:
           - add_ssh_keys:
               fingerprints:
-                - "6e:5d:1e:b4:d1:9b:04:c1:f4:f9:38:fa:cb:6d:c4:e4"
+                - "07:38:69:80:a9:81:54:19:7d:bf:cb:73:7a:34:64:24"
           - use-node
           - run: node -v
           - checkout-install
