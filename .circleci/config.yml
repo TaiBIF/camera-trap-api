@@ -159,6 +159,7 @@ workflows:
               only: 
                 - prod
                 - dev
+                - circle-ssh
           requires:
             - node/lint
       - node/build_task:
@@ -167,6 +168,7 @@ workflows:
               only: 
                 - prod
                 - dev
+                - circle-ssh
           requires:
             - node/lint
       - node/deploy_api:
@@ -175,6 +177,7 @@ workflows:
               only:
                 - prod
                 - dev
+                - circle-ssh
           requires:
             - node/lint
             - node/build_api
@@ -184,6 +187,7 @@ workflows:
               only:
                 - prod
                 - dev
+                - circle-ssh
           requires:
             - node/lint
             - node/build_task
