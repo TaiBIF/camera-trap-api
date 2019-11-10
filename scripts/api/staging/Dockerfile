@@ -3,10 +3,10 @@ WORKDIR /camera-trap-api
 
 ARG SSH_KEY
 RUN echo "$SSH_KEY"
-RUN echo "$SSH_KEY" > /root/.ssh/id_rsa
-RUN chmod 600 /root/.ssh/id_rsa
-RUN touch /root/.ssh/known_hosts
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+# RUN echo "$SSH_KEY" > /root/.ssh/id_rsa
+# RUN chmod 600 /root/.ssh/id_rsa
+# RUN touch /root/.ssh/known_hosts
+# RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 RUN apt-get update && apt-get upgrade -y && apt-get -y install curl sudo git graphicsmagick imagemagick make g++
 RUN curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
