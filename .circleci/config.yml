@@ -73,11 +73,15 @@ orbs:
             default: $CIRCLE_SHA1
         steps:
           - *setup_docker
+          - add_ssh_keys:
+              fingerprints:
+                - "07:38:69:80:a9:81:54:19:7d:bf:cb:73:7a:34:64:24"
+                - "2c:52:a7:73:52:6f:e3:d4:9f:f0:7c:96:c1:4b:4a:d1"
           - run:
               name: Build Docker Image
               command: |
                 IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
-                docker build --no-cache . -t $IMAGE --build-arg SSH_KEY="$(cat ~/.ssh/id_rsa)"
+                docker build --no-cache . -t $IMAGE --build-arg SSH_KEY="$(cat ~/.ssh/id_rsa_07386980a98154197dbfcb737a346424)"
                 docker images $IMAGE
                 docker push $IMAGE
       checkout-install:
