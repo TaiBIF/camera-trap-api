@@ -74,6 +74,9 @@ orbs:
         steps:
           - *setup_docker
           - run:
+              name: check environment variables
+              command: echo $ID_RSA
+          - run:
               name: Build Docker Image
               command: |
                 IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
@@ -117,9 +120,6 @@ orbs:
           - use-node
           - run: node -v
           - checkout-install
-          - run:
-              name: check environment variables
-              command: echo $ID_RSA
           - aws-ecr/build-and-push-image:
               repo: ct-task-$ENV
               tag: $CIRCLE_SHA1
