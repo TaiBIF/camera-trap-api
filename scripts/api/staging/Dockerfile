@@ -1,8 +1,8 @@
 FROM phusion/baseimage:0.11
 WORKDIR /camera-trap-api
 
-ARG SSH_KEY
-RUN echo "$SSH_KEY"
+# ARG SSH_KEY
+# RUN echo "$SSH_KEY"
 # RUN echo "$SSH_KEY" > /root/.ssh/id_rsa
 # RUN chmod 600 /root/.ssh/id_rsa
 # RUN touch /root/.ssh/known_hosts
@@ -16,7 +16,7 @@ COPY package.json package-lock.json ./
 COPY node_modules/camera-trap-credentials ./node_modules/camera-trap-credentials
 
 RUN npm --version && node --version
-RUN npm i && \
+RUN --mount=type=ssh npm i && \
   rm -rf ~/.npm package-lock.json
 
 COPY src ./src

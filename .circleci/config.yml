@@ -81,7 +81,7 @@ orbs:
               name: Build Docker Image
               command: |
                 IMAGE=<< parameters.url >>/<< parameters.repo >>:<< parameters.tag >>
-                docker build --no-cache . -t $IMAGE --build-arg SSH_KEY="ssh-test-key-string"
+                docker build --ssh default --no-cache . -t $IMAGE
                 docker images $IMAGE
                 docker push $IMAGE
       checkout-install:
