@@ -117,9 +117,7 @@ module.exports = async (req, res) => {
           type: NotificationType.dwcFilesReady,
           user: req.user,
           message: {
-            'zh-TW': `計畫「${
-              project.title
-            }」最新版本 Darwin Core Archive 已可下載。`,
+            'zh-TW': `計畫「${project.title}」最新版本 Darwin Core Archive 已可下載。`,
           },
         });
         return notification.save();
@@ -130,9 +128,7 @@ module.exports = async (req, res) => {
           type: NotificationType.dwcFilesReady,
           user: req.user,
           message: {
-            'zh-TW': `計畫「${
-              project.title
-            }」最新版本 Darwin Core Archive 產出失敗。`,
+            'zh-TW': `計畫「${project.title}」最新版本 Darwin Core Archive 產出失敗。`,
           },
         });
         return notification.save();
