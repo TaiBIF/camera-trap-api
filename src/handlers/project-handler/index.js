@@ -427,9 +427,7 @@ exports.updateProject = auth(UserPermission.all(), (req, res) => {
         }
         if (`${project.dataFields[index]._id}` !== form.dataFields[index]) {
           throw new errors.Http400(
-            `The data fields [${index}] should be ${
-              project.dataFields[index]._id
-            }.`,
+            `The data fields [${index}] should be ${project.dataFields[index]._id}.`,
           );
         }
       }
