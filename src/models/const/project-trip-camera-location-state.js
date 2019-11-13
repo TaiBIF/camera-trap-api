@@ -1,8 +1,16 @@
 module.exports = {
   setting: 'setting', // 設置
-  exchange: 'exchange', // 更換
-  removed: 'removed', // 已撤除
+  exchange: 'exchange', // 替換
+  removed: 'removed', // 移除
+  lost: 'lost', // 遺失且未設置
+  lostAndSet: 'lostAndSet', // 遺失並設置
   all() {
-    return [this.setting, this.exchange, this.removed];
+    return [
+      this.setting,
+      this.exchange,
+      this.removed,
+      this.lost,
+      this.lostAndSet,
+    ];
   },
 };
