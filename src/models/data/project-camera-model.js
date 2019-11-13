@@ -46,6 +46,10 @@ const schema = utils.generateSchema(
       required: true,
       type: String,
     },
+    // 相機財產編號
+    propertyNumber: {
+      type: String,
+    },
     manufacturer: {
       // 廠牌
       required: true,
@@ -120,6 +124,7 @@ model.prototype.dump = function() {
     videoLength: this.videoLength,
     continuousShots: this.continuousShots,
     sensingDistance: this.sensingDistance,
+    displayName: this.sn || this.vn || this.propertyNumber,
   };
 
   return doc;
