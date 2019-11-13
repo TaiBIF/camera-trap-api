@@ -390,9 +390,17 @@ module.exports = async (req, res) => {
           rowDataString += `,${a.species.title['zh-TW']}`;
           break;
         default:
-          rowDataString += `,${
-            annotationFields[f._id] ? annotationFields[f._id].value || '' : ''
-          }`;
+          if (f.widgetType === 'select') {
+            const options = keyBy(f.options, '_id');
+            const value = annotationFields[f._id]
+              ? annotationFields[f._id].value || ''
+              : '';
+            rowDataString += value ? `,${options[value]['zh-TW'] || ''}` : ',';
+          } else {
+            rowDataString += `,${
+              annotationFields[f._id] ? annotationFields[f._id].value || '' : ''
+            }`;
+          }
           break;
       }
     });
@@ -401,7 +409,6 @@ module.exports = async (req, res) => {
   });
 
   res.setHeader('Content-disposition', 'attachment; filename=export.csv');
-  res.contentType('csv');
-  res.write(`\ufeff${headers},Annotation id\n${data.join('\n')}\n`);
-  res.end();
+  res.set('Content-type', 'text/csv');
+  res.status(200).send(`\ufeff${headers},Annotation id\n${data.join('\n')}`);
 };
