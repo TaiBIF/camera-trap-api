@@ -7,6 +7,7 @@ const ProjectTripForm = require('../../forms/project/project-trip-form');
 const ProjectTripCameraForm = require('../../forms/project/project-trip-camera-form');
 const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-form');
 const ProjectTripModel = require('../../models/data/project-trip-model');
+const CameraLocationModel = require('../../models/data/camera-location-model');
 const ProjectModel = require('../../models/data/project-model');
 
 // 搜尋行程可用相機 List
@@ -37,8 +38,34 @@ exports.getProjectTrips = auth(UserPermission.all(), (req, res) => {
   return ProjectTripModel.paginate(query.sort(form.sort), {
     offset: form.index * form.size,
     limit: form.size,
-  }).then(result => {
-    res.json(
+  }).then(async result => {
+    // 比對studyArea 是否符合 studyAreaId
+    // eslint-disable-next-line no-restricted-syntax
+    for (const doc of result.docs) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const studyAreaVal of doc.studyAreas) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const cameraLocationVal of studyAreaVal.cameraLocations) {
+          // eslint-disable-next-line no-await-in-loop
+          const cameraName = await CameraLocationModel.findById(
+            cameraLocationVal.cameraLocation,
+          );
+          console.log('\x1b[32m', '\n---------- DEBUG ----------\n');
+          console.log('\x1b[36m', ' data = ', cameraName);
+          console.log('\x1b[32m', '\n---------------------------', '\x1b[0m');
+          // Object.assign(cameraLocationVal, cameraLocationVal.title);
+          if (cameraName) {
+            // eslint-disable-next-line no-await-in-loop
+            cameraLocationVal.title = await cameraName.name;
+          } else {
+            // eslint-disable-next-line no-await-in-loop
+            cameraLocationVal.title = await 'null';
+          }
+        }
+      }
+    }
+
+    await res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );
   });
@@ -55,6 +82,10 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
   const errorMessage = form.validate();
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
+  }
+  const errorStudyAreaMessage = studyAreaForm.validate();
+  if (errorStudyAreaMessage) {
+    throw new errors.Http400(errorStudyAreaMessage);
   }
 
   return Promise.all([
@@ -202,6 +233,9 @@ exports.updateProjectTripCameraByTripId = auth(
                     Object.assign(projectCameraVal, form);
                   }
                 });
+                // 設置 相機事件
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
 
                 // 新增判斷 cameraLocationMark 才去更新
                 if (form.cameraLocationMark) {
@@ -266,6 +300,8 @@ exports.addProjectTripCameraByTripId = auth(
                 // 新增行程相機
 
                 // 若不存在
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
                 Object.assign(
                   cameraLocationVal.projectCameras,
                   cameraLocationVal.projectCameras.push(form),
