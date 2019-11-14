@@ -1,5 +1,6 @@
 const moment = require('moment-timezone');
 const { keyBy } = require('lodash');
+const xlsx = require('node-xlsx');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
 const AnnotationModel = require('../../models/data/annotation-model');
@@ -349,9 +350,15 @@ module.exports = async (req, res) => {
     _id: { $in: pDataFields },
   });
 
-  const headers = fieldsObjects
-    .map(f => (f.title['zh-TW'] === '樣區' ? '樣區,子樣區' : f.title['zh-TW']))
-    .join(',');
+  const headers = [];
+  fieldsObjects.forEach(f => {
+    if (f.title['zh-TW'] === '樣區') {
+      headers.push('樣區');
+      headers.push('子樣區');
+    } else {
+      headers.push(f.title['zh-TW']);
+    }
+  });
 
   let parentArea;
   if (cameraLocation.studyArea.parent) {
@@ -359,35 +366,36 @@ module.exports = async (req, res) => {
     parentArea = await StudyAreaModel.findById(parentId);
   }
 
-  const data = annotationDocs.map(a => {
+  const xlsxData = [];
+
+  annotationDocs.forEach(a => {
     const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
     const annotationFields = keyBy(a.fields, 'dataField');
-    let rowDataString = '';
+    const rowData = [];
     fieldsObjects.forEach(f => {
       const key = f.title['en-US'];
       switch (key) {
         case 'Study area':
           // 樣區
           if (parentArea) {
-            rowDataString += `${parentArea.title['zh-TW']},${
-              cameraLocation.studyArea.title['zh-TW']
-            }`;
+            rowData.push(`${parentArea.title['zh-TW']}`);
+            rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
           } else {
-            rowDataString += `${cameraLocation.studyArea.title['zh-TW']},`;
+            rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
+            rowData.push(''); // 沒有子樣區
           }
-
           break;
         case 'Camera Location':
-          rowDataString += `,${cameraLocation.name}`;
+          rowData.push(`${cameraLocation.name}`);
           break;
         case 'File name':
-          rowDataString += `,${a.filename}`;
+          rowData.push(`${a.filename}`);
           break;
         case 'Date and time':
-          rowDataString += `,${t}`;
+          rowData.push(`${t}`);
           break;
         case 'Species':
-          rowDataString += `,${a.species.title['zh-TW']}`;
+          rowData.push(`${a.species ? a.species.title['zh-TW'] : ''}`);
           break;
         default:
           if (f.widgetType === 'select') {
@@ -395,20 +403,30 @@ module.exports = async (req, res) => {
             const value = annotationFields[f._id]
               ? annotationFields[f._id].value || ''
               : '';
-            rowDataString += value ? `,${options[value]['zh-TW'] || ''}` : ',';
+            rowData.push(value ? `${options[value]['zh-TW'] || ''}` : '');
           } else {
-            rowDataString += `,${
-              annotationFields[f._id] ? annotationFields[f._id].value || '' : ''
-            }`;
+            rowData.push(
+              `${
+                annotationFields[f._id]
+                  ? annotationFields[f._id].value || ''
+                  : ''
+              }`,
+            );
           }
           break;
       }
     });
-    rowDataString += `,${a.id}`;
-    return rowDataString;
+    rowData.push(`${a.id}`);
+    xlsxData.push(rowData);
   });
 
-  res.setHeader('Content-disposition', 'attachment; filename=export.csv');
-  res.set('Content-type', 'text/csv');
-  res.status(200).send(`\ufeff${headers},Annotation id\n${data.join('\n')}`);
+  headers.push('Annotation id');
+  xlsxData.unshift(headers);
+  res.setHeader('Content-disposition', 'attachment; filename=export.xlsx');
+  res.setHeader(
+    'Content-type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8',
+  );
+  const buffer = xlsx.build([{ name: 'annotations', data: xlsxData }]);
+  res.end(buffer);
 };
