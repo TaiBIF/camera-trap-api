@@ -12,6 +12,9 @@ AnnotationsSearchForm.define({
       validators: [forms.validators.id()],
     }),
   }),
+  projectTripId: new forms.fields.StringField({
+    validators: [forms.validators.id()],
+  }),
   startTime: new forms.fields.DateField(),
   endTime: new forms.fields.DateField(),
   index: new forms.fields.IntegerField({

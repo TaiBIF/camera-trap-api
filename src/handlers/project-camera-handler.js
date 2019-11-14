@@ -97,7 +97,7 @@ POST /api/v1/projects/{projectId}/cameras
       const result = new ProjectCameraModel({
         project: projectId,
         status: CameraState.active,
-        nickname: form.name,
+        nickname: '',
         ...form,
       });
       return Promise.all([result.save()]);

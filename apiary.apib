@@ -1661,7 +1661,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
 
 # Group Projects
 ## Overview [/projects]
-### List projects [GET /projects{?index,size,sort}]
+### List projects [GET /projects{?index,size,sort,species,projectAreas,startDate,endDate}]
 取得計畫列表。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -1679,6 +1679,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
             + `latestAnnotationTime`
             + `funder`
             + `title`
+    + species: `5ce2cc7215168c78484b11e1` (string, optional) - 搜尋專案底下物種
+    + projectAreas: `5ce2cc7215168c78484b11f5` (stinrg, optional) - 搜尋專案底下區域
+    + startDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋開始日期
+    + endDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋結束日期
 
 + Request Get projects (application/json)
 
@@ -1726,7 +1730,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "dataFields": ["5c99bece337ea758248ffd5b"],
                   "dailyTestTime": "13:00:00",
                   "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
-                  "oldestAnnotationTime": "2019-01-01T00:00:00.000Z"
+                  "oldestAnnotationTime": "2019-01-01T00:00:00.000Z",
+                  "totalStudyArea": 4,
+                  "totalLcameraLocation": 49,
+                  "totalData": 6104
                 }
               ]
             }
@@ -1897,6 +1904,282 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                         "type": "string",
                         "format": "data-time",
                         "description": "資料起始年份"
+                      },
+                      "totalStudyArea": {
+                        "type": "integer",
+                        "description": "專案樣區總數"
+                      },
+                      "totalLcameraLocation": {
+                        "type": "integer",
+                        "description": "專案相機位置總數"
+                      },
+                      "totalData": {
+                        "type": "integer",
+                        "description": "專案資料總數"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+       
+
+### List public projects [GET /projects{?index,size,sort,species,projectAreas,startDate,endDate}/public]
+取得計畫列表。
+- The user's permission should be 'administrator' or 'general-account' or 'guest'.
+- The administrator gets all projects.
+- The general-account gets affiliated projects and public projects.
+- The guest gets public projects.
+
++ Parameters
+    + index: `0` (number, optional) - The page index.
+        + Default: 0
+    + size: `100` (number, optional) - The size of the result set (1~100).
+        + Default: 24
+    + sort: `oldestAnnotationTime` (enum[string], optional) ...
+        + Default: `oldestAnnotationTime`
+        + Members
+            + `oldestAnnotationTime`
+            + `latestAnnotationTime`
+            + `funder`
+            + `title`
+    + species: `5ce2cc7215168c78484b11e1` (string, optional) - 搜尋專案底下物種
+    + projectAreas: `5ce2cc7215168c78484b11f5` (stinrg, optional) - 搜尋專案底下區域
+    + startDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋開始日期
+    + endDate: `2012-03-31T16:00:00.000Z` (string, optional) - 搜尋結束日期
+
++ Request Get projects (application/json)
+
++ Response 200
+
+    + Body
+
+            {
+              "index": 0,
+              "size": 24,
+              "total": 1,
+              "items": [
+                {
+                  "id": "5c99e565fa899867c32377cf",
+                  "title": "計畫名稱",
+                  "shortTitle": "計畫簡稱",
+                  "funder": "委辦單位",
+                  "code": "計畫編號",
+                  "principalInvestigator": "計畫主持人",
+                  "startTime": "2019-01-01T00:00:00.000Z",
+                  "endTime": "2029-01-01T00:00:00.000Z",
+                  "areas": [
+                    "5c9af16a4ee1b606477f9236"
+                  ],
+                  "description": "計畫摘要",
+                  "note": "備註",
+                  "coverImageFile": {
+                    "id": "5c9b1dfafc43be12b823b7b2",
+                    "type": "project-cover-image",
+                    "originalFilename": "432x324c.jpg",
+                    "filename": "5c9b1dfafc43be12b823b7b2.jpg",
+                    "url": "https://s3-ap-northeast-1.amazonaws.com/camera-trap-api-dev/project-covers/5c9b1dfafc43be12b823b7b2.jpg",
+                    "size": 26172
+                  },
+                  "publishTime": "2029-01-01T00:00:00.000Z",
+                  "interpretiveDataLicense": "cc0",
+                  "identificationInformationLicense": "by",
+                  "videoMaterialLicense": "by",
+                  "members": [
+                    {
+                      "user": "5c949bbbe5d5377f98c81ab0",
+                      "role": "manager"
+                    }
+                  ],
+                  "dataFields": ["5c99bece337ea758248ffd5b"],
+                  "dailyTestTime": "13:00:00",
+                  "latestAnnotationTime": "2019-01-01T00:00:00.000Z",
+                  "oldestAnnotationTime": "2019-01-01T00:00:00.000Z",
+                  "totalStudyArea": 4,
+                  "totalLcameraLocation": 49,
+                  "totalData": 6104
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number",
+                  "description": "The page index."
+                },
+                "size": {
+                  "type": "number",
+                  "description": "The page size."
+                },
+                "total": {
+                  "type": "number",
+                  "description": "Total of all documents."
+                },
+                "items": {
+                  "type": "array",
+                  "description": "Documents.",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "object",
+                        "description": "計畫名稱"
+                      },
+                      "shortTitle": {
+                        "type": "string",
+                        "description": "計畫簡稱"
+                      },
+                      "funder": {
+                        "type": "string",
+                        "description": "委辦單位"
+                      },
+                      "code": {
+                        "type": "string",
+                        "description": "計畫編號"
+                      },
+                      "principalInvestigator": {
+                        "type": "string",
+                        "description": "計畫主持人"
+                      },
+                      "startTime": {
+                        "type": "Date",
+                        "description": "計畫時間（開始）"
+                      },
+                      "endTime": {
+                        "type": "Date",
+                        "description": "計畫時間（結束）"
+                      },
+                      "areas": {
+                        "type": "array",
+                        "description": "計畫地區",
+                        "item": {
+                          "title": "id",
+                          "type": "string"
+                        }
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "計畫摘要"
+                      },
+                      "note": {
+                        "type": "string",
+                        "description": "備註"
+                      },
+                      "coverImageFile": {
+                        "type": "object",
+                        "description": "計畫封面圖片檔案，物件內容參照 FileModel",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "File id string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "影像類型",
+                            "enum": ["project-cover-image"]
+                          },
+                          "originalFilename": {
+                            "type": "string",
+                            "description": "原始檔案名"
+                          },
+                          "filename": {
+                            "type": "string",
+                            "description": "系統編碼後之檔案名稱"
+                          },
+                          "url": {
+                            "type": "string",
+                            "description": "公開存取網址"
+                          },
+                          "size": {
+                            "type": "integer",
+                            "description": "File size in byte."
+                          }
+                        }
+                      },
+                      "publishTime": {
+                        "type": "string",
+                        "format": "data-time",
+                        "description": "公開日期"
+                      },
+                      "interpretiveDataLicense": {
+                        "type": "string",
+                        "description": "詮釋資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "identificationInformationLicense": {
+                        "type": "string",
+                        "description": "鑑定資訊創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "videoMaterialLicense": {
+                        "type": "string",
+                        "description": "影像資料創用 CC 授權許可 cc0 (無著作權), by (姓名標示), by-nc (姓名標示-非商業性)",
+                        "enum": ["cc0", "by", "by-nc"],
+                        "additionalItems": false
+                      },
+                      "members": {
+                        "type": "array",
+                        "description": "計畫成員",
+                        "item": {
+                          "type": "object",
+                          "properties": {
+                            "user": {
+                              "type": "string",
+                              "description": "成員 ID"
+                            },
+                            "role": {
+                              "type": "string",
+                              "description": "計畫管理員, 計畫研究員, 計畫執行者",
+                              "enum": ["manager", "researcher", "executor"]
+                            }
+                          }
+                        }
+                      },
+                      "dataFields": {
+                        "type": "array",
+                        "description": "資料欄位",
+                        "item": {
+                          "type": "string",
+                          "description": "欄位名稱"
+                        }
+                      },
+                      "dailyTestTime": {
+                        "type": "string",
+                        "format": "time",
+                        "description": "每日測試照片拍攝時間，null 或空字串代表關閉此功能。<br/>此欄位僅儲存字串，測試時尋找 csv 中時間欄位為此字串結尾且物種為測試。",
+                        "enum": ["null", ""]
+                      },
+                      "latestAnnotationTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "資料最後更新時間"
+                      },
+                      "oldestAnnotationTime": {
+                        "type": "string",
+                        "format": "data-time",
+                        "description": "資料起始年份"
+                      },
+                      "totalStudyArea": {
+                        "type": "integer",
+                        "description": "專案樣區總數"
+                      },
+                      "totalLcameraLocation": {
+                        "type": "integer",
+                        "description": "專案相機位置總數"
+                      },
+                      "totalData": {
+                        "type": "integer",
+                        "description": "專案資料總數"
                       }
                     }
                   }
@@ -2906,7 +3189,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "空拍"
                   },
                   "index": 0,
-                  "code": "empty-shot"
+                  "code": "empty-shot",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e565fa899867c32377d1",
@@ -2914,7 +3198,8 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "測試"
                   },
                   "index": 1,
-                  "code": "test"
+                  "code": "test",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e565fa899867c32377d2",
@@ -2922,14 +3207,16 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "zh-TW": "人"
                   },
                   "index": 2,
-                  "code": "people"
+                  "code": "people",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c99e9f772033c68e65592fb",
                   "title": {
                     "zh-TW": "test"
                   },
-                  "index": 3
+                  "index": 3,
+                  "dataCount": 0
                 }
               ]
             }
@@ -2977,6 +3264,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "code": {
                         "type": "string",
                         "description": "Machine code for internal referencing."
+                      },
+                      "dataCount": {
+                        "type": "integer",
+                        "description": "計數器"
                       }
                     }
                   }
@@ -5534,6 +5825,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                                 "endActiveDate": "2019-01-01T00:00:00.000Z"
                             }],
                             "cameraLocationMark": "相機位置註記"
+                            "cameraLocationEvent": "相機位置事件"
                         }
                     }],
                     "mark": "註記",
@@ -5999,6 +6291,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     
             {
                     "cameraLocationMark": "相機位置註記",
+                    "carameLocationSetting": "相機位置設置"
                     "cameraSn": "相機編號",
                     "cameraState": "相機狀態",
                     "cameraMark": "相機註記",
@@ -6098,6 +6391,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                     "id": "id",
                     "cameraLocationMark": "相機位置註記",
                     "cameraSn": "相機編號",
+                    "carameLocationSetting": "相機位置設置",
                     "cameraState": "相機狀態",
                     "cameraMark": "相機註記",
                     "memoryCardNumber": "記憶卡檔案數",
@@ -7085,9 +7379,23 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
               ]
             }
 
+# List photos
+### Get photos [GET /getCarousels]
+得到輪播相片
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "uri": "http://www.google.com/",
+              "name": 'cat',
+              "file_extension": 'jpg',
+            }
+
 
 # Group Annotations
-### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession}]
+### Search annotations [GET /annotations{?studyArea,cameraLocations,startTime,endTime,index,size,sort,fields,species,uploadSession,projectTripId}]
 搜尋標註。
 - The user's permission should be 'administrator' or 'general-account'.
 - The administrator gets all projects.
@@ -7110,6 +7418,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
     + fields: `{"5cd661e332a98b60839c6c99": "5cd661e332a98b60839c6c9b"}` (string, optional) - 自訂欄位的搜尋條件 {dataFieldId: value} (JSON)
     + species: `5cd795a461a221310e546b58` (string, optional) - 使用物種 id 搜尋標註。<br/>多個物種：?species=5c9f28070d9cee99f8a11a12&species=5c9f28070d9cee99f8a11a13
     + uploadSession: `5cdd1fdbf65647074718202b` (string, optional) - 使用上傳紀錄 id 搜尋標註。
+    + projectTripId: `5c9f28070d9cee99f8a11a12` (string, optional) - 使用行程 id 搜尋標註
 
 + Request Get annotations (application/json)
 
@@ -7126,6 +7435,7 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                   "id": "5cbabb2c84bf6a8dc5ccf960",
                   "studyArea": "5c9d95acea5c9b4036d97c88",
                   "cameraLocation": "5c9f28070d9cee99f8a11a12",
+                  "projectTrip": '5c9f28070d9cee99f8a11a12',
                   "failures": [
                   ],
                   "filename": "IMG_7191.JPG",
@@ -7203,6 +7513,10 @@ CameraTrap.TW is a repository for automatic biodiversity monitoring.
                       "cameraLocation": {
                         "type": "string",
                         "description": "相機位置 id"
+                      },
+                      "projectTrip": {
+                        "type": "string",
+                        "description": "專案行程 id"
                       },
                       "failures": {
                         "type": "string",
@@ -8745,7 +9059,82 @@ To be implemented.
                 "total": 376939,
                 "time": 1558185524783
             }
-            
+
+### Get identified species by project and studyArea [GET /projects/{projectId}/study-areas/{studyAreaId}/image-species-group]
+取得計畫已辨識的物種資料
+- The user's permission should be 'administrator' or 'general-account'.
+
++ Parameters
+    + projectId: `5cd6631299580e3eb17fe0f3` (string, required) - project ID.
+    + studyAreaId: `5cd6631299580e3eb17fe0f3` (string, required) - studyArea ID.
+    
++ Request Get identified species by project (application/json)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "records": [
+                    {
+                        "_id": "5cd7c0100094ee25325380b7",
+                        "species": "其他",
+                        "count": 3826
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb3",
+                        "species": "山羊",
+                        "count": 3938
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb6",
+                        "species": "白鼻心",
+                        "count": 4327
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb4",
+                        "species": "野豬",
+                        "count": 6765
+                    },
+                    {
+                        "_id": "5cd66618582a3ff6ae040591",
+                        "species": "鼠",
+                        "count": 10258
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb1",
+                        "species": "獼猴",
+                        "count": 19227
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cb2",
+                        "species": "鼬獾",
+                        "count": 19646
+                    },
+                    {
+                        "_id": "5cd66620582a3f0ee504071a",
+                        "species": "鳥",
+                        "count": 22143
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6caf",
+                        "species": "山羌",
+                        "count": 65849
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6caa",
+                        "species": "空拍",
+                        "count": 90883
+                    },
+                    {
+                        "_id": "5cd661e332a98b60839c6cab",
+                        "species": "測試",
+                        "count": 95787
+                    }
+                ],
+                "total": 376939,
+                "time": 1558185524783
+            }            
             
 # Group Species Metrics
 Get species metrics of the top 5 identified ones.
@@ -9228,23 +9617,35 @@ Get species metrics of the top 5 identified ones.
                   "title": {
                     "zh-TW": "南投縣",
                     "en-US": "Nantou County"
-                  }
+                  },
+                  "type": "north|south|east|west",
+                  "dataCount": 0
                 },
                 {
                   "id": "5c9af16a4ee1b606477f9239",
                   "title": {
                     "zh-TW": "台中市",
-                    "en-US": "Taichung City"
+                    "en-US": "Taichung City",
+                    "type": "north|south|east|west",
+                    "dataCount": 0
                   }
                 },
                 {
                   "id": "5c9af16a4ee1b606477f9236",
                   "title": {
                     "zh-TW": "台北市",
-                    "en-US": "Taipei City"
+                    "en-US": "Taipei City",
+                    "type": "north|south|east|west",
+                    "dataCount": 0
                   }
                 }
-              ]
+              ],
+              "location": {
+                "north": 0,
+                "south": 0,
+                "east": 0,
+                "west": 0
+              }
             }
 
     + Schema
@@ -9286,6 +9687,12 @@ Get species metrics of the top 5 identified ones.
                             "description": "Title in English."
                           }
                         }
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "dataCount": {
+                        "type": "integer"
                       }
                     }
                   }
@@ -9958,4 +10365,375 @@ Get species metrics of the top 5 identified ones.
                   }
                 }
               }
+            }
+#Group Statistics
+## Get county statistics [GET /statistics/county/{countyName}]
+取得指定縣市的統計資料．
+
++ Parameters
+    + countyName: `台北市` (string) - 縣市名稱
+
++ Request Get annotations (application/json)
++ Response 200  (application/json)
+
+    + Body
+
+            {
+              "id": "5c9af16a4ee1b606477f9236",
+              "title": {
+                "zh-TW": "台北市",
+              },
+              "project": {
+                "total": 75,
+              },
+              "cameraLocation": {
+                "total": 537,
+              },
+              "identifiedSpecies": {
+                "percentage": 65,
+                "items": [
+                  {
+                    "species": "5ce6cfe80a75171f55b5de9c",
+                    "name": {
+                      "zh-TW": "石虎",
+                    },
+                  },
+                ],
+              },
+              "picture": {
+                "total": 3076233
+              },
+              "camera": {
+                "totalWorkHour": 3479760
+              },
+              "studyArea": {
+                "items": [
+                  {
+                    "studyArea": "5ceb7ce7f974a98dacbb3a7d",
+                    "title": {
+                      "zh-TW": "玉里站",
+                    },
+                    "cameraLocation": {
+                      "total": 9,
+                      "items": [
+                        {
+                          "cameraLocation": "5ceb7ce7f974a91218bb3a7f",
+                          "name": "PT01A",
+                          "settingTime": "2019-01-01T00:00:00.000Z",
+                          "latitude": 58.28,
+                          "longitude": 121.462417,
+                          "altitude": 100,
+                          "landCoverType": "農地",
+                          "vegetation": "闊葉林",
+                          "data": {
+                            "total": 10500,
+                          },
+                        },
+                      ],
+                    },
+                    "data": {
+                      "total": 15000,
+                    },
+                  },
+                ],
+              },
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "縣市id"
+                },
+                "title": {
+                  "type": "object",
+                  "description": "縣市名稱",
+                  "properties": {
+                    "zh-TW": {
+                      "type": "string",
+                      "description": "繁體中文縣市名稱"
+                    }
+                  },
+                },
+                "project": {
+                  "type": "object",
+                  "description": "計畫"
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "計畫總數"
+                    },
+                  },
+                },
+                "cameraLocation": {
+                  "type": "object",
+                  "description": "相機位置"
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "相機位置總數"
+                    },
+                  },
+                },
+                "identifiedSpecies": {
+                  "type": "object",
+                  "description": "已辨識物種",
+                  "properties": {
+                    "percentage": {
+                      "type": "integer",
+                      "description": "已辨識物種百分比",
+                    },
+                    "items": {
+                      "type": "array",
+                      "description": "已辨識物種列表",
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "species": {
+                            "type": "string",
+                            "description": "物種id",
+                          },
+                          "name": {
+                            "type": "object",
+                            "description": "物種名稱",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文物種名稱"
+                              }
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                "picture": {
+                  "type": "object",
+                  "description": "照片",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "照片總數",
+                    },
+                  },
+                },
+                "camera": {
+                  "type": "object",
+                  "description": "相機",
+                  "properties": {
+                    "totalWorkHour": {
+                      "type": "integer",
+                      "description": "相機總工時",
+                    },
+                  },
+                },
+                "studyArea": {
+                  "type": "object",
+                  "description": "樣區",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "description": "樣區列表",
+                      "item": {
+                        "type": "object",
+                        "properties": {
+                          "studyArea": {
+                            "type": "string",
+                            "description": "樣區id"
+                          },
+                          "title": {
+                            "type": "object",
+                            "description": "樣區名稱",
+                            "properties": {
+                              "zh-TW": {
+                                "type": "string",
+                                "description": "繁體中文樣區名稱"
+                              }
+                            },
+                          },
+                          "cameraLocation": {
+                            "type": "object",
+                            "desctiption": "相機位置",
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "description": "相機位置總數",
+                              },
+                              "items": {
+                                "type": "array",
+                                "description": "相機位置列表",
+                                "item": {
+                                  "type": "object",
+                                  "properties": {
+                                    "cameraLocation": {
+                                      "type": "string",
+                                      "desctiption": "相機位置id",
+                                    },
+                                    "name": {
+                                      "type": "string",
+                                      "desctiption": "相機位置名稱",
+                                    },
+                                    "settingTime": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "desctiption": "架設日期",
+                                    },
+                                    "latitude": {
+                                      "type": "number",
+                                      "desctiption": "十進位緯度 (WGS84)",
+                                      },
+                                    "longitude": {
+                                      "type": "number",
+                                      "desctiption": "十進位經度 (WGS84)",
+                                    },
+                                    "altitude": {
+                                      "type": "string",
+                                      "desctiption": "海拔",
+                                    },
+                                    "landCoverType": {
+                                      "type": "string",
+                                      "desctiption": "土地覆蓋類型",
+                                    },
+                                    "vegetation": {
+                                      "type": "string",
+                                      "desctiption": "植被類型",
+                                    },
+                                    "data": {
+                                      "type": "object",
+                                      "desctiption": "相機位置資料",
+                                      "properties": {
+                                        "total": {
+                                          "type": "integer",
+                                          "description": "相機位置資料總數",
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                          "data": {
+                            "type": "object",
+                            "desctiption": "樣區資料",
+                            "properties": {
+                              "total": {
+                                "type": "integer",
+                                "description": "樣區資料總數",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                }
+
+## Get data statistics [GET /statistics]
+取得統計資料．
+
++ Request Get annotations (application/json)
++ Response 200  (application/json)
+
+    + Body
+
+            {
+              "year": [
+                {
+                  "year": "101",
+                  "totalPicture": 300000,
+                  "totalCameraLocation": 80,
+                },
+              ],
+              "species": [
+                {
+                  "species": "5ce6cfe80a75171f55b5de9c",
+                  "name": "石虎",
+                  "totalLocation": 152,
+                  "totalPicture": 350000
+                },
+              ],
+              "funder": [
+                {
+                  "name": "林務局",
+                  "totalData": 750
+                },
+              ],
+            }
+
+    + Schema
+
+            {
+              "$schema": "http://json-schema.org/draft-04/schema#",
+              "type": "object",
+              "properties": {
+                "year": {
+                  "type": "array",
+                  "description": "年度資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "year": {
+                        "type": "string",
+                        "description": "年度",
+                      },
+                      "totalPicture": {
+                        "type": "integer",
+                        "description": "照片總數",
+                      },
+                      "totalCameraLocation": {
+                        "type": "integer",
+                        "description": "相機位置總數",
+                      },
+                    },
+                  },
+                },
+                "species": {
+                  "type": "array",
+                  "description": "物種資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "species": {
+                        "type": "string",
+                        "description": "物種id",
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "物種名稱",
+                      },
+                      "totalLocation": {
+                        "type": "integer",
+                        "description": "照片總數",
+                      },
+                      "totalPicture": {
+                        "type": "integer",
+                        "description": "分佈位置總數",
+                      },
+                    },
+                  },
+                },
+                "funder": {
+                  "type": "array",
+                  "description": "單位資料",
+                  "item": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "單位名稱",
+                      },
+                      "totalData": {
+                        "type": "integer",
+                        "description": "資料量總數",
+                      },
+                    },
+                  },
+                },
+              },
             }
