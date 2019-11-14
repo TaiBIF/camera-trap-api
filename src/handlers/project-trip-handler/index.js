@@ -2,10 +2,15 @@ const auth = require('../../auth/authorization');
 const UserPermission = require('../../models/const/user-permission');
 const ProjectTripHandler = require('./project-trip-handler');
 
+exports.getProjectTripsDateTimeInterval = auth(
+  UserPermission.all(),
+  ProjectTripHandler.getProjectTripsDateTimeInterval,
+);
 exports.getProjectTrips = auth(
   UserPermission.all(),
   ProjectTripHandler.getProjectTrips,
 );
+
 exports.addProjectTrip = auth(
   UserPermission.all(),
   ProjectTripHandler.addProjectTrip,

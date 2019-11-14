@@ -1,4 +1,5 @@
 const auth = require('../../auth/authorization');
+const mongoose = require("mongoose");
 const UserPermission = require('../../models/const/user-permission');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
@@ -9,6 +10,62 @@ const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-f
 const ProjectTripModel = require('../../models/data/project-trip-model');
 const CameraLocationModel = require('../../models/data/camera-location-model');
 const ProjectModel = require('../../models/data/project-model');
+const AnnotationModel = require('../../models/data/annotation-model');
+
+//搜尋行程可用相機時間區間
+exports.getProjectTripsDateTimeInterval = auth(UserPermission.all(), async (req, res) => {
+  /*
+    GET /api/v1/projects/{projectId}/trips/{tripId}
+  */
+  const { projectId, tripId } = req.params
+
+  const projectTropDatas = await ProjectTripModel.aggregate(
+    [
+      {
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId)
+        }
+      },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      {
+        $group: {
+          _id: null,
+          cameraIds: { $push: '$studyAreas.cameraLocations.cameraLocation' }
+        }
+      }
+    ])
+  if (projectTropDatas[0]) {
+    const cameraLocations = await AnnotationModel
+      .find({ project: projectId, cameraLocation: { "$in": projectTropDatas[0].cameraIds } })
+      .sort({ time: 'asc' })
+    if (cameraLocations.length === 0) {
+      res.json(
+        {
+          startTime: '',
+          endTime: ''
+        }
+      )
+      return;
+    }
+
+    res.json(
+      {
+        startTime: cameraLocations[0].time,
+        endTime: cameraLocations[(cameraLocations.length - 1)].time
+      }
+    )
+  } else {
+    res.json(
+      {
+        startTime: '',
+        endTime: ''
+      }
+    )
+  }
+
+});
 
 // 搜尋行程可用相機 List
 exports.getProjectTrips = auth(UserPermission.all(), (req, res) => {
