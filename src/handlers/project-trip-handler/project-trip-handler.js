@@ -54,10 +54,30 @@ exports.getProjectTripsDateTimeInterval = auth(
 
     console.log(projectTripStartActiveDate, 'jeremy')
     console.log(projectTripEndActiveDate, 'jeremy')
-    res.json({
-      startTime: projectTripStartActiveDate[0] ? projectTripStartActiveDate[0].startActiveDate : '',
-      endTime: projectTripEndActiveDate[0] ? projectTripEndActiveDate[0].endActiveDate : '',
-    });
+    if (projectTripStartActiveDate[0] && projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate
+      });
+
+    } else if (projectTripStartActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripStartActiveDate[0].startActiveDate
+      });
+    } else if (projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripEndActiveDate[0].endActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate
+      });
+      
+    } else {
+      
+      res.json({
+        startTime: '',
+        endTime: ''
+      });
+     }
   },
 );
 
