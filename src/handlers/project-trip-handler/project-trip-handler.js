@@ -22,7 +22,7 @@ exports.getProjectTripsDateTimeInterval = auth(
   */
     const { projectId, tripId } = req.params;
 
-    const projectTropDatas = await ProjectTripModel.aggregate([
+    const projectTripStartActiveDate = await ProjectTripModel.aggregate([
       {
         $match: {
           project: mongoose.Types.ObjectId(projectId),
@@ -31,37 +31,33 @@ exports.getProjectTripsDateTimeInterval = auth(
       },
       { $unwind: '$studyAreas' },
       { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.startActiveDate' },
+      { $project: { startActiveDate: '$studyAreas.cameraLocations.projectCameras.startActiveDate' } },
+      { $sort: { startActiveDate: 1 } },
+    ]);
+
+    const projectTripEndActiveDate = await ProjectTripModel.aggregate([
       {
-        $group: {
-          _id: null,
-          cameraIds: { $push: '$studyAreas.cameraLocations.cameraLocation' },
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId),
         },
       },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
+      { $project: { endActiveDate: '$studyAreas.cameraLocations.projectCameras.endActiveDate' } },
+      { $sort: { endActiveDate: -1 } },
     ]);
-    if (projectTropDatas[0]) {
-      const cameraLocations = await AnnotationModel.find({
-        project: projectId,
-        cameraLocation: { $in: projectTropDatas[0].cameraIds },
-        state: AnnotationState.active,
-      }).sort({ time: 'asc' });
-      if (cameraLocations.length === 0) {
-        res.json({
-          startTime: '',
-          endTime: '',
-        });
-        return;
-      }
 
-      res.json({
-        startTime: cameraLocations[0].time,
-        endTime: cameraLocations[cameraLocations.length - 1].time,
-      });
-    } else {
-      res.json({
-        startTime: '',
-        endTime: '',
-      });
-    }
+    console.log(projectTripStartActiveDate, 'jeremy')
+    console.log(projectTripEndActiveDate, 'jeremy')
+    res.json({
+      startTime: projectTripStartActiveDate[0] ? projectTripStartActiveDate[0].startActiveDate : '',
+      endTime: projectTripEndActiveDate[0] ? projectTripEndActiveDate[0].endActiveDate : '',
+    });
   },
 );
 
