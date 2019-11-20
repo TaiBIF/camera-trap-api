@@ -3,7 +3,6 @@ const auth = require('../../auth/authorization');
 const UserPermission = require('../../models/const/user-permission');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
-const AnnotationState = require('../../models/const/annotation-state');
 const ProjectTripStudyAreaForm = require('../../forms/project/project-trip-study-area.form');
 const ProjectTripForm = require('../../forms/project/project-trip-form');
 const ProjectTripCameraForm = require('../../forms/project/project-trip-camera-form');
@@ -11,7 +10,6 @@ const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-f
 const ProjectTripModel = require('../../models/data/project-trip-model');
 const CameraLocationModel = require('../../models/data/camera-location-model');
 const ProjectModel = require('../../models/data/project-model');
-const AnnotationModel = require('../../models/data/annotation-model');
 
 // 搜尋行程可用相機時間區間
 exports.getProjectTripsDateTimeInterval = auth(
@@ -33,7 +31,12 @@ exports.getProjectTripsDateTimeInterval = auth(
       { $unwind: '$studyAreas.cameraLocations' },
       { $unwind: '$studyAreas.cameraLocations.projectCameras' },
       { $unwind: '$studyAreas.cameraLocations.projectCameras.startActiveDate' },
-      { $project: { startActiveDate: '$studyAreas.cameraLocations.projectCameras.startActiveDate' } },
+      {
+        $project: {
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+        },
+      },
       { $sort: { startActiveDate: 1 } },
     ]);
 
@@ -48,34 +51,36 @@ exports.getProjectTripsDateTimeInterval = auth(
       { $unwind: '$studyAreas.cameraLocations' },
       { $unwind: '$studyAreas.cameraLocations.projectCameras' },
       { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
-      { $project: { endActiveDate: '$studyAreas.cameraLocations.projectCameras.endActiveDate' } },
+      {
+        $project: {
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+        },
+      },
       { $sort: { endActiveDate: -1 } },
     ]);
 
     if (projectTripStartActiveDate[0] && projectTripEndActiveDate[0]) {
       res.json({
         startTime: projectTripStartActiveDate[0].startActiveDate,
-        endTime: projectTripEndActiveDate[0].endActiveDate
+        endTime: projectTripEndActiveDate[0].endActiveDate,
       });
-
     } else if (projectTripStartActiveDate[0]) {
       res.json({
         startTime: projectTripStartActiveDate[0].startActiveDate,
-        endTime: projectTripStartActiveDate[0].startActiveDate
+        endTime: projectTripStartActiveDate[0].startActiveDate,
       });
     } else if (projectTripEndActiveDate[0]) {
       res.json({
         startTime: projectTripEndActiveDate[0].endActiveDate,
-        endTime: projectTripEndActiveDate[0].endActiveDate
+        endTime: projectTripEndActiveDate[0].endActiveDate,
       });
-      
     } else {
-      
       res.json({
         startTime: '',
-        endTime: ''
+        endTime: '',
       });
-     }
+    }
   },
 );
 

@@ -50,25 +50,6 @@ const fetchCameraLocations = async (formCameraLocations, reqUser) => {
   return cameraLocations;
 };
 
-const fetchProjectTripId = async projectTripId => {
-  const cameraLocations = await ProjectTripModel.where({
-    _id: projectTripId,
-  });
-  if (cameraLocations) {
-    const result = [];
-    cameraLocations.forEach(project =>
-      // eslint-disable-next-line no-shadow
-      project.studyAreas.forEach(studyArea =>
-        studyArea.cameraLocations.forEach(cameraLocation =>
-          result.push(cameraLocation),
-        ),
-      ),
-    );
-    return result;
-  }
-  return null;
-};
-
 const fetchChildAreas = studyAreaId =>
   StudyAreaModel.where({
     parent: studyAreaId,
@@ -103,7 +84,7 @@ const getExtraFields = (form, dataFields) => {
         if (Number.isNaN(date.getTime())) {
           throw new errors.Http400(
             `The value "${form.fields[`${dataField._id}`]}" of field ${
-            dataField._id
+              dataField._id
             } should be a date.`,
           );
         }
@@ -124,7 +105,7 @@ const getExtraFields = (form, dataFields) => {
         ) {
           throw new errors.Http400(
             `The option ${form.fields[`${dataField._id}`]} not in the field ${
-            dataField._id
+              dataField._id
             }.`,
           );
         }
@@ -253,11 +234,11 @@ const getAnnotationQueryByProductTripId = (
   dataFields,
   synonymSpeciesIds,
 ) => {
-  const query = AnnotationModel.find({ state: AnnotationState.active }).find({ $or: ProductTripDatas })
+  const query = AnnotationModel.find({ state: AnnotationState.active })
+    .find({ $or: ProductTripDatas })
     .populate('species')
     .populate('file')
     .sort(form.sort);
-
 
   // if (form.uploadSession) {
   //   query.where({ uploadSession: form.uploadSession });
@@ -317,8 +298,6 @@ const getAnnotationQueryByProductTripId = (
   return query;
 };
 
-
-
 /**
   GET /api/v1/annotations
   GET /api/v1/annotations.csv
@@ -326,12 +305,14 @@ const getAnnotationQueryByProductTripId = (
 module.exports = async (req, res) => {
   const form = new AnnotationsSearchForm(req.query);
   const errorMessage = form.validate();
+  const headers = [];
+  const xlsxData = [];
 
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
   if (form.projectTripId) {
-    let projectTripDatas = await ProjectTripModel.aggregate([
+    const projectTripDatas = await ProjectTripModel.aggregate([
       { $match: { _id: mongoose.Types.ObjectId(form.projectTripId) } },
       { $unwind: '$studyAreas' },
       { $unwind: '$studyAreas.cameraLocations' },
@@ -340,37 +321,42 @@ module.exports = async (req, res) => {
       {
         $project: {
           cameraLocation: '$studyAreas.cameraLocations.cameraLocation',
-          endActiveDate: '$studyAreas.cameraLocations.projectCameras.endActiveDate',
-          startActiveDate: '$studyAreas.cameraLocations.projectCameras.startActiveDate'
-        }
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+        },
       },
       {
         $group: {
           _id: '$cameraLocation',
           startActiveDates: { $push: '$startActiveDate' },
-          endActiveDates: { $push: '$endActiveDate' }
+          endActiveDates: { $push: '$endActiveDate' },
         },
       },
     ]);
-    let projectTrips = []
-    projectTripDatas = projectTripDatas.map(projectTripData => {
-      const startActiveDates = projectTripData.startActiveDates.map(startActiveDate => {
-        return startActiveDate
-      })
-      const endActiveDates = projectTripData.endActiveDates.map(endActiveDate => {
-        return endActiveDate
-      })
+    let projectTrips = [];
+    const projectTripsCameraLocation = [];
+    projectTripDatas.forEach(projectTripData => {
+      const startActiveDates = projectTripData.startActiveDates.map(
+        startActiveDate => startActiveDate,
+      );
+      const endActiveDates = projectTripData.endActiveDates.map(
+        endActiveDate => endActiveDate,
+      );
 
-      let prjectTripTemp = []
-      for (i = 0; i < endActiveDates.length; i++) {
-        prjectTripTemp.push({ time: { $gte: startActiveDates[i], $lte: endActiveDates[i] }, cameraLocation: projectTripData._id })
+      const prjectTripTemp = [];
+      for (let i = 0; i < endActiveDates.length; i += 1) {
+        prjectTripTemp.push({
+          time: { $gte: startActiveDates[i], $lte: endActiveDates[i] },
+          cameraLocation: projectTripData._id,
+        });
+        projectTripsCameraLocation.push(String(projectTripData._id));
       }
-      
-      projectTrips = projectTrips.concat(prjectTripTemp)
-     
-    })
 
-  
+      projectTrips = projectTrips.concat(prjectTripTemp);
+    });
+
     const synonymSpeciesIds = await Helpers.findSynonymSpecies(form.species);
     const dataFields = await fetchDataField(form.fields);
 
@@ -381,7 +367,6 @@ module.exports = async (req, res) => {
       dataFields,
       synonymSpeciesIds,
     );
-  
 
     const annotations = await AnnotationModel.paginate(annotationQuerys, {
       offset,
@@ -420,6 +405,14 @@ module.exports = async (req, res) => {
       return;
     }
 
+    let cameraLocations = [];
+    if (projectTripsCameraLocation.length) {
+      cameraLocations = await fetchCameraLocations(
+        projectTripsCameraLocation,
+        req.user,
+      );
+    }
+
     const cameraLocation = cameraLocations[0];
     const { project } = cameraLocation;
     const pDataFields = project.dataFields;
@@ -427,7 +420,6 @@ module.exports = async (req, res) => {
       _id: { $in: pDataFields },
     });
 
-    const headers = [];
     fieldsObjects.forEach(f => {
       if (f.title['zh-TW'] === '樣區') {
         headers.push('樣區');
@@ -442,8 +434,6 @@ module.exports = async (req, res) => {
       const { parent: parentId } = cameraLocation.studyArea;
       parentArea = await StudyAreaModel.findById(parentId);
     }
-
-    const xlsxData = [];
 
     annotationDocs.forEach(a => {
       const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
@@ -484,9 +474,9 @@ module.exports = async (req, res) => {
             } else {
               rowData.push(
                 `${
-                annotationFields[f._id]
-                  ? annotationFields[f._id].value || ''
-                  : ''
+                  annotationFields[f._id]
+                    ? annotationFields[f._id].value || ''
+                    : ''
                 }`,
               );
             }
@@ -496,7 +486,6 @@ module.exports = async (req, res) => {
       rowData.push(`${a.id}`);
       xlsxData.push(rowData);
     });
-
   } else {
     if (!form.studyArea && !form.cameraLocations.length) {
       throw new errors.Http400(
@@ -511,7 +500,7 @@ module.exports = async (req, res) => {
     }
     const { studyArea: studyAreaId } = form;
 
-    let [studyArea, childStudyAreas, cameraLocations, projectTrips] = [];
+    let [studyArea, childStudyAreas, cameraLocations] = [];
 
     if (studyAreaId) {
       studyArea = await fetchStudyArea(studyAreaId, req.user);
@@ -538,7 +527,7 @@ module.exports = async (req, res) => {
       studyArea,
       childStudyAreas || [],
       cameraLocations,
-      projectTrips,
+      null,
       dataFields,
       synonymSpeciesIds,
     );
@@ -586,7 +575,6 @@ module.exports = async (req, res) => {
       _id: { $in: pDataFields },
     });
 
-    const headers = [];
     fieldsObjects.forEach(f => {
       if (f.title['zh-TW'] === '樣區') {
         headers.push('樣區');
@@ -601,8 +589,6 @@ module.exports = async (req, res) => {
       const { parent: parentId } = cameraLocation.studyArea;
       parentArea = await StudyAreaModel.findById(parentId);
     }
-
-    const xlsxData = [];
 
     annotationDocs.forEach(a => {
       const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
@@ -643,9 +629,9 @@ module.exports = async (req, res) => {
             } else {
               rowData.push(
                 `${
-                annotationFields[f._id]
-                  ? annotationFields[f._id].value || ''
-                  : ''
+                  annotationFields[f._id]
+                    ? annotationFields[f._id].value || ''
+                    : ''
                 }`,
               );
             }
@@ -656,7 +642,6 @@ module.exports = async (req, res) => {
       xlsxData.push(rowData);
     });
   }
-
 
   headers.push('Annotation id');
   xlsxData.unshift(headers);
