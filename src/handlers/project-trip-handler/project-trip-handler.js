@@ -52,8 +52,6 @@ exports.getProjectTripsDateTimeInterval = auth(
       { $sort: { endActiveDate: -1 } },
     ]);
 
-    console.log(projectTripStartActiveDate, 'jeremy')
-    console.log(projectTripEndActiveDate, 'jeremy')
     if (projectTripStartActiveDate[0] && projectTripEndActiveDate[0]) {
       res.json({
         startTime: projectTripStartActiveDate[0].startActiveDate,
