@@ -343,6 +343,7 @@ apiRouter.get(
   '/forest-compartment-boundary',
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
+apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
