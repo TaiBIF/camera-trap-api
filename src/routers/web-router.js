@@ -266,6 +266,10 @@ apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/trips',
   projectTripHandler.addProjectTrip,
 );
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
+  projectTripHandler.getProjectTripsDateTimeInterval,
+);
 apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
   projectTripHandler.updateProjectTripByTripId,
