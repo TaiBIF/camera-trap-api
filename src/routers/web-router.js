@@ -120,6 +120,7 @@ apiRouter.get(
 apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/species/synonyms', speciesHandler.getSpeciesSynonyms);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
+apiRouter.get('/simple-annotations', annotationHandler.fetchFormatAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
 apiRouter.get(
@@ -227,6 +228,8 @@ apiRouter.get(
   '/camera-locations/:cameraLocationId([a-f\\d]{24})',
   cameraLocationHandler.getCameraLocation,
 );
+
+apiRouter.get('/camera-locations', cameraLocationHandler.searchCameraLocation);
 
 // camera
 apiRouter.get('/cameras', cameraHandler.getCameras);
@@ -344,6 +347,7 @@ apiRouter.get(
   '/forest-compartment-boundary',
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
+apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
