@@ -120,6 +120,7 @@ apiRouter.get(
 apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/species/synonyms', speciesHandler.getSpeciesSynonyms);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
+apiRouter.get('/simple-annotations', annotationHandler.fetchFormatAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
 apiRouter.get(
