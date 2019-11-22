@@ -229,6 +229,8 @@ apiRouter.get(
   cameraLocationHandler.getCameraLocation,
 );
 
+apiRouter.get('/camera-locations', cameraLocationHandler.searchCameraLocation);
+
 // camera
 apiRouter.get('/cameras', cameraHandler.getCameras);
 apiRouter.get('/cameras-manufacturers', cameraHandler.getCameraManufacturers);
