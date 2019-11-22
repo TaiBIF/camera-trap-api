@@ -348,6 +348,7 @@ apiRouter.get(
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
 apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
+apiRouter.get('/calculator/valid-pics', calculatorHandler.validPics);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 

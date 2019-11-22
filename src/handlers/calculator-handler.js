@@ -13,8 +13,10 @@ const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const Helpers = require('../common/helpers.js');
 const calculateWorkHours = require('./calculator-handler/work-hours');
+const calculateValidPics = require('./calculator-handler/valid-pics');
 
 exports.workHour = auth(UserPermission.all(), calculateWorkHours);
+exports.validPics = auth(UserPermission.all(), calculateValidPics);
 
 exports.calculateOI = auth(UserPermission.all(), (req, res) => {
   /*
