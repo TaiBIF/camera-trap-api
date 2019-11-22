@@ -12,6 +12,9 @@ const ProjectSpeciesModel = require('../models/data/project-species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const Helpers = require('../common/helpers.js');
+const calculateWorkHours = require('./calculator-handler/work-hours');
+
+exports.workHour = auth(UserPermission.all(), calculateWorkHours);
 
 exports.calculateOI = auth(UserPermission.all(), (req, res) => {
   /*
