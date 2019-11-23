@@ -350,6 +350,7 @@ apiRouter.get(
 apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
 apiRouter.get('/calculator/valid-pics', calculatorHandler.validPics);
 apiRouter.get('/calculator/events', calculatorHandler.events);
+apiRouter.get('/calculator/capture-rate', calculatorHandler.captureRate);
 apiRouter.get('/calculator/oi3', calculatorHandler.oi3);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
