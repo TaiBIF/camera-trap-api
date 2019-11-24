@@ -8,7 +8,7 @@ const AnnotationState = require('../../models/const/annotation-state');
 const ProjectTrip = require('../../models/data/project-trip-model');
 const SpeciesModel = require('../../models/data/species-model');
 const DataFieldModel = require('../../models/data/data-field-model');
-// find({'title.zh-TW': '隻數'})
+
 const fetchCameraLocations = async cameraLocationIds => {
   const cameraLocations = await CameraLocationModel.where({
     _id: { $in: cameraLocationIds },
