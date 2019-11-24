@@ -5,6 +5,7 @@ const utils = require('../common/utils');
 const UserPermission = require('../models/const/user-permission');
 const ProjectModel = require('../models/data/project-model');
 const ProjectSpeciesModel = require('../models/data/project-species-model');
+const AnnotationModel = require('../models/data/annotation-model');
 const SpeciesModel = require('../models/data/species-model');
 const SpeciesSearchForm = require('../forms/species/species-search-form');
 const SpeciesForm = require('../forms/species/species-form');
@@ -25,14 +26,27 @@ exports.getSpecies = auth(UserPermission.all(), (req, res) => {
     offset: form.index * form.size,
     limit: form.size,
   }).then(speciesList => {
-    res.json(
-      new PageList(
-        form.index,
-        form.size,
-        speciesList.totalDocs,
-        speciesList.docs,
-      ),
+    const populatePromise = speciesList.docs.map(species =>
+      AnnotationModel.find({
+        species: species._id,
+      })
+        .count()
+        .exec()
+        .then(count => {
+          species.dataCount = count;
+        }),
     );
+
+    Promise.all(populatePromise).then(docs => {
+      res.json(
+        new PageList(
+          form.index,
+          form.size,
+          speciesList.totalDocs,
+          speciesList.docs,
+        ),
+      );
+    });
   });
 });
 
