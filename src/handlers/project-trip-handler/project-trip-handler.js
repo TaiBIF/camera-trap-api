@@ -162,16 +162,8 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorStudyAreaMessage);
   }
 
-  return Promise.all([
-    ProjectModel.findById(projectId),
-    ProjectTripModel.where({ project: projectId, sn: form.sn }).findOne(),
-  ])
-    .then(([project, projectTripExist]) => {
-      if (projectTripExist) {
-        throw new errors.Http400(
-          'Cannot use the same "sn" to create project Trip',
-        );
-      }
+  return Promise.all([ProjectModel.findById(projectId)])
+    .then(([project]) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
@@ -199,7 +191,7 @@ exports.updateProjectTripByTripId = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-
+  
   return Promise.all([
     ProjectModel.findById(projectId),
     ProjectTripModel.findById(tripId).where({ project: projectId }),

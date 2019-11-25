@@ -17,7 +17,6 @@ const schema = utils.generateSchema(
     sn: {
       type: String,
       required: true,
-      unique: true,
       index: {
         name: 'sn',
       },
