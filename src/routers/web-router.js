@@ -350,7 +350,9 @@ apiRouter.get(
 apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
 apiRouter.get('/calculator/valid-pics', calculatorHandler.validPics);
 apiRouter.get('/calculator/events', calculatorHandler.events);
+apiRouter.get('/calculator/capture-rate', calculatorHandler.captureRate);
 apiRouter.get('/calculator/oi2', calculatorHandler.oi2);
+apiRouter.get('/calculator/oi3', calculatorHandler.oi3);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
@@ -371,6 +373,10 @@ apiRouter.get(
   cache(),
   statisticHandler.getStatisticsByCounty,
 );
+
+apiRouter.get('/purge-apicache', (req, res) => {
+  res.json(apicache.clear(req.query.target));
+});
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
