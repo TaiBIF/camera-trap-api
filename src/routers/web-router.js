@@ -120,6 +120,7 @@ apiRouter.get(
 apiRouter.get('/species', speciesHandler.getSpecies);
 apiRouter.get('/species/synonyms', speciesHandler.getSpeciesSynonyms);
 apiRouter.get('/annotations', annotationHandler.getAnnotations);
+apiRouter.get('/simple-annotations', annotationHandler.fetchFormatAnnotations);
 apiRouter.get('/annotations.csv', annotationHandler.getAnnotations);
 apiRouter.post('/annotations', annotationHandler.addAnnotation);
 apiRouter.get(
@@ -228,6 +229,8 @@ apiRouter.get(
   cameraLocationHandler.getCameraLocation,
 );
 
+apiRouter.get('/camera-locations', cameraLocationHandler.searchCameraLocation);
+
 // camera
 apiRouter.get('/cameras', cameraHandler.getCameras);
 apiRouter.get('/cameras-manufacturers', cameraHandler.getCameraManufacturers);
@@ -265,6 +268,10 @@ apiRouter.get(
 apiRouter.post(
   '/projects/:projectId([a-f\\d]{24})/trips',
   projectTripHandler.addProjectTrip,
+);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
+  projectTripHandler.getProjectTripsDateTimeInterval,
 );
 apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})/trips/:tripId([a-f\\d]{24})',
@@ -340,6 +347,11 @@ apiRouter.get(
   '/forest-compartment-boundary',
   forestCompartmentBoundary.getForestCompartmentBoundary,
 );
+apiRouter.get('/calculator/work-hours', calculatorHandler.workHour);
+apiRouter.get('/calculator/valid-pics', calculatorHandler.validPics);
+apiRouter.get('/calculator/events', calculatorHandler.events);
+apiRouter.get('/calculator/capture-rate', calculatorHandler.captureRate);
+apiRouter.get('/calculator/oi3', calculatorHandler.oi3);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 

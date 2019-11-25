@@ -1,5 +1,5 @@
 const config = require('config');
-
+const bluebird = require('bluebird');
 const moment = require('moment');
 const auth = require('../../auth/authorization');
 const errors = require('../../models/errors');
@@ -28,7 +28,7 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 const prepareProjectDwca = require('./prepareProjectDwcArchive');
 const getProjectDwca = require('./getProjectDwcArchive');
 const getProject = require('./getProject');
-const StatisticModel = require('../../models/data/statistic-model');
+const AnnotationModel = require('../../models/data/annotation-model');
 
 exports.getProjects = auth(UserPermission.all(), async (req, res) => {
   /*
@@ -91,65 +91,31 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
     });
   }
 
-  const projectData = await StatisticModel.aggregate([
-    {
-      $group: {
-        _id: '$project',
-        studyAreas: { $push: '$studyArea' },
-        cameraLocations: { $push: '$cameraLocation.detail' },
-        dataCount: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const totalData = projectData.reduce((pre, project) => {
-    const totalStudyArea = project.studyAreas.reduce((preData, curData) => {
-      if (preData.indexOf(`${curData}`) === -1) {
-        return [...preData, `${curData}`];
-      }
-      return preData;
-    }, []).length;
-    const totalLcameraLocation = project.cameraLocations.reduce(
-      (preData, curData) => {
-        if (preData.indexOf(`${curData}`) === -1) {
-          return [...preData, `${curData}`];
-        }
-        return preData;
-      },
-      [],
-    ).length;
-
-    return {
-      ...pre,
-      [project._id]: {
-        totalStudyArea,
-        totalLcameraLocation,
-        totalData: project.dataCount,
-      },
-    };
-  }, {});
-
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
       offset: form.index * form.size,
       limit: form.size,
     },
-  ).then(result => {
-    const items = result.docs.map(doc => {
-      doc = doc.toJSON();
-      doc.id = doc._id;
-      doc.totalStudyArea = totalData[doc._id]
-        ? totalData[doc._id].totalStudyArea || 0
-        : 0;
-      doc.totalLcameraLocation = totalData[doc._id]
-        ? totalData[doc._id].totalLcameraLocation || 0
-        : 0;
-      doc.totalData = totalData[doc._id]
-        ? totalData[doc._id].totalData || 0
-        : 0;
-      return doc;
-    });
+  ).then(async result => {
+    const items = await bluebird.map(
+      result.docs,
+      async doc => {
+        doc = doc.toJSON();
+        doc.id = doc._id;
+        doc.totalStudyArea = await StudyAreaModel.find({
+          project: doc.id,
+        }).count();
+        doc.totalLcameraLocation = await CameraLocationModel.find({
+          project: doc.id,
+        }).count();
+        doc.totalData = await AnnotationModel.find({
+          project: doc.id,
+        }).count();
+        return doc;
+      },
+      { concurrency: 10 },
+    );
 
     res.json(new PageList(form.index, form.size, result.totalDocs, items));
   });
@@ -216,63 +182,25 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
     });
   }
 
-  const projectData = await StatisticModel.aggregate([
-    {
-      $group: {
-        _id: '$project',
-        studyAreas: { $push: '$studyArea' },
-        cameraLocations: { $push: '$cameraLocation.detail' },
-        dataCount: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const totalData = projectData.reduce((pre, project) => {
-    const totalStudyArea = project.studyAreas.reduce((preData, curData) => {
-      if (preData.indexOf(`${curData}`) === -1) {
-        return [...preData, `${curData}`];
-      }
-      return preData;
-    }, []).length;
-    const totalLcameraLocation = project.cameraLocations.reduce(
-      (preData, curData) => {
-        if (preData.indexOf(`${curData}`) === -1) {
-          return [...preData, `${curData}`];
-        }
-        return preData;
-      },
-      [],
-    ).length;
-
-    return {
-      ...pre,
-      [project._id]: {
-        totalStudyArea,
-        totalLcameraLocation,
-        totalData: project.dataCount,
-      },
-    };
-  }, {});
-
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
       offset: form.index * form.size,
       limit: form.size,
     },
-  ).then(result => {
-    const items = result.docs.map(doc => {
+  ).then(async result => {
+    const items = await bluebird.map(result.docs, async doc => {
       doc = doc.toJSON();
       doc.id = doc._id;
-      doc.totalStudyArea = totalData[doc._id]
-        ? totalData[doc._id].totalStudyArea || 0
-        : 0;
-      doc.totalLcameraLocation = totalData[doc._id]
-        ? totalData[doc._id].totalLcameraLocation || 0
-        : 0;
-      doc.totalData = totalData[doc._id]
-        ? totalData[doc._id].totalData || 0
-        : 0;
+      doc.totalStudyArea = await StudyAreaModel.find({
+        project: doc.id,
+      }).count();
+      doc.totalLcameraLocation = await CameraLocationModel.find({
+        project: doc.id,
+      }).count();
+      doc.totalData = await AnnotationModel.find({
+        project: doc.id,
+      }).count();
       return doc;
     });
 

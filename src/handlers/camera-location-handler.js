@@ -11,6 +11,9 @@ const CameraLocationForm = require('../forms/camera-location/camera-location-for
 const CameraLocationsSearchForm = require('../forms/camera-location/camera-locations-search-form');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
+const searchCameraLocation = require('./camera-location-handler/searchByParams');
+
+exports.searchCameraLocation = auth(UserPermission.all(), searchCameraLocation);
 
 exports.getProjectCameraLocations = auth(UserPermission.all(), (req, res) => {
   /*
