@@ -65,7 +65,7 @@ module.exports = async (req, res) => {
   if (trip) {
     zipFiles.push({
       content: event.Body.toString('utf-8'),
-      name: 'evet.txt',
+      name: 'event.txt',
       date: new Date(),
       type: 'file',
     });
