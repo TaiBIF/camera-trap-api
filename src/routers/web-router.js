@@ -367,6 +367,13 @@ const cache = apicache.options({
 
 apiRouter.get('/statistics', cache(), statisticHandler.getStatistics);
 
+apiRouter.get('/purge-apicache', (req, res) => {
+  apicache.clear();
+  res.json({
+    status: 'done',
+  });
+});
+
 apiRouter.get(
   '/statistics/county/:countyName',
   cache(),
