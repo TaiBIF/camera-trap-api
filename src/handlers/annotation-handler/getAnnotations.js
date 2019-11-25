@@ -625,7 +625,12 @@ module.exports = async (req, res) => {
               const value = annotationFields[f._id]
                 ? annotationFields[f._id].value || ''
                 : '';
-              rowData.push(value ? `${options[value]['zh-TW'] || ''}` : '');
+
+              rowData.push(
+                value
+                  ? `${(options[value] ? options[value]['zh-TW'] : '') || ''}`
+                  : '',
+              );
             } else {
               rowData.push(
                 `${
