@@ -15,12 +15,14 @@ const Helpers = require('../common/helpers.js');
 const calculateWorkHours = require('./calculator-handler/work-hours');
 const calculateValidPics = require('./calculator-handler/valid-pics');
 const calculateEvents = require('./calculator-handler/events');
+const calculateOi2 = require('./calculator-handler/oi2');
 const calculateOi3 = require('./calculator-handler/oi3');
 const calculateCaptureRate = require('./calculator-handler/capture-rate');
 
 exports.workHour = auth(UserPermission.all(), calculateWorkHours);
 exports.validPics = auth(UserPermission.all(), calculateValidPics);
 exports.events = auth(UserPermission.all(), calculateEvents);
+exports.oi2 = auth(UserPermission.all(), calculateOi2);
 exports.oi3 = auth(UserPermission.all(), calculateOi3);
 exports.captureRate = auth(UserPermission.all(), calculateCaptureRate);
 
