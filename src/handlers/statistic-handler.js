@@ -1,22 +1,28 @@
-const StatisticModel = require('../models/data/statistic-model');
-const StatisticCameraModel = require('../models/data/statistic-camera-model');
+const _ = require('lodash');
+const bluebird = require('bluebird');
+const AnnotationModel = require('../models/data/annotation-model');
+const CameraLocationModel = require('../models/data/camera-location-model');
+const SpeciesModel = require('../models/data/species-model');
+const FileModel = require('../models/data/file-model');
+const StudyAreasModel = require('../models/data/study-area-model');
+const CameraLocationsModel = require('../models/data/camera-location-model');
+const ProjectTripsModel = require('../models/data/project-trip-model');
 
 exports.getStatistics = async (req, res) => {
   /*
     GET /api/v1/statistics
   */
-  const oldestCameraLocation = await StatisticModel.find()
-    .sort('cameraLocation.createTime')
+  const oldestCameraLocation = await CameraLocationModel.find()
+    .sort('createTime')
     .limit(1);
-  const oldestPicture = await StatisticModel.find()
-    .sort('picture.createTime')
+  const oldestPicture = await AnnotationModel.find()
+    .sort('createTime')
     .limit(1);
 
-  const startYear =
-    oldestCameraLocation[0].cameraLocation.createTime.getFullYear() <
-    oldestPicture[0].picture.createTime.getFullYear()
-      ? oldestCameraLocation[0].cameraLocation.createTime.getFullYear()
-      : oldestPicture[0].picture.createTime.getFullYear();
+  const startYear = Math.min(
+    oldestCameraLocation[0].createTime.getFullYear(),
+    oldestPicture[0].createTime.getFullYear(),
+  );
   const endYear = new Date().getFullYear();
 
   // eslint-disable-next-line prefer-const
@@ -31,92 +37,85 @@ exports.getStatistics = async (req, res) => {
     });
 
     // eslint-disable-next-line no-await-in-loop
-    const totalPicture = new Set(
-      // eslint-disable-next-line no-await-in-loop
-      (await StatisticModel.find(
-        {
-          'picture.createTime': {
-            $gt: startDate,
-            $lt: endDate,
-          },
-        },
-        'picture',
-      )).map(({ picture }) => picture.fileName),
-    ).size;
-    // eslint-disable-next-line no-await-in-loop
-    const totalCameraLocation = new Set(
-      // eslint-disable-next-line no-await-in-loop
-      (await StatisticModel.find(
-        {
-          'cameraLocation.createTime': {
-            $gt: startDate,
-            $lt: endDate,
-          },
-        },
-        'cameraLocation',
-      )).map(({ cameraLocation }) => `${cameraLocation.detail}`),
-    ).size;
+    const totalPicture = await AnnotationModel.distinct('filename', {
+      createTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
+    }).exec();
 
-    yearArr.push({ year, totalPicture, totalCameraLocation });
+    // eslint-disable-next-line no-await-in-loop
+    const totalCameraLocation = await CameraLocationModel.find({
+      createTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
+    }).exec();
+
+    yearArr.push({
+      year,
+      totalPicture: totalPicture.length,
+      totalCameraLocation: totalCameraLocation.length,
+    });
   }
 
-  const speciesData = await StatisticModel.aggregate([
-    {
-      $lookup: {
-        from: 'Species',
-        localField: 'species',
-        foreignField: '_id',
-        as: 'species',
-      },
+  // species
+  const speciesData = await SpeciesModel.find({}).exec();
+
+  const speciesArr = await bluebird.map(
+    speciesData,
+    async species => {
+      species = species.dump();
+
+      const totalPicture = await AnnotationModel.distinct('filename', {
+        species: species.id,
+      }).exec();
+      const totalLocation = await AnnotationModel.distinct('cameraLocation', {
+        species: species.id,
+      }).exec();
+
+      console.log(
+        'totalPicture %d, totalLocation %d',
+        totalPicture.length,
+        totalLocation.length,
+      );
+
+      return {
+        species: species.id,
+        name: species.title['zh-TW'],
+        totalPicture: totalPicture.length,
+        totalLocation: totalLocation.length,
+      };
     },
+    { concurrency: 20 },
+  );
+
+  const funderArr = await FileModel.aggregate([
     {
       $group: {
-        _id: '$species',
-        picture: { $push: '$picture.fileName' },
-        cameraLocation: { $push: '$cameraLocation.detail' },
+        _id: '$project',
+        size: { $sum: '$size' },
       },
     },
-  ]);
-  const speciesArr = speciesData.reduce((pre, cur) => {
-    if (cur._id.length === 0) return pre;
-
-    const totalLocation = cur.cameraLocation.reduce((preData, curData) => {
-      if (preData.indexOf(`${curData}`) === -1)
-        return [...preData, `${curData}`];
-      return preData;
-    }, []).length;
-
-    return [
-      ...pre,
-      {
-        species: cur._id[0]._id,
-        name: cur._id[0].title['zh-TW'],
-        totalLocation,
-        totalPicture: new Set(cur.picture).size,
-      },
-    ];
-  }, []);
-
-  const funderData = await StatisticModel.aggregate([
+    {
+      $match: { _id: { $ne: null } },
+    },
     {
       $lookup: {
         from: 'Projects',
-        localField: 'project',
+        localField: '_id',
         foreignField: '_id',
         as: 'project',
       },
     },
+    { $unwind: '$project' },
     {
       $group: {
         _id: '$project.funder',
-        count: { $sum: '$picture.size' },
+        size: { $sum: '$size' },
+      },
+    },
+    {
+      $project: {
+        name: '$_id',
+        totalData: '$size',
       },
     },
   ]);
-  const funderArr = funderData.map(funder => ({
-    name: funder._id[0],
-    totalData: funder.count,
-  }));
 
   res.json({ year: yearArr, species: speciesArr, funder: funderArr });
 };
@@ -125,165 +124,192 @@ exports.getStatisticsByCounty = async (req, res) => {
   /*
     GET /api/v1/statistics/county/{countyName}
   */
-  const projectTotal = (await StatisticModel.aggregate([
-    { $match: { county: req.params.countyName } },
-    {
-      $group: {
-        _id: '$project',
-      },
-    },
-  ])).length;
+  const countyName = req.params.countyName.slice(0, 3);
+  const studyAreaIds = await StudyAreasModel.distinct('_id', {
+    'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
+  });
+  const projects = await StudyAreasModel.distinct('project', {
+    'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
+  });
 
-  const cameraLocationTotal = (await StatisticModel.aggregate([
-    { $match: { county: req.params.countyName } },
-    {
-      $group: {
-        _id: '$cameraLocation.detail',
-      },
-    },
-  ])).length;
+  const cameraLocations = await CameraLocationsModel.distinct('name', {
+    studyArea: { $in: studyAreaIds },
+  });
 
-  const identifiedSpeciesData = await StatisticModel.aggregate([
-    { $match: { county: req.params.countyName } },
+  // identifiedSpecies
+  const cameraLocationIds = await CameraLocationsModel.distinct('_id', {
+    studyArea: { $in: studyAreaIds },
+  });
+  const allAnnotationCount = await AnnotationModel.find({
+    cameraLocation: { $in: cameraLocationIds },
+  }).count();
+  const identifiedAnnotationCount = await AnnotationModel.find({
+    species: { $exists: true },
+    cameraLocation: { $in: cameraLocationIds },
+  }).count();
+
+  const identifiedSpeciesIds = await AnnotationModel.distinct('species', {
+    species: { $exists: true },
+    cameraLocation: { $in: cameraLocationIds },
+  });
+
+  let identifiedSpecies = await SpeciesModel.find(
+    { _id: { $in: identifiedSpeciesIds } },
+    { title: 1 },
+  );
+
+  identifiedSpecies = identifiedSpecies.map(species => ({
+    name: species.title,
+    species: species._id,
+  }));
+
+  // picture
+  const pictureTotal = await AnnotationModel.distinct('filename', {
+    cameraLocation: { $in: cameraLocationIds },
+  });
+
+  // TotalWorkHour
+  const totalWorkHour = await ProjectTripsModel.aggregate([
     {
-      $lookup: {
-        from: 'Species',
-        localField: 'species',
-        foreignField: '_id',
-        as: 'species',
+      $match: {
+        'studyAreas.studyArea': { $in: studyAreaIds },
+      },
+    },
+    { $unwind: '$studyAreas' },
+    {
+      $match: {
+        'studyAreas.studyArea': { $in: studyAreaIds },
+      },
+    },
+    { $unwind: '$studyAreas.cameraLocations' },
+    { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+    {
+      $project: {
+        dateDifference: {
+          $subtract: [
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+          ],
+        },
       },
     },
     {
       $group: {
-        _id: '$species._id',
-        count: { $sum: 1 },
-        name: { $push: '$species.title' },
+        _id: null,
+        duringTime: { $sum: { $divide: ['$dateDifference', 1000] } },
+      },
+    },
+    {
+      $project: {
+        totalWorkHour: { $divide: ['$duringTime', 3600] },
       },
     },
   ]);
-  const dataTotal = await StatisticModel.find({
-    county: req.params.countyName,
-  }).countDocuments();
-  let identifiedSpeciesTotal = 0;
-  const identifiedSpeciesItems = identifiedSpeciesData.reduce(
-    (pre, identifiedSpecies) => {
-      if (identifiedSpecies._id[0]) {
-        identifiedSpeciesTotal += identifiedSpecies.count;
-        return [
-          ...pre,
+
+  // studyArea
+  const studyAreaItems = await CameraLocationModel.aggregate([
+    {
+      $match: { studyArea: { $in: studyAreaIds } },
+    },
+    {
+      $lookup: {
+        as: 'data',
+        from: 'Annotations',
+        let: {
+          cameraLocation: '$_id',
+        },
+        pipeline: [
           {
-            species: identifiedSpecies._id[0],
-            name: identifiedSpecies.name[0][0],
+            $match: {
+              $expr: {
+                $eq: ['$cameraLocation', '$$cameraLocation'],
+              },
+            },
           },
-        ];
-      }
-      return pre;
-    },
-    [],
-  );
-
-  const pictureTotal = (await StatisticModel.aggregate([
-    { $match: { county: req.params.countyName } },
-    {
-      $group: {
-        _id: '$picture.fileName',
+          { $count: 'total' },
+        ],
       },
     },
-  ])).length;
-
-  const cameraTotalWorkHourCount = (await StatisticCameraModel.aggregate([
-    { $match: { county: req.params.countyName } },
+    { $unwind: '$data' },
     {
-      $group: {
-        _id: '$county',
-        count: { $sum: '$camera.workHour' },
+      $project: {
+        studyArea: '$studyArea',
+        cameraLocation: '$_id',
+        name: '$name',
+        settingTime: '$settingTime',
+        latitude: '$latitude',
+        longitude: '$longitude',
+        altitude: '$altitude',
+        landCoverType: '$landCoverType',
+        vegetation: '$vegetation',
+        data: '$data',
       },
     },
-  ]))[0];
-  const cameraTotalWorkHour = cameraTotalWorkHourCount
-    ? cameraTotalWorkHourCount.count
-    : 0;
-
-  const statisticData = await StatisticModel.aggregate([
-    { $match: { county: req.params.countyName } },
+    {
+      $group: {
+        _id: '$studyArea',
+        total: { $sum: 1 },
+        items: { $push: '$$ROOT' },
+      },
+    },
+    {
+      $project: {
+        studyArea: '$studyArea',
+        cameraLocation: {
+          total: '$total',
+          items: '$items',
+        },
+      },
+    },
+    {
+      $lookup: {
+        as: 'data',
+        from: 'Annotations',
+        let: {
+          studyArea: '$_id',
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $eq: ['$studyArea', '$$studyArea'],
+              },
+            },
+          },
+          { $count: 'total' },
+        ],
+      },
+    },
+    { $unwind: '$data' },
     {
       $lookup: {
         from: 'StudyAreas',
-        localField: 'studyArea',
+        localField: '_id',
         foreignField: '_id',
-        as: 'studyArea',
+        as: 'studyAreasData',
       },
     },
+    { $unwind: '$studyAreasData' },
     {
-      $lookup: {
-        from: 'CameraLocations',
-        localField: 'cameraLocation.detail',
-        foreignField: '_id',
-        as: 'cameraLocation.detail',
-      },
-    },
-    {
-      $group: {
-        _id: '$studyArea._id',
-        studyAreaCount: { $sum: 1 },
-        studyAreaTitle: { $push: '$studyArea.title' },
-        cameraLocation: { $push: '$cameraLocation.detail' },
+      $project: {
+        studyArea: '$_id',
+        title: '$studyAreasData.title',
+        cameraLocation: '$cameraLocation',
+        data: '$data',
       },
     },
   ]);
 
-  const studyAreaItems = statisticData.map(statistic => {
-    const cameraLocation = statistic.cameraLocation.reduce((pre, cur) => {
-      const curCameraLocation = cur[0];
-      if (Object.keys(pre).indexOf(curCameraLocation.name) === -1)
-        return {
-          ...pre,
-          [curCameraLocation.name]: {
-            cameraLocation: curCameraLocation._id,
-            name: curCameraLocation.name,
-            settingTime: curCameraLocation.settingTime,
-            latitude: curCameraLocation.latitude,
-            longitude: curCameraLocation.longitude,
-            altitude: curCameraLocation.altitude,
-            landCoverType: curCameraLocation.landCoverType,
-            vegetation: curCameraLocation.vegetation,
-            data: {
-              total: 1,
-            },
-          },
-        };
-
-      const addDataTotal = pre[curCameraLocation.name];
-      addDataTotal.data.total += 1;
-      return {
-        ...pre,
-        [curCameraLocation.name]: addDataTotal,
-      };
-    }, {});
-
-    return {
-      studyArea: statistic._id[0],
-      title: statistic.studyAreaTitle[0][0],
-      cameraLocation: {
-        total: Object.values(cameraLocation).length,
-        items: Object.values(cameraLocation),
-      },
-      data: {
-        total: statistic.studyAreaCount,
-      },
-    };
-  });
-
   res.json({
     title: { 'zh-TW': req.params.countyName },
-    project: { total: projectTotal },
-    cameraLocation: { total: cameraLocationTotal },
+    project: { total: projects.length },
+    cameraLocation: { total: cameraLocations.length },
     identifiedSpecies: {
-      percentage: (identifiedSpeciesTotal / dataTotal) * 100 || 0,
-      items: identifiedSpeciesItems,
+      percentage: (identifiedAnnotationCount / allAnnotationCount) * 100 || 0,
+      items: identifiedSpecies,
     },
-    picture: { total: pictureTotal },
-    camera: { totalWorkHour: cameraTotalWorkHour },
+    picture: { total: pictureTotal.length },
+    camera: { totalWorkHour: _.get(totalWorkHour, '0.totalWorkHour') || 0 },
     studyArea: {
       items: studyAreaItems,
     },
