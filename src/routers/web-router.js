@@ -367,18 +367,15 @@ const cache = apicache.options({
 
 apiRouter.get('/statistics', cache(), statisticHandler.getStatistics);
 
-apiRouter.get('/purge-apicache', (req, res) => {
-  apicache.clear();
-  res.json({
-    status: 'done',
-  });
-});
-
 apiRouter.get(
   '/statistics/county/:countyName',
   cache(),
   statisticHandler.getStatisticsByCounty,
 );
+
+apiRouter.get('/purge-apicache', (req, res) => {
+  res.json(apicache.clear(req.query.target));
+});
 
 // /callback
 const callbackRouter = new CustomRouter(exports.callback);
