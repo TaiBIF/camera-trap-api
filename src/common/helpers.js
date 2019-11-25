@@ -32,7 +32,7 @@ exports.findSynonymSpecies = speciesIds =>
     });
   });
 
-exports.createDwCA = (project, occurrenceData) => {
+exports.createDwCA = (project, occurrenceData, tripData) => {
   const projectId = project._id.toString();
 
   // meta.xml
@@ -228,5 +228,15 @@ exports.createDwCA = (project, occurrenceData) => {
       type: 'file',
     },
   ];
+
+  if (tripData !== '') {
+    zipFiles.push({
+      content: tripData,
+      name: 'event.txt',
+      mode: '0755',
+      date: new Date(),
+      type: 'file',
+    });
+  }
   return zipFiles;
 };

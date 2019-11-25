@@ -7,6 +7,7 @@ const CameraLocationModel = require('../../models/data/camera-location-model');
 const NotificationModel = require('../../models/data/notification-model');
 const NotificationType = require('../../models/const/notification-type');
 const ProjectModel = require('../../models/data/project-model');
+const ProjectTripModel = require('../../models/data/project-trip-model');
 const SpeciesModel = require('../../models/data/species-model');
 const errors = require('../../models/errors');
 const Helpers = require('../../common/helpers.js');
@@ -29,7 +30,6 @@ module.exports = async (req, res) => {
 
   // titles
   const occurrenceData = [];
-
   const speciesRawData = await SpeciesModel.find().select({
     'title.zh-TW': true,
     _id: true,
@@ -95,12 +95,31 @@ module.exports = async (req, res) => {
       'scientificName',
     ],
   };
-
+  let tripCsvData = '';
+  ProjectTripModel.find({ project: projectId }, (err, docs) => {
+    if (docs.length > 0) {
+      const trips = [];
+      const tripOptions = {
+        header: true,
+        columns: ['eventID', 'eventDate', 'samplingProtocol'],
+      };
+      docs.forEach(x => {
+        trips.push([x._id, x.date, x.sn]);
+      });
+      utils.csvStringifyAsync(trips, tripOptions).then(x => {
+        tripCsvData = x;
+      });
+    }
+  });
   annotationsCursor.on('end', () => {
     utils
       .csvStringifyAsync(occurrenceData, csvOptions)
       .then(occurrenceCsvData => {
-        const dwcFiles = Helpers.createDwCA(project, occurrenceCsvData);
+        const dwcFiles = Helpers.createDwCA(
+          project,
+          occurrenceCsvData,
+          tripCsvData,
+        );
         const folder = config.s3.folders.annotationDWCAs;
 
         dwcFiles.forEach(f => {
