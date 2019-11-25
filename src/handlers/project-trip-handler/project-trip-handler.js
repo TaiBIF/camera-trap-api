@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const auth = require('../../auth/authorization');
 const UserPermission = require('../../models/const/user-permission');
 const errors = require('../../models/errors');
@@ -9,6 +10,79 @@ const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-f
 const ProjectTripModel = require('../../models/data/project-trip-model');
 const CameraLocationModel = require('../../models/data/camera-location-model');
 const ProjectModel = require('../../models/data/project-model');
+
+// 搜尋行程可用相機時間區間
+exports.getProjectTripsDateTimeInterval = auth(
+  UserPermission.all(),
+  async (req, res) => {
+    /*
+    GET /api/v1/projects/{projectId}/trips/{tripId}
+  */
+    const { projectId, tripId } = req.params;
+
+    const projectTripStartActiveDate = await ProjectTripModel.aggregate([
+      {
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId),
+        },
+      },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.startActiveDate' },
+      {
+        $project: {
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+        },
+      },
+      { $sort: { startActiveDate: 1 } },
+    ]);
+
+    const projectTripEndActiveDate = await ProjectTripModel.aggregate([
+      {
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId),
+        },
+      },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
+      {
+        $project: {
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+        },
+      },
+      { $sort: { endActiveDate: -1 } },
+    ]);
+
+    if (projectTripStartActiveDate[0] && projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate,
+      });
+    } else if (projectTripStartActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripStartActiveDate[0].startActiveDate,
+      });
+    } else if (projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripEndActiveDate[0].endActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate,
+      });
+    } else {
+      res.json({
+        startTime: '',
+        endTime: '',
+      });
+    }
+  },
+);
 
 // 搜尋行程可用相機 List
 exports.getProjectTrips = auth(UserPermission.all(), (req, res) => {

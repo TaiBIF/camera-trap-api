@@ -15,8 +15,13 @@ const FileModel = require('../models/data/file-model');
 const FileType = require('../models/const/file-type');
 const getAnnotation = require('./annotation-handler/getAnnotations');
 const updateAnnotation = require('./annotation-handler/updateAnnotation');
+const fetchFormatAnnotations = require('./annotation-handler/fetchFormatAnnoation');
 
 exports.getAnnotations = auth(UserPermission.all(), getAnnotation);
+exports.fetchFormatAnnotations = auth(
+  UserPermission.all(),
+  fetchFormatAnnotations,
+);
 
 exports.updateAnnotation = auth(UserPermission.all(), updateAnnotation);
 
