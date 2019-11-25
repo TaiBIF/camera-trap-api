@@ -150,10 +150,10 @@ module.exports = async (req, res) => {
           annotations
             .filter(({ cameraLocation }) => `${cameraLocation}` === `${c._id}`)
             .filter(({ time }) => moment(time).format('YYYY-MM') === m)
-            // .filter(
-            //  ({ species: { _id: annotationSpeicesId } }) =>
-            //    `${annotationSpeicesId}` === `${s}`,
-            // )
+            .filter(
+              ({ species: { _id: annotationSpeicesId } }) =>
+                `${annotationSpeicesId}` === `${s}`,
+            )
             .forEach(({ time, fields }) => {
               if (!lastValidAnnotationTime) {
                 lastValidAnnotationTime = time;
