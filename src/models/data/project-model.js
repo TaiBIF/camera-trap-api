@@ -30,6 +30,10 @@ const schema = utils.generateSchema(
       // 委辦單位
       type: String,
     },
+    executiveUnit: {
+      // 執行單位
+      type: String,
+    },
     code: {
       // 計畫編號
       type: String,
@@ -207,6 +211,7 @@ model.prototype.dump = function() {
     title: this.title,
     shortTitle: this.shortTitle,
     funder: this.funder,
+    executiveUnit: this.executiveUnit,
     code: this.code,
     principalInvestigator: this.principalInvestigator,
     startTime: this.startTime,

@@ -12,21 +12,27 @@ exports.getStatistics = async (req, res) => {
   /*
     GET /api/v1/statistics
   */
-  const oldestCameraLocation = await CameraLocationModel.find()
-    .sort('createTime')
+  const oldestCameraLocation = await CameraLocationModel.find({
+    settingTime: { $ne: '' },
+  })
+    .sort('settingTime')
     .limit(1);
-  const oldestPicture = await AnnotationModel.find()
-    .sort('createTime')
+  const oldestPicture = await AnnotationModel.find({
+    time: { $ne: '', $gt: new Date('2008') },
+  })
+    .sort('time')
     .limit(1);
 
   const startYear = Math.min(
-    oldestCameraLocation[0].createTime.getFullYear(),
-    oldestPicture[0].createTime.getFullYear(),
+    oldestCameraLocation[0].settingTime.getFullYear(),
+    oldestPicture[0].time.getFullYear(),
   );
   const endYear = new Date().getFullYear();
 
   // eslint-disable-next-line prefer-const
-  let yearArr = [];
+  let totalCameraLocation = 0;
+  let totalPictureCount = 0;
+  const yearArr = [];
   for (let year = startYear; year <= endYear; year += 1) {
     const startDate = new Date(`${year}-01-01 00:00:00`).toLocaleString(
       'zh-TW',
@@ -37,19 +43,23 @@ exports.getStatistics = async (req, res) => {
     });
 
     // eslint-disable-next-line no-await-in-loop
-    const totalPicture = await AnnotationModel.distinct('filename', {
-      createTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
-    }).exec();
+    const pictureCount = await AnnotationModel.find({
+      time: { $gt: new Date(startDate), $lte: new Date(endDate) },
+    }).count();
+
+    totalPictureCount += pictureCount;
 
     // eslint-disable-next-line no-await-in-loop
-    const totalCameraLocation = await CameraLocationModel.find({
-      createTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
+    const cameraLocations = await CameraLocationModel.find({
+      settingTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
     }).exec();
+
+    totalCameraLocation += cameraLocations.length;
 
     yearArr.push({
       year,
-      totalPicture: totalPicture.length,
-      totalCameraLocation: totalCameraLocation.length,
+      totalPicture: totalPictureCount,
+      totalCameraLocation,
     });
   }
 
@@ -128,6 +138,7 @@ exports.getStatisticsByCounty = async (req, res) => {
   const studyAreaIds = await StudyAreasModel.distinct('_id', {
     'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
   });
+
   const projects = await StudyAreasModel.distinct('project', {
     'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
   });
