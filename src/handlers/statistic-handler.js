@@ -43,11 +43,11 @@ exports.getStatistics = async (req, res) => {
     });
 
     // eslint-disable-next-line no-await-in-loop
-    const pictureCount = await AnnotationModel.distinct('filename', {
+    const pictureCount = await AnnotationModel.find({
       time: { $gt: new Date(startDate), $lte: new Date(endDate) },
-    }).exec();
+    }).count();
 
-    totalPictureCount += pictureCount.length;
+    totalPictureCount += pictureCount;
 
     // eslint-disable-next-line no-await-in-loop
     const cameraLocations = await CameraLocationModel.find({
