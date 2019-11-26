@@ -30,7 +30,9 @@ exports.getStatistics = async (req, res) => {
   const endYear = new Date().getFullYear();
 
   // eslint-disable-next-line prefer-const
-  let yearArr = [];
+  let totalCameraLocation = 0;
+  let totalPictureCount = 0;
+  const yearArr = [];
   for (let year = startYear; year <= endYear; year += 1) {
     const startDate = new Date(`${year}-01-01 00:00:00`).toLocaleString(
       'zh-TW',
@@ -41,19 +43,23 @@ exports.getStatistics = async (req, res) => {
     });
 
     // eslint-disable-next-line no-await-in-loop
-    const totalPicture = await AnnotationModel.distinct('filename', {
+    const pictureCount = await AnnotationModel.distinct('filename', {
       time: { $gt: new Date(startDate), $lte: new Date(endDate) },
     }).exec();
 
+    totalPictureCount += pictureCount.length;
+
     // eslint-disable-next-line no-await-in-loop
-    const totalCameraLocation = await CameraLocationModel.find({
+    const cameraLocations = await CameraLocationModel.find({
       settingTime: { $gt: new Date(startDate), $lte: new Date(endDate) },
     }).exec();
 
+    totalCameraLocation += cameraLocations.length;
+
     yearArr.push({
       year,
-      totalPicture: totalPicture.length,
-      totalCameraLocation: totalCameraLocation.length,
+      totalPicture: totalPictureCount,
+      totalCameraLocation,
     });
   }
 
