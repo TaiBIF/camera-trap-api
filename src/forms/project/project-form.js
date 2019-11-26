@@ -14,6 +14,9 @@ ProjectForm.define({
   funder: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
+  executiveUnit: new forms.fields.StringField({
+    validators: [forms.validators.length({ max: 1024 })],
+  }),
   code: new forms.fields.StringField({
     validators: [forms.validators.length({ max: 1024 })],
   }),
