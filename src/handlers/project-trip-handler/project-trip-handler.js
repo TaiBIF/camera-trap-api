@@ -191,7 +191,7 @@ exports.updateProjectTripByTripId = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-  
+
   return Promise.all([
     ProjectModel.findById(projectId),
     ProjectTripModel.findById(tripId).where({ project: projectId }),
