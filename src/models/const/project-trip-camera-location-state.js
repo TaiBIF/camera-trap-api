@@ -4,6 +4,7 @@ module.exports = {
   removed: 'removed', // 移除
   lost: 'lost', // 遺失且未設置
   lostAndSet: 'lostAndSet', // 遺失並設置
+  undefinded: '',
   all() {
     return [
       this.setting,
@@ -11,6 +12,7 @@ module.exports = {
       this.removed,
       this.lost,
       this.lostAndSet,
+      this.undefinded,
     ];
   },
 };
