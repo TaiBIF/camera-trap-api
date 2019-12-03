@@ -32,11 +32,11 @@ exports.findSynonymSpecies = speciesIds =>
     });
   });
 
-exports.createDwCA = (project, occurrenceData) => {
+exports.createDwCA = (project, occurrenceData, tripData) => {
   const projectId = project._id.toString();
 
   // meta.xml
-  const meta = xmlbuilder
+  let meta = xmlbuilder
     .create('archive', { headless: true })
     .att({
       xmlns: 'http://rs.tdwg.org/dwc/text/',
@@ -105,9 +105,35 @@ exports.createDwCA = (project, occurrenceData) => {
     .ele('field', {
       index: '11',
       term: 'http://rs.tdwg.org/dwc/terms/scientificName',
-    })
-    .up()
-    .end({ pretty: true });
+    });
+
+  if (tripData !== '') {
+    meta = meta
+      .up()
+      .up()
+      .ele('files')
+      .ele('location', {}, 'event.txt')
+      .up()
+      .up()
+      .ele('id', { index: 0 })
+      .up()
+      .ele('field', {
+        index: '1',
+        term: 'http://rs.tdwg.org/dwc/terms/eventID',
+      })
+      .up()
+      .ele('field', {
+        index: '2',
+        term: 'http://rs.tdwg.org/dwc/terms/eventDate',
+      })
+      .up()
+      .ele('field', {
+        index: '3',
+        term: 'http://rs.tdwg.org/dwc/terms/samplingMethod',
+      });
+  }
+
+  meta = meta.up().end({ pretty: true });
 
   // eml.xml
   const CC_MAP = {
@@ -228,5 +254,15 @@ exports.createDwCA = (project, occurrenceData) => {
       type: 'file',
     },
   ];
+
+  if (tripData !== '') {
+    zipFiles.push({
+      content: tripData,
+      name: 'event.txt',
+      mode: '0755',
+      date: new Date(),
+      type: 'file',
+    });
+  }
   return zipFiles;
 };

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const auth = require('../../auth/authorization');
 const UserPermission = require('../../models/const/user-permission');
 const errors = require('../../models/errors');
@@ -7,7 +8,81 @@ const ProjectTripForm = require('../../forms/project/project-trip-form');
 const ProjectTripCameraForm = require('../../forms/project/project-trip-camera-form');
 const ProjectTripSearchFrom = require('../../forms/project/project-trip-search-form');
 const ProjectTripModel = require('../../models/data/project-trip-model');
+const CameraLocationModel = require('../../models/data/camera-location-model');
 const ProjectModel = require('../../models/data/project-model');
+
+// 搜尋行程可用相機時間區間
+exports.getProjectTripsDateTimeInterval = auth(
+  UserPermission.all(),
+  async (req, res) => {
+    /*
+    GET /api/v1/projects/{projectId}/trips/{tripId}
+  */
+    const { projectId, tripId } = req.params;
+
+    const projectTripStartActiveDate = await ProjectTripModel.aggregate([
+      {
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId),
+        },
+      },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.startActiveDate' },
+      {
+        $project: {
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+        },
+      },
+      { $sort: { startActiveDate: 1 } },
+    ]);
+
+    const projectTripEndActiveDate = await ProjectTripModel.aggregate([
+      {
+        $match: {
+          project: mongoose.Types.ObjectId(projectId),
+          _id: mongoose.Types.ObjectId(tripId),
+        },
+      },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
+      {
+        $project: {
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+        },
+      },
+      { $sort: { endActiveDate: -1 } },
+    ]);
+
+    if (projectTripStartActiveDate[0] && projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate,
+      });
+    } else if (projectTripStartActiveDate[0]) {
+      res.json({
+        startTime: projectTripStartActiveDate[0].startActiveDate,
+        endTime: projectTripStartActiveDate[0].startActiveDate,
+      });
+    } else if (projectTripEndActiveDate[0]) {
+      res.json({
+        startTime: projectTripEndActiveDate[0].endActiveDate,
+        endTime: projectTripEndActiveDate[0].endActiveDate,
+      });
+    } else {
+      res.json({
+        startTime: '',
+        endTime: '',
+      });
+    }
+  },
+);
 
 // 搜尋行程可用相機 List
 exports.getProjectTrips = auth(UserPermission.all(), (req, res) => {
@@ -37,8 +112,34 @@ exports.getProjectTrips = auth(UserPermission.all(), (req, res) => {
   return ProjectTripModel.paginate(query.sort(form.sort), {
     offset: form.index * form.size,
     limit: form.size,
-  }).then(result => {
-    res.json(
+  }).then(async result => {
+    // 比對studyArea 是否符合 studyAreaId
+    // eslint-disable-next-line no-restricted-syntax
+    for (const doc of result.docs) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const studyAreaVal of doc.studyAreas) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const cameraLocationVal of studyAreaVal.cameraLocations) {
+          // eslint-disable-next-line no-await-in-loop
+          const cameraName = await CameraLocationModel.findById(
+            cameraLocationVal.cameraLocation,
+          );
+          console.log('\x1b[32m', '\n---------- DEBUG ----------\n');
+          console.log('\x1b[36m', ' data = ', cameraName);
+          console.log('\x1b[32m', '\n---------------------------', '\x1b[0m');
+          // Object.assign(cameraLocationVal, cameraLocationVal.title);
+          if (cameraName) {
+            // eslint-disable-next-line no-await-in-loop
+            cameraLocationVal.title = await cameraName.name;
+          } else {
+            // eslint-disable-next-line no-await-in-loop
+            cameraLocationVal.title = await 'null';
+          }
+        }
+      }
+    }
+
+    await res.json(
       new PageList(form.index, form.size, result.totalDocs, result.docs),
     );
   });
@@ -56,17 +157,13 @@ exports.addProjectTrip = auth(UserPermission.all(), (req, res) => {
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
+  const errorStudyAreaMessage = studyAreaForm.validate();
+  if (errorStudyAreaMessage) {
+    throw new errors.Http400(errorStudyAreaMessage);
+  }
 
-  return Promise.all([
-    ProjectModel.findById(projectId),
-    ProjectTripModel.where({ project: projectId, sn: form.sn }).findOne(),
-  ])
-    .then(([project, projectTripExist]) => {
-      if (projectTripExist) {
-        throw new errors.Http400(
-          'Cannot use the same "sn" to create project Trip',
-        );
-      }
+  return Promise.all([ProjectModel.findById(projectId)])
+    .then(([project]) => {
       if (!project.canManageBy(req.user)) {
         throw new errors.Http403();
       }
@@ -202,6 +299,9 @@ exports.updateProjectTripCameraByTripId = auth(
                     Object.assign(projectCameraVal, form);
                   }
                 });
+                // 設置 相機事件
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
 
                 // 新增判斷 cameraLocationMark 才去更新
                 if (form.cameraLocationMark) {
@@ -266,6 +366,8 @@ exports.addProjectTripCameraByTripId = auth(
                 // 新增行程相機
 
                 // 若不存在
+                cameraLocationVal.cameraLocationEvent =
+                  form.cameraLocationEvent;
                 Object.assign(
                   cameraLocationVal.projectCameras,
                   cameraLocationVal.projectCameras.push(form),

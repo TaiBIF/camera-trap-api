@@ -136,9 +136,7 @@ exports.getFileUrl = (fileType, filename, isAnnotationThumbnail) => {
     return;
   }
   if (fileType === FileType.annotationImage && isAnnotationThumbnail) {
-    return `${config.s3.urlPrefix}${
-      config.s3.folders.annotationThumbnailImages
-    }/${filename}`;
+    return `${config.s3.urlPrefix}${config.s3.folders.annotationThumbnailImages}/${filename}`;
   }
   const mapping = {};
   mapping[FileType.projectCoverImage] = config.s3.folders.projectCovers;
@@ -822,9 +820,7 @@ exports.addMediaConvertJob = file => {
           OutputGroupSettings: {
             Type: 'FILE_GROUP_SETTINGS',
             FileGroupSettings: {
-              Destination: `s3://${config.s3.bucket}/${
-                config.s3.folders.annotationVideos
-              }/`,
+              Destination: `s3://${config.s3.bucket}/${config.s3.folders.annotationVideos}/`,
             },
           },
           Outputs: [],

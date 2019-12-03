@@ -8,7 +8,7 @@ RUN apt-get -y install nodejs
 COPY package.json package-lock.json ./
 COPY node_modules/camera-trap-credentials ./node_modules/camera-trap-credentials
 
-RUN npm i && \
+RUN npm i --production && \
   rm -rf ~/.npm package-lock.json
 
 COPY src ./src

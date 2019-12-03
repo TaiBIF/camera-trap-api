@@ -12,6 +12,21 @@ const ProjectSpeciesModel = require('../models/data/project-species-model');
 const AnnotationModel = require('../models/data/annotation-model');
 const AnnotationState = require('../models/const/annotation-state');
 const Helpers = require('../common/helpers.js');
+const calculateWorkHours = require('./calculator-handler/work-hours');
+const calculateValidPics = require('./calculator-handler/valid-pics');
+const calculateEvents = require('./calculator-handler/events');
+const calculateOi1 = require('./calculator-handler/oi1');
+const calculateOi2 = require('./calculator-handler/oi2');
+const calculateOi3 = require('./calculator-handler/oi3');
+const calculateCaptureRate = require('./calculator-handler/capture-rate');
+
+exports.workHour = auth(UserPermission.all(), calculateWorkHours);
+exports.validPics = auth(UserPermission.all(), calculateValidPics);
+exports.events = auth(UserPermission.all(), calculateEvents);
+exports.oi1 = auth(UserPermission.all(), calculateOi1);
+exports.oi2 = auth(UserPermission.all(), calculateOi2);
+exports.oi3 = auth(UserPermission.all(), calculateOi3);
+exports.captureRate = auth(UserPermission.all(), calculateCaptureRate);
 
 exports.calculateOI = auth(UserPermission.all(), (req, res) => {
   /*

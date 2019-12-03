@@ -58,6 +58,7 @@ if (op.argv.createCollections) {
   const CameraModelModel = require('./src/models/data/camera-model-model');
   const CameraSNModel = require('./src/models/data/camera-serial-number-model');
   const CameraVNModel = require('./src/models/data/camera-vendor-maintenance-number-model');
+  const AreaType = require('./src/models/const/area-type');
 
   const data = [
     new DataFieldModel({
@@ -356,69 +357,91 @@ if (op.argv.createCollections) {
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '台北市', 'en-US': 'Taipei City' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '新北市', 'en-US': 'New Taipei City' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '桃園市', 'en-US': 'Taoyuan City' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '台中市', 'en-US': 'Taichung City' },
+      type: AreaType.west,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '台南市', 'en-US': 'Tainan City' },
+      type: AreaType.south,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '高雄市', 'en-US': 'Kaohsiung City' },
+      type: AreaType.south,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '基隆市', 'en-US': 'Keelung City' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '新竹市', 'en-US': 'Hsinchu City' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '嘉義市', 'en-US': 'Chiayi City' },
+      type: AreaType.west,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '新竹縣', 'en-US': 'Hsinchu County' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '苗栗縣', 'en-US': 'Miaoli County' },
+      type: AreaType.west,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '彰化縣', 'en-US': 'Changhua County' },
+      type: AreaType.west,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '南投縣', 'en-US': 'Nantou County' },
+      type: AreaType.west,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '雲林縣', 'en-US': 'Yunlin County' },
+      type: AreaType.south,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '嘉義縣', 'en-US': 'Chiayi County' },
+      type: AreaType.south,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '屏東縣', 'en-US': 'Pingtung County' },
+      type: AreaType.south,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '宜蘭縣', 'en-US': 'Yilan County' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '花蓮縣', 'en-US': 'Hualien County' },
+      type: AreaType.east,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '桃園縣', 'en-US': 'Taitung County' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '澎湖縣', 'en-US': 'Penghu County' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '金門縣', 'en-US': 'Kinmen County' },
+      type: AreaType.north,
     }),
     new ProjectAreaModel({
       title: { 'zh-TW': '連江縣', 'en-US': 'Lienchiang County' },
+      type: AreaType.north,
     }),
     new CameraModel({
       name: '草坔C01',
