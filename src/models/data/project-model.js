@@ -7,6 +7,7 @@ const getRetrieved = require('../static/project/static-getRetrieved');
 const getRetrievedByStudyArea = require('../../models/static/project/static-getRetrievedByStudyArea');
 const getRetrievedByCamera = require('../../models/static/project/static-getRetrievedByCamera');
 const getSpeciesGroup = require('../../models/static/project/static-getSpeciesGroup');
+const getStudyAreaSpeciesGroup = require('../../models/static/project/static-getStudyAreaSpeciesGroup');
 const speciesTimeSeries = require('../../models/static/project/static-speciesTimeSeries');
 const topSpecies = require('../../models/static/project/static-topSpecies');
 
@@ -27,6 +28,10 @@ const schema = utils.generateSchema(
     },
     funder: {
       // 委辦單位
+      type: String,
+    },
+    executiveUnit: {
+      // 執行單位
       type: String,
     },
     code: {
@@ -193,6 +198,7 @@ schema.static('getRetrieved', getRetrieved);
 schema.static('getRetrievedByStudyArea', getRetrievedByStudyArea);
 schema.static('getRetrievedByCamera', getRetrievedByCamera);
 schema.static('getSpeciesGroup', getSpeciesGroup);
+schema.static('getStudyAreaSpeciesGroup', getStudyAreaSpeciesGroup);
 schema.static('speciesTimeSeries', speciesTimeSeries);
 schema.static('topSpecies', topSpecies);
 
@@ -205,6 +211,7 @@ model.prototype.dump = function() {
     title: this.title,
     shortTitle: this.shortTitle,
     funder: this.funder,
+    executiveUnit: this.executiveUnit,
     code: this.code,
     principalInvestigator: this.principalInvestigator,
     startTime: this.startTime,

@@ -1,5 +1,7 @@
 const moment = require('moment-timezone');
+const mongoose = require('mongoose');
 const { keyBy } = require('lodash');
+const xlsx = require('node-xlsx');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
 const AnnotationModel = require('../../models/data/annotation-model');
@@ -11,6 +13,7 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 const DataFieldState = require('../../models/const/data-field-state');
 const StudyAreaModel = require('../../models/data/study-area-model');
 const StudyAreaState = require('../../models/const/study-area-state');
+const ProjectTripModel = require('../../models/data/project-trip-model');
 const AnnotationsSearchForm = require('../../forms/annotation/annotations-search-form');
 const Helpers = require('../../common/helpers.js');
 
@@ -135,6 +138,7 @@ const getAnnotationQuery = (
   studyArea,
   childStudyAreas = [],
   cameraLocations = [],
+  projectTrips = null,
   dataFields,
   synonymSpeciesIds,
 ) => {
@@ -150,9 +154,26 @@ const getAnnotationQuery = (
   }
 
   if (cameraLocations.length) {
-    query.where({
-      cameraLocation: { $in: cameraLocations.map(x => x._id) },
-    });
+    if (projectTrips) {
+      if (projectTrips.length) {
+        query.where({
+          $and: [
+            {
+              cameraLocation: { $in: projectTrips.map(x => x.cameraLocation) },
+            },
+            {
+              cameraLocation: { $in: cameraLocations.map(x => x._id) },
+            },
+          ],
+        });
+      } else {
+        throw new errors.Http400('The project not have cameraLocation');
+      }
+    } else {
+      query.where({
+        cameraLocation: { $in: cameraLocations.map(x => x._id) },
+      });
+    }
   }
 
   if (form.uploadSession) {
@@ -207,6 +228,75 @@ const getAnnotationQuery = (
 
   return query;
 };
+const getAnnotationQueryByProductTripId = (
+  form,
+  ProductTripDatas,
+  dataFields,
+  synonymSpeciesIds,
+) => {
+  const query = AnnotationModel.find({ state: AnnotationState.active })
+    .find({ $or: ProductTripDatas })
+    .populate('species')
+    .populate('file')
+    .sort(form.sort);
+
+  // if (form.uploadSession) {
+  //   query.where({ uploadSession: form.uploadSession });
+  // }
+  // if (ProductTripDatas) {
+  //   query.where({
+  //     cameraLocation: { $in: cameraLocations.map(x => x._id) },
+  //   });
+  //   query.where({ $or: ProductTripDatas });
+  // }
+
+  // if (form.startTime) {
+  //   query.where({ time: { $gte: form.startTime } });
+  // }
+
+  // if (form.endTime) {
+  //   query.where({ time: { $lte: form.endTime } });
+  // }
+
+  if (form.timeRangeStart != null) {
+    const dayInMilliseconds = 24 * 60 * 60 * 1000;
+    const duration = form.timeRangeEnd - form.timeRangeStart;
+    let { timeRangeStart } = form;
+    if (form.timeRangeStart < 0) {
+      // The time is offset to the previous day.
+      timeRangeStart += dayInMilliseconds;
+    } else if (form.timeRangeStart >= dayInMilliseconds) {
+      // The time is offset to the next day.
+      timeRangeStart -= dayInMilliseconds;
+    }
+
+    if (timeRangeStart + duration >= dayInMilliseconds) {
+      query.where({
+        $or: [
+          { totalMilliseconds: { $gte: timeRangeStart } },
+          {
+            totalMilliseconds: {
+              $lte: timeRangeStart + duration - dayInMilliseconds,
+            },
+          },
+        ],
+      });
+    } else {
+      query.where({
+        $and: [
+          { totalMilliseconds: { $gte: timeRangeStart } },
+          { totalMilliseconds: { $lte: timeRangeStart + duration } },
+        ],
+      });
+    }
+  }
+
+  const extraFields = getExtraFields(form, dataFields);
+  if (extraFields.length > 0) {
+    query.where({ $and: extraFields });
+  }
+  return query;
+};
 
 /**
   GET /api/v1/annotations
@@ -215,151 +305,356 @@ const getAnnotationQuery = (
 module.exports = async (req, res) => {
   const form = new AnnotationsSearchForm(req.query);
   const errorMessage = form.validate();
+  const headers = [];
+  const xlsxData = [];
 
   if (errorMessage) {
     throw new errors.Http400(errorMessage);
   }
-
-  if (!form.studyArea && !form.cameraLocations.length) {
-    throw new errors.Http400(
-      'studyArea and cameraLocations least one should be not empty.',
-    );
-  }
-
-  if (form.timeRangeStart != null && form.timeRangeEnd == null) {
-    throw new errors.Http400('timeRangeEnd is required.');
-  }
-  if (form.timeRangeEnd != null && form.timeRangeStart == null) {
-    throw new errors.Http400('timeRangeStart is required.');
-  }
-  const { studyArea: studyAreaId } = form;
-
-  let [studyArea, childStudyAreas, cameraLocations] = [];
-
-  if (studyAreaId) {
-    studyArea = await fetchStudyArea(studyAreaId, req.user);
-    childStudyAreas = await fetchChildAreas(studyAreaId);
-  }
-
-  if (form.cameraLocations.length) {
-    cameraLocations = await fetchCameraLocations(
-      form.cameraLocations,
-      req.user,
-    );
-  }
-
-  const synonymSpeciesIds = await Helpers.findSynonymSpecies(form.species);
-  const dataFields = await fetchDataField(form.fields);
-
-  const offset = form.index * form.size;
-  const annotationQuery = getAnnotationQuery(
-    form,
-    studyArea,
-    childStudyAreas || [],
-    cameraLocations,
-    dataFields,
-    synonymSpeciesIds,
-  );
-
-  const annotations = await AnnotationModel.paginate(annotationQuery, {
-    offset,
-    limit: form.size,
-  });
-
-  const speciesField = await DataFieldModel.findOne({
-    systemCode: 'species',
-  });
-
-  const annotationDocs = annotations.docs.map(a => {
-    const data = Object.assign({}, a.dump());
-    if (a.species === null) {
-      const speciesTitle = data.fields.find(
-        f => f.dataField.toString() === speciesField._id.toString(),
+  if (form.projectTripId) {
+    const projectTripDatas = await ProjectTripModel.aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(form.projectTripId) } },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
+      {
+        $project: {
+          cameraLocation: '$studyAreas.cameraLocations.cameraLocation',
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
+        },
+      },
+      {
+        $group: {
+          _id: '$cameraLocation',
+          startActiveDates: { $push: '$startActiveDate' },
+          endActiveDates: { $push: '$endActiveDate' },
+        },
+      },
+    ]);
+    let projectTrips = [];
+    const projectTripsCameraLocation = [];
+    projectTripDatas.forEach(projectTripData => {
+      const startActiveDates = projectTripData.startActiveDates.map(
+        startActiveDate => startActiveDate,
+      );
+      const endActiveDates = projectTripData.endActiveDates.map(
+        endActiveDate => endActiveDate,
       );
 
-      data.species = {
-        title: {
-          'zh-TW': speciesTitle.value ? speciesTitle.value || '' : '',
-        },
-      };
+      const prjectTripTemp = [];
+      for (let i = 0; i < endActiveDates.length; i += 1) {
+        prjectTripTemp.push({
+          time: { $gte: startActiveDates[i], $lte: endActiveDates[i] },
+          cameraLocation: projectTripData._id,
+        });
+        projectTripsCameraLocation.push(String(projectTripData._id));
+      }
+
+      projectTrips = projectTrips.concat(prjectTripTemp);
+    });
+
+    const synonymSpeciesIds = await Helpers.findSynonymSpecies(form.species);
+    const dataFields = await fetchDataField(form.fields);
+
+    const offset = form.index * form.size;
+    const annotationQuerys = getAnnotationQueryByProductTripId(
+      form,
+      projectTrips,
+      dataFields,
+      synonymSpeciesIds,
+    );
+
+    const annotations = await AnnotationModel.paginate(annotationQuerys, {
+      offset,
+      limit: form.size,
+    });
+    const speciesField = await DataFieldModel.findOne({
+      systemCode: 'species',
+    });
+
+    const annotationDocs = annotations.docs.map(a => {
+      const data = Object.assign({}, a.dump());
+      if (a.species === null) {
+        const speciesTitle = data.fields.find(
+          f => f.dataField.toString() === speciesField._id.toString(),
+        );
+
+        data.species = {
+          title: {
+            'zh-TW': speciesTitle.value ? speciesTitle.value || '' : '',
+          },
+        };
+      }
+
+      return data;
+    });
+
+    if (!/\.csv$/i.test(req.path)) {
+      res.json(
+        new PageList(
+          form.index,
+          form.size,
+          annotations.totalDocs,
+          annotationDocs,
+        ),
+      );
+      return;
     }
 
-    return data;
-  });
+    let cameraLocations = [];
+    if (projectTripsCameraLocation.length) {
+      cameraLocations = await fetchCameraLocations(
+        projectTripsCameraLocation,
+        req.user,
+      );
+    }
 
-  if (!/\.csv$/i.test(req.path)) {
-    res.json(
-      new PageList(
-        form.index,
-        form.size,
-        annotations.totalDocs,
-        annotationDocs,
-      ),
-    );
-    return;
-  }
+    const cameraLocation = cameraLocations[0];
+    const { project } = cameraLocation;
+    const pDataFields = project.dataFields;
+    const fieldsObjects = await DataFieldModel.find({
+      _id: { $in: pDataFields },
+    });
 
-  const cameraLocation = cameraLocations[0];
-  const { project } = cameraLocation;
-  const pDataFields = project.dataFields;
-  const fieldsObjects = await DataFieldModel.find({
-    _id: { $in: pDataFields },
-  });
-
-  const headers = fieldsObjects
-    .map(f => (f.title['zh-TW'] === '樣區' ? '樣區,子樣區' : f.title['zh-TW']))
-    .join(',');
-
-  let parentArea;
-  if (cameraLocation.studyArea.parent) {
-    const { parent: parentId } = cameraLocation.studyArea;
-    parentArea = await StudyAreaModel.findById(parentId);
-  }
-
-  const data = annotationDocs.map(a => {
-    const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
-    const annotationFields = keyBy(a.fields, 'dataField');
-    let rowDataString = '';
     fieldsObjects.forEach(f => {
-      const key = f.title['en-US'];
-      switch (key) {
-        case 'Study area':
-          // 樣區
-          if (parentArea) {
-            rowDataString += `${parentArea.title['zh-TW']},${
-              cameraLocation.studyArea.title['zh-TW']
-            }`;
-          } else {
-            rowDataString += `${cameraLocation.studyArea.title['zh-TW']},`;
-          }
-
-          break;
-        case 'Camera Location':
-          rowDataString += `,${cameraLocation.name}`;
-          break;
-        case 'File name':
-          rowDataString += `,${a.filename}`;
-          break;
-        case 'Date and time':
-          rowDataString += `,${t}`;
-          break;
-        case 'Species':
-          rowDataString += `,${a.species.title['zh-TW']}`;
-          break;
-        default:
-          rowDataString += `,${
-            annotationFields[f._id] ? annotationFields[f._id].value || '' : ''
-          }`;
-          break;
+      if (f.title['zh-TW'] === '樣區') {
+        headers.push('樣區');
+        headers.push('子樣區');
+      } else {
+        headers.push(f.title['zh-TW']);
       }
     });
 
-    rowDataString += `,${a.id}`;
-    return rowDataString;
-  });
+    let parentArea;
+    if (cameraLocation.studyArea.parent) {
+      const { parent: parentId } = cameraLocation.studyArea;
+      parentArea = await StudyAreaModel.findById(parentId);
+    }
 
-  res.setHeader('Content-disposition', 'attachment; filename=export.csv');
-  res.contentType('csv');
-  res.write(`\ufeff${headers},Annotation id\n${data.join('\n')}\n`);
-  res.end();
+    annotationDocs.forEach(a => {
+      const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
+      const annotationFields = keyBy(a.fields, 'dataField');
+      const rowData = [];
+      fieldsObjects.forEach(f => {
+        const key = f.title['en-US'];
+        switch (key) {
+          case 'Study area':
+            // 樣區
+            if (parentArea) {
+              rowData.push(`${parentArea.title['zh-TW']}`);
+              rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
+            } else {
+              rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
+              rowData.push(''); // 沒有子樣區
+            }
+            break;
+          case 'Camera Location':
+            rowData.push(`${cameraLocation.name}`);
+            break;
+          case 'File name':
+            rowData.push(`${a.filename}`);
+            break;
+          case 'Date and time':
+            rowData.push(`${t}`);
+            break;
+          case 'Species':
+            rowData.push(`${a.species ? a.species.title['zh-TW'] : ''}`);
+            break;
+          default:
+            if (f.widgetType === 'select') {
+              const options = keyBy(f.options, '_id');
+              const value = annotationFields[f._id]
+                ? annotationFields[f._id].value || ''
+                : '';
+              rowData.push(value ? `${options[value]['zh-TW'] || ''}` : '');
+            } else {
+              rowData.push(
+                `${
+                  annotationFields[f._id]
+                    ? annotationFields[f._id].value || ''
+                    : ''
+                }`,
+              );
+            }
+            break;
+        }
+      });
+      rowData.push(`${a.id}`);
+      xlsxData.push(rowData);
+    });
+  } else {
+    if (!form.studyArea && !form.cameraLocations.length) {
+      throw new errors.Http400(
+        'studyArea and cameraLocations least one should be not empty.',
+      );
+    }
+    if (form.timeRangeStart != null && form.timeRangeEnd == null) {
+      throw new errors.Http400('timeRangeEnd is required.');
+    }
+    if (form.timeRangeEnd != null && form.timeRangeStart == null) {
+      throw new errors.Http400('timeRangeStart is required.');
+    }
+    const { studyArea: studyAreaId } = form;
+
+    let [studyArea, childStudyAreas, cameraLocations] = [];
+
+    if (studyAreaId) {
+      studyArea = await fetchStudyArea(studyAreaId, req.user);
+      childStudyAreas = await fetchChildAreas(studyAreaId);
+    }
+
+    if (form.cameraLocations.length) {
+      cameraLocations = await fetchCameraLocations(
+        form.cameraLocations,
+        req.user,
+      );
+    }
+
+    // if (form.projectTripId) {
+    //   projectTrips = await fetchProjectTripId(form.projectTripId);
+    // }
+
+    const synonymSpeciesIds = await Helpers.findSynonymSpecies(form.species);
+    const dataFields = await fetchDataField(form.fields);
+
+    const offset = form.index * form.size;
+    const annotationQuery = getAnnotationQuery(
+      form,
+      studyArea,
+      childStudyAreas || [],
+      cameraLocations,
+      null,
+      dataFields,
+      synonymSpeciesIds,
+    );
+    const annotations = await AnnotationModel.paginate(annotationQuery, {
+      offset,
+      limit: form.size,
+    });
+    const speciesField = await DataFieldModel.findOne({
+      systemCode: 'species',
+    });
+
+    const annotationDocs = annotations.docs.map(a => {
+      const data = Object.assign({}, a.dump());
+      if (a.species === null) {
+        const speciesTitle = data.fields.find(
+          f => f.dataField.toString() === speciesField._id.toString(),
+        );
+
+        data.species = {
+          title: {
+            'zh-TW': speciesTitle.value ? speciesTitle.value || '' : '',
+          },
+        };
+      }
+
+      return data;
+    });
+
+    if (!/\.csv$/i.test(req.path)) {
+      res.json(
+        new PageList(
+          form.index,
+          form.size,
+          annotations.totalDocs,
+          annotationDocs,
+        ),
+      );
+      return;
+    }
+
+    const cameraLocation = cameraLocations[0];
+    const { project } = cameraLocation;
+    const pDataFields = project.dataFields;
+    const fieldsObjects = await DataFieldModel.find({
+      _id: { $in: pDataFields },
+    });
+
+    fieldsObjects.forEach(f => {
+      if (f.title['zh-TW'] === '樣區') {
+        headers.push('樣區');
+        headers.push('子樣區');
+      } else {
+        headers.push(f.title['zh-TW']);
+      }
+    });
+
+    let parentArea;
+    if (cameraLocation.studyArea.parent) {
+      const { parent: parentId } = cameraLocation.studyArea;
+      parentArea = await StudyAreaModel.findById(parentId);
+    }
+
+    annotationDocs.forEach(a => {
+      const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
+      const annotationFields = keyBy(a.fields, 'dataField');
+      const rowData = [];
+      fieldsObjects.forEach(f => {
+        const key = f.title['en-US'];
+        switch (key) {
+          case 'Study area':
+            // 樣區
+            if (parentArea) {
+              rowData.push(`${parentArea.title['zh-TW']}`);
+              rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
+            } else {
+              rowData.push(`${cameraLocation.studyArea.title['zh-TW']}`);
+              rowData.push(''); // 沒有子樣區
+            }
+            break;
+          case 'Camera Location':
+            rowData.push(`${cameraLocation.name}`);
+            break;
+          case 'File name':
+            rowData.push(`${a.filename}`);
+            break;
+          case 'Date and time':
+            rowData.push(`${t}`);
+            break;
+          case 'Species':
+            rowData.push(`${a.species ? a.species.title['zh-TW'] : ''}`);
+            break;
+          default:
+            if (f.widgetType === 'select') {
+              const options = keyBy(f.options, '_id');
+              const value = annotationFields[f._id]
+                ? annotationFields[f._id].value || ''
+                : '';
+
+              rowData.push(
+                value
+                  ? `${(options[value] ? options[value]['zh-TW'] : '') || ''}`
+                  : '',
+              );
+            } else {
+              rowData.push(
+                `${
+                  annotationFields[f._id]
+                    ? annotationFields[f._id].value || ''
+                    : ''
+                }`,
+              );
+            }
+            break;
+        }
+      });
+      rowData.push(`${a.id}`);
+      xlsxData.push(rowData);
+    });
+  }
+
+  headers.push('Annotation id');
+  xlsxData.unshift(headers);
+  res.setHeader('Content-disposition', 'attachment; filename=export.xlsx');
+  res.setHeader(
+    'Content-type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8',
+  );
+  const buffer = xlsx.build([{ name: 'annotations', data: xlsxData }]);
+  res.end(buffer);
 };

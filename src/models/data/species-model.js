@@ -21,6 +21,10 @@ const schema = utils.generateSchema(
         },
       },
     },
+    dataCount: {
+      type: Number,
+      default: 0,
+    },
     code: {
       // 供「提示定義」使用
       type: String,
@@ -37,6 +41,7 @@ schema.method('dump', function() {
     id: `${this._id}`,
     title: this.title,
     code: this.code,
+    dataCount: this.dataCount,
   };
 });
 

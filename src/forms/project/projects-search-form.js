@@ -28,5 +28,21 @@ ProjectsSearchForm.define({
       ),
     ],
   }),
+  species: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.length({ max: 1024 })],
+    }),
+  }),
+  projectAreas: new forms.fields.ArrayField({
+    filter: value => (Array.isArray(value) ? value : [value]),
+    subField: new forms.fields.StringField({
+      required: true,
+      validators: [forms.validators.length({ max: 1024 })],
+    }),
+  }),
+  startDate: new forms.fields.DateField(),
+  endDate: new forms.fields.DateField(),
 });
 module.exports = ProjectsSearchForm;
