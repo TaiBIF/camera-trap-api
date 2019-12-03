@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const utils = require('../../common/utils');
 const errors = require('../../models/errors');
 const AnnotationModel = require('../../models/data/annotation-model');
+const AnnotationState = require('../../models/const/annotation-state');
 const FileModel = require('../../models/data/file-model');
 const ProjectModel = require('../../models/data/project-model');
 const CameraLocationModel = require('../../models/data/camera-location-model');
@@ -63,6 +64,7 @@ const saveAllFileObjectWithNewAnnotaions = (
         studyArea: cameraLocation.studyArea,
         cameraLocation,
         uploadSession,
+        state: AnnotationState.active,
         file,
         filename: file.originalFilename,
         time: file.exif.dateTime,
@@ -133,14 +135,16 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
     logger.info(`zip worker job. save with Files`);
     const dirname = tempDir.name;
     let files = [];
-
     try {
       files = await createFileModels(filesPath, dirname, project, user);
     } catch (e) {
       throw new uploadErrors.ConvertFilesFailed(e.message);
     }
+
+    const fileArr = Object.values(files);
+
     await saveAllFileObjectWithNewAnnotaions(
-      files,
+      fileArr,
       project,
       cameraLocation,
       uploadSession,
@@ -149,9 +153,7 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   }
 
   const csvFilePath = `${tempDir.name}/${csvFiles[0]}`;
-
   const csvArray = csvParse(await fetchCsvFileContent(csvFilePath), csvOptions);
-
   if (csvArray.length !== filesPath.length) {
     throw new uploadErrors.InconsistentQuantity(
       `CSV: ${csvArray.length - 1}, media files: ${filesPath - 1}`,
@@ -195,7 +197,6 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   logger.info(
     `zip worker job. Convert files done: ${Object.keys(fileObjects).length}`,
   );
-
   if (withAnntationId) {
     await saveAllFileObjectWithAnnotationCsv(
       csvArray,
