@@ -21,7 +21,9 @@ exports.getSpecies = auth(UserPermission.all(), (req, res) => {
     throw new errors.Http400(errorMessage);
   }
 
-  const query = SpeciesModel.where().sort('title.zh-TW');
+  const query = SpeciesModel.where('isAcceptedName')
+    .equals(true)
+    .sort('-sort');
   return SpeciesModel.paginate(query, {
     offset: form.index * form.size,
     limit: form.size,
