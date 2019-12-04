@@ -25,10 +25,18 @@ const schema = utils.generateSchema(
       type: Number,
       default: 0,
     },
+    sort: {
+      type: Number,
+      default: 0,
+    },
     code: {
       // 供「提示定義」使用
       type: String,
       enum: SpeciesCode.all(),
+    },
+    isAcceptedName: {
+      // for 常用固定名單 (翁老師提供)
+      type: Boolean,
     },
   },
   {
