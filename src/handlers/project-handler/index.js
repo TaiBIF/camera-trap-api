@@ -1,6 +1,7 @@
 const config = require('config');
 const bluebird = require('bluebird');
 const moment = require('moment');
+const mongoose = require('mongoose');
 const auth = require('../../auth/authorization');
 const errors = require('../../models/errors');
 const PageList = require('../../models/page-list');
@@ -74,6 +75,19 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
   if ((form.startDate && !form.endDate) || (!form.startDate && form.endDate)) {
     throw new errors.Http400(`startDate or endDate must be two have value .`);
   }
+
+  if (form.county) {
+    if (form.county.length > 1) {
+      const countys = form.county.map(c => mongoose.Types.ObjectId(c));
+      query.where({
+        areas: { $in: countys },
+      });
+    } else if (form.county.length === 1) {
+      query.where({
+        areas: mongoose.Types.ObjectId(form.county[0]),
+      });
+    }
+  }
   if (form.startDate && form.endDate) {
     query.where({
       $and: [
@@ -90,7 +104,6 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
       ],
     });
   }
-
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
@@ -181,7 +194,18 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
       ],
     });
   }
-
+  if (form.county) {
+    if (form.county.length > 1) {
+      const countys = form.county.map(c => mongoose.Types.ObjectId(c));
+      query.where({
+        areas: { $in: countys },
+      });
+    } else if (form.county.length === 1) {
+      query.where({
+        areas: mongoose.Types.ObjectId(form.county[0]),
+      });
+    }
+  }
   return ProjectModel.paginate(
     query.sort(form.sort).populate('coverImageFile'),
     {
