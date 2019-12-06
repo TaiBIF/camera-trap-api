@@ -54,6 +54,11 @@ const schema = utils.generateSchema(
       // 撤收日期
       type: Date,
     },
+    city: {
+      // 都市
+      type: String,
+      default: '',
+    },
     latitude: {
       // 緯度
       type: Number,
@@ -126,6 +131,24 @@ schema.method('isLocked', function() {
   @returns {Boolean}
    */
   return !!(this.lockExpiredTime && this.lockExpiredTime > new Date());
+});
+
+schema.method('updateCity', async function() {
+  const city = await mongoose.model('CityCompartmentBoundaryModel').findOne({
+    geometry: {
+      $geoIntersects: {
+        $geometry: {
+          type: 'Point',
+          coordinates: [this.longitude, this.latitude],
+        },
+      },
+    },
+  });
+  if (city) {
+    this.city = city.properties.name;
+    await this.save();
+  }
+  return this;
 });
 
 schema.static('joinFailuresAndCanTrash', async docs => {

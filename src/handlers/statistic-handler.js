@@ -4,7 +4,6 @@ const AnnotationModel = require('../models/data/annotation-model');
 const CameraLocationModel = require('../models/data/camera-location-model');
 const SpeciesModel = require('../models/data/species-model');
 const FileModel = require('../models/data/file-model');
-const StudyAreasModel = require('../models/data/study-area-model');
 const CameraLocationsModel = require('../models/data/camera-location-model');
 const ProjectTripsModel = require('../models/data/project-trip-model');
 
@@ -134,13 +133,13 @@ exports.getStatisticsByCounty = async (req, res) => {
   /*
     GET /api/v1/statistics/county/{countyName}
   */
-  const countyName = req.params.countyName.slice(0, 3);
-  const studyAreaIds = await StudyAreasModel.distinct('_id', {
-    'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
-  });
+  const { countyName } = req.params;
 
-  const projects = await StudyAreasModel.distinct('project', {
-    'title.zh-TW': { $regex: new RegExp(countyName, 'i') },
+  const studyAreaIds = await CameraLocationsModel.distinct('studyArea', {
+    city: countyName,
+  });
+  const projects = await CameraLocationsModel.distinct('project', {
+    city: countyName,
   });
 
   const cameraLocations = await CameraLocationsModel.distinct('name', {
