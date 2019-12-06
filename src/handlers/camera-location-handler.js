@@ -143,6 +143,7 @@ exports.addStudyAreaCameraLocation = auth(UserPermission.all(), (req, res) => {
       });
       return cameraLocation.save();
     })
+    .then(cameraLocation => cameraLocation.updateCity())
     .then(cameraLocation => {
       res.json(cameraLocation.dump());
     });
@@ -205,6 +206,7 @@ exports.updateCameraLocation = auth(UserPermission.all(), (req, res) => {
       Object.assign(cameraLocation, form);
       return cameraLocation.save();
     })
+    .then(cameraLocation => cameraLocation.updateCity())
     .then(cameraLocation => {
       res.json(cameraLocation.dump());
     });

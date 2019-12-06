@@ -42,6 +42,18 @@ ProjectsSearchForm.define({
       validators: [forms.validators.length({ max: 1024 })],
     }),
   }),
+  // county: new forms.fields.StringField(),
+  county: new forms.fields.ArrayField({
+    filter: value => {
+      if (value.length !== 0) {
+        return Array.isArray(value) ? value : [value];
+      }
+    },
+    subField: new forms.fields.StringField({
+      required: false,
+      validators: [forms.validators.length({ max: 1024 })],
+    }),
+  }),
   startDate: new forms.fields.DateField(),
   endDate: new forms.fields.DateField(),
 });
