@@ -1,5 +1,7 @@
 const { keyBy } = require('lodash');
 const mongoose = require('mongoose');
+const xlsx = require('node-xlsx');
+const moment = require('moment-timezone');
 const PageList = require('../../models/page-list');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
@@ -66,7 +68,8 @@ const getAnnotationQuery = form => {
 };
 
 /**
- * GET /api/v1/annotations
+ * GET /api/v1/simple-annotations
+ * GET /api/v1/simple-annotations.csv
  */
 module.exports = async (req, res) => {
   const form = req.query;
@@ -75,10 +78,19 @@ module.exports = async (req, res) => {
   const cameraLocations = await fetchCameraLocations(cameraLocationIds);
   const cameraLocationsMapping = keyBy(cameraLocations, '_id');
   const annotationQuery = getAnnotationQuery(form);
-  const annotations = await AnnotationModel.paginate(annotationQuery, {
-    offset: (index ? index - 1 : 0) * 500,
-    limit: 500,
-  });
+  const offsetLimit = !/\.csv$/i.test(req.path)
+    ? {
+        offset: (index ? index - 1 : 0) * 500,
+        limit: 500,
+      }
+    : {
+        offset: 0,
+        limit: 20000, // TODO csv 下載最高限制?
+      };
+  const annotations = await AnnotationModel.paginate(
+    annotationQuery,
+    offsetLimit,
+  );
 
   const speciesField = await DataFieldModel.findOne({
     systemCode: 'species',
@@ -114,11 +126,41 @@ module.exports = async (req, res) => {
         },
       };
     }
-
     return data;
   });
 
-  res.json(
-    new PageList(form.index, form.size, annotations.totalDocs, annotationDocs),
+  if (!/\.csv$/i.test(req.path)) {
+    res.json(
+      new PageList(
+        form.index,
+        form.size,
+        annotations.totalDocs,
+        annotationDocs,
+      ),
+    );
+    return;
+  }
+  // res.json(
+  //  new PageList(form.index, form.size, annotations.totalDocs, annotationDocs),
+  // );
+  const headers = ['樣區', '相機位置', '檔名', '時間', '物種']; // TODO: other fields, consider, mix multiple project
+
+  const xlsxData = annotationDocs.map(a => {
+    const rowData = [];
+    rowData.push(`${a.studyArea.title['zh-TW']}`);
+    rowData.push(`${a.cameraLocation.name}`);
+    rowData.push(`${a.filename}`);
+    const t = moment(a.time, 'Asia/Taipei').format('YYYY-MM-DD HH:mm:ss');
+    rowData.push(`${t}`);
+    rowData.push(`${a.species ? a.species.title['zh-TW'] : ''}`);
+    return rowData;
+  });
+  xlsxData.unshift(headers);
+  res.setHeader('Content-disposition', 'attachment; filename=annotations.xlsx');
+  res.setHeader(
+    'Content-type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8',
   );
+  const buffer = xlsx.build([{ name: 'annotations', data: xlsxData }]);
+  res.end(buffer);
 };
