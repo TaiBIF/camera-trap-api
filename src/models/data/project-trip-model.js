@@ -117,6 +117,18 @@ const schema = utils.generateSchema(
                 endActiveDate: {
                   type: Date,
                 },
+                cameraResolution1: {
+                  type: Number,
+                },
+                cameraResolution2: {
+                  type: Number,
+                },
+                cameraResolutionVideo1: {
+                  type: Number,
+                },
+                cameraResolutionVideo2: {
+                  type: Number,
+                },
               },
             ],
           },
