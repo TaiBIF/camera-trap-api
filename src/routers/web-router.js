@@ -359,6 +359,7 @@ apiRouter.get('/calculator/oi1', calculatorHandler.oi1);
 apiRouter.get('/calculator/oi2', calculatorHandler.oi2);
 apiRouter.get('/calculator/oi3', calculatorHandler.oi3);
 apiRouter.get('/calculator/detection', calculatorHandler.detection);
+apiRouter.get('/calculator/apoa', calculatorHandler.apoa);
 apiRouter.get('/calculator/ltd', calculatorHandler.calculateLTD);
 apiRouter.get('/calculator/oi', calculatorHandler.calculateOI);
 
