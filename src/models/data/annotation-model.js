@@ -130,6 +130,25 @@ const schema = utils.generateSchema(
         type: String,
       },
     ],
+    tags: [
+      {
+        text: {
+          type: String,
+        },
+        x: {
+          type: Number,
+        },
+        y: {
+          type: Number,
+        },
+        width: {
+          type: Number,
+        },
+        height: {
+          type: Number,
+        },
+      },
+    ],
   },
   {
     collection: 'Annotations',
@@ -242,6 +261,7 @@ schema.method('dump', function() {
           : field.dataField,
       value: field.value.selectId || field.value.text || field.value.time,
     })),
+    tags: this.tags,
   };
 });
 
