@@ -61,7 +61,6 @@ module.exports = async (req, res) => {
   const annotation = await AnnotationModel.findById(req.params.annotationId)
     .where({ state: AnnotationState.active })
     .populate('file');
-
   const species =
     (await SpeciesModel.where({
       'title.zh-TW': form.speciesTitle,
@@ -108,6 +107,10 @@ module.exports = async (req, res) => {
   }
 
   // annotation.fields = [];
+
+  if (req.body.tags) {
+    annotation.tags = req.body.tags;
+  }
 
   await annotation.save();
 
