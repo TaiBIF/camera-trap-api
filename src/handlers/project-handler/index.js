@@ -149,7 +149,10 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
         .startOf('day')
         .toDate(),
     },
+    $or: [{ isHide: { $exists: false } }, { isHide: { $eq: false } }],
   });
+
+  // query.where({ })
 
   if (form.species && form.species.length > 0) {
     const projects = [];

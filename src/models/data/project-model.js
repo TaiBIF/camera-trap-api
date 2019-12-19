@@ -148,6 +148,10 @@ const schema = utils.generateSchema(
         name: 'OldestAnnotationTime',
       },
     },
+    isHide: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     collection: 'Projects',
