@@ -17,6 +17,22 @@ const fetchCameraLocations = async cameraLocationIds => {
   return cameraLocations;
 };
 
+const fetchCustomDataFieldSelectMap = async () => {
+  const customSelectDataFields = await DataFieldModel.find({
+    systemCode: { $exists: false },
+    widgetType: 'select',
+  });
+
+  return customSelectDataFields.reduce((r, e) => {
+    const opt = e.options.reduce((ro, eo) => {
+      ro[eo._id] = eo['zh-TW'];
+      return ro;
+    }, {});
+    r[e._id] = opt;
+    return r;
+  }, {});
+};
+
 const getAnnotationQuery = form => {
   const query = AnnotationModel.where({ state: AnnotationState.active })
     .populate('species')
@@ -96,6 +112,8 @@ module.exports = async (req, res) => {
     systemCode: 'species',
   });
 
+  const customDataFieldSelectMap = await fetchCustomDataFieldSelectMap();
+
   // 整理 annotations
   const annotationDocs = annotations.docs.map(a => {
     const data = Object.assign({}, a.dump());
@@ -126,6 +144,21 @@ module.exports = async (req, res) => {
         },
       };
     }
+
+    // convert custom fields text value to label
+    data.fields = data.fields.map(x => {
+      const v = Object.prototype.hasOwnProperty.call(
+        customDataFieldSelectMap,
+        x.dataField,
+      )
+        ? customDataFieldSelectMap[x.dataField][x.value]
+        : x.value;
+
+      return {
+        dataField: x.dataField,
+        value: v,
+      };
+    });
     return data;
   });
 
