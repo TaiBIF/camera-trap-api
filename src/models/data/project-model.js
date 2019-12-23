@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 const utils = require('../../common/utils');
 const ProjectLicense = require('../const/project-license');
 const ProjectRole = require('../const/project-role');
@@ -187,6 +188,11 @@ schema.method('canAccessBy', function(currentUser) {
   @param currentUser {UserModel}
   @returns {Boolean}
    */
+
+  // HACK 計畫如果公開就不用檢查
+  if (moment(this.publishTime) <= moment(Date())) {
+    return true;
+  }
   if (!currentUser || !currentUser._id || !currentUser.permission) {
     return false;
   }
