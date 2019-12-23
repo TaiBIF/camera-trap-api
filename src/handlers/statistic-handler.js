@@ -63,8 +63,9 @@ exports.getStatistics = async (req, res) => {
   }
 
   // species
-  const speciesData = await SpeciesModel.find({}).exec();
-
+  const speciesData = await SpeciesModel.where('isAcceptedName')
+    .equals(true)
+    .sort('sort');
   const speciesArr = await bluebird.map(
     speciesData,
     async species => {
