@@ -9,6 +9,7 @@ exports.getByProjectId = auth(UserPermission.all(), (req, res) => {
   GET /api/v1/projects/:projectId/image-species-group
    */
   const { projectId } = req.params;
+  const { tripId } = req.query;
 
   return ProjectModel.findById(projectId)
     .then(project => {
@@ -18,7 +19,13 @@ exports.getByProjectId = auth(UserPermission.all(), (req, res) => {
       if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getSpeciesGroup(projectId);
+      if (tripId !== 'all') {
+        return ProjectModel.getSpeciesGroup(projectId, tripId);
+      }
+      // eslint-disable-next-line no-else-return
+      else {
+        return ProjectModel.getSpeciesGroup(projectId);
+      }
     })
     .then(records => {
       const timeUpdated = new Date();
@@ -37,6 +44,7 @@ exports.getByProjectIdAndStudyAreaId = auth(
   GET /api/v1/projects/:projectId/study-areas/:studyAreaId/image-species-group
    */
     const { projectId, studyAreaId } = req.params;
+    const { tripId } = req.query;
 
     return ProjectModel.findById(projectId)
       .then(project => {
@@ -46,7 +54,17 @@ exports.getByProjectIdAndStudyAreaId = auth(
         if (!project.canAccessBy(req.user)) {
           throw new errors.Http403();
         }
-        return ProjectModel.getStudyAreaSpeciesGroup(projectId, studyAreaId);
+        if (tripId !== 'all') {
+          return ProjectModel.getStudyAreaSpeciesGroup(
+            projectId,
+            studyAreaId,
+            tripId,
+          );
+        }
+        // eslint-disable-next-line no-else-return
+        else {
+          return ProjectModel.getStudyAreaSpeciesGroup(projectId, studyAreaId);
+        }
       })
       .then(records => {
         const timeUpdated = new Date();
