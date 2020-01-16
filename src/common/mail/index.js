@@ -104,8 +104,15 @@ module.exports = class Mail {
     const template = templates[this.languageCode].notifyAdministratorGotIssue(
       issue,
     );
-    return this.sendEmail({
+    /* return this.sendEmail({
       to: administrators.map(user => user.email),
+      replyTo: issue.email,
+      subject: template.subject,
+      body: template.body,
+      }); */
+    // HACK, hard code admin email
+    return this.sendEmail({
+      to: ['cameratrap.taibif@gmail.com'],
       replyTo: issue.email,
       subject: template.subject,
       body: template.body,

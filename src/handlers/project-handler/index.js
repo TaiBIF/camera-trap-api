@@ -42,7 +42,31 @@ exports.getProjects = auth(UserPermission.all(), async (req, res) => {
   }
 
   const query = ProjectModel.where();
-  if (req.user.permission !== UserPermission.administrator) {
+  // HACK, for calculate page, include public projects
+  if (req.query.include === 'public') {
+    if (req.user.permission !== UserPermission.administrator) {
+      // General accounts just fetch hims' projects. (Administrator fetch all projects.)
+      query.where({
+        $or: [
+          {
+            isHide: { $exists: false },
+          },
+          {
+            isHide: { $eq: false },
+          },
+          { 'members.user': req.user._id },
+          {
+            publishTime: {
+              $lte: moment()
+                .startOf('day')
+                .toDate(),
+            },
+          },
+        ],
+      });
+    }
+  } else if (req.user.permission !== UserPermission.administrator) {
+    // get my own projects
     // General accounts just fetch hims' projects. (Administrator fetch all projects.)
     query.where({ 'members.user': req.user._id });
   }
@@ -149,7 +173,10 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
         .startOf('day')
         .toDate(),
     },
+    $or: [{ isHide: { $exists: false } }, { isHide: { $eq: false } }],
   });
+
+  // query.where({ })
 
   if (form.species && form.species.length > 0) {
     const projects = [];

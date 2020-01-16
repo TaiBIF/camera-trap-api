@@ -4,9 +4,10 @@ const errors = require('../../errors');
 const reformatRetrieved = require('./_reformatRetrieved');
 const AnnotationState = require('../../const/annotation-state');
 const StudyAreaState = require('../../const/study-area-state');
+const ProjectTripModel = require('../../../models/data/project-trip-model');
 
 // getRetrievedByProjectStudyArea
-module.exports = async function(projectId, year) {
+module.exports = async function(projectId, year, tripId = null) {
   if (!year) {
     throw new errors.Http400();
   }
@@ -22,61 +23,119 @@ module.exports = async function(projectId, year) {
   const timeYearEnd = new Date(timeYearStart);
   timeYearEnd.setUTCFullYear(timeYearEnd.getUTCFullYear() + 1);
 
-  const r = await AnnotationModel.aggregate([
-    {
-      $match: {
-        state: AnnotationState.active,
-        project: mongoose.Types.ObjectId(projectId),
-        time: { $gte: timeYearStart, $lt: timeYearEnd },
-      },
-    },
-    {
-      $lookup: {
-        from: 'StudyAreas',
-        localField: 'studyArea',
-        foreignField: '_id',
-        as: 'studyArea',
-      },
-    },
-    {
-      $addFields: {
-        studyArea: { $arrayElemAt: ['$studyArea', 0] },
-      },
-    },
-    {
-      $addFields: {
-        studyAreaId: {
-          $cond: [
-            { $not: ['$studyArea.parent'] },
-            '$studyArea._id',
-            '$studyArea.parent',
-          ],
+  let r = [];
+  let projectTrips = [];
+
+  let match = {
+    state: AnnotationState.active,
+    project: mongoose.Types.ObjectId(projectId),
+    time: { $gte: timeYearStart, $lt: timeYearEnd },
+  };
+
+  if (tripId) {
+    // gen trip filter data
+    const projectTripDatas = await ProjectTripModel.aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(tripId) } },
+      { $unwind: '$studyAreas' },
+      { $unwind: '$studyAreas.cameraLocations' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras' },
+      { $unwind: '$studyAreas.cameraLocations.projectCameras.endActiveDate' },
+      {
+        $project: {
+          cameraLocation: '$studyAreas.cameraLocations.cameraLocation',
+          endActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.endActiveDate',
+          startActiveDate:
+            '$studyAreas.cameraLocations.projectCameras.startActiveDate',
         },
       },
-    },
-    {
-      $match: { 'studyArea.state': StudyAreaState.active },
-    },
-    {
-      $group: {
-        _id: {
-          month: { $month: { $subtract: ['$time', timeOffset.getTime()] } },
-          studyArea: '$studyAreaId',
+      {
+        $group: {
+          _id: '$cameraLocation',
+          startActiveDates: { $push: '$startActiveDate' },
+          endActiveDates: { $push: '$endActiveDate' },
         },
-        dataCount: { $sum: 1 },
-        fileCount: {
-          $sum: { $cond: [{ $eq: ['$file', undefined] }, 0, 1] },
-        },
-        speciesCount: {
-          $sum: { $cond: [{ $eq: ['$species', undefined] }, 0, 1] },
-        },
-        failures: {
-          $sum: { $cond: [{ $gte: [{ $size: '$failures' }, 1] }, 1, 0] },
-        },
-        lastData: { $max: '$createTime' },
       },
-    },
-  ]);
+    ]);
+    const projectTripsCameraLocation = [];
+    projectTripDatas.forEach(projectTripData => {
+      const startActiveDates = projectTripData.startActiveDates.map(
+        startActiveDate => startActiveDate,
+      );
+      const endActiveDates = projectTripData.endActiveDates.map(
+        endActiveDate => endActiveDate,
+      );
+
+      const prjectTripTemp = [];
+      for (let i = 0; i < endActiveDates.length; i += 1) {
+        prjectTripTemp.push({
+          time: { $gte: startActiveDates[i], $lte: endActiveDates[i] },
+          cameraLocation: projectTripData._id,
+        });
+        projectTripsCameraLocation.push(String(projectTripData._id));
+      }
+
+      projectTrips = projectTrips.concat(prjectTripTemp);
+    });
+  }
+
+  if (!tripId || projectTrips.length) {
+    if (projectTrips.length) {
+      match = { ...match, $or: projectTrips };
+    }
+
+    r = await AnnotationModel.aggregate([
+      {
+        $match: match,
+      },
+      {
+        $lookup: {
+          from: 'StudyAreas',
+          localField: 'studyArea',
+          foreignField: '_id',
+          as: 'studyArea',
+        },
+      },
+      {
+        $addFields: {
+          studyArea: { $arrayElemAt: ['$studyArea', 0] },
+        },
+      },
+      {
+        $addFields: {
+          studyAreaId: {
+            $cond: [
+              { $not: ['$studyArea.parent'] },
+              '$studyArea._id',
+              '$studyArea.parent',
+            ],
+          },
+        },
+      },
+      {
+        $match: { 'studyArea.state': StudyAreaState.active },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: { $subtract: ['$time', timeOffset.getTime()] } },
+            studyArea: '$studyAreaId',
+          },
+          dataCount: { $sum: 1 },
+          fileCount: {
+            $sum: { $cond: [{ $eq: ['$file', undefined] }, 0, 1] },
+          },
+          speciesCount: {
+            $sum: { $cond: [{ $eq: ['$species', undefined] }, 0, 1] },
+          },
+          failures: {
+            $sum: { $cond: [{ $gte: [{ $size: '$failures' }, 1] }, 1, 0] },
+          },
+          lastData: { $max: '$createTime' },
+        },
+      },
+    ]);
+  }
 
   return reformatRetrieved(r, 'studyArea');
 };
