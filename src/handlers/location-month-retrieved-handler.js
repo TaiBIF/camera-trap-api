@@ -8,7 +8,7 @@ exports.locationMonthRetrieved = (req, res) => {
   GET /api/v1/projects/:projectId/month-retrieved
    */
   const { projectId } = req.params;
-  const { year } = req.query;
+  const { year, tripId } = req.query;
 
   return ProjectModel.findById(projectId)
     .then(project => {
@@ -18,7 +18,14 @@ exports.locationMonthRetrieved = (req, res) => {
       if (!project.canAccessBy(req.user)) {
         throw new errors.Http403();
       }
-      return ProjectModel.getRetrieved(projectId, year);
+
+      if (tripId !== 'all') {
+        return ProjectModel.getRetrieved(projectId, year, tripId);
+      }
+      // eslint-disable-next-line no-else-return
+      else {
+        return ProjectModel.getRetrieved(projectId, year);
+      }
     })
     .then(records => {
       const timeUpdated = new Date();
@@ -35,7 +42,7 @@ exports.retrievedByStudyArea = (req, res) => {
   GET /api/v1/projects/:projectId/study-areas/:studyAreaId/month-retrieved
    */
   const { projectId, studyAreaId } = req.params;
-  const { year } = req.query;
+  const { year, tripId } = req.query;
 
   return Promise.all([
     ProjectModel.findById(projectId),
@@ -51,7 +58,22 @@ exports.retrievedByStudyArea = (req, res) => {
       if (!studyArea) {
         throw new errors.Http404();
       }
-      return ProjectModel.getRetrievedByStudyArea(projectId, studyAreaId, year);
+      if (tripId !== 'all') {
+        return ProjectModel.getRetrievedByStudyArea(
+          projectId,
+          studyAreaId,
+          year,
+          tripId,
+        );
+      }
+      // eslint-disable-next-line no-else-return
+      else {
+        return ProjectModel.getRetrievedByStudyArea(
+          projectId,
+          studyAreaId,
+          year,
+        );
+      }
     })
     .then(records => {
       const timeUpdated = new Date();
@@ -67,7 +89,7 @@ exports.retrievedByCameraLocation = (req, res) => {
   GET /api/v1/projects/:projectId/camera-locations/:cameraLocationId/month-retrieved
    */
   const { projectId, cameraLocationId } = req.params;
-  const { year } = req.query;
+  const { year, tripId } = req.query;
 
   return Promise.all([
     ProjectModel.findById(projectId),
@@ -85,11 +107,23 @@ exports.retrievedByCameraLocation = (req, res) => {
       if (!cameraLocation) {
         throw new errors.Http404();
       }
-      return ProjectModel.getRetrievedByCamera(
-        projectId,
-        cameraLocationId,
-        year,
-      );
+
+      if (tripId !== 'all') {
+        return ProjectModel.getRetrievedByCamera(
+          projectId,
+          cameraLocationId,
+          year,
+          tripId,
+        );
+      }
+      // eslint-disable-next-line no-else-return
+      else {
+        return ProjectModel.getRetrievedByCamera(
+          projectId,
+          cameraLocationId,
+          year,
+        );
+      }
     })
     .then(records => {
       const timeUpdated = new Date();
