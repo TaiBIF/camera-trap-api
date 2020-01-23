@@ -3,6 +3,19 @@ const SpeciesModel = require('../models/data/species-model');
 // const ProjectSpeciesModel = require('../models/data/project-species-model');
 const SpeciesSynonyms = require('../models/const/species-synonyms');
 
+exports.getDaysInMonth = year => {
+  /* via:
+     https://zh.wikipedia.org/zh-tw/闰年
+  */
+  let isLeapYear = false;
+  if (year % 4 === 0 && year % 100 !== 0) {
+    isLeapYear = true;
+  } else if (year % 400 === 0) {
+    isLeapYear = true;
+  }
+  return [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+};
+
 exports.findSynonymSpecies = speciesIds =>
   SpeciesModel.where({
     _id: { $in: speciesIds },
