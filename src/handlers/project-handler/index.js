@@ -261,8 +261,7 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
 });
 
 exports.getProject = auth(UserPermission.all(), getProject);
-// exports.getProjectOversight = auth(UserPermission.all(), getProjectOversight);
-exports.getProjectOversight = getProjectOversight;
+exports.getProjectOversight = auth(UserPermission.all(), getProjectOversight);
 
 exports.addProject = auth(UserPermission.all(), (req, res) => {
   /*

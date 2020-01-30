@@ -12,12 +12,6 @@ const helpers = require('../../common/helpers');
   GET /api/v1/projects/:projectId/oversight
 */
 
-/* const asyncForEach = async (array, callback) => {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array)
-  }
-  } */
-
 const fetchYearStats = async (cameraLocationId, year) => {
   /* refer:
    *  https://stackoverflow.com/questions/52021756/mongodb-aggregate-with-nested-group
@@ -78,10 +72,10 @@ module.exports = async (req, res) => {
   if (!project) {
     throw new errors.Http404();
   }
-  // TODO
-  /* if (!project.canAccessBy(req.user)) {
+
+  if (!project.canAccessBy(req.user)) {
     throw new errors.Http403('The user is not a project member.');
-  } */
+  }
 
   const studyAreas = await StudyAreaModel.where({
     project: req.params.projectId,
@@ -107,8 +101,22 @@ module.exports = async (req, res) => {
   await Promise.all(
     cameraLocations.map(async c => {
       const yearStats = await fetchYearStats(c._id, findInYear);
-      console.log(c._id, yearStats);
-      const row = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; //  for 12 months
+      // console.log(c._id, yearStats);
+      const row = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ]; //  for 12 months
+      // for (const x of yearStats) { // lint error
       yearStats.forEach(x => {
         const monthIndex = parseInt(x._id.ym.split('-')[1], 10) - 1;
         row[monthIndex] = [x.count, daysInMonth[monthIndex]];
@@ -139,7 +147,7 @@ module.exports = async (req, res) => {
           })),
       })),
   }));
-  console.log('oututp');
+
   res.json({
     cameraLocationsMap,
     data,
