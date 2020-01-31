@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   const { projectId } = req.params;
   const project = await ProjectModel.findById(projectId);
   const trip = await ProjectTripModel.findOne({ project: projectId });
-  console.log(trip);
+  // console.log(trip);
   if (!project) {
     throw new errors.Http404();
   }

@@ -156,6 +156,10 @@ apiRouter.get('/projects', projectHandler.getProjects);
 apiRouter.get('/projects/public', projectHandler.getProjectsPublic);
 apiRouter.post('/projects', projectHandler.addProject);
 apiRouter.get('/projects/:projectId([a-f\\d]{24})', projectHandler.getProject);
+apiRouter.get(
+  '/projects/:projectId([a-f\\d]{24})/oversight',
+  projectHandler.getProjectOversight,
+);
 apiRouter.put(
   '/projects/:projectId([a-f\\d]{24})',
   projectHandler.updateProject,
