@@ -29,6 +29,7 @@ const DataFieldWidgetType = require('../../models/const/data-field-widget-type')
 const prepareProjectDwca = require('./prepareProjectDwcArchive');
 const getProjectDwca = require('./getProjectDwcArchive');
 const getProject = require('./getProject');
+const getProjectOversight = require('./getProjectOversight');
 const AnnotationModel = require('../../models/data/annotation-model');
 
 exports.getProjects = auth(UserPermission.all(), async (req, res) => {
@@ -260,6 +261,7 @@ exports.getProjectsPublic = auth(UserPermission.any(), async (req, res) => {
 });
 
 exports.getProject = auth(UserPermission.all(), getProject);
+exports.getProjectOversight = auth(UserPermission.all(), getProjectOversight);
 
 exports.addProject = auth(UserPermission.all(), (req, res) => {
   /*

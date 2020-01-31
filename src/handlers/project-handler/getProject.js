@@ -1,8 +1,26 @@
 const config = require('config');
 const ProjectModel = require('../../models/data/project-model');
+const AnnotationModel = require('../../models/data/annotation-model');
+const AnnotationState = require('../../models/const/annotation-state');
 const errors = require('../../models/errors');
 const utils = require('../../common/utils');
 
+/*
+const fetchAnnotationDateTimeRange = async () => {
+  const dateTimeRange = AnnotationModel.where({
+    project: project._id,
+    state: AnnotationState.active,
+  }).sort('time').limit(1).findOne(),
+            AnnotationModel.where({
+              project: project._id,
+              state: AnnotationState.active,
+            })
+              .sort('-time')
+              .limit(1)
+              .findOne(),
+          ]),
+}
+  */
 /*
   GET /api/v1/projects/:projectId
 */
@@ -30,5 +48,26 @@ module.exports = async (req, res) => {
     // file not exist
   }
 
-  res.json({ ...project.dump(), dwc: occurrence.LastModified });
+  const dateTimeRange = await Promise.all([
+    AnnotationModel.where({
+      project: project._id,
+      state: AnnotationState.active,
+    })
+      .sort('time')
+      .limit(1)
+      .findOne(),
+    AnnotationModel.where({
+      project: project._id,
+      state: AnnotationState.active,
+    })
+      .sort('-time')
+      .limit(1)
+      .findOne(),
+  ]).then(([d1, d2]) => [d1.time, d2.time]);
+
+  res.json({
+    ...project.dump(),
+    dwc: occurrence.LastModified,
+    annotationDateTimeRange: dateTimeRange,
+  });
 };
