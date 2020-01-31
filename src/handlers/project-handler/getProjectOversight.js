@@ -64,7 +64,8 @@ module.exports = async (req, res) => {
   const findInYear = req.query.year
     ? parseInt(req.query.year, 10)
     : new Date().getFullYear();
-  let data = [];
+  let studyAreaCameraLocations = [];
+  const data = {};
 
   const project = await ProjectModel.findById(req.params.projectId).populate(
     'cameraLocations',
@@ -97,7 +98,7 @@ module.exports = async (req, res) => {
   });
 
   const daysInMonth = helpers.getDaysInMonth(findInYear);
-  const cameraLocationsMap = {};
+
   await Promise.all(
     cameraLocations.map(async c => {
       const yearStats = await fetchYearStats(c._id, findInYear);
@@ -121,11 +122,11 @@ module.exports = async (req, res) => {
         const monthIndex = parseInt(x._id.ym.split('-')[1], 10) - 1;
         row[monthIndex] = [x.count, daysInMonth[monthIndex]];
       });
-      cameraLocationsMap[c._id] = row;
+      data[c._id] = row;
     }),
   );
 
-  data = studyAreas.map(sa => ({
+  studyAreaCameraLocations = studyAreas.map(sa => ({
     _id: sa.id,
     title: sa.title['zh-TW'],
     cameraLocations: cameraLocations
@@ -149,7 +150,7 @@ module.exports = async (req, res) => {
   }));
 
   res.json({
-    cameraLocationsMap,
     data,
+    studyAreaCameraLocations,
   });
 };
