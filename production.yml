@@ -25,7 +25,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: scripts/api/development/Dockerfile
+      dockerfile: scripts/api/production/Dockerfile
     restart: always
     environment:
       - REDIS_HOST=redis
