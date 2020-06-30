@@ -149,6 +149,20 @@ const schema = utils.generateSchema(
         },
       },
     ],
+    startWorkingDate: {
+      // 相機工作時間-開始
+      type: Date,
+      index: {
+        name: 'Time',
+      },
+    },
+    endWorkingDate: {
+      // 相機工作時間-結束
+      type: Date,
+      index: {
+        name: 'Time',
+      },
+    },
   },
   {
     collection: 'Annotations',
@@ -262,6 +276,8 @@ schema.method('dump', function() {
       value: field.value.selectId || field.value.text || field.value.time,
     })),
     tags: this.tags,
+    startWorkingDate: this.startWorkingDate,
+    endWorkingDate: this.endWorkingDate,
   };
 });
 
