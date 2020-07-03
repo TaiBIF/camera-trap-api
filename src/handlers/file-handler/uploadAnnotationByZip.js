@@ -43,7 +43,7 @@ const fetchCameraLocation = async (cameraLocationId, user) => {
   return cameraLocation;
 };
 
-module.exports = async (user, file, cameraLocationId) => {
+module.exports = async (user, file, cameraLocationId, workingRange) => {
   const type = FileType.annotationZIP;
   const cameraLocation = await fetchCameraLocation(cameraLocationId, user);
   const { project } = cameraLocation;
@@ -65,7 +65,6 @@ module.exports = async (user, file, cameraLocationId) => {
   });
 
   await uploadSession.save();
-
   fileObject
     .saveWithContent(file.path)
     .then(() => {
@@ -78,6 +77,7 @@ module.exports = async (user, file, cameraLocationId) => {
           fileId: fileObject._id,
           uploadSessionId: uploadSession._id,
           cameraLocationId,
+          workingRange,
         }),
       );
       job.save();

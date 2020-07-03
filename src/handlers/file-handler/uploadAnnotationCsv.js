@@ -73,7 +73,7 @@ const rawDataToObject = (csvArray, dataFields) => {
   return rawData;
 };
 
-module.exports = async (user, file, cameraLocationId) => {
+module.exports = async (user, file, cameraLocationId, workingRange) => {
   logger.info('Start import csv');
   const type = FileType.annotationCSV;
   const csvObject = csvParse(await fetchCsvFileContent(file.path), {
@@ -130,6 +130,15 @@ module.exports = async (user, file, cameraLocationId) => {
   const csvContentRows = rawDataToObject(csvObject, dataFields);
 
   if (annotationIndex < 0) {
+    const startWorkingDate =
+      workingRange !== undefined && workingRange.split(',').length === 2
+        ? workingRange.split(',')[0]
+        : undefined;
+    const endWorkingDate =
+      workingRange !== undefined && workingRange.split(',').length === 2
+        ? workingRange.split(',')[1]
+        : undefined;
+
     const annotations = csvContentRows.map(data => {
       // 組 fields
       const fields = dataFields.map(({ _id, options }) => {
@@ -174,6 +183,8 @@ module.exports = async (user, file, cameraLocationId) => {
         failures: annotationSpecies ? [] : ['new-species'],
         fields,
         rawData: data.origin,
+        startWorkingDate,
+        endWorkingDate,
       });
     });
 

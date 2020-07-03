@@ -46,7 +46,13 @@ const fetchCameraLocation = async (cameraLocationId, user) => {
   return cameraLocation;
 };
 
-module.exports = async (user, file, lastModified, cameraLocationId) => {
+module.exports = async (
+  user,
+  file,
+  lastModified,
+  cameraLocationId,
+  workingRange,
+) => {
   const type = FileType.annotationVideo;
 
   const cameraLocation = await fetchCameraLocation(cameraLocationId, user);
@@ -81,6 +87,15 @@ module.exports = async (user, file, lastModified, cameraLocationId) => {
   fs.unlinkSync(file.path);
 
   uploadSession.file = fileObject._id;
+  console.log('ueueueueu');
+  const startWorkingDate =
+    workingRange !== undefined && workingRange.split(',').length === 2
+      ? workingRange.split(',')[0]
+      : undefined;
+  const endWorkingDate =
+    workingRange !== undefined && workingRange.split(',').length === 2
+      ? workingRange.split(',')[1]
+      : undefined;
 
   const annotation = new AnnotationModel({
     project,
@@ -91,6 +106,8 @@ module.exports = async (user, file, lastModified, cameraLocationId) => {
     file: fileObject,
     filename,
     time: fileDateTime,
+    startWorkingDate,
+    endWorkingDate,
   });
 
   uploadSession.state = UploadSessionState.success;

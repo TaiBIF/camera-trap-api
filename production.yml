@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   redis:
     image: redis:5
@@ -26,6 +27,8 @@ services:
     build:
       context: .
       dockerfile: scripts/api/production/Dockerfile
+    container_name: ct-api-production-container
+    image: ct-api-production-image
     restart: always
     environment:
       - REDIS_HOST=redis

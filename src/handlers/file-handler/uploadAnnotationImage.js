@@ -46,7 +46,7 @@ const fetchCameraLocation = async (cameraLocationId, user) => {
   return cameraLocation;
 };
 
-module.exports = async (user, file, cameraLocationId) => {
+module.exports = async (user, file, cameraLocationId, workingRange) => {
   const type = FileType.annotationImage;
 
   const cameraLocation = await fetchCameraLocation(cameraLocationId, user);
@@ -83,6 +83,14 @@ module.exports = async (user, file, cameraLocationId) => {
     throw new errors.Http400(`無法取得圖片 Exif 時間`);
   }
 
+  const startWorkingDate =
+    workingRange !== undefined && workingRange.split(',').length === 2
+      ? workingRange.split(',')[0]
+      : undefined;
+  const endWorkingDate =
+    workingRange !== undefined && workingRange.split(',').length === 2
+      ? workingRange.split(',')[1]
+      : undefined;
   const annotation = new AnnotationModel({
     project,
     state: AnnotationState.active,
@@ -92,9 +100,11 @@ module.exports = async (user, file, cameraLocationId) => {
     file: fileObject,
     filename,
     time: fileDateTime,
+    startWorkingDate,
+    endWorkingDate,
   });
-
   await annotation.save();
+
   uploadSession.state = UploadSessionState.success;
   await uploadSession.save();
 

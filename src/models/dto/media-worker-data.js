@@ -6,5 +6,6 @@ module.exports = class MediaWorkerData {
     this.fileId = args.fileId;
     this.uploadSessionId = args.uploadSessionId;
     this.cameraLocationId = args.cameraLocationId;
+    this.workingRange = args.workingRange;
   }
 };

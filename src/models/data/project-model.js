@@ -190,7 +190,7 @@ schema.method('canAccessBy', function(currentUser) {
    */
 
   // HACK 計畫如果公開就不用檢查
-  if (moment(this.publishTime) <= moment(Date())) {
+  if (moment(this.publishTime) <= moment(Date.now())) {
     return true;
   }
   if (!currentUser || !currentUser._id || !currentUser.permission) {

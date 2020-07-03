@@ -75,25 +75,52 @@ module.exports = async (req, res) => {
   }
 
   if (form.type === FileType.annotationImage) {
-    res.json(await uploadAnnotationImage(user, file, form.cameraLocation));
+    res.json(
+      await uploadAnnotationImage(
+        user,
+        file,
+        form.cameraLocation,
+        form.workingRange,
+      ),
+    );
     return;
   }
 
   if (form.type === FileType.annotationVideo) {
     const { lastModified, cameraLocation } = form;
     res.json(
-      await uploadAnnotationVideo(user, file, lastModified, cameraLocation),
+      await uploadAnnotationVideo(
+        user,
+        file,
+        lastModified,
+        cameraLocation,
+        form.workingRange,
+      ),
     );
     return;
   }
 
   if (form.type === FileType.annotationZIP) {
-    res.json(await uploadAnnotationByZip(user, file, form.cameraLocation));
+    res.json(
+      await uploadAnnotationByZip(
+        user,
+        file,
+        form.cameraLocation,
+        form.workingRange,
+      ),
+    );
     return;
   }
 
   if (form.type === FileType.annotationCSV) {
-    res.json(await uploadAnnotationCsv(user, file, form.cameraLocation));
+    res.json(
+      await uploadAnnotationCsv(
+        user,
+        file,
+        form.cameraLocation,
+        form.workingRange,
+      ),
+    );
     return;
   }
 

@@ -55,6 +55,8 @@ services:
     build:
       context: .
       dockerfile: scripts/api/development/Dockerfile
+    container_name: ct-api-local-container
+    image: ct-api-local-image
     restart: always
     environment:
       - REDIS_HOST=redis
@@ -63,6 +65,7 @@ services:
     volumes:
       - /camera-trap-api/node_modules
       - .:/camera-trap-api
+      - ../ct-volumes/tmp:/tmp
     ports:
       - 3000:3000
     depends_on:
@@ -70,7 +73,6 @@ services:
       - mongo
     networks:
       - backend
-
 networks:
   backend:
 
