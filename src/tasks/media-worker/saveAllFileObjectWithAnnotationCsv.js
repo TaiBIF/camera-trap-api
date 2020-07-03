@@ -43,7 +43,14 @@ const rawDataToObject = (csvArray, dataFields) => {
   return keyBy(rawData, 'annotationId');
 };
 
-module.exports = async (csvArray, files, user, dataFields) => {
+module.exports = async (
+  csvArray,
+  files,
+  user,
+  dataFields,
+  startWorkingDate,
+  endWorkingDate,
+) => {
   const csvContentRowsWithAnnotationId = rawDataToObject(csvArray, dataFields);
   const annotationIds = Object.keys(csvContentRowsWithAnnotationId);
   const species = await SpeciesModel.where();
@@ -96,6 +103,8 @@ module.exports = async (csvArray, files, user, dataFields) => {
       annotation.failures = annotation.species === null ? ['new-species'] : [];
       annotation.fields = fields;
       annotation.rawData = data.origin;
+      annotation.startWorkingDate = startWorkingDate;
+      annotation.endWorkingDate = endWorkingDate;
       annotation.saveAndAddRevision(user);
       return annotation;
     },

@@ -44,7 +44,15 @@ const rawDataToObject = (csvArray, dataFields) => {
   return rawData;
 };
 
-module.exports = async (csvArray, files, project, user, cameraLocation) => {
+module.exports = async (
+  csvArray,
+  files,
+  project,
+  user,
+  cameraLocation,
+  startWorkingDate,
+  endWorkingDate,
+) => {
   const { dataFields } = project;
   const species = await SpeciesModel.where();
   const csvContentRows = rawDataToObject(csvArray, dataFields);
@@ -98,6 +106,8 @@ module.exports = async (csvArray, files, project, user, cameraLocation) => {
       annotation.failures = annotation.species === null ? ['new-species'] : [];
       annotation.fields = fields;
       annotation.rawData = data.origin;
+      annotation.startWorkingDate = startWorkingDate;
+      annotation.endWorkingDate = endWorkingDate;
       annotation.saveAndAddRevision(user);
       return annotation;
     },

@@ -56,6 +56,8 @@ const saveAllFileObjectWithNewAnnotaions = (
   project,
   cameraLocation,
   uploadSession,
+  startWorkingDate,
+  endWorkingDate,
 ) =>
   Promise.resolve(files).map(
     file => {
@@ -68,6 +70,8 @@ const saveAllFileObjectWithNewAnnotaions = (
         file,
         filename: file.originalFilename,
         time: file.exif.dateTime,
+        startWorkingDate,
+        endWorkingDate,
       });
       return annotation.save();
     },
@@ -122,14 +126,27 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
   );
 
   const startExtractZipTime = moment();
+  // const extractedFiles = await extractFileByPath(tempFile.name, tempDir.name);
   await extractFileByPath(tempFile.name, tempDir.name);
   logger.info(
     `zip worker job. extract file ${moment().to(startExtractZipTime, true)}`,
   );
+  // console.log(extractedFiles);
 
   const filesPath = fetchFiles(tempDir.name);
   const csvFiles = filesPath.filter(elm => elm.match(/.*\.(csv)/i));
   const hasCsvFile = csvFiles.length > 0;
+
+  const startWorkingDate =
+    workerData.workingRange !== undefined &&
+    workerData.workingRange.split(',').length === 2
+      ? workerData.workingRange.split(',')[0]
+      : undefined;
+  const endWorkingDate =
+    workerData.workingRange !== undefined &&
+    workerData.workingRange.split(',').length === 2
+      ? workerData.workingRange.split(',')[1]
+      : undefined;
 
   if (!hasCsvFile) {
     logger.info(`zip worker job. save with Files`);
@@ -148,6 +165,8 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
       project,
       cameraLocation,
       uploadSession,
+      startWorkingDate,
+      endWorkingDate,
     );
     return;
   }
@@ -203,6 +222,8 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
       fileObjects,
       user,
       project.dataFields,
+      startWorkingDate,
+      endWorkingDate,
     );
   } else {
     await saveAllFileObjectWithCsv(
@@ -211,6 +232,8 @@ module.exports = async (workerData, uploadSession, user, tempDir, tempFile) => {
       project,
       user,
       cameraLocation,
+      startWorkingDate,
+      endWorkingDate,
     );
   }
 };
