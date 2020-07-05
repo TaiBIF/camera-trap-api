@@ -1,0 +1,11 @@
+upstream apiserver {
+  server server:3000;
+}
+
+server {
+    listen 80;
+    server_name api-nov.camera-trap.tw;
+    location / {
+         proxy_pass http://apiserver;
+    }
+}
