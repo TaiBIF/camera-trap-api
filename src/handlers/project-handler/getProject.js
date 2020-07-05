@@ -63,7 +63,11 @@ module.exports = async (req, res) => {
       .sort('-time')
       .limit(1)
       .findOne(),
-  ]).then(([d1, d2]) => [d1.time, d2.time]);
+  ]).then(([d1, d2]) => {
+    if (d1 && d2) {
+      return [d1.time, d2.time];
+    }
+  });
 
   res.json({
     ...project.dump(),
