@@ -4,8 +4,8 @@ services:
   redis:
     image: redis:5
     command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
+    #ports:
+    #  - "6379:6379"
     volumes:
       - ../ct-volumes/redis_data:/data
     restart: always
@@ -38,13 +38,28 @@ services:
       - /camera-trap-api/node_modules
       - .:/camera-trap-api
     ports:
-      - 3000:3000
+      - 80:3000
     depends_on:
       - redis
       - mongo
     networks:
       - backend
-
+    links:
+      - mongo:mongo
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+    #  - 80:80
+      - 8888:8888
+    volumes:
+      - ./scripts/nginx:/etc/nginx/conf.d
+      - ../ct-volumes/dist:/usr/share/nginx/dist
+      - ../ct-volumes/logs/nginx:/var/log/nginx
+    networks:
+      - backend
+    links:
+      - server:server
 networks:
   backend:
 
