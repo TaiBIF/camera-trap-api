@@ -21,5 +21,5 @@ EXPOSE 3000
 ENV NODE_ENV="production-nov"
 
 #CMD ["node", "--max-old-space-size=8192", "src/web-starter"]
-#CMD ["npm", "run", "start"]
-CMD ["node", "src/web-starter"]
+CMD ["npm", "run", "start"]
+#CMD ["node", "src/web-starter"]

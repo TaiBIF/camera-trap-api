@@ -34,6 +34,7 @@
     "bluebird": "^3.5.5",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
+    "concurrently": "^5.2.0",
     "config": "^3.1.0",
     "connect-mongo": "^3.2.0",
     "cookie-parser": "^1.4.4",
@@ -79,7 +80,6 @@
   "devDependencies": {
     "@tbif/eslint-config-base": "github:TaiBIF/eslint-base",
     "camera-trap-credentials": "github:TaiBIF/camera-trap-credentials#3f1d61d7d4ffc3f1299716369015c857c2a6d940",
-    "concurrently": "^5.2.0",
     "eslint-plugin-mocha": "^5.3.0",
     "husky": "^3.0.3",
     "lint-staged": "^9.2.1",
