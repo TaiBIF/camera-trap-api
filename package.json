@@ -6,6 +6,7 @@
   "scripts": {
     "precommit": "lint-staged",
     "start": "concurrently --kill-others \"./node_modules/nodemon/bin/nodemon.js src/web-starter.js --watch src\" \"./node_modules/nodemon/bin/nodemon.js src/task-worker.js --watch src\"",
+    "start_prod": "concurrently --kill-others \"node src/web-starter.js\" \"node src/task-worker.js --watch src\"",
     "lint": "eslint src/",
     "db:init": "NODE_ENV=test node . -c; NODE_ENV=test node . -i",
     "test": "NODE_ENV=test ./node_modules/.bin/mocha test",
