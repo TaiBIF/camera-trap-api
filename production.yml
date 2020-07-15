@@ -16,8 +16,8 @@ services:
     restart: always
     expose:
       - 27017
-    ports:
-      - "27017:27017"
+    #ports:
+    #  - "27017:27017"
     volumes:
       - ../ct-volumes/mongo_data:/data/db
       - ../ct-volumes/bucket:/bucket
