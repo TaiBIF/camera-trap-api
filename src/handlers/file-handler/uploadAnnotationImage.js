@@ -1,4 +1,5 @@
-﻿const moment = require('moment');
+﻿// const moment = require('moment');
+const config = require('config');
 const utils = require('../../common/utils');
 const errors = require('../../models/errors');
 const FileModel = require('../../models/data/file-model');
@@ -61,10 +62,25 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
   const exif = await utils.getExif(utils.convertBufferToStream(file.buffer));
 
   const filename = file.originalname;
-  const fileDateTime = moment(
-    exif.DateTimeOriginal,
-    'YYYY:MM:DD HH:mm:ss',
-  ).toISOString();
+
+  /* fixed +8 problen, referance from file-model.js#251 */
+  // const fileDateTime = moment(
+  //  exif.DateTimeOriginal,
+  //  'YYYY:MM:DD HH:mm:ss',
+  //  ).toISOString();
+  let dateTime;
+  const dateTimeOriginal = exif.DateTimeOriginal;
+  if (dateTimeOriginal) {
+    // dateTimeOriginal is like this "2018:05:17 09:39:29"
+    dateTime = new Date(
+      `${dateTimeOriginal
+        .replace(':', '-')
+        .replace(':', '-')
+        .replace(' ', 'T')}.000Z`,
+    );
+    dateTime.setUTCMinutes(dateTime.getUTCMinutes() - config.defaultTimezone);
+  }
+  const fileDateTime = dateTime;
 
   const fileObject = new FileModel({
     type,
