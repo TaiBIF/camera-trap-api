@@ -109,6 +109,15 @@ schema.post('remove', file => {
           utils.logError(error, file);
         });
       break;
+    case FileType.annotationExcel:
+      utils
+        .deleteS3Objects([
+          `${config.s3.folders.annotationExcels}/${file.getFilename()}`,
+        ])
+        .catch(error => {
+          utils.logError(error, file);
+        });
+      break;
     case FileType.issueAttachment:
       utils
         .deleteS3Objects([
@@ -322,6 +331,20 @@ schema.method('saveWithContent', function(source, lastModified) {
               .uploadToS3({
                 Key: `${
                   config.s3.folders.annotationCSVs
+                }/${this.getFilename()}`,
+                Body:
+                  typeof source === 'string'
+                    ? fs.createReadStream(source)
+                    : source,
+                StorageClass: 'STANDARD_IA',
+              })
+              .then(() => resolve(this));
+            break;
+          case FileType.annotationExcel:
+            utils
+              .uploadToS3({
+                Key: `${
+                  config.s3.folders.annotationExcels
                 }/${this.getFilename()}`,
                 Body:
                   typeof source === 'string'

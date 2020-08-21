@@ -1,10 +1,10 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const { keyBy } = require('lodash');
-const csvParse = require('csv-parse/lib/sync');
 const Promise = require('bluebird');
 const moment = require('moment-timezone');
-const detectCharacterEncoding = require('detect-character-encoding');
-const iconv = require('iconv-lite');
+// const detectCharacterEncoding = require('detect-character-encoding');
+// const iconv = require('iconv-lite');
+const xlsx = require('node-xlsx');
 const errors = require('../../models/errors');
 const FileModel = require('../../models/data/file-model');
 const FileType = require('../../models/const/file-type');
@@ -21,13 +21,14 @@ const logger = require('../../logger');
 const concurrency = 10;
 const fileNameIndex = 3;
 
-const fetchCsvFileContent = path =>
+/* const fetchExcelFileContent = path =>
   new Promise((resolve, reject) => {
     const { encoding } = detectCharacterEncoding(fs.readFileSync(path));
+    // /console.log(iconv.encodingExists("windows-1252")); check if encoding is supported
     let reader;
-    if (encoding === 'Big5') {
-      reader = fs.createReadStream(path).pipe(iconv.decodeStream('big5'));
-      logger.info('decode big 5 to utf8');
+    if (encoding === 'windows-1252') {
+      reader = fs.createReadStream(path).pipe(iconv.decodeStream('win1252'));
+      logger.info('decode windows-1252 to utf8');
     } else {
       reader = fs.createReadStream(path);
     }
@@ -35,32 +36,33 @@ const fetchCsvFileContent = path =>
     reader.on('data', chunk => {
       resolve(chunk.toString());
     });
-  });
+  }); */
 
-const rawDataToObject = (csvArray, dataFields) => {
-  const csvHeaderRow = csvArray[0];
-  const csvContentRows = csvArray.slice(1);
+const rawDataToObject = (excelArray, dataFields) => {
+  const excelHeaderRow = excelArray[0]; // Define first element as header
+  const excelContentRows = excelArray.slice(1); // only retain content without header
 
-  const annotationIndex = csvHeaderRow.findIndex(
+  const annotationIndex = excelHeaderRow.findIndex(
     row => row === 'Annotation id',
-  );
+  ); // check every row has "Annotation id"
 
   const indexes = {};
-
+  // generate indexes  related to CName
   dataFields.forEach(({ _id, title: { 'zh-TW': CName } }) => {
-    const index = csvHeaderRow.findIndex(row => row === CName);
+    const index = excelHeaderRow.findIndex(row => row === CName);
     if (index) {
       indexes[_id] = index;
     }
   });
 
-  const rawData = csvContentRows.map(raw => {
+  // generate a rawData table (subtable is data) extracted the row from content
+  const rawData = excelContentRows.map(raw => {
     const data = {
       cameraLocation: raw[2],
-      fileName: raw[fileNameIndex],
+      fileName: raw[fileNameIndex], // fileNameIndex=3
       time: raw[4],
       species: raw[5],
-      annotationId: raw[annotationIndex],
+      annotationId: raw[annotationIndex], // row with AnnotationId
       origin: raw,
     };
 
@@ -74,39 +76,45 @@ const rawDataToObject = (csvArray, dataFields) => {
 };
 
 module.exports = async (user, file, cameraLocationId, workingRange) => {
-  logger.info('Start import csv');
-  const type = FileType.annotationCSV;
-  const csvObject = csvParse(await fetchCsvFileContent(file.path), {
-    bom: true,
-  });
+  logger.info('Start import excel');
+  const type = FileType.annotationExcel;
   console.log(file.path);
-  console.log(csvObject);
 
-  // check csv validate
+  const excelObjectOld = xlsx.parse(fs.readFileSync(file.path)); // Parsing a xlsx from buffer, outputs an array
+  // const csvObject = csvParse(await fetchExcelFileContent(file.path), {
+  //  bom: true,
+  // });
+
+  const excelObject = excelObjectOld[0].data;
+  console.log(excelObject);
   const timePattern = /20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]/;
-  csvObject.forEach(
+  excelObject.forEach(
     (
       [studyAreaName, subStudyAreaName, cameraLocationName, filename, time],
       index,
     ) => {
-      console.log(time.match(timePattern));
+      // check the format of time
+      // console.log(!time.match(timePattern));
       if (!time.match(timePattern) && index !== 0) {
         throw new errors.Http400('時間格式錯誤，應為文字，請見教學手冊');
       }
     },
   );
 
-  const cameraLocation = await fetchCameraLocation(cameraLocationId, user);
-  const { project } = cameraLocation;
+  const cameraLocation = await fetchCameraLocation(cameraLocationId, user); // populate (refer documents in other collections) project and studyArea from CameraLocationModel
+  const { project } = cameraLocation; // get the project id from camerLocation
 
   const filename = file.originalname;
 
+  // generate a fileObject table inherit FileModel(File in Mongo)
   const fileObject = new FileModel({
     type,
     user,
     originalFilename: filename,
     project,
   });
+
+  // generate a fileObject table inherit UploadSessionModel(UploadSessions in Mongo)
   const uploadSession = new UploadSessionModel({
     state: UploadSessionState.processing,
     project,
@@ -115,22 +123,25 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
     file: fileObject,
   });
 
+  // ensure saving above tables
   await uploadSession.save();
   await fileObject.saveWithContent(file.path);
 
+  // generate a dataFields table and assign the _id from the project(Projects in Mongo).dataFields
   const dataFields = await DataFieldModel.where({
     _id: { $in: project.dataFields },
   });
 
   const species = await SpeciesModel.where();
 
-  const csvHeaderRow = csvObject[0];
+  const excelHeaderRow = excelObject[0];
 
-  const annotationIndex = csvHeaderRow.findIndex(
+  const annotationIndex = excelHeaderRow.findIndex(
     row => row === 'Annotation id',
   );
 
-  const csvContentRows = rawDataToObject(csvObject, dataFields);
+  // run the rawDataToObject function(above) to generate the rawData...
+  const excelContentRows = rawDataToObject(excelObject, dataFields);
 
   if (annotationIndex < 0) {
     const startWorkingDate =
@@ -142,7 +153,7 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
         ? workingRange.split(',')[1]
         : undefined;
 
-    const annotations = csvContentRows.map(data => {
+    const annotations = excelContentRows.map(data => {
       // 組 fields
       const fields = dataFields.map(({ _id, options }) => {
         const tempValue = data[_id];
@@ -210,11 +221,11 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
       uploadSession.state = UploadSessionState.failure;
     }
   } else {
-    const csvContentRowsWithAnnotationId = keyBy(
-      csvContentRows,
+    const excelContentRowsWithAnnotationId = keyBy(
+      excelContentRows,
       'annotationId',
     );
-    const annotationIds = Object.keys(csvContentRowsWithAnnotationId);
+    const annotationIds = Object.keys(excelContentRowsWithAnnotationId);
     const annotations = await AnnotationModel.where({
       _id: { $in: annotationIds },
       state: AnnotationState.active,
@@ -223,7 +234,7 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
     try {
       await Promise.resolve(annotations).map(
         annotation => {
-          const data = csvContentRowsWithAnnotationId[annotation._id];
+          const data = excelContentRowsWithAnnotationId[annotation._id];
 
           // 組 fields
           const fields = dataFields.map(({ _id, options }) => {

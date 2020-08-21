@@ -8,6 +8,7 @@ const uploadAnnotationImage = require('./uploadAnnotationImage');
 const uploadAnnotationVideo = require('./uploadAnnotationVideo');
 const uploadAnnotationByZip = require('./uploadAnnotationByZip');
 const uploadAnnotationCsv = require('./uploadAnnotationCsv');
+const uploadAnnotationExcel = require('./uploadAnnotationExcel');
 const uploadIssueAttachment = require('./uploadIssueAttachment');
 const multerTable = require('./multerMapping');
 
@@ -15,7 +16,8 @@ const needCheckCameraLocaion = type => {
   if (
     type === FileType.annotationImage ||
     type === FileType.annotationZIP ||
-    type === FileType.annotationCSV
+    type === FileType.annotationCSV ||
+    type === FileType.annotationExcel
   ) {
     return true;
   }
@@ -115,6 +117,18 @@ module.exports = async (req, res) => {
   if (form.type === FileType.annotationCSV) {
     res.json(
       await uploadAnnotationCsv(
+        user,
+        file,
+        form.cameraLocation,
+        form.workingRange,
+      ),
+    );
+    return;
+  }
+
+  if (form.type === FileType.annotationExcel) {
+    res.json(
+      await uploadAnnotationExcel(
         user,
         file,
         form.cameraLocation,

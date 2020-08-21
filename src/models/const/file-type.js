@@ -3,6 +3,7 @@ module.exports = {
   annotationImage: 'annotation-image',
   annotationVideo: 'annotation-video',
   annotationCSV: 'annotation-csv',
+  annotationExcel: 'annotation-excel',
   annotationZIP: 'annotation-zip',
   issueAttachment: 'issue-attachment',
   all() {
@@ -11,6 +12,7 @@ module.exports = {
       this.annotationImage,
       this.annotationVideo,
       this.annotationCSV,
+      this.annotationExcel,
       this.annotationZIP,
       this.issueAttachment,
     ];

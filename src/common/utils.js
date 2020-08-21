@@ -132,7 +132,13 @@ exports.getFileUrl = (fileType, filename, isAnnotationThumbnail) => {
   if (!filename) {
     return;
   }
-  if ([FileType.annotationCSV, FileType.annotationZIP].indexOf(fileType) >= 0) {
+  if (
+    [
+      FileType.annotationCSV,
+      FileType.annotationZIP,
+      FileType.annotationExcel,
+    ].indexOf(fileType) >= 0
+  ) {
     return;
   }
   if (fileType === FileType.annotationImage && isAnnotationThumbnail) {

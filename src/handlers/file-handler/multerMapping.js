@@ -22,6 +22,12 @@ const multers = {
       limits: { fileSize: config.limit.csvFileSize },
     }).single('file'),
   ),
+  excel: util.promisify(
+    multer({
+      storage: multer.diskStorage({}),
+      limits: { fileSize: config.limit.excelFileSize },
+    }).single('file'),
+  ),
   zip: util.promisify(
     multer({
       storage: multer.diskStorage({}),
@@ -41,6 +47,7 @@ multerTable[FileType.projectCoverImage] = multers.image;
 multerTable[FileType.annotationImage] = multers.image;
 multerTable[FileType.annotationVideo] = multers.video;
 multerTable[FileType.annotationCSV] = multers.csv;
+multerTable[FileType.annotationExcel] = multers.excel;
 multerTable[FileType.annotationZIP] = multers.zip;
 multerTable[FileType.issueAttachment] = multers.issueAttachment;
 
