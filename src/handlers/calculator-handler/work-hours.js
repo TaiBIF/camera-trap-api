@@ -32,14 +32,13 @@ module.exports = async (req, res) => {
   const form = req.query;
   const { cameraLocationIds = [], startDateTime, endDateTime } = form; // create form including three variables
   const cameraLocations = await fetchCameraLocations(cameraLocationIds); // get cameraLocations
-  console.log(cameraLocationIds);
 
   const userid = [];
   cameraLocationIds.forEach(stringId => {
     userid.push(new ObjectID(stringId));
   });
 
-  console.log(userid);
+  // console.log(userid);
   const timesTT = await AnnotationModel.aggregate([
     {
       $match: { cameraLocation: { $in: userid } },
@@ -101,7 +100,7 @@ module.exports = async (req, res) => {
 
   const result = _.groupBy(timesArray, 'id');
 
-  console.log(result);
+  // console.log(result);
 
   let dataT = [];
   if (form.range === 'month') {
@@ -110,6 +109,7 @@ module.exports = async (req, res) => {
       const workingCameraRange = result[c._id];
       monthList.forEach(m => {
         const beginT = moment(m).startOf('month');
+        // console.log(beginT);
 
         const endT = moment(m).endOf('month');
 
@@ -119,13 +119,18 @@ module.exports = async (req, res) => {
           const range1 = moment(start).twix(end); // output the range from startTime to endTime
           const range2 = moment(beginT).twix(endT); // output the range from begin to end
           const rr = range1.intersection(range2); // get the overlap hour between range1 and range2
+          // console.log(rr._start.format());
+
           const durationOne = rr._end.diff(rr._start);
+          // console.log(moment.duration(range2));
+
           total += moment
             .duration(durationOne < 0 ? 0 : rr._end.diff(rr._start))
             .asHours();
         });
         dataT.push({
           cameraLocationId: c._id,
+          title: c.name,
           workHours: parseFloat(total.toFixed(2)),
           month: moment(m).format('M'),
           year: moment(m).format('Y'),
@@ -138,7 +143,7 @@ module.exports = async (req, res) => {
 
       return {
         cameraLocationId: cam.id,
-        title: v,
+        title: cam.id,
         workHours: parseFloat(
           moment
             .duration(totalTest[v])
@@ -147,7 +152,6 @@ module.exports = async (req, res) => {
         ),
       };
     });
-    // console.log(dataT);
   }
   res.json(dataT);
 };

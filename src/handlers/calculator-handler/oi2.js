@@ -1,11 +1,12 @@
 const moment = require('moment');
 require('twix');
+const _ = require('underscore');
 const mongoose = require('mongoose');
+const { ObjectID } = require('mongodb');
 const CameraLocationModel = require('../../models/data/camera-location-model');
 const CameraLocationState = require('../../models/const/camera-location-state');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
-const ProjectTrip = require('../../models/data/project-trip-model');
 const SpeciesModel = require('../../models/data/species-model');
 const DataFieldModel = require('../../models/data/data-field-model');
 
@@ -105,13 +106,72 @@ module.exports = async (req, res) => {
     'title.zh-TW': '隻數',
   });
 
-  const trips = await ProjectTrip.find({
-    'studyAreas.cameraLocations.cameraLocation': {
-      $in: cameraLocationIds,
-    },
+  const userid = [];
+  cameraLocationIds.forEach(stringId => {
+    userid.push(new ObjectID(stringId));
   });
 
-  const times = {};
+  const timesTT = await AnnotationModel.aggregate([
+    {
+      $match: { cameraLocation: { $in: userid } },
+    },
+
+    {
+      $sort: {
+        time: -1.0,
+      },
+    },
+    {
+      $group: {
+        _id: '$cameraLocation',
+        starttimes: {
+          $first: {
+            $arrayElemAt: ['$rawData', 4.0],
+          },
+        },
+        endtimes: {
+          $last: {
+            $arrayElemAt: ['$rawData', 4.0],
+          },
+        },
+      },
+    },
+  ]);
+  // console.log(timesTT)
+  const timesArray = [];
+  const totalTest = {};
+  await timesTT.forEach(t => {
+    const Start = moment(t.starttimes).format('YYYY-MM-DDTHH:mm:ss');
+    const End = moment(t.endtimes).format('YYYY-MM-DDTHH:mm:ss');
+
+    if (moment(End).isAfter(Start)) {
+      const durationsT = moment(End).diff(Start);
+      totalTest[t._id] = durationsT;
+
+      // console.log(totalTest)
+
+      timesArray.push({
+        id: t._id,
+        start: Start,
+        end: End,
+      });
+    } else {
+      const durationsT = moment(Start).diff(End);
+      totalTest[t._id] = durationsT;
+
+      // console.log(totalTest)
+
+      timesArray.push({
+        id: t._id,
+        start: End,
+        end: Start,
+      });
+    }
+  });
+
+  const result = _.groupBy(timesArray, 'id');
+
+  /* const times = {};
   const totalTime = {};
   trips.forEach(t => {
     t.studyAreas.forEach(s => {
@@ -136,14 +196,14 @@ module.exports = async (req, res) => {
         },
       );
     });
-  });
+  }); */
 
   const data = [];
   if (range === 'month') {
     const monthList = getMonthRange(startDateTime, endDateTime);
     species.forEach(({ _id: s }) => {
       cameraLocations.forEach(c => {
-        const workingCameraRange = times[c.name];
+        const workingCameraRange = result[c._id];
         monthList.forEach(m => {
           let totalPics = 0;
           let lastValidAnnotationTime;
@@ -182,13 +242,13 @@ module.exports = async (req, res) => {
             });
 
           // 整理時數
-          const begin = moment(m).startOf('month');
-          const end = moment(m).endOf('month');
+          const beginT = moment(m).startOf('month');
+          const endT = moment(m).endOf('month');
           let hours = 0;
 
-          workingCameraRange.forEach(({ startTime, endTime }) => {
-            const range1 = moment(startTime).twix(endTime);
-            const range2 = moment(begin).twix(end);
+          workingCameraRange.forEach(({ start, end }) => {
+            const range1 = moment(start).twix(end);
+            const range2 = moment(beginT).twix(endT);
 
             const rr = range1.intersection(range2);
             const duration = rr._end.diff(rr._start);

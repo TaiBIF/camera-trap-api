@@ -1,11 +1,12 @@
 ﻿const moment = require('moment-timezone');
 require('twix');
+const _ = require('underscore');
 const mongoose = require('mongoose');
+const { ObjectID } = require('mongodb');
 const CameraLocationModel = require('../../models/data/camera-location-model');
 const CameraLocationState = require('../../models/const/camera-location-state');
 const AnnotationModel = require('../../models/data/annotation-model');
 const AnnotationState = require('../../models/const/annotation-state');
-const ProjectTrip = require('../../models/data/project-trip-model');
 const SpeciesModel = require('../../models/data/species-model');
 
 const fetchCameraLocations = async cameraLocationIds => {
@@ -113,13 +114,72 @@ module.exports = async (req, res) => {
   const annotationQuery = getAnnotationQuery(form);
   const annotations = await annotationQuery;
 
-  const trips = await ProjectTrip.find({
-    'studyAreas.cameraLocations.cameraLocation': {
-      $in: cameraLocationIds,
-    },
+  const userid = [];
+  cameraLocationIds.forEach(stringId => {
+    userid.push(new ObjectID(stringId));
   });
 
-  const times = {};
+  const timesTT = await AnnotationModel.aggregate([
+    {
+      $match: { cameraLocation: { $in: userid } },
+    },
+
+    {
+      $sort: {
+        time: -1.0,
+      },
+    },
+    {
+      $group: {
+        _id: '$cameraLocation',
+        starttimes: {
+          $first: {
+            $arrayElemAt: ['$rawData', 4.0],
+          },
+        },
+        endtimes: {
+          $last: {
+            $arrayElemAt: ['$rawData', 4.0],
+          },
+        },
+      },
+    },
+  ]);
+  // console.log(timesTT)
+  const timesArray = [];
+  const totalTest = {};
+  await timesTT.forEach(t => {
+    const Start = moment(t.starttimes).format('YYYY-MM-DDTHH:mm:ss');
+    const End = moment(t.endtimes).format('YYYY-MM-DDTHH:mm:ss');
+
+    if (moment(End).isAfter(Start)) {
+      const durationsT = moment(End).diff(Start);
+      totalTest[t._id] = durationsT;
+
+      // console.log(totalTest)
+
+      timesArray.push({
+        id: t._id,
+        start: Start,
+        end: End,
+      });
+    } else {
+      const durationsT = moment(Start).diff(End);
+      totalTest[t._id] = durationsT;
+
+      // console.log(totalTest)
+
+      timesArray.push({
+        id: t._id,
+        start: End,
+        end: Start,
+      });
+    }
+  });
+
+  const result = _.groupBy(timesArray, 'id');
+
+  /* const times = {};
   const totalTime = {};
   trips.forEach(t => {
     t.studyAreas.forEach(s => {
@@ -144,7 +204,7 @@ module.exports = async (req, res) => {
         },
       );
     });
-  });
+  }); */
 
   const data = [];
 
@@ -154,7 +214,7 @@ module.exports = async (req, res) => {
     const cameraLocationWorkPerMonth = {};
     const eventDatesPerMonth = [];
     cameraLocations.forEach(c => {
-      const workingCameraRange = times[c.name];
+      const workingCameraRange = result[c._id];
       const eventDatesPerMonthOfCamera = {};
       // 整理每個月事件數
       annotations
@@ -169,9 +229,9 @@ module.exports = async (req, res) => {
         });
 
       // 整理每個月工作天數
-      workingCameraRange.forEach(({ startTime, endTime }) => {
-        const datesList = enumerateDaysBetweenDates(startTime, endTime);
-        // console.log(datesList, startTime, endTime);
+      workingCameraRange.forEach(({ start, end }) => {
+        const datesList = enumerateDaysBetweenDates(start, end);
+        // console.log(datesList, start, end);
         datesList.forEach(date => {
           const dateM = moment(date).format('YYYY-MM');
           if (typeof cameraLocationWorkPerMonth[dateM] === 'undefined') {

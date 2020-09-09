@@ -94,7 +94,7 @@ module.exports = async (user, file, cameraLocationId, workingRange) => {
       index,
     ) => {
       // check the format of time
-      // console.log(!time.match(timePattern));
+
       if (!time.match(timePattern) && index !== 0) {
         throw new errors.Http400('時間格式錯誤，應為文字，請見教學手冊');
       }

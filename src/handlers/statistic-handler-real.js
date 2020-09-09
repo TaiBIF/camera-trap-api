@@ -63,10 +63,9 @@ exports.getStatistics = async (req, res) => {
   }
 
   // species
-  const speciesData = await SpeciesModel.where('isDefault')
+  const speciesData = await SpeciesModel.where('isAcceptedName')
     .equals(true)
     .sort('sort');
-  // console.log(speciesData);
   const speciesArr = await bluebird.map(
     speciesData,
     async species => {
@@ -84,8 +83,10 @@ exports.getStatistics = async (req, res) => {
         totalPicture.length,
         totalLocation.length,
       );
+      const TT = 'just a test';
 
       return {
+        TT,
         species: species.id,
         name: species.title['zh-TW'],
         totalPicture: totalPicture.length,

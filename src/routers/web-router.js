@@ -377,7 +377,7 @@ const cache = apicache.options({
   redisClient,
 }).middleware;
 
-apiRouter.get('/statistics', cache(), statisticHandler.getStatistics);
+apiRouter.get('/statistics', statisticHandler.getStatistics, cache());
 
 apiRouter.get(
   '/statistics/county/:countyName',
