@@ -44,7 +44,7 @@
     "debug": "^4.1.1",
     "detect-character-encoding": "^0.8.0",
     "dist-exiftool": "^10.53.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-easy-zip": "^1.1.4",
     "express-session": "^1.16.1",
     "extend": ">=3.0.2",
